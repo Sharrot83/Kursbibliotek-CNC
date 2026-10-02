@@ -113,6 +113,8 @@
     color:#667381; background:#11161d; border-right:1px solid var(--border);
     overflow:hidden; white-space:pre;
   }
+  .line-numbers .line-num { display:inline-block; width:100%; cursor:pointer; border-radius:3px; }
+  .line-numbers .line-num:hover { background:var(--panel2); color:var(--accent); }
   .code-wrap { flex:1; position:relative; min-width:0; }
   .code-highlight, .code-input {
     position:absolute; inset:0; margin:0; padding:12px;
@@ -1806,7 +1808,7 @@ function highlightLine(line) {
 }
 function updateCodeView() {
   const lines=ta.value.split(/\r?\n/);
-  lineNumbersEl.textContent = lines.map((_,i)=>String(i+1)).join('\n');
+  lineNumbersEl.innerHTML = lines.map((_,i)=>'<span class="line-num" data-line="'+(i+1)+'" title="Starta uppspelning från rad '+(i+1)+'">'+(i+1)+'</span>').join('\n');
   codeHighlightEl.innerHTML = lines.map(highlightLine).join('\n')+'\n';
   repositionLineHighlight();
 }
@@ -3132,6 +3134,25 @@ scrubSlider.addEventListener('input', ()=>{
     scrubPos=positionAtDistance(playModel,targetDist);
   }
   render(scrubPos);
+});
+
+lineNumbersEl.addEventListener('click', (e) => {
+  const el = e.target.closest('.line-num');
+  if (!el || !paths.length || !playModel) return;
+  const lineNo = parseInt(el.dataset.line, 10);
+  // First segment whose source line is at or after the clicked line — not
+  // every line has its own motion (comments, M-codes, WCS selection), so
+  // clicking e.g. line 500 jumps to whatever move actually happens there
+  // or just after it.
+  let segIdx = paths.length;
+  for (let i=0;i<paths.length;i++) {
+    if (paths[i].line >= lineNo) { segIdx=i; break; }
+  }
+  scrubSlider.value = segIdx;
+  scrubSlider.dispatchEvent(new Event('input'));
+  statusEl.textContent = (segIdx>=paths.length)
+    ? 'Rad '+lineNo+' har ingen rörelse efter sig.'
+    : 'Startposition satt till rad '+paths[segIdx].line+' (segment '+(segIdx+1)+'/'+paths.length+'). Tryck Spela, Paus eller Singel block.';
 });
 
 toggleOptionalStop.addEventListener('change',()=>{ lastHandledStopId=null; });
