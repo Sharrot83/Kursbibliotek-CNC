@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Materialkunskap — Läsmaterial | CNC-Grönt kort</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{
+    width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto;
+  }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{
+    content:""; position:absolute; background:var(--amber);
+  }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+
+  .dim{
+    display:flex; align-items:center; gap:10px; margin:38px 0 26px; color:var(--muted);
+    font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace; font-size:11.5px;
+    letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+  }
+  .dim::before, .dim::after{ content:""; flex:1; height:1px; background:var(--line);
+    background-image: linear-gradient(90deg, var(--line) 0, var(--line) 100%);
+    position:relative;
+  }
+  .dim .tick{position:relative;}
+  .dim-line{flex:1; height:1px; background:var(--line); position:relative;}
+  .dim-line::before{content:"";position:absolute; left:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim-line::after{content:"";position:absolute; right:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim .label{padding:2px 4px; flex:0 0 auto;}
+
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  h1 .accent{color:var(--amber);}
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+
+  article.reading h2{
+    font-family:"Arial Narrow",Arial,sans-serif; font-size:24px; font-weight:800; letter-spacing:-.005em;
+    margin:36px 0 12px; padding-top:4px; color:var(--text);
+  }
+  article.reading h2 .num{color:var(--accent,var(--amber)); margin-right:8px; font-family:"IBM Plex Mono",monospace; font-size:16px;}
+  article.reading h3{
+    font-size:16.5px; font-weight:700; margin:22px 0 8px; color:var(--accent,var(--amber));
+  }
+  article.reading p{color:#c9d2d9; font-size:15px; line-height:1.72; margin:0 0 14px;}
+  article.reading ul{margin:0 0 16px; padding-left:0; list-style:none;}
+  article.reading ul li{
+    position:relative; padding-left:20px; margin-bottom:8px; color:#c9d2d9; font-size:14.6px; line-height:1.6;
+  }
+  article.reading ul li::before{
+    content:""; position:absolute; left:0; top:9px; width:7px; height:2px; background:var(--accent,var(--amber));
+  }
+  article.reading strong{color:var(--text);}
+  article.reading table.ref-table{width:100%; border-collapse:collapse; margin:14px 0 20px; font-size:14.5px;}
+  article.reading table.ref-table th, article.reading table.ref-table td{text-align:left; padding:8px 12px; border-bottom:1px solid var(--line);}
+  article.reading table.ref-table th{color:var(--muted); font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; font-weight:700;}
+  article.reading table.ref-table tr:hover td{background:var(--panel-2);}
+  .color-chip{
+    display:inline-block; width:16px; height:16px; border-radius:3px;
+    border:1px solid rgba(255,255,255,.35); vertical-align:-3px; margin-right:7px; flex:0 0 auto;
+  }
+  [data-theme="light"] .color-chip{ border-color:rgba(0,0,0,.25); }
+  .color-cell{ display:flex; flex-direction:column; gap:5px; white-space:nowrap; }
+  .chip-line{ display:flex; align-items:center; }
+  .chip-line .color-chip, .chip-line .iso-chip{ margin-right:7px; }
+  .iso-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin:16px 0 26px; }
+  .iso-card{ display:flex; gap:12px; padding:14px; border:1px solid var(--line); border-radius:8px; background:var(--panel); }
+  .iso-chip{
+    flex:0 0 auto; width:40px; height:40px; border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:18px; border:1px solid rgba(0,0,0,.25);
+  }
+  .iso-card h3{ margin:0 0 4px; font-size:15px; color:var(--text); }
+  .iso-card p{ margin:0; font-size:13px; color:var(--muted); line-height:1.5; }
+  .iso-chip.mini{ width:22px; height:22px; border-radius:4px; font-size:12px; margin-right:7px; vertical-align:-6px; }
+  .callout{
+    border-left:3px solid var(--accent,var(--amber)); background:var(--panel);
+    padding:13px 16px; margin:18px 0; border-radius:0 6px 6px 0; font-size:14.2px; color:#dfe6ea; line-height:1.6;
+  }
+  .callout b{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent,var(--amber)); margin-bottom:4px; font-family:"IBM Plex Mono",monospace;}
+  .toc{
+    display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 6px;
+  }
+  .toc a{
+    font-size:12.5px; padding:6px 11px; border:1px solid var(--line); border-radius:999px;
+    text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;
+  }
+  .toc a:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+
+  .footcta{
+    margin-top:48px; border-top:1px solid var(--line); padding-top:26px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .footcta .ft-txt{font-size:13.5px; color:var(--muted); max-width:44ch;}
+
+  footer.sitefoot{text-align:center; color:var(--muted); font-size:12px; margin-top:50px; padding-bottom:10px;}
+
+  @media (max-width:640px){
+    .topnav nav{gap:12px; font-size:12px;}
+  }
+
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+
+<style>
+  article.reading{max-width:720px;}
+</style>
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="../material.html"><span class="mark"></span>CNC-GRÖNT KORT</a>
+  <nav>
+    <a href="../material.html">Delkurser</a>
+    <a href="../quiz-alla.html">Storquiz</a>
+  </nav>
+</div>
+
+<main class="wrap narrow">
+  <header class="hero">
+    <div class="eyebrow">MTL-02 · Läsmaterial</div>
+    <h1>Materialkunskap</h1>
+    <div class="sub">Vad material är, från malm till metall, materialegenskaper, materialprovning, materialstandard samt stål, gjutjärn och verktygsmaterial.<br><span style="color:var(--muted); font-size:12.5px;">Källa: Materialkunskap – faktahäfte</span></div>
+    <div class="toc"><a href="#vad_ar_material">Vad är material?</a><a href="#fran_malm_till_metall">Från malm till metall</a><a href="#materialegenskaper">Materialegenskaper</a><a href="#materialprovning">Materialprovning</a><a href="#materialstandard">Materialstandard</a><a href="#metalliska_material">Metalliska material</a><a href="#materialbeteckningar">Materialbeteckningar</a><a href="#iso513">ISO-materialgrupper</a></div>
+  </header>
+  <div class="dim">TILL INNEHÅLLET</div>
+  <article class="reading" style="--accent:#e0584f">
+
+    <h2 id="vad_ar_material"><span class="num">01</span>Vad är material?</h2>
+<p>De flesta produkter i dagens samhälle — bilar, cyklar, hushållsmaskiner, elektronik — består av en eller flera delar som fogats samman genom t.ex. limning, svetsning, skruvning eller nitning. Varje del är tillverkad av ett eller flera <b>konstruktionsmaterial</b>, valda för att produkten ska bli så bra som möjligt med tanke på <b>funktion</b> (vad den ska användas till) och <b>ekonomi</b> (kostnad för tillverkning och personal).</p>
+        <p>Ett felaktigt materialval kan leda till att materialet överbelastas och går sönder. Den som ritar, beräknar, formger eller tillverkar en produkt måste därför känna till materialens olika egenskaper — t.ex. hårdhet, sprödhet, seghet, och hur materialet klarar värme eller vibrationer.</p>
+        <h3>Önskvärda egenskaper hos material i en produkt</h3>
+        <ul>
+          <li>Starka och lätta</li>
+          <li>Lämpliga att bearbeta (svarva, fräsa, borra, kapa)</li>
+          <li>Lämpliga att sammanfoga (svetsa, limma, skruva, nita)</li>
+          <li>Lämpliga att ytbehandla (lacka, slipa, polera)</li>
+          <li>Billiga att använda (lågt inköpspris, låg bearbetningskostnad)</li>
+          <li>Lätta att återanvända vid skrotning</li>
+        </ul>
+        <p>Alla dessa egenskaper finns sällan samlade i ett enda material — man får därför välja den bästa möjliga kombinationen och sätta <b>rätt material på rätt plats</b>. En bil är ett tydligt exempel: den innehåller aluminium, gummi, plast, stål och tunnplåt, där varje del noggrant valts med tanke på funktion och hållbarhet.</p>
+        <div class="callout"><b>Exempel: Volvo 850</b>På 1990-talet konstruerade Volvo en helt ny motor till bilmodellen 850. Målet var att göra den så stark, effektiv och bränslesnål (dvs. att den drar så lite bensin som möjligt) som möjligt. Varje detalj i motorn konstruerades för att uppfylla krav på livslängd och styrka, samtidigt som man ville ha en kompakt motor med så låg vikt som möjligt — vilket i praktiken betydde att olika material fick blandas för att varje del skulle ha rätt egenskaper på rätt plats.</div>
+        <h3>Jordens resurser, energi och återvinning</h3>
+        <p>Metaller finns naturligt överallt i vår omgivning — i berget, vattnet och luften — både i naturligt förekommande form och som föroreningar. Giftiga metaller (vissa tungmetaller) som släpps ut i miljön hamnar förr eller senare i marken och vattnet, där de kan skada känsliga biologiska processer. Det är därför viktigt att produkter tillverkas utifrån ett kretsloppstänk.</p>
+        <p>Produkter bör tillverkas utifrån ett kretsloppstänk — av råvaror som är naturliga, finns i rika tillgångar och kan utvinnas med minsta möjliga miljöpåverkan. Den största delen av energin som förbrukas i världen går åt till utvinning och förädling av material, så återvinning är viktigt för att inte förbruka resurser i onödan. De flesta material, särskilt metaller, går att återvinna. Att smälta om aluminiumskrot kräver till exempel bara ungefär 5 % av energin som går åt vid nyframställning ur bauxit.</p>
+
+    <h2 id="fran_malm_till_metall"><span class="num">02</span>Från malm till metall</h2>
+<p>De vanligaste materialen i naturen är mineraler — kemiska föreningar av flera grundämnen, oftast metall och syre. Ett grundämne finns naturligt och är inte en blandning av olika saker. Mineraler som innehåller utvinningsbara metaller kallas <b>malmer</b>. Metaller förekommer aldrig rena i naturen, utan är blandade med värdelöst gråberg som måste avskiljas.</p>
+        <p>De viktigaste malmerna i Sverige är svartmalm och blodstensmalm, som ger järn. Järnmalm bryts i gruvor eller dagbrott, krossas och anrikas för att skilja bort gråberget. I ett järnverk befrias malmen från syre i en masugn, så att endast järn (råstål) finns kvar. Slutligen sänks kolhalten och föroreningar tas bort.</p>
+        <h3>Metaller och icke-metaller</h3>
+        <p>Grundämnen kan delas in i <b>metaller</b> (leder elektricitet bra, är glansiga och reflekterar ljus bra — alla utom kvicksilver är fasta vid rumstemperatur) och <b>icke-metaller</b> (dålig lednings- och reflektionsförmåga, används därför som elektriska isolatorer). Ungefär 80 grundämnen är metaller. Vissa grundämnen, t.ex. arsenik, antimon och germanium, har egenskaper mitt emellan och kallas halvmetaller eller halvledare.</p>
+        <h3>Legeringar</h3>
+        <p>Bruksmetaller vi använder dagligen är sällan rena, utan blandningar av en metall och ett eller flera andra grundämnen — så kallade <b>legeringar</b>. Stål är en legering mellan järn och kol. Mässing är en legering mellan koppar och zink. Andra legeringsämnen i stål är bland annat kisel, mangan och krom — kisel och mangan ger bättre hållfasthet, medan minst 12 % krom gör stålet rostfritt. Legeringar har andra egenskaper än den rena metallen.</p>
+
+    <h2 id="materialegenskaper"><span class="num">03</span>Materialegenskaper</h2>
+<p>Viktiga egenskaper hos material delas ofta in i fyra grupper: fysikaliska, mekaniska, bearbetningsegenskaper och övriga egenskaper.</p>
+        <table class="ref-table">
+          <thead><tr><th>Fysikaliska</th><th>Mekaniska</th><th>Bearbetning</th><th>Övriga</th></tr></thead>
+          <tbody>
+            <tr><td>Densitet</td><td>Draghållfasthet</td><td>Formbarhet</td><td>Korrosionsmotstånd</td></tr>
+            <tr><td>Smältpunkt</td><td>– sträckgräns</td><td>Skärbarhet</td><td>Slitstyrka (nötning)</td></tr>
+            <tr><td>Värmeutvidgning</td><td>– brottgräns</td><td>Härdbarhet</td><td>Ytbehandlingsbar</td></tr>
+            <tr><td>Värmeledningsförmåga</td><td>– brottförlängning</td><td>Svetsbarhet</td><td>Värmebeständighet</td></tr>
+            <tr><td>Elektrisk ledningsförmåga</td><td>Hårdhet</td><td>Lödbarhet</td><td>Brännbarhet</td></tr>
+            <tr><td>Magnetism</td><td>Slagseghet</td><td>Gjutbarhet</td><td>Hälsopåverkan</td></tr>
+            <tr><td></td><td>Utmattningshållfasthet</td><td></td><td>Miljöpåverkan</td></tr>
+          </tbody>
+        </table>
+        <h3>Densitet</h3>
+        <p>Densitet beskriver materialets täthet — vikt dividerat med volym, i kg/dm³. Lättmetaller har en densitet under 4,5 kg/dm³ (t.ex. aluminium, titan, magnesium), medan tungmetaller har en densitet från 6,7 kg/dm³ (t.ex. järn, bly, zink, silver, guld). Plaster har ungefär samma densitet som lättmetallerna.</p>
+        <h3>Smältpunkt</h3>
+        <p>Temperaturen då ett material smälter kallas smältpunkt. Rena metaller har hög smältpunkt, medan legeringar oftast smälter vid lägre temperatur och över ett smältintervall — de börjar smälta vid en temperatur och är helt smälta vid en högre. Plaster har en betydligt lägre smältpunkt än metaller.</p>
+        <table class="ref-table">
+          <thead><tr><th>Metall</th><th>Smältpunkt</th></tr></thead>
+          <tbody>
+            <tr><td>Tenn (Sn)</td><td>232 °C</td></tr>
+            <tr><td>Bly (Pb)</td><td>327 °C</td></tr>
+            <tr><td>Zink (Zn)</td><td>420 °C</td></tr>
+            <tr><td>Magnesium (Mg)</td><td>650 °C</td></tr>
+            <tr><td>Aluminium (Al)</td><td>658 °C</td></tr>
+            <tr><td>Mässing (Cu-Zn, legering)</td><td>ca 900–940 °C</td></tr>
+            <tr><td>Koppar (Cu)</td><td>1 083 °C</td></tr>
+            <tr><td>Nickel (Ni)</td><td>1 455 °C</td></tr>
+            <tr><td>Gjutjärn (legering)</td><td>ca 1 150–1 300 °C</td></tr>
+            <tr><td>Järn (Fe)</td><td>1 538 °C</td></tr>
+            <tr><td>Titan (Ti)</td><td>1 668 °C</td></tr>
+            <tr><td>Krom (Cr)</td><td>1 907 °C</td></tr>
+            <tr><td>Wolfram (W)</td><td>3 422 °C</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:13px; color:var(--muted);">Legeringar smälter normalt i ett intervall mellan den lägsta och högsta av de rena metallernas smältpunkter, beroende på legeringsämnen och halter — stål (järn + kol) smälter t.ex. lägre än rent järn, oftast omkring 1 370–1 530 °C beroende på legeringstyp.</p>
+        <h3>Värmeutvidgning</h3>
+        <p>När en metall värms upp ökar den i volym — den sväller. Detta är viktigt vid bearbetning (t.ex. svarvning, svetsning), eftersom materialet blir varmt och kan ge fel mått om man kontrollmäter innan det svalnat.</p>
+        <h3>Värmeledning och elektrisk ledning</h3>
+        <p>De flesta metaller leder värme bra — bäst är koppar, som därför används i värmeväxlare och kylare. Plaster är dåliga värmeledare och används i stället som isolatorer. På samma sätt är koppar en utmärkt elektrisk ledare (elkablar) och aluminium används i kraftledningslinor, medan plaster oftast är dåliga elektriska ledare och används som isolatorer.</p>
+        <h3>Korrosionsmotstånd och slitstyrka</h3>
+        <p><b>Korrosionsmotstånd</b> är materialets förmåga att motstå angrepp från t.ex. syror, saltvatten och surt regn — när stål rostar är det ett exempel på korrosion. <b>Slitstyrka</b> beskriver materialets motstånd mot nötning när två materialytor gnids mot varandra.</p>
+
+    <h2 id="materialprovning"><span class="num">04</span>Materialprovning</h2>
+<p>Med materialprovningsmetoder kan man bestämma ett materials hållfasthet, alltså hur starkt det är. Provning kan användas inför val av material eller vid kontroll av färdiga produkter.</p>
+        <h3>Förstörande provningsmetoder</h3>
+        <ul>
+          <li><b>Dragprovning</b> — en provstav utsätts för en dragkraft som ökar tills den brister. Ger sträckgräns (belastning materialet tål utan bestående formförändring), brottgräns (högsta belastning innan brott) och brottförlängning (förlängningen vid brott).</li>
+          <li><b>Slagprovning</b> — mäter slagseghet, materialets förmåga att stå emot slag utan att brista. Provstaven placeras i en pendelhejare, och ju längre pendeln fortsätter efter att ha slagit sönder staven, desto sprödare är materialet.</li>
+          <li><b>Utmattningsprovning</b> — visar hur materialet klarar upprepad, växlande belastning. En roterande provstav utsätts för böjning tills den brister; utmattningsgränsen är den belastning materialet tål utan brott vid ett mycket stort antal belastningsväxlingar.</li>
+          <li><b>Mikroskopering</b> — provytan slipas, poleras och etsas, varefter kornstorlek, utskiljningar och mikrosprickor studeras i ett ljusmikroskop med flera tusen gångers förstoring.</li>
+        </ul>
+        <div class="callout"><b>Sträckgräns, brottgräns och brottförlängning — en enkel liknelse</b>Tänk dig ett tuggummi du tuggar på: drar du lite i det dras det isär men går tillbaka till en hel klump om du slutar dra — det är sträckgränsen. Drar du för mycket går tuggummit isär i två delar — det är brottgränsen. Har tuggummit dragits isär har det fått en helt annan form, som en massa långa trådar — det är brottförlängningen. Samma sak gäller när du drar åt en skruv för hårt: passerar du sträckgränsen får skruven en bestående (kvarstående) formförändring och tappar sin klämkraft, och drar du förbi brottgränsen går den av. Därför har alla skruvar en gräns för hur hårt de får dras, som man bör känna till innan man drar åt.</div>
+        <h3>Hårdhetsprovning</h3>
+        <p>Hårdhet är materialets förmåga att motstå intryck av ett hårdare föremål. De vanligaste metoderna är Brinell-, Rockwell- och Vickersprovning.</p>
+        <h3>Oförstörande provningsmetoder</h3>
+        <p>Används för att hitta fel inne i materialet utan att förstöra det, t.ex. blåsor, sprickor eller porer:</p>
+        <ul>
+          <li><b>Radiografi</b> — röntgenstrålar sänds genom provföremålet mot en fotografisk film; sprickor gör att strålarna passerar lättare, vilket ökar svärtningen på filmen.</li>
+          <li><b>Ultraljudsprovning</b> — en ultraljudvåg skickas genom materialet och reflekteras vid sprickor eller andra fel, vilket avläses i ett oscilloskop.</li>
+          <li><b>Magnetpulverprovning</b> — provstycket magnetiseras och järnpulver strös på; sprickor stör magnetfältet och syns som mörka ränder.</li>
+          <li><b>Provning med penetrant</b> — en färgad vätska tränger in i ytliga sprickor och avslöjas när ett vitt pulver sprutas på ytan.</li>
+        </ul>
+
+    <h2 id="materialstandard"><span class="num">05</span>Materialstandard</h2>
+<p>Standardisering skapar regler för att lösa återkommande, gemensamma tekniska och ekonomiska problem — bland annat genom att definiera begrepp, säkerställa utbytbarhet, begränsa onödiga varianter och skapa entydiga provningsmetoder. Standardisering underlättar tekniskt samarbete mellan företag och länder.</p>
+        <h3>Standardnivåer</h3>
+        <ul>
+          <li><b>Internationell standard</b> — ISO</li>
+          <li><b>Europeisk standard</b> — EN (utförs av CEN i Bryssel)</li>
+          <li><b>Nationell standard</b> — SS (Sverige), DIN, NS</li>
+          <li><b>Företagsstandard</b> — t.ex. Scania, Volvo</li>
+        </ul>
+        <p>I Sverige utarbetas och fastställs svensk metallstandard av SIS, Swedish Standards Institute, som ansvarar för den svenska bevakningen av arbetet inom CEN och ISO. Godkänns en europastandard i CEN måste medlemsländerna införa den; i Sverige får den beteckningen SS-EN.</p>
+        <h3>Stålbeteckningar enligt EN 10027</h3>
+        <p>Stålbeteckningar delas in i två grupper: <b>grupp 1</b> bygger på användningsområde och hållfasthet, och <b>grupp 2</b> bygger på kemisk sammansättning (t.ex. C35E — olegerat stål med 0,35 % kolhalt). Rostfria stål har i Europastandarden beteckningen 1.4xxx.</p>
+        <p>Grupp 1-beteckningen består av en bokstav som visar ståltyp, samt tre siffror som anger stålets minsta sträckgräns i MPa (N/mm²). Därefter följer bokstäver/siffror som anger ytterligare egenskaper.</p>
+        <table class="ref-table">
+          <thead><tr><th>Kod</th><th>Ståltyp</th><th>Exempel</th></tr></thead>
+          <tbody>
+            <tr><td>S</td><td>Allmänna konstruktionsstål</td><td>S355JR</td></tr>
+            <tr><td>P</td><td>Tryckkärlsstål</td><td>P265NH</td></tr>
+            <tr><td>L</td><td>Rörledningsstål</td><td>L360NA</td></tr>
+            <tr><td>E</td><td>Maskinstål</td><td>E295</td></tr>
+            <tr><td>G</td><td>Gjutstål</td><td>GP240GH</td></tr>
+          </tbody>
+        </table>
+        <p><b>Exempel:</b> beteckningen <b>SS-EN 10025-S235JRG2</b> betyder: <i>Stål</i> = materialgrupp, <i>SS-EN 10025</i> = stålet följer Europanorm 10025 antagen som Svensk Standard, <i>S</i> = allmänt konstruktionsstål, <i>235</i> = minsta sträckgräns 235 MPa, <i>JR</i> = slagseghetskrav vid 20 °C, <i>G2</i> = tilläggskrav (tätat/halvtätat).</p>
+        <h4 style="font-size:14px; color:var(--text); margin:14px 0 6px;">Slagseghetskrav</h4>
+        <table class="ref-table">
+          <thead><tr><th>Kod</th><th>Temp (°C)</th></tr></thead>
+          <tbody>
+            <tr><td>JR</td><td>20</td></tr>
+            <tr><td>J0</td><td>0</td></tr>
+            <tr><td>J2</td><td>−20</td></tr>
+            <tr><td>J3</td><td>−30</td></tr>
+            <tr><td>J4</td><td>−40</td></tr>
+            <tr><td>J5</td><td>−50</td></tr>
+            <tr><td>J6</td><td>−60</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:13.5px; color:var(--muted);">Bokstaven J anger ett slagseghetskrav på 27 J. Ibland är kravet 40 J, vilket i stället markeras med bokstaven K. Bokstaven Q kan förekomma för seghärdat och anlöpt material.</p>
+        <h4 style="font-size:14px; color:var(--text); margin:14px 0 6px;">Tilläggskrav</h4>
+        <table class="ref-table">
+          <thead><tr><th>Kod</th><th>Krav</th></tr></thead>
+          <tbody>
+            <tr><td>E</td><td>Anlöpt</td></tr>
+            <tr><td>C</td><td>Material för kallformning</td></tr>
+            <tr><td>G1</td><td>Otätat</td></tr>
+            <tr><td>G2</td><td>Tätat/halvtätat</td></tr>
+            <tr><td>G3</td><td>Plåt: normaliserat eller temperaturkontrollerat valsat. Profiler: valfritt leveranstillstånd om annat ej avtalat</td></tr>
+            <tr><td>G4</td><td>Valfritt leveranstillstånd för producenten, om annat ej avtalat</td></tr>
+            <tr><td>H</td><td>Termomekaniskt behandlat</td></tr>
+            <tr><td>N</td><td>Normaliserat</td></tr>
+            <tr><td>0</td><td>Offshoreapplikation</td></tr>
+            <tr><td>Q</td><td>Seghärdat</td></tr>
+            <tr><td>S</td><td>Skeppsapplikation</td></tr>
+            <tr><td>W</td><td>Väderbeständigt</td></tr>
+          </tbody>
+        </table>
+        <h3>Färgmärkning</h3>
+        <p>Material färgmärks enligt materialtillverkarnas egna system, för att underlätta för operatörer att välja rätt kvalitet och undvika att t.ex. blanda samman ett automatstål med ett konstruktionsstål. Om färgmärkningen kapas bort vid bearbetning måste den märkas på igen enligt det system man följer.</p>
+
+    <h2 id="metalliska_material"><span class="num">06</span>Metalliska material</h2>
+<h3>Stål</h3>
+        <p>Stål består till största delen av järn, med kol som det vanligaste och viktigaste legeringsämnet (oftast under 2 %). Ibland används ordet järn när man egentligen menar stål, t.ex. i uttrycken armeringsjärn och handelsjärn. Stål kan framställas antingen olegerat (kolstål, vanligen 0,1–1,3 % kol, med tillåtna spår av kisel/mangan/fosfor/svavel) eller legerat (högst 2,0 % kol plus tillsatser av ett eller flera legeringsämnen som kisel, mangan, krom, nickel, molybden, wolfram, kobolt och vanadin). Man skiljer på låglegerade stål (låga legeringshalter) och höglegerade stål (höga legeringshalter) — till de höglegerade hör bland annat de rostfria stålen.</p>
+        <table class="ref-table">
+          <thead><tr><th>Ämne</th><th>Inverkan på stålet</th></tr></thead>
+          <tbody>
+            <tr><td>Kol (C)</td><td>Med stigande kolhalt höjs hårdhet och hållfasthet, medan seghet och svetsbarhet minskas.</td></tr>
+            <tr><td>Kisel (Si)</td><td>Höjer hållfastheten och förbättrar härdbarheten.</td></tr>
+            <tr><td>Mangan (Mn)</td><td>Höjer hållfasthet och motstånd mot slitage. Förbättrar härdbarheten.</td></tr>
+            <tr><td>Krom (Cr)</td><td>Höjer hårdhet, hållfasthet och seghet. Förbättrar härdbarheten. Halter över 12 % ger gott korrosionsmotstånd, s.k. rostfrihet.</td></tr>
+            <tr><td>Nickel (Ni)</td><td>Höjer hållfasthet och seghet. Förbättrar härdbarhet och korrosionsmotstånd.</td></tr>
+            <tr><td>Molybden (Mo)</td><td>Höjer hållfastheten. Förbättrar härdbarhet och korrosionsmotstånd.</td></tr>
+            <tr><td>Wolfram (W)</td><td>Förbättrar härdbarheten. Bildar med kol hård wolframkarbid som höjer slitstyrkan.</td></tr>
+            <tr><td>Kobolt (Co)</td><td>Höjer hållfasthet och seghet. Förbättrar korrosionsmotståndet.</td></tr>
+            <tr><td>Vanadin (V)</td><td>Höjer hållfasthet och seghet. Ger fin materialstruktur.</td></tr>
+          </tbody>
+        </table>
+        <p>Man delar in stålen efter användningsområde i tre huvudgrupper: <b>konstruktionsstål</b>, <b>verktygsstål</b> och <b>rostfria stål</b>.</p>
+        <h4 style="font-size:14px; color:var(--text); margin:14px 0 6px;">Konstruktionsstål</h4>
+        <p>Konstruktionsstål har låg kolhalt (i regel 0,1–0,6 %, en del svetsstål ner mot 0,02 % för att vara svetsbara). De tillverkas olegerade eller låglegerade och används till bärande konstruktioner (t.ex. broar), tryckkärl, fartygsskrov och maskindetaljer. Önskvärda egenskaper är god hållfasthet, slagseghet och svetsbarhet. Gruppen delas vidare in i:</p>
+        <ul>
+          <li><b>Allmänna konstruktionsstål</b> — relativt låg kolhalt (max 0,2 %), ganska sega, god svetsbarhet. Tillverkas som kolstål, kolmanganstål, mikrolegerade finkornsstål, seghärdade stål och borstål. Används i bärande konstruktioner, kranar, transportfordon, master, tankar och stolpar. Levereras bland annat som varmvalsad grovplåt, varmvalsad/kallvalsad tunnplåt och metallbelagd plåt.</li>
+          <li><b>Tryckkärlsstål</b> — låg kolhalt (max 0,2 %) och hög seghet, klarar temperaturer från −50 °C till 700 °C utan att förlora hållfasthet eller seghet. Används till gasflaskor, tryckluftsbehållare, ångpannor och vakuumkärl.</li>
+          <li><b>Maskinstål</b> — lätta att bearbeta och forma (svarva, fräsa, smida), kolhalt 0,25–0,60 %. Inte lämpliga att svetsa eller härda. Används till axlar, skruvar, muttrar och lastkrokar.</li>
+          <li><b>Seghärdningsstål</b> — kolhalt 0,25–0,45 %, ofta legerat med krom, nickel och molybden. Används till vev- och excenteraxlar, vevstakar, kolvstänger och kugghjul, som härdas i olja och anlöps vid 550–675 °C.</li>
+          <li><b>Sätthärdningsstål</b> — låg kolhalt (ca 0,2 %), legerat med ca 1 % mangan/krom/nickel/molybden. Ytan uppkolas och härdas till en hård yta med seg, mjuk kärna. Används till kugghjul, verktygsfästen, vevtappar och kamaxlar.</li>
+          <li><b>Fjäderstål</b> — legerat med krom, vanadin och molybden för mycket hög hållfasthet. Används till fjädrar och pianotråd.</li>
+          <li><b>Automatstål</b> — låg kolhalt, legerat med svavel och bly för korta spån och höga skärhastigheter. Används till detaljer som masstillverkas i CNC-maskiner, t.ex. skruvar, muttrar, nipplar och axlar.</li>
+        </ul>
+        <h4 style="font-size:14px; color:var(--text); margin:14px 0 6px;">Verktygsstål</h4>
+        <p>Verktygsstål har kolhalt mellan 0,6 och 1,2 %, högre än konstruktionsstål. De levereras glödgade och härdas innan användning, och är legerade med krom, molybden, wolfram och vanadin för god slitstyrka, eggskärpa, hårdhet och seghet. Används till borrar, fräsar, svarvstål, mejslar, filar och gängtappar, samt fixturer och gjutformar. I gruppen ingår även <b>snabbstålen</b>, med höga legeringshalter av krom, wolfram, kobolt och vanadin, för god slitstyrka vid förhöjd temperatur.</p>
+        <h4 style="font-size:14px; color:var(--text); margin:14px 0 6px;">Rostfria stål</h4>
+        <p>Rostfria stål innehåller minst 12 % krom (samt ofta nickel och molybden) och rostar därför inte. Används till diskbänkar, tvättmaskinsdetaljer, bryggerikärl, ång- och vattenturbindelar, rör, bestick, saxar och knivar. De delas in i tre kategorier beroende på materialstruktur, som styrs av blandningen av järn/kol och värmebehandlingen.</p>
+        <h3>Värmebehandling av stål</h3>
+        <p>Genom värmebehandling kan stålets egenskaper ändras kraftigt:</p>
+        <table class="ref-table">
+          <thead><tr><th></th><th>Härdning</th><th>Glödgning</th></tr></thead>
+          <tbody>
+            <tr><td>Effekt</td><td>Gör stålet hårt, ökar hållfastheten, förbättrar slitstyrkan</td><td>Gör stålet mjukt och spänningsfritt, ökar formbarheten, ger finkornig struktur</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li><b>Härdning</b> — stålet värms upp och kyls sedan hastigt (i vatten, olja eller gas), vilket ger en hård men spröd struktur (martensit).</li>
+          <li><b>Anlöpning</b> — utförs alltid efter härdning; stålet värms upp igen till en lägre temperatur för att minska sprödheten och öka segheten.</li>
+          <li><b>Glödgning</b> — görs för att göra stålet mjukt eller återställa strukturen efter bearbetning eller felaktig värmebehandling (normalisering, mjukglödgning, avspänningsglödgning).</li>
+          <li><b>Ythärdning</b> — t.ex. sätthärdning, karbonitrering, gasnitrering, plasmanitrering, flamhärdning och induktionshärdning ger en hård yta samtidigt som kärnan förblir seg.</li>
+        </ul>
+        <h3>Gjutjärn</h3>
+        <p>Gjutjärn är legeringar av järn och kol med mer än 2 % kol (vanligtvis 2,5–4 %), och används för gjutning av detaljer i sandform eller kokill. Till gruppen hör:</p>
+        <ul>
+          <li><b>Gråjärn</b> — vanligast, kolhalt 2,9–3,8 %, relativt hög hållfasthet men låg seghet. God dämpning mot vibrationer och buller, gott motstånd mot nötning, lätt att svarva/fräsa/borra med korta spån.</li>
+          <li><b>Segjärn</b> — tillsats av magnesium ger bättre hållfasthet och seghet än gråjärn, med struktur (kulformig grafit) som gör den mindre sprickbenägen. Har ersatt gjutgods av gråjärn inom många områden.</li>
+          <li><b>Aducerjärn</b> — utgår från vitjärn som värmebehandlas (aduceras). Mjukt och relativt segt, med bättre skärbarhet än de flesta andra gjutjärn.</li>
+          <li><b>Vitjärn</b> — mycket hårt och sprött med vit brottyta, svårt att bearbeta med skärande verktyg och går inte att svetsa. God slitstyrka.</li>
+        </ul>
+        <h3>Pulvermetaller: hårdmetall och snabbstål</h3>
+        <p>En pulvermetall framställs genom att metallpulver blandas, pressas och värmebehandlas (sintras) till slutlig form. <b>Hårdmetall (HM)</b> består av metallkarbider (vanligen wolfram och titan) bundna med kobolt eller nickel, med mycket liten porandel (under 0,02 % av volymen). Används mest till skärverktyg och skärplattor, samt bergborrar och slitskydd. Hårdmetall delas in i P-, M- och K-grupperna beroende på vilket material som ska bearbetas. <b>Snabbstål (HSS, High Speed Steel)</b> behåller sin hårdhet upp till 600 °C tack vare hög halt av wolfram, krom, molybden och vanadin, och lämpar sig därför bra till bearbetande verktyg som svarvstål, fräsar, borrar och gängtappar. Hårdmetall och snabbstål är alltså material i skärande verktyg, inte egna materialgrupper i sig.</p>
+
+    <h2 id="materialbeteckningar"><span class="num">07</span>Materialbeteckningar &amp; smältpunkter</h2>
+<p>Olika materialgrupper har olika europeiska beteckningssystem (EN), men principen är ofta densamma: en bokstav anger materialfamiljen, en bokstav eller siffra anger tillverkningssätt, ett nummer identifierar den specifika legeringen, en kemisk beteckning inom hakparentes visar sammansättningen, och en tillståndsbeteckning visar hur materialet är värmebehandlat. Ett aluminiumexempel: <b>EN AW-6082 [AlSiMgMn] T6</b> — A = aluminium, W = plastiskt bearbetad (Wrought), 6082 = legeringsnummer, AlSiMgMn = kemisk beteckning (huvudlegeringsämnen kisel/magnesium/mangan), T6 = tillståndsbeteckning (lösningsglödgad och konstgjort åldrad).</p>
+        <table class="ref-table">
+          <thead><tr><th>Materialgrupp</th><th>Exempel på EN-beteckning</th><th>Kemisk/materialtyp</th><th>Tillstånd</th><th>Smältpunkt</th><th>Färgmärkning / ISO-grupp</th></tr></thead>
+          <tbody>
+            <tr><td>Konstruktionsstål</td><td>S355J2 (1.0577)</td><td>Olegerat/låglegerat, sträckgräns 355 MPa</td><td>Normaliserat/valsat</td><td>ca 1 470–1 520 °C</td><td class="color-cell"><span class="chip-line"><span class="color-chip" style="background:#1a1a1a;"></span>Svart</span><span class="chip-line"><span class="iso-chip mini" style="background:#1f5fa8; color:#fff;">P</span>Stål</span></td></tr>
+            <tr><td>Automatstål</td><td>11SMnPb30 (1.0715)</td><td>Låg kolhalt, legerat med svavel och bly</td><td>Kallbearbetat/dragen stång</td><td>ca 1 460–1 500 °C</td><td class="color-cell"><span class="chip-line"><span class="color-chip" style="background:#e8720c;"></span>Orange</span><span class="chip-line"><span class="iso-chip mini" style="background:#1f5fa8; color:#fff;">P</span>Stål</span></td></tr>
+            <tr><td>Sätthärdningsstål</td><td>16MnCr5 (1.7131)</td><td>Låg kolhalt, mangan/krom</td><td>Sätthärdat, ythärdat</td><td>ca 1 450–1 500 °C</td><td class="color-cell"><span class="chip-line" style="color:var(--muted); font-size:13px;">– (ej i källan)</span><span class="chip-line"><span class="iso-chip mini" style="background:#1f5fa8; color:#fff;">P</span>Stål</span></td></tr>
+            <tr><td>Seghärdningsstål</td><td>42CrMo4 (1.7225)</td><td>Krom/molybden-legerat</td><td>Seghärdat (härdat + anlöpt)</td><td>ca 1 420–1 460 °C</td><td class="color-cell"><span class="chip-line"><span class="color-chip" style="background:#a05a2c;"></span>Orangebrun</span><span class="chip-line"><span class="iso-chip mini" style="background:#1f5fa8; color:#fff;">P</span>Stål</span></td></tr>
+            <tr><td>Fjäderstål</td><td>51CrV4 (1.8159)</td><td>Krom/vanadin-legerat</td><td>Seghärdat</td><td>ca 1 400–1 450 °C</td><td class="color-cell"><span class="chip-line" style="color:var(--muted); font-size:13px;">– (ej i källan)</span><span class="chip-line"><span class="iso-chip mini" style="background:#1f5fa8; color:#fff;">P</span>Stål</span></td></tr>
+            <tr><td>Verktygsstål</td><td>X153CrMoV12 (1.2379)</td><td>Höglegerat kallarbetsstål (X = höglegerat)</td><td>Glödgat / härdat och anlöpt</td><td>ca 1 300–1 400 °C</td><td class="color-cell"><span class="chip-line"><span class="color-chip" style="background:linear-gradient(90deg,#ffffff 50%,#f2d90f 50%);"></span>Vit/gul</span><span class="chip-line"><span class="iso-chip mini" style="background:#1f5fa8; color:#fff;">P</span>Stål (H om härdat)</span></td></tr>
+            <tr><td>Rostfria stål</td><td>X5CrNi18-10 (1.4301)</td><td>Krom 18 %, nickel 10 %</td><td>Lösningsglödgat</td><td>ca 1 400–1 450 °C</td><td class="color-cell"><span class="chip-line" style="color:var(--muted); font-size:13px;">– (ej i källan)</span><span class="chip-line"><span class="iso-chip mini" style="background:#f5d90f; color:#1a1a1a;">M</span>Rostfritt</span></td></tr>
+            <tr><td>Gjutjärn (gråjärn)</td><td>EN-GJL-250 (5.1201)</td><td>Lamellgrafit, brottgräns 250 MPa</td><td>Som gjutet</td><td>ca 1 150–1 250 °C</td><td class="color-cell"><span class="chip-line"><span class="color-chip" style="background:#f2f2ee;"></span>Signalvitt</span><span class="chip-line"><span class="iso-chip mini" style="background:#c0392b; color:#fff;">K</span>Gjutjärn</span></td></tr>
+            <tr><td>Gjutjärn (segjärn)</td><td>EN-GJS-400-15 (5.3103)</td><td>Nodulär (kulformig) grafit</td><td>Som gjutet / glödgat</td><td>ca 1 150–1 250 °C</td><td class="color-cell"><span class="chip-line" style="color:var(--muted); font-size:13px;">– (ej i källan)</span><span class="chip-line"><span class="iso-chip mini" style="background:#c0392b; color:#fff;">K</span>Gjutjärn</span></td></tr>
+            <tr><td>Koppar</td><td>CW024A [Cu-ETP]</td><td>C = kopparlegering, W = plastiskt bearbetad</td><td>Halvhårt/mjukglödgat</td><td>1 083 °C</td><td class="color-cell"><span class="chip-line"><span class="iso-chip mini" style="background:#5fa88f; color:#0f1115;">N</span>Icke-järn</span></td></tr>
+            <tr><td>Aluminium</td><td>EN AW-6082 [AlSiMgMn] T6</td><td>A = aluminium, W = plastiskt bearbetad</td><td>T6 = lösningsglödgad, konstgjort åldrad</td><td>ca 555–650 °C (smältintervall)</td><td class="color-cell"><span class="chip-line"><span class="iso-chip mini" style="background:#5fa88f; color:#0f1115;">N</span>Icke-järn</span></td></tr>
+            <tr><td>Plaster</td><td>PA66, PE-HD, POM, PTFE, PMMA …</td><td>Kortform enligt ISO 1043 (ej EN-legeringssystem)</td><td>Anges ej med tillståndsbeteckning</td><td>ca 130–330 °C (mjuknar/smälter olika beroende på plasttyp)</td><td class="color-cell"><span class="chip-line" style="color:var(--muted); font-size:13px;">– (ej del av ISO 513)</span></td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:13px; color:var(--muted);">Materialnummer inom parentes (t.ex. 1.7225) är det sifferbaserade EN-materialnumret som ofta anges tillsammans med bokstavsbeteckningen för att entydigt identifiera legeringen. Plaster följer ett annat system (ISO 1043) med korta bokstavsbeteckningar snarare än EN:s legeringsnummer, eftersom plaster inte är metallegeringar.</p>
+        <p style="font-size:13px; color:var(--muted);">Färgmärkningen ovan är hämtad från en stålleverantörs (Stena/Tibnor-typ) egen färgmärkningstabell för stångmaterial. Färgmärkning av material är <strong>inte standardiserad</strong> — den skiljer sig mellan olika leverantörer, så färgen gäller endast som exempel på hur ändmärkning i praktiken kan se ut, inte som en allmängiltig regel. Rader märkta "ej i källan" fanns inte med i den färgtabell som använts (t.ex. avvek legeringen något, som 16NiCr54 istället för 16MnCr5). ISO-gruppen är däremot en internationell standard (ISO 513) och gäller oavsett leverantör — se avsnittet nedan.</p>
+
+    <h2 id="iso513"><span class="num">08</span>Materialgrupper enligt ISO 513 (P–M–K–N–S–H)</h2>
+<p>Vid val av skärverktyg och skärdata delas arbetsmaterial in i sex internationella materialgrupper enligt ISO 513. Varje grupp har en egen färgkod som återkommer på skärplattor, verktygskataloger och maskinskyltar oavsett tillverkare.</p>
+<div class="iso-grid">
+  <div class="iso-card"><span class="iso-chip" style="background:#1f5fa8; color:#fff;">P</span><div><h3>P — Stål</h3><p>Den största materialgruppen inom skärande bearbetning, allt från olegerat till höglegerat stål. Bearbetbarheten är oftast god men varierar en hel del mellan olika stålsorter.</p></div></div>
+  <div class="iso-card"><span class="iso-chip" style="background:#f5d90f; color:#1a1a1a;">M</span><div><h3>M — Rostfritt stål</h3><p>Legerat med minst 12 % krom, ofta även nickel och molybden. Delas in efter struktur: ferritiskt, martensitiskt, austenitiskt eller duplext.</p></div></div>
+  <div class="iso-card"><span class="iso-chip" style="background:#c0392b; color:#fff;">K</span><div><h3>K — Gjutjärn</h3><p>Ger kortare spånor än stål. Grått och aducerbart gjutjärn är relativt lätta att bearbeta, medan segjärn och kompaktgrafitjärn är svårare. Kiselkarbid i materialet nöter hårt på skäreggen.</p></div></div>
+  <div class="iso-card"><span class="iso-chip" style="background:#5fa88f; color:#0f1115;">N</span><div><h3>N — Icke-järnmetaller</h3><p>Mjukare metaller som aluminium, koppar och mässing. Kiselhaltigt aluminium sliter mycket på eggen. Tillåter i regel höga skärhastigheter med vassa eggeometrier.</p></div></div>
+  <div class="iso-card"><span class="iso-chip" style="background:#f0be93; color:#1a1a1a;">S</span><div><h3>S — Superlegeringar</h3><p>Värmehärdiga legeringar baserade på järn, nickel, kobolt eller titan. Klibbar lätt, bildar löseggar, hårdnar under bearbetning och genererar mycket värme.</p></div></div>
+  <div class="iso-card"><span class="iso-chip" style="background:#d7dbe0; color:#1a1a1a;">H</span><div><h3>H — Härdade material</h3><p>Stål härdat till 45–65 HRc samt kokillhärdat gjutjärn på ungefär 400–600 HB. Den höga hårdheten gör materialet svårbearbetat, värmealstrande och mycket nötande på eggen.</p></div></div>
+</div>
+
+
+  </article>
+  <div class="footcta">
+    <div class="ft-txt">Läs igenom materialet, testa sedan dina kunskaper i quizet för Materialkunskap.</div>
+    <a class="btn btn-amber" style="background:#e0584f;" href="../quiz/materialkunskap.html">Starta quiz &rarr;</a>
+  </div>
+</main>
+
+<script src="../../../assets/site.js"></script>
+</body>
+</html>

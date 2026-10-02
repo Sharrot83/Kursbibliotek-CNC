@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kursbibliotek — Kurser</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<main class="wrap">
+  <header class="page-head">
+    <div class="eyebrow">Kursbibliotek</div>
+    <h1>Välj din kurs</h1>
+    <div class="sub">Kursmaterial och övningsquiz, samlat på ett ställe. Använd rullistan högst upp för att byta kurs när som helst.</div>
+  </header>
+
+  <div class="grid" id="courseGrid"></div>
+</main>
+
+<script src="assets/site.js"></script>
+<script>
+  const grid = document.getElementById('courseGrid');
+  grid.innerHTML = COURSES.map(c => {
+    const disabled = c.status === 'coming-soon';
+    const href = `courses/${c.id}/material.html`;
+    const inner = `
+      <span class="corner">#${c.id}</span>
+      <span class="tag" style="color:${c.color}">${c.tag}</span>
+      <h2>${c.title}</h2>
+      <p>${c.desc}</p>
+      <div class="meta">
+        <span>${c.chapters} kapitel</span>
+        ${disabled ? '<span>· Kommer snart</span>' : '<span>· Material + quiz</span>'}
+      </div>
+    `;
+    return disabled
+      ? `<div class="course-card disabled" style="--accent:${c.color}">${inner}</div>`
+      : `<a class="course-card" style="--accent:${c.color}" href="${href}">${inner}</a>`;
+  }).join('');
+</script>
+</body>
+</html>

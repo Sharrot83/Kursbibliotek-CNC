@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Säkra Lyft — Övningsquiz</title>
+<style>
+  :root{
+    --bg: #161b21;
+    --panel: #1f2730;
+    --panel-2: #26303b;
+    --line: #333e4a;
+    --text: #e9edf1;
+    --muted: #93a1ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+    --cyan: #59c3d6;
+    --cyan-dim: #1a3a40;
+    --lime: #a3c95a;
+    --lime-dim: #2e3a1a;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+    --cyan: #3f97ab;
+    --cyan-dim: #e2f2f5;
+    --lime: #6f8f2f;
+    --lime-dim: #eef3e0;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(1200px 500px at 15% -10%, #24303c 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, #2a2119 0%, transparent 55%),
+      var(--bg);
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      radial-gradient(1200px 500px at 15% -10%, #dce6f0 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+  }
+
+  .wrap{max-width:780px; margin:0 auto; padding:28px 20px 80px;}
+
+  header{margin-bottom:22px;}
+  .eyebrow{
+    font-family: "Arial Narrow", Arial, sans-serif;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    font-size:12px;
+    color:var(--amber);
+    font-weight:700;
+    display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family: "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    font-weight:800;
+    font-size: clamp(26px, 6vw, 38px);
+    letter-spacing:-0.01em;
+    margin: 6px 0 4px;
+    line-height:1.05;
+  }
+  .sub{color:var(--muted); font-size:15px; max-width:60ch;}
+  .pool-note{
+    margin-top:10px; font-size:13px; color:var(--amber); font-weight:600;
+    background:var(--amber-dim); display:inline-block; padding:5px 12px; border-radius:8px;
+  }
+
+  .tabs{display:flex; gap:8px; margin:22px 0 18px; flex-wrap:wrap;}
+  .tab{
+    padding:8px 13px; border-radius:999px; border:1px solid var(--line);
+    background:var(--panel); color:var(--muted); font-size:13px; font-weight:600;
+    cursor:pointer; transition:.15s;
+  }
+  .tab[data-active="true"]{
+    background:var(--amber); border-color:var(--amber); color:#1a1105;
+  }
+  .tab:hover:not([data-active="true"]){border-color:var(--amber); color:var(--text);}
+
+  .progress-row{display:flex; align-items:center; gap:10px; margin:4px 0 20px;}
+  .progress-track{flex:1; height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden;}
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--amber), var(--green)); width:0%; transition:width .25s;}
+  .progress-label{font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap;}
+
+  .card{
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:26px 24px;
+    box-shadow: 0 20px 40px -25px rgba(0,0,0,.6);
+  }
+  .qmeta{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;}
+  .qtag{
+    font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; font-weight:700;
+    padding:4px 9px; border-radius:6px;
+  }
+  .qnum{color:var(--muted); font-size:13px;}
+
+  .prompt{font-size:18.5px; font-weight:600; line-height:1.4; margin-bottom:18px;}
+
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .opt{
+    text-align:left;
+    padding:13px 15px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:#1a222b;
+    color:var(--text);
+    font-size:15px;
+    cursor:pointer;
+    transition:.12s;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .opt:hover:not([disabled]){border-color:var(--amber); background:#212b35;}
+  .opt .k{
+    flex:0 0 auto; width:22px; height:22px; border-radius:6px; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--muted); font-weight:700;
+  }
+  .opt[disabled]{cursor:default;}
+  .opt.correct{border-color:var(--green); background:var(--green-dim);}
+  .opt.correct .k{border-color:var(--green); color:var(--green); background:#122a1a;}
+  .opt.wrong{border-color:var(--red); background:var(--red-dim);}
+  .opt.wrong .k{border-color:var(--red); color:var(--red); background:#2a1513;}
+
+  .feedback{margin-top:16px; padding:14px 16px; border-radius:10px; font-size:14.5px; line-height:1.5; display:none;}
+  .feedback.show{display:block;}
+  .feedback.ok{background:var(--green-dim); border:1px solid #2f6b47; color:#cdeed9;}
+  .feedback.bad{background:var(--red-dim); border:1px solid #7a3833; color:#f3d2ce;}
+  .feedback b{display:block; margin-bottom:3px; font-size:13px; text-transform:uppercase; letter-spacing:.06em;}
+
+  .controls{display:flex; justify-content:flex-end; margin-top:20px;}
+  button.next{
+    background:var(--amber); color:#1a1105; border:none; padding:11px 22px;
+    border-radius:9px; font-weight:700; font-size:14.5px; cursor:pointer;
+  }
+  button.next:disabled{background:var(--panel-2); color:var(--muted); cursor:not-allowed;}
+  button.next:hover:not(:disabled){filter:brightness(1.08);}
+
+  .result{text-align:center; padding:20px 10px 10px;}
+  .result .big{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; font-size:56px; color:var(--amber); line-height:1;}
+  .result .of{color:var(--muted); font-size:15px; margin-top:6px;}
+  .review{margin-top:26px; text-align:left; display:flex; flex-direction:column; gap:10px;}
+  .review-item{border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-size:14px;}
+  .review-item.ok{border-left:3px solid var(--green);}
+  .review-item.bad{border-left:3px solid var(--red);}
+  .review-item .q{font-weight:600; margin-bottom:4px;}
+  .review-item .a{color:var(--muted);}
+  .restart{
+    margin-top:24px; background:none; border:1px solid var(--line); color:var(--text);
+    padding:10px 20px; border-radius:9px; cursor:pointer; font-size:14px; font-weight:600;
+  }
+  .restart:hover{border-color:var(--amber); color:var(--amber);}
+
+  footer{text-align:center; color:var(--muted); font-size:12px; margin-top:36px;}
+
+  /* --- shared topbar / crumbs / buttons (site-wide) --- */
+  .topbar{position:sticky; top:0; z-index:50; background:rgba(22,27,33,.9); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:780px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+  .crumbs{font-size:12.5px; color:var(--muted); display:flex; gap:6px; align-items:center;}
+  .crumbs a{color:var(--muted); text-decoration:none;}
+  .crumbs a:hover{color:var(--amber);}
+  .btn-row{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
+  .btn{display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px; font-weight:700; font-size:13.5px; text-decoration:none; border:1px solid var(--line); background:var(--panel); color:var(--text);}
+  .btn:hover{border-color:var(--amber);}
+</style>
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+<main class="wrap">
+  <div class="crumbs" style="margin-bottom:8px;"><a href="../../index.html">Kurser</a> / <a href="material.html">Säkra Lyft</a> / Quiz</div>
+  <header>
+    <div class="eyebrow">Övningsquiz · Offline</div>
+    <h1>Säkra Lyft</h1>
+    <div class="sub">Frågor om kursintroduktion, krantyper, säkerhet på kranarna, kontroll &amp; underhåll, arbetssätt, roller vid lyftarbete, lyftredskap, tabeller &amp; koppling av last samt lagar och arbetsmiljö. Fungerar helt utan internetuppkoppling.</div>
+    <div class="pool-note" id="poolNote"></div>
+    <div class="btn-row"><a class="btn ghost" href="material.html">← Till kursmaterialet</a></div>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 0</div>
+  </div>
+
+  <div class="card" id="card"></div>
+
+  <footer>Svara i din egen takt — resultatet sparas inte och skickas ingenstans.</footer>
+</main>
+
+<script>
+const QUIZ_LENGTH = 30;
+
+const CAT_META = {
+  intro:      {label:"Kursintroduktion", color:"var(--blue)", bg:"var(--blue-dim)"},
+  krantyper:  {label:"Krantyper & uppbyggnad", color:"var(--teal)", bg:"var(--teal-dim)"},
+  saker_kran: {label:"Säkerheten på kranarna", color:"var(--amber)", bg:"var(--amber-dim)"},
+  kontroll:   {label:"Kontroll, underhåll & tillsyn", color:"var(--purple)", bg:"var(--purple-dim)"},
+  arbetssatt: {label:"Arbetssätt & riskbedömning", color:"var(--pink)", bg:"var(--pink-dim)"},
+  roller:     {label:"Säkra lyft & roller", color:"var(--green)", bg:"var(--green-dim)"},
+  redskap:    {label:"Lyftredskap & tillbehör", color:"var(--cyan)", bg:"var(--cyan-dim)"},
+  tabeller:   {label:"Tabeller & koppling av last", color:"var(--lime)", bg:"var(--lime-dim)"},
+  ansvar:     {label:"Säkerhet, PPE & brand", color:"var(--red)", bg:"var(--red-dim)"},
+  lagar:      {label:"Lagar & arbetsmiljö", color:"var(--purple)", bg:"var(--purple-dim)"}
+};
+
+const QUESTIONS = {
+  intro: [
+    {q:"Vad är huvudsyftet med kursen Säkra Lyft?", opts:["Att lära ut ett snabbare sätt att köra kran", "Att minska risken för arbetsplatsolyckor och skador relaterade till lyftarbete", "Att ersätta besiktningar av lyftanordningar", "Att endast repetera lagtext"], correct:1, fb:"Syftet är att minska risken för arbetsplatsolyckor och skador relaterade till lyftarbete genom ökad medvetenhet och kunskap om säkra lyftmetoder."},
+    {q:"Vilka personliga grundkrav gäller för att delta i kursen?", opts:["Minst 20 år och truckkort", "Fyllt 18 år och grundläggande förståelse för arbetsmiljö och säkerhet", "Fem års erfarenhet av kranarbete", "Ingenjörsexamen"], correct:1, fb:"Deltagaren ska ha fyllt 18 år och ha en grundläggande förståelse för arbetsmiljö och säkerhet. Inga förkunskaper om lyftutrustning krävs."},
+    {q:"Vems ansvar är det vanligtvis att den anställde går utbildningen Säkra Lyft?", opts:["Den anställdes eget ansvar helt och hållet", "Arbetsgivarens ansvar", "Skyddsombudets ansvar", "Arbetsmiljöverkets ansvar"], correct:1, fb:"Det är vanligtvis arbetsgivarens ansvar att se till att anställda genomgår nödvändig utbildning för de arbetsuppgifter de ska utföra."},
+    {q:"Hur länge är utbildningsbeviset för Säkra Lyft giltigt?", opts:["Två år", "Tre år", "Fem år", "Tio år"], correct:2, fb:"Utbildningsbeviset är giltigt i fem år från utfärdandedatumet."},
+    {q:"Vad krävs för att förlänga giltighetstiden på utbildningsbeviset?", opts:["Inget, det förnyas automatiskt", "En uppföljningskurs eller förnyelsekurs", "Ett nytt körtillstånd för truck", "Enbart ett skriftligt intyg från chefen"], correct:1, fb:"För att förlänga giltighetstiden måste en uppföljningskurs eller förnyelsekurs genomgås som bekräftar att kunskaperna är aktuella."},
+    {q:"Vad gäller enligt svensk lagstiftning för minderårigas arbete med travers/kran?", opts:["Det är helt förbjudet utan undantag", "Det kan tillåtas under vissa omständigheter med speciella tillstånd och strikta säkerhetsåtgärder", "Det är fritt fram från 16 års ålder", "Endast tillåtet på sommarlov"], correct:1, fb:"Minderåriga får under vissa omständigheter utföra arbete som involverar lyftutrustning, men det kräver speciella tillstånd och strikta säkerhetsåtgärder."},
+    {q:"Hur beskrivs kursens uppbyggnad?", opts:["En enda lång föreläsning utan uppdelning", "Flera moduler som avslutas med en kunskapskontroll", "Enbart praktiska övningar utan teori", "Endast självstudier utan uppföljning"], correct:1, fb:"Utbildningen är uppdelad i flera moduler, och varje modul avslutas med en kunskapskontroll för att säkerställa att innehållet förståtts."},
+    {q:"Krävs det förkunskaper om lyftutrustning för att gå kursen?", opts:["Ja, minst ett års erfarenhet krävs", "Nej, inga förkunskaper om lyftutrustning krävs", "Ja, ett skriftligt prov krävs innan start", "Ja, ett godkänt körkort krävs"], correct:1, fb:"Inga förkunskaper om lyftutrustning krävs, men en positiv inställning till lärande värdesätts."},
+    {q:"Vad kombinerar utbildningen enligt kursintroduktionen?", opts:["Enbart teori utan praktik", "Teoretisk kunskap med praktiska övningar", "Enbart fysisk träning", "Endast onlinetester"], correct:1, fb:"Kursen kombinerar teoretisk kunskap med praktiska övningar för att säkerställa att principerna även kan tillämpas i praktiken."},
+    {q:"Vad handlar syftet med kursen om, utöver att följa lagar och regler?", opts:["Att öka produktionstakten till varje pris", "Att ta hand om den egna och andras säkerhet", "Att minska antalet utbildningstillfällen", "Att undvika all dokumentation"], correct:1, fb:"Det handlar inte bara om att följa lagar och regler, utan också om att ta hand om vår egen och andras säkerhet."},
+    {q:"Vilken egenskap lyfts fram som värdefull hos en kursdeltagare, utöver grundkraven?", opts:["Tidigare kranförarcertifikat", "En positiv inställning till lärande och vilja att bidra till en säkrare arbetsplats", "Fysisk styrka över genomsnittet", "Erfarenhet av truckkörning"], correct:1, fb:"En positiv inställning till lärande och en vilja att aktivt bidra till en säkrare arbetsplats ses som värdefulla egenskaper."},
+    {q:"Vad avslutar varje modul i utbildningen?", opts:["En gruppdiskussion", "En kunskapskontroll", "En rast", "Ett prov hos Arbetsmiljöverket"], correct:1, fb:"Varje modul avslutas med en kunskapskontroll för att säkerställa att deltagarna har förstått det viktigaste innehållet."},
+    {q:"Varför anmäler arbetsgivaren ofta den anställde till kursen?", opts:["Det ligger i arbetsgivarens intresse att alla anställda arbetar säkert och effektivt", "Det är ett lagkrav utan koppling till säkerhet", "Enbart för att få bidrag", "Det görs slumpmässigt"], correct:0, fb:"Om man hanterar lyftutrustning i arbetet är det ofta arbetsgivaren som anmäler till kursen, eftersom det ligger i arbetsgivarens intresse att alla arbetar säkert och effektivt."},
+    {q:"Vad täcker utbildningens moduler enligt introduktionen?", opts:["Allt från grunderna i lyftteknik till avancerade tekniker för riskbedömning och ovanliga lyftsituationer", "Enbart historik om kranindustrin", "Enbart ekonomi kring lyftutrustning", "Enbart lagtext utan praktiska exempel"], correct:0, fb:"Utbildningen täcker allt från grunderna i lyftteknik till mer avancerade tekniker för riskbedömning och hantering av ovanliga lyftsituationer."}
+  ],
+  krantyper: [
+    {q:"Vilka fyra krantyper beskrivs som centrala i materialet om olika krantyper?", opts:["Mobilkran, bandkran, tornkran, flaktkran", "Svängkran, konsolkran, telfer och lätt telfer", "Lastbilskran, hamnkran, gaffeltruck, pallyft", "Vajerkran, kedjelyft, block, taljekrok"], correct:1, fb:"Svängkranar, konsolkranar, telfrar och lätt telfrar utgör en vital del av den moderna lyftutrustningsarsenalen."},
+    {q:"Vad kännetecknar en svängkran?", opts:["Den rör sig enbart längs räls i en rak linje", "Den kan rotera laster runt en fast punkt", "Den kan bara lyfta horisontellt, aldrig vertikalt", "Den saknar helt en pelare eller väggmontering"], correct:1, fb:"Svängkranar är kända för sin förmåga att rotera laster runt en fast punkt, med en vertikal pelare och en horisontell svängarm."},
+    {q:"Vad utmärker en konsolkran (jibkran) jämfört med en vanlig svängkran?", opts:["Den kan aldrig monteras på vägg", "Svängarmen är ofta monterad högt upp på vägg eller pelare, vilket frigör golvyta", "Den kan bara användas utomhus", "Den har alltid dubbelt så hög lyftkapacitet"], correct:1, fb:"Konsolkranar liknar svängkranar, men svängarmen är ofta monterad högt upp på en vägg eller pelare, vilket frigör golvyta för trånga arbetsplatser."},
+    {q:"Vilken vinkel kan en väggmonterad konsolkran vanligtvis svänga över?", opts:["Upp till 45 grader", "Upp till 90 grader", "Upp till 180 grader", "Upp till 360 grader"], correct:2, fb:"Väggmonterade konsolkranar kan vanligtvis svänga över upp till 180 grader."},
+    {q:"Vad kännetecknar en telfer?", opts:["En kompakt lyftenhet med motoriserad trumma som hanterar kätting eller wire", "En kran som enbart används utomhus vid hamnar", "Ett verktyg för att mäta lastens vikt", "En typ av bromssystem"], correct:0, fb:"Telfrar är kompakta, mångsidiga lyftenheter med en motoriserad trumma som hanterar en kätting eller wire."},
+    {q:"Vad kännetecknar en lätt telfer jämfört med en vanlig telfer?", opts:["Den är alltid tyngre och kraftfullare", "Den är ännu mer kompakt och designad för mycket lätta lyftbehov", "Den kan enbart användas av utbildade ingenjörer", "Den saknar helt motor"], correct:1, fb:"Lätt telfer är en ännu mer kompakt version av den traditionella telfern, designad för mycket lätta och tillfälliga lyftbehov."},
+    {q:"Vad är traverskranens bro?", opts:["Huvudbalken som sträcker sig tvärs över arbetsområdet, monterad på skenor", "Den del som bär kroken direkt", "Ett annat namn för krokblocket", "Bromsen på lyftmotorn"], correct:0, fb:"Bron är traverskranens huvudbalk och sträcker sig tvärs över arbetsområdet, ofta monterad på skenor på två sidor."},
+    {q:"Vad innebär en 'dubbelspänn'-bro och när används den?", opts:["En bro av två balkar, används för tyngre lyft eftersom den ger större stöd och stabilitet", "En bro med dubbla bromsar", "En bro som bara finns på mobilkranar", "En bro som saknar skenor"], correct:0, fb:"Dubbelspänn innebär att bron är tillverkad av två balkar i stället för en, vilket ger större stöd och stabilitet vid tyngre lyft."},
+    {q:"Vad är vagnens funktion på en traverskran?", opts:["Den bär lyftmekanismen och rör sig längs bron för sidledsrörelse", "Den ersätter behovet av en bro", "Den fungerar enbart som nödstopp", "Den mäter lastens temperatur"], correct:0, fb:"Vagnen bär lyftmekanismen (lyftmotor, växel, trumma och krok) och rör sig längs bron, vilket tillåter sidledsrörelse av lasten."},
+    {q:"Vilka komponenter ingår i lyftmekanismen enligt materialet?", opts:["Lyftmotor, växel, trumma och bromssystem", "Enbart en elmotor", "Enbart en krok och en kätting", "GPS-sändare och radiomottagare"], correct:0, fb:"Lyftmekanismen består av lyftmotor (kraft), växel (hastighet/vridmoment), trumma (vindar upp lyftmedium) och bromssystem (kontrollerad sänkning)."},
+    {q:"Vad är krokblockets funktion?", opts:["Att innehålla kroken samt trissor som minskar kraften som krävs för att lyfta lasten", "Att enbart fungera som en varningsskylt", "Att ersätta behovet av en motor", "Att mäta kranens hastighet"], correct:0, fb:"Krokblocket innehåller kroken, ofta med säkerhetslås, samt flera skivor (trissor) som lyftmediet löper över, vilket minskar den kraft som krävs för lyftet."},
+    {q:"Vilken styrningsmetod ger operatören störst avstånd och bättre sikt över lyftområdet?", opts:["Manuell styrning från kabin", "Radiostyrning", "Ingen av dessa skiljer sig åt", "Kollisionsskydd"], correct:1, fb:"Radiostyrning ger operatören möjlighet att styra kranen på avstånd, vilket ökar säkerheten och ger bättre sikt och flexibilitet."},
+    {q:"Vad möjliggör ett variabelt frekvensdrivsystem (VFD) på en kran?", opts:["Precis justering av motorhastigheten för smidig acceleration och inbromsning", "Att kranen kan lyfta obegränsad vikt", "Att nödstoppet inaktiveras vid hög hastighet", "Att signalmannen inte längre behövs"], correct:0, fb:"VFD tillåter precis justering av motorhastigheten, vilket ger smidig acceleration och inbromsning och minskar risken för lastsvängning."},
+    {q:"Vilka organisationer nämns som exempel på internationella standardiseringsorgan för kranar?", opts:["ISO och ANSI", "FN och EU enbart", "WHO och FAO", "NATO och OECD"], correct:0, fb:"Internationellt tillhandahåller organisationer som ISO (International Organization for Standardization) och ANSI riktlinjer och standarder för kranar."}
+  ],
+  saker_kran: [
+    {q:"Vad är nödstoppets huvudsakliga funktion?", opts:["Att ge en omedelbar reaktion och stoppa alla kranrörelser och operationer", "Att enbart minska hastigheten långsamt", "Att stänga av belysningen på arbetsplatsen", "Att larma räddningstjänsten automatiskt"], correct:0, fb:"Nödstoppssystemet ger en omedelbar reaktion när det aktiveras och stoppar alla kranrörelser och operationer genom att bryta kraftförsörjningen."},
+    {q:"Var placeras nödstoppsknappar enligt materialet?", opts:["Endast i ett låst skåp", "På lättåtkomliga och strategiska platser på kranen samt på fjärrkontroller", "Endast hos underhållspersonalen", "I ett separat kontrollrum långt från kranen"], correct:1, fb:"Nödstoppsknappar placeras på lättåtkomliga och strategiska platser på kranen samt på fjärrkontroller för att snabbt kunna nås vid behov."},
+    {q:"Vad är huvudströmbrytarens funktion?", opts:["Att fungera som en central avstängningspunkt för hela kranens elsystem", "Att enbart styra hastigheten på vagnen", "Att ersätta behovet av nödstopp", "Att mäta lastens vikt"], correct:0, fb:"Huvudströmbrytaren fungerar som en central avstängningspunkt för hela kranens elsystem, använd vid service, underhåll eller nödsituation."},
+    {q:"Vilka typer av signaler används vid körning av kran enligt materialet?", opts:["Enbart skriftliga instruktioner", "Akustiska signaler (sirener, horn) och visuella signaler (varningsljus, strobeljus)", "Enbart doftmarkörer", "Enbart vibrationer i marken"], correct:1, fb:"Akustiska signaler som sirener och varningshorn samt visuella signaler som varningsljus och strobeljus används för att varna personal."},
+    {q:"Vad är en signalmans uppgift?", opts:["Att dirigera kranrörelser genom handtecken, flaggor eller radiokommunikation", "Att enbart övervaka underhållsjournalen", "Att reparera bromssystemet", "Att sköta fakturering av lyftuppdrag"], correct:0, fb:"Signalister är utbildade individer vars uppgift är att dirigera kranrörelser genom handtecken, flaggor eller radiokommunikation."},
+    {q:"Hur markeras ofta krokblockets position för personal på marken?", opts:["Genom att kranen tutar kontinuerligt", "Genom färgat ljus projicerat nedåt från kranen eller krokblocket", "Genom att lasten alltid är röd", "Genom en flagga som fästs i kroken"], correct:1, fb:"En vanlig metod är att använda färgat ljus, ofta projicerat nedåt, som skapar en tydlig indikation på var krokblocket och lasten befinner sig."},
+    {q:"Vad är ett överlastdons funktion?", opts:["Att automatiskt förhindra lyftoperationer om lastens vikt överstiger kranens maximala lyftkapacitet", "Att öka kranens hastighet vid tunga laster", "Att ersätta signalmannens roll", "Att enbart varna via ljud utan att stoppa lyftet"], correct:0, fb:"Ett överlastdon är en säkerhetsmekanism som automatiskt förhindrar lyftoperationer om den upptäckta vikten överstiger kranens maximala lyftkapacitet."},
+    {q:"Vad gör en slirkoppling (momentbegränsare)?", opts:["Den låser kranen permanent vid överbelastning", "Den tillåter en viss rörelse utan kraftöverföring när kraften överstiger en förinställd tröskel, vilket skyddar drivmekanismen", "Den ökar lyftkapaciteten temporärt", "Den stänger av nödstoppet"], correct:1, fb:"Slirkopplingar tillåter en viss rörelse utan kraftöverföring vid överbelastning, vilket skyddar drivmekanismen från skador."},
+    {q:"Vad är gränslägens funktion på en kran?", opts:["Att automatiskt stoppa eller begränsa kranens rörelser vid dess maximala operativa gränser", "Att mäta omgivningens temperatur", "Att ersätta behovet av bromsar", "Att fungera som en reservmotor"], correct:0, fb:"Gränslägesmekanismen stoppar eller begränsar automatiskt kranens rörelser när den når sina maximala operativa gränser, t.ex. högsta lyfthöjd."},
+    {q:"Vilka typer av sensorer kan ingå i ett modernt kollisionsskyddssystem?", opts:["Laserdetektorer, ultraljudssensorer och infraröda sensorer", "Endast mekaniska fjädrar", "Endast manuella siktinstrument", "Enbart GPS-moduler"], correct:0, fb:"Moderna kollisionsskyddssystem kan inkludera laserdetektorer, ultraljudssensorer eller infraröda sensorer för att övervaka kranens omgivning."},
+    {q:"Vad är fördelen med mjukstart på en kran?", opts:["Den minskar mekaniska chocker och risken för att lasten börjar svänga vid start", "Den ökar kranens toppfart avsevärt", "Den eliminerar behovet av bromsar helt", "Den gör att nödstopp inte längre behövs"], correct:0, fb:"Mjukstart låter kranen gradvis öka hastigheten, vilket minskar mekaniska chocker och risken för att lasten börjar svänga."},
+    {q:"Vilka typer av bromsar kan ingå i en krans bromssystem?", opts:["Mekaniska, elektriska och hydrauliska bromsar", "Enbart en typ av broms oavsett kran", "Enbart luftbromsar", "Bromsar används aldrig på kranar"], correct:0, fb:"Bromssystemet inkluderar ofta flera typer av bromsar — mekaniska, elektriska och hydrauliska — beroende på kranens design."},
+    {q:"Varför är mjukstopp fördelaktigt vid transport av känsliga eller farliga material?", opts:["Det minskar risken för plötsliga stopp som kan orsaka farliga svängningar eller skador på lasten", "Det gör att lasten kan lämnas hängande under natten", "Det ökar kranens maxlast automatiskt", "Det tar bort behovet av signalman"], correct:0, fb:"Mjukstopp gör att kranen gradvis minskar hastigheten och stannar kontrollerat, vilket minskar risken för farliga svängningar eller skador på lasten."},
+    {q:"Vad händer när ett nödstopp aktiveras?", opts:["Kraftförsörjningen till kranens lyft- och rörelsekomponenter bryts, vilket ger ett omedelbart stopp", "Endast ljudsignalen aktiveras utan att kranen stannar", "Kranen fortsätter röra sig men i lägre hastighet", "Endast huvudströmbrytaren informeras utan åtgärd"], correct:0, fb:"Vid aktivering av ett nödstopp bryts kraftförsörjningen till kranens lyft- och rörelsekomponenter, vilket resulterar i ett omedelbart stopp av alla operationer."}
+  ],
+  kontroll: [
+    {q:"Varför är kontroller och underhåll av kranar avgörande enligt materialet?", opts:["Enbart för att uppfylla estetiska krav", "För att säkerställa säkerhet och effektivitet samt förlänga utrustningens livslängd", "För att minska antalet operatörer som behövs", "För att undvika att behöva utbilda personal"], correct:1, fb:"Regelbundna kontroller och noggrant underhåll förhindrar olyckor och fel samt bidrar till en längre livslängd för utrustningen."},
+    {q:"Vad innebär daglig tillsyn av en kran?", opts:["En visuell kontroll och funktionstest av kranen före dess användning", "En fullständig ombyggnad av kranen varje dag", "Ett besök av Arbetsmiljöverket varje morgon", "Enbart en okulär besiktning en gång om året"], correct:0, fb:"Daglig tillsyn innebär en visuell kontroll och funktionstest av kranen före dess användning, inklusive kontroll av skador och funktionstest av nödstopp."},
+    {q:"Vem ansvarar normalt för den dagliga tillsynen av en kran?", opts:["Enbart Arbetsmiljöverket", "Kranoperatören", "Enbart en extern revisor", "Ingen, det krävs inte"], correct:1, fb:"Kranoperatörerna ansvarar vanligtvis för den dagliga tillsynen av den utrustning de använder."},
+    {q:"Vad bör göras med avvikelser som upptäcks under daglig tillsyn?", opts:["De ska ignoreras om kranen ändå fungerar", "De ska omedelbart rapporteras och loggas i en underhållsjournal", "De ska enbart nämnas muntligt utan dokumentation", "De ska åtgärdas av operatören utan rapportering"], correct:1, fb:"Eventuella avvikelser bör omedelbart rapporteras till ansvarig personal och loggas i en underhållsjournal eller databas."},
+    {q:"Vad avser begreppet konstruktiv livslängd för en kran?", opts:["Tiden det tar att montera kranen första gången", "Den beräknade perioden en kran förväntas vara i drift innan omfattande reparation eller utbyte krävs", "Antalet operatörer som kan använda kranen samtidigt", "Kranens maximala lyftkapacitet"], correct:1, fb:"Konstruktiv livslängd är den beräknade perioden en kran eller dess komponenter förväntas vara i drift under normala förhållanden innan omfattande åtgärder krävs."},
+    {q:"Vilka faktorer påverkar beräkningen av konstruktiv livslängd?", opts:["Materialtrötthet, miljöpåverkan, belastningsintensitet och kvaliteten på underhållet", "Enbart kranens färg", "Enbart antalet operatörer", "Enbart inköpspriset"], correct:0, fb:"Konstruktiv livslängd tar hänsyn till materialtrötthet, miljöpåverkan, belastningsintensitet och kvaliteten på regelbundet underhåll."},
+    {q:"Vilken lyftkapacitet gör att en kran/travers enligt lagkrav ska genomgå en årlig besiktning?", opts:["Över 100 kg", "Över 500 kg", "Över 5 000 kg", "Alla kranar oavsett kapacitet är undantagna"], correct:1, fb:"Särskilt för traverser och kranar med en lyftkapacitet på över 500 kg är det lagkrav på att genomföra en årlig besiktning."},
+    {q:"När krävs en monteringsbesiktning?", opts:["Enbart vid årsskiftet", "Vid nyinstallation eller omfattande modifieringar av en lyftanordning", "Aldrig, det är frivilligt", "Endast om en olycka redan inträffat"], correct:1, fb:"Vid nyinstallation eller omfattande modifieringar av en lyftanordning är en monteringsbesiktning obligatorisk."},
+    {q:"Vad ska dokumenteras efter en utförd besiktning?", opts:["Ingenting behöver dokumenteras", "En detaljerad rapport om omfattning, upptäckta brister och rekommendationer för åtgärder", "Enbart datumet, inget annat", "Endast namnet på kranens tillverkare"], correct:1, fb:"För varje utförd besiktning är det avgörande att dokumentera resultaten noggrant, inklusive brister och rekommenderade åtgärder."},
+    {q:"Vilken information visar en av de mest kritiska skyltarna på en kran?", opts:["Kranens tillverkningsland", "Kranens maximala lyftkapacitet", "Antalet år kranen använts", "Namnet på senaste operatören"], correct:1, fb:"En av de mest kritiska skyltarna visar kranens maximala lyftkapacitet, vilket säkerställer att operatörerna inte överbelastar kranen."},
+    {q:"Vem ansvarar för att skyltar och symboler på kranen är korrekta och uppdaterade?", opts:["Arbetsgivaren", "Enbart tillverkaren, permanent", "Ingen särskild part", "Skyddsombudet enbart"], correct:0, fb:"Det är arbetsgivarens ansvar att se till att alla skyltar och symboler på kranen är korrekta, tydliga och väl underhållna."},
+    {q:"Vem utför vanligtvis mer omfattande underhållsarbeten enligt tillverkarens rekommendationer?", opts:["Enbart kranoperatören", "Underhållspersonal eller externa serviceleverantörer", "Enbart signalmannen", "Enbart BAS-U"], correct:1, fb:"Underhållspersonalen eller externa serviceleverantörer utför regelbundet mer omfattande underhållsarbeten enligt tillverkarens rekommendationer."},
+    {q:"Vad hjälper journalbokföring av underhåll till med?", opts:["Den ger en värdefull översikt över kranens historik och underlättar framtida underhållsplanering", "Den ersätter behovet av besiktning", "Den är enbart till för bokföringsavdelningen", "Den har ingen praktisk funktion"], correct:0, fb:"Journalbokföring ger en värdefull översikt över kranens historik och underlättar planeringen av framtida underhållsinsatser."},
+    {q:"Vad innebär livscykelhantering av en kran enligt materialet?", opts:["Att integrera kunskapen om konstruktiv livslängd i den övergripande strategin för anläggningens tillgångshantering", "Att byta ut kranen varje år oavsett skick", "Att aldrig göra reparationer", "Att enbart fokusera på inköpspriset"], correct:0, fb:"Effektiv livscykelhantering innebär att integrera kunskapen om konstruktiv livslängd i strategin för anläggningens tillgångshantering och besluta om kostnadseffektiva åtgärder."}
+  ],
+  arbetssatt: [
+    {q:"Vilken risk beskrivs som en av de mest uppenbara vid travers- och kranarbete?", opts:["Fallande last", "Att kranen blir för ren", "Att operatören blir för väl utbildad", "Att lasten är för lätt"], correct:0, fb:"En av de mest uppenbara riskerna med travers- och kranarbete är risken för fallande last, som kan bero på felaktigt fastsatta lyftredskap, överbelastning eller mekaniskt fel."},
+    {q:"Vad kan orsaka kollisioner enligt materialet?", opts:["Bristande uppmärksamhet, felaktig navigering eller otillräckliga säkerhetsavstånd", "Enbart dåligt väder", "Enbart för hög lyftkapacitet", "Enbart avsaknad av färg på kranen"], correct:0, fb:"Kollisioner kan orsakas av bristande uppmärksamhet, felaktig navigering eller otillräckliga säkerhetsavstånd."},
+    {q:"Varför är elektriska risker särskilt relevanta vid kranarbete?", opts:["Kranar kan komma i närheten av elledningar, vilket kan orsaka allvarliga skador eller dödsfall", "Elektricitet påverkar aldrig kranar", "Enbart mobilkranar har elektriska risker", "Elektriska risker gäller bara vid regn"], correct:0, fb:"Arbete med kranar innebär ofta risker relaterade till elektricitet, särskilt i områden där kranar kan komma i närheten av elledningar."},
+    {q:"Vad kan orsaka svingning av last?", opts:["Abrupta rörelser, vindpåverkan eller felaktig lyftteknik", "Att lasten är för lätt", "Att kranen är nymålad", "Att signalmannen bär hjälm"], correct:0, fb:"Svingning av lasten kan uppstå när en last börjar svänga okontrollerat, orsakat av abrupta rörelser, vindpåverkan eller felaktig lyftteknik."},
+    {q:"Vilka ergonomiska risker nämns för operatörer och underhållspersonal?", opts:["Belastningsskador av upprepade rörelser, felaktig kroppsställning eller långa perioder av stillasittande/stående", "Enbart risk för solbränna", "Enbart risk för att bli förkyld", "Ingen ergonomisk risk finns vid kranarbete"], correct:0, fb:"Ergonomiska risker inkluderar belastningsskador orsakade av upprepade rörelser, felaktig kroppsställning eller långa perioder av stillasittande eller stående."},
+    {q:"Vad är det första steget i en riskbedömning enligt materialet?", opts:["Åtgärdsplanering", "Identifiering av risker", "Dokumentation", "Uppföljning"], correct:1, fb:"Det första steget i riskbedömningen är att identifiera alla potentiella risker som kan uppstå under normal användning och exceptionella omständigheter."},
+    {q:"Vad innebär riskanalys i riskbedömningsprocessen?", opts:["Att analysera riskernas potentiella inverkan och sannolikhet samt bedöma om befintliga säkerhetsåtgärder räcker", "Att enbart räkna antalet anställda", "Att enbart granska ekonomin", "Att ignorera tidigare incidenter"], correct:0, fb:"Riskanalysen bedömer riskernas potentiella inverkan och sannolikhet, samt om befintliga säkerhetsåtgärder är tillräckliga."},
+    {q:"Vad är arbetsgivarens övergripande ansvar enligt materialet?", opts:["Att säkerställa att utrustningen uppfyller säkerhetskrav och att nödvändig utbildning tillhandahålls", "Att enbart köpa in billigast möjliga utrustning", "Att aldrig informera personalen om risker", "Att överlåta allt ansvar till operatören"], correct:0, fb:"Övergripande ansvar innebär att säkerställa att utrustningen uppfyller gällande säkerhetskrav och underhålls korrekt, samt att tillhandahålla nödvändig utbildning."},
+    {q:"Vad innefattar arbetstagarens eget ansvar enligt materialet?", opts:["Att utföra daglig tillsyn, använda skyddsutrustning korrekt och aldrig överskrida maskinens begränsningar", "Att enbart följa order utan eget ansvar", "Att aldrig behöva rapportera brister", "Att enbart arbetsgivaren har ansvar för säkerheten"], correct:0, fb:"Eget ansvar fokuserar på att den enskilda arbetstagaren följer säkerhetsriktlinjer, utför daglig tillsyn och aldrig överskrider maskinens operativa begränsningar."},
+    {q:"Vad bör alltid göras innan den faktiska lyftningen av en ny eller okänd last?", opts:["Ett provlyft", "En fullständig ombyggnad av kranen", "Att kontakta media", "Att avboka lyftet permanent"], correct:0, fb:"Innan man börjar med den faktiska lyftningen av en last bör ett provlyft alltid genomföras, särskilt för nya eller okända laster."},
+    {q:"Varför är centrerade och vertikala lyft att föredra?", opts:["De minimerar risken för att lasten svänger eller tappas och undviker obalans", "De gör lyftet snabbare men farligare", "De kräver ingen signalman", "De ökar kranens maxlast automatiskt"], correct:0, fb:"Centrerade och vertikala lyft minskar risken för sidorörelser och obalans, vilket förhindrar att lasten svänger eller tappas."},
+    {q:"Vad är en grundläggande säkerhetsprincip gällande att lämna kranen?", opts:["Man får lämna kranen obemannad med hängande last om lasten är lätt", "Man ska aldrig lämna en kran obemannad med en last hängande i luften", "Det spelar ingen roll om lasten hänger kvar", "Endast nattetid är det tillåtet att lämna hängande last"], correct:1, fb:"En grundläggande säkerhetsprincip är att aldrig lämna en kran obemannad med en last hängande i luften; lasten bör alltid sänkas till en säker plats."},
+    {q:"Vad bör en åtgärdsplan efter en riskanalys kunna innehålla?", opts:["Tekniska, organisatoriska och personrelaterade åtgärder, samt vara flexibel och uppdateringsbar", "Enbart en lista på skyltar", "Enbart en bild på kranen", "Ingenting konkret, bara allmänna ord"], correct:0, fb:"Åtgärdsplanen kan inkludera tekniska, organisatoriska och personrelaterade åtgärder och bör vara flexibel och kunna uppdateras vid behov."},
+    {q:"Varför är dokumentation av riskbedömningen viktig enligt materialet?", opts:["Den fungerar som en viktig del av säkerhetsrekordet och kan vara avgörande vid revisioner, försäkringsärenden och incidenter", "Den behövs enbart för att fylla arkivutrymme", "Den är helt onödig om inga olyckor sker", "Den ska bara sparas i en vecka"], correct:0, fb:"Dokumentationen fungerar som en viktig del av organisationens säkerhetsrekord och kan vara avgörande vid revisioner, försäkringsärenden och i händelse av en incident."}
+  ],
+  roller: [
+    {q:"Vad krävs enligt materialet för att utföra säkra lyft, utöver teknisk kunskap och rätt utrustning?", opts:["Ett samspel mellan alla inblandade på arbetsplatsen", "Enbart en snabb kran", "Enbart en stor budget", "Enbart en van signalman utan andra roller"], correct:0, fb:"Att utföra säkra lyft kräver inte bara teknisk kunskap och rätt utrustning utan också ett samspel mellan alla inblandade på arbetsplatsen."},
+    {q:"Vad är grundläggande för kommunikationen innan ett lyft börjar?", opts:["Att alla inblandade är klara över planen, inklusive rutt, placering och eventuella risker", "Att enbart kranoperatören vet planen", "Att kommunikationen sker efter att lyftet redan avslutats", "Att ingen kommunikation behövs om lasten är lätt"], correct:0, fb:"Innan lyftet börjar ska alla inblandade vara klara över planen för lyftet, inklusive rutt, placering och eventuella risker."},
+    {q:"Vad innebär riskmedvetenhet enligt materialet om säkra lyft?", opts:["Att ständigt vara medveten om potentiella risker före, under och efter lyftet", "Att enbart tänka på risker efter att en olycka skett", "Att undvika att tänka på risker för att inte bli stressad", "Att riskmedvetenhet enbart gäller lyftledaren"], correct:0, fb:"En del av att arbeta säkert är att ständigt vara medveten om potentiella risker, före lyft, under lyftets gång och vid avslutningen."},
+    {q:"Vilken roll ansvarar för att säkert fästa och lossa lasten från lyftanordningen?", opts:["Lastkopplaren", "Signalmannen", "BAS-U", "Säkerhetsobservatören"], correct:0, fb:"Lastkopplaren är ansvarig för att säkert fästa och lossa lasten från lyftanordningen och måste förstå lyftredskap samt lastens vikt och balans."},
+    {q:"Vilken roll övervakar och koordinerar hela lyftarbetet?", opts:["Lyftledaren", "Lastkopplaren", "Endast kranoperatören", "Endast signalmannen"], correct:0, fb:"Lyftledaren övervakar och koordinerar lyftarbetet och säkerställer att säkerhetsprotokoll följs samt att rätt utrustning används."},
+    {q:"Hur kommunicerar signalmannen ofta med kranoperatören?", opts:["Genom handtecken eller radio", "Enbart genom skriftliga PM", "Enbart via e-post", "Genom att aldrig kommunicera direkt"], correct:0, fb:"Signalmannen kommunicerar direkt med kranoperatören för att dirigera lyftet, ofta genom handtecken eller via radio."},
+    {q:"Vad krävs av en kranoperatör enligt materialet?", opts:["Stor skicklighet, precision och en djup förståelse för kranens mekanik och säkerhetskrav", "Enbart ett körkort för personbil", "Inga särskilda krav alls", "Enbart erfarenhet av kontorsarbete"], correct:0, fb:"Kranoperatören manövrerar kranen baserat på instruktioner från signalmannen och kräver stor skicklighet, precision och djup förståelse för kranens mekanik."},
+    {q:"Vad gör en säkerhetsobservatör vid lyftarbete?", opts:["Övervakar lyftarbetet ur ett säkerhetsperspektiv och hjälper till att identifiera och förebygga faror", "Utför själva lyftet i stället för kranoperatören", "Ansvarar enbart för fakturering", "Ersätter behovet av signalman helt"], correct:0, fb:"Säkerhetsobservatören granskar lyftarbetet ur ett säkerhetsperspektiv och hjälper till att identifiera och förebygga potentiella faror."},
+    {q:"Vad står förkortningen BAS-U för, och vad är dess ansvar?", opts:["Byggarbetsmiljösamordnare för utförandefasen, med övergripande ansvar för säkerheten under utförandefasen", "Bas-utrustning, ansvarig för att köpa in verktyg", "Bygg och Statistik-Utredare, ansvarig för ekonomi", "Basstation för Utrustning, ansvarig för elnätet"], correct:0, fb:"BAS-U (Byggarbetsmiljösamordnare för utförandefasen) har det övergripande ansvaret för säkerheten på byggarbetsplatsen under utförandefasen, inklusive lyftarbete."},
+    {q:"Vad ska BAS-U säkerställa enligt materialet?", opts:["Att riskbedömningar utförs och att lämpliga åtgärder vidtas för att hantera identifierade risker", "Att enbart fakturor betalas i tid", "Att kranens färg är korrekt", "Att signalmannen aldrig behöver utbildning"], correct:0, fb:"BAS-U ska se till att riskbedömningar utförs och att lämpliga åtgärder vidtas för att hantera identifierade risker på byggarbetsplatsen."},
+    {q:"Vilka kompletterande åtgärder nämns för säkrare lyft, utöver rollerna själva?", opts:["Utbildning, underhåll/inspektion och noggrann planering", "Enbart högre lön till kranoperatören", "Enbart fler kranar på arbetsplatsen", "Att undvika all dokumentation"], correct:0, fb:"Kompletterande åtgärder för säkrare lyft inkluderar regelbunden utbildning och certifiering, underhåll och inspektion samt noggrann planering av varje lyft."},
+    {q:"Vad innebär det att 'varje lyft är en laginsats' enligt materialet?", opts:["Att alla inblandade måste känna till sina roller och ansvar", "Att bara en person behöver kunna allt", "Att lyft alltid görs av minst tio personer", "Att laginsats bara gäller vid mobilkranar"], correct:0, fb:"Varje lyft är en laginsats, vilket innebär att alla måste känna till sina roller och ansvar, från att säkra lasten till att dirigera rörelser."},
+    {q:"Vad bör alla inblandade i lyftoperationer följa enligt materialet?", opts:["Etablerade säkerhetsföreskrifter och procedurer, inklusive korrekt användning av personlig skyddsutrustning", "Enbart sina egna preferenser", "Inga särskilda regler krävs om lasten är lätt", "Enbart muntliga traditioner utan nedskrivna regler"], correct:0, fb:"Att känna till och följa etablerade säkerhetsföreskrifter och procedurer, inklusive korrekt användning av personlig skyddsutrustning, är grundläggande."},
+    {q:"Vad bidrar regelbunden utbildning och certifiering till enligt materialet om säkrare lyft?", opts:["Att alla är uppdaterade med de senaste säkerhetspraxis och lyftteknikerna", "Att kranoperatörer slipper använda skyddsutrustning", "Att signalmannen inte längre behövs", "Att lyftarbete blir helt riskfritt utan andra åtgärder"], correct:0, fb:"Regelbunden utbildning och certifiering för alla som är involverade i lyftoperationer säkerställer att alla är uppdaterade med de senaste säkerhetspraxis och lyftteknikerna."}
+  ],
+  redskap: [
+    {q:"Vad innebär förkortningen WLL?", opts:["Working Load Limit — den maximala vikt ett lyftredskap säkert kan hantera", "World Lifting Limit — en global standard för alla länder", "Weight Loss Level — hur mycket ett redskap väger", "Warning Load Line — en varningslinje på marken"], correct:0, fb:"WLL (Working Load Limit) är den maximala vikt ett lyftredskap är designat för att säkert kunna hantera under normala förhållanden."},
+    {q:"Vad innebär säkerhetsfaktorn för ett lyftredskap?", opts:["Antalet operatörer som krävs", "En multipel av bärkapaciteten som redskapet är testat för, vilket ger en säkerhetsmarginal", "Redskapets vikt i kilogram", "Redskapets färgkod"], correct:1, fb:"Säkerhetsfaktorn är en multipel av bärkapaciteten som lyftredskapet är testat för, vilket ger en säkerhetsmarginal för användningen."},
+    {q:"Vilka egenskaper gör kättingar särskilt användbara för tunga lyft?", opts:["De är hållbara och motståndskraftiga mot skärning och nötning", "De är alltid lättast av alla lyftredskap", "De kräver aldrig inspektion", "De kan inte anpassas med krokar"], correct:0, fb:"Kättingar är särskilt användbara för tunga och robusta lyft eftersom de är hållbara och motståndskraftiga mot skärning och nötning."},
+    {q:"Vad bör man regelbundet kontrollera på en kätting?", opts:["Nötning, korrosion och potentiella sprickor", "Enbart färgen", "Enbart längden en gång per år", "Ingenting, kättingar kräver inget underhåll"], correct:0, fb:"Regelbunden inspektion för nötning, korrosion och potentiella sprickor är avgörande för att säkerställa kättingens säkerhet."},
+    {q:"Vad kännetecknar en stållina jämfört med en kätting?", opts:["Den erbjuder en utmärkt balans mellan styrka och flexibilitet, bra för precisionslyft", "Den är alltid starkare men helt oflexibel", "Den kräver aldrig inspektion", "Den kan aldrig användas i trånga utrymmen"], correct:0, fb:"Stållinor är mångsidiga och erbjuder en utmärkt balans mellan styrka och flexibilitet, och används ofta för precisionslyft."},
+    {q:"Vad indikerar färgen på en rundslinga (mjukt lyftredskap)?", opts:["Bärkapaciteten", "Tillverkningsåret", "Ägaren av redskapet", "Vilket land redskapet tillverkats i"], correct:0, fb:"Rundslingor finns i olika färger, och färgen visar redskapets bärkapacitet."},
+    {q:"Varför används mjuka lyftredskap som lyftband och rundslingor?", opts:["De är skonsamma mot lasten och förebygger ytskador, särskilt för känsliga eller oregelbundet formade objekt", "De är alltid starkast av alla redskap", "De kräver aldrig kontroll", "De kan bara användas för mycket tunga stållaster"], correct:0, fb:"Mjuka lyftredskap är flexibla, lätta och skonsamma mot lasten, vilket gör dem lämpliga för känsliga eller oregelbundet formade objekt."},
+    {q:"Vad krävs för att lyftmagneter ska fungera säkert över tid?", opts:["Regelbundna tester för att säkerställa att lyftkapaciteten inte försämras", "Inget särskilt underhåll behövs alls", "De ska aldrig testas efter första användningen", "De fungerar bara på icke-magnetiska material"], correct:0, fb:"Lyftmagneter används för ferromagnetiska material och kräver regelbundna tester för att säkerställa att deras lyftkapacitet inte försämras."},
+    {q:"Vad avgör säkerheten hos en vakuumlyftare?", opts:["Att vakuumintegriteten upprätthålls och att pumpar och tätningsytor är i gott skick", "Att den enbart används på metaller", "Att den aldrig kopplas till en kran", "Att den är målad i en specifik färg"], correct:0, fb:"Vakuumlyftare är idealiska för icke-porösa material, och säkerheten beror på att vakuumintegriteten upprätthålls samt att pumpar och tätningsytor är i gott skick."},
+    {q:"Vad används topp- och lyftöglor till?", opts:["Att skapa säkra fästpunkter på laster som saknar inbyggda lyftpunkter", "Att ersätta behovet av krokar helt", "Att enbart dekorera lasten", "Att mäta lastens vikt"], correct:0, fb:"Topp- och lyftöglor används för att skapa säkra fästpunkter på laster som saknar inbyggda lyftpunkter, och distribuerar lyftkraften jämnt."},
+    {q:"Vad är en schackel och vad används den till?", opts:["Ett U-format metallstycke med avtagbar pinne, används för att koppla samman lyftredskap med lasten", "En typ av mjukt lyftband", "Ett annat namn för krokblocket", "Ett verktyg som enbart används vid besiktning"], correct:0, fb:"Schacklar är U-formade metallstycken med en avtagbar pinne eller skruv, används för att koppla samman lyftredskap som kättingar eller wire med lasten."},
+    {q:"Vad är syftet med kantbeskyddare?", opts:["Att skydda mjuka lyftredskap mot vassa kanter och grova ytor på lasten", "Att öka lastens vikt kontrollerat", "Att ersätta behovet av schackel", "Att fungera som ett nödstopp"], correct:0, fb:"Kantbeskyddare skapar en skyddande barriär mellan det mjuka lyftredskapet och lastens vassa eller grova ytor, vilket minskar risken för nötning och skärskador."},
+    {q:"Hur bör lyftredskap förvaras enligt materialet?", opts:["Rengjorda, torrt och skyddat, organiserat och separat om de är skadade", "Alltid på golvet oavsett omständigheter", "Tillsammans med skadad utrustning utan åtskillnad", "Utomhus i alla väder för att spara utrymme"], correct:0, fb:"Lyftredskap bör rengöras före förvaring, förvaras torrt och skyddat, organiserat, samt hållas åtskilda om de är skadade och i behov av reparation."},
+    {q:"Varför är märkning och identifiering av förvaringsområden viktigt?", opts:["Det underlättar inventering och säkerställer att rätt utrustning snabbt kan hittas när den behövs", "Det är enbart en estetisk detalj", "Det krävs bara för utrustning som aldrig används", "Det ersätter behovet av inspektion helt"], correct:0, fb:"Förvaringsområden bör vara tydligt märkta med information om vilka lyftredskap som förvaras där, vilket underlättar inventering."}
+  ],
+  tabeller: [
+    {q:"Vad anger en belastningstabell för lyftredskap?", opts:["Lyftredskapens kapacitet (WLL) under olika förhållanden och konfigurationer", "Enbart redskapets inköpspris", "Enbart redskapets ålder", "Enbart redskapets färg"], correct:0, fb:"Belastningstabeller tillhandahåller detaljerad information om lyftredskapens kapacitet under olika förhållanden och konfigurationer."},
+    {q:"Vilka faktorer tar en belastningstabell hänsyn till, enligt materialet?", opts:["Typ av lyftredskap, lyftvinkel/slingvinkel, antal ben samt miljöfaktorer", "Enbart redskapets tillverkningsland", "Enbart redskapets vikt i förpackningen", "Enbart datumet för köpet"], correct:0, fb:"Belastningstabellerna tar hänsyn till typ av lyftredskap, lyftvinkel och slingvinkel, antal ben i lyftstroppen, samt miljöfaktorer som temperatur."},
+    {q:"Vad händer med lyftkapaciteten när slingvinkeln minskar?", opts:["Kapaciteten ökar automatiskt", "Kapaciteten minskar avsevärt eftersom den horisontella belastningskomponenten ökar", "Kapaciteten påverkas inte alls", "Endast redskapets färg påverkas"], correct:1, fb:"Ju lägre slingvinkeln är, desto större blir den horisontella komponenten av belastningen, vilket minskar den totala lyftkapaciteten avsevärt."},
+    {q:"Ungefär hur stort avdrag från WLL rekommenderas ofta vid en slingvinkel på 45–60 grader?", opts:["Cirka 5 %", "Cirka 30 %", "Cirka 70 %", "Inget avdrag alls"], correct:1, fb:"Vid en slingvinkel på 45–60 grader rekommenderas ofta ett avdrag på cirka 30 % av WLL."},
+    {q:"Vad kan avdraget öka till om slingvinkeln är mindre än 45 grader?", opts:["Upp till 50 % av WLL", "Endast 5 % av WLL", "0 %, inget avdrag krävs", "100 %, redskapet blir helt oanvändbart"], correct:0, fb:"Vid en slingvinkel mindre än 45 grader kan avdraget behöva ökas ytterligare, i vissa fall upp till 50 % av WLL."},
+    {q:"Vad kännetecknar ett assymetriskt lyft?", opts:["Lastens tyngdpunkt är inte jämnt fördelad, vilket leder till ojämn belastning på lyftredskapen", "Lasten är alltid symmetrisk och stabil", "Lasten lyfts alltid rakt uppifrån", "Assymetriska lyft kräver aldrig avdrag från maxlast"], correct:0, fb:"Assymetriska lyft uppstår när lastens tyngdpunkt inte är jämnt fördelad, vilket leder till ojämn belastning på lyftredskapen."},
+    {q:"Hur stort avdrag från WLL kan behövas vid ett assymetriskt lyft?", opts:["Upp till 30 %, beroende på assymetrins grad", "Exakt 0 %", "Alltid exakt 100 %", "Avdrag krävs aldrig vid assymetriska lyft"], correct:0, fb:"Vid assymetriska lyft kan upp till 30 % av WLL behöva dras av beroende på assymetrins grad och lastens stabilitet."},
+    {q:"Vad kännetecknar ett snarat lyft?", opts:["Lyftredskapen lyfter inte lasten från direkt ovanför, vilket orsakar sidokrafter", "Lasten lyfts alltid perfekt vertikalt", "Det är en synonym för ett symmetriskt lyft", "Det kräver aldrig extra avdrag"], correct:0, fb:"Snarade lyft innebär att lyftredskapen inte lyfter lasten från direkt ovanför, vilket orsakar sidokrafter och ytterligare belastning."},
+    {q:"Ungefär hur stort avdrag från WLL kan vara lämpligt vid ett snarat lyft?", opts:["20–25 %", "0 %", "75–80 %", "100 %"], correct:0, fb:"För snarade lyft kan avdrag på 20–25 % av WLL vara lämpliga för att kompensera för de extra sidokrafterna."},
+    {q:"Vad krävs vid lyft nära vassa kanter utan kantbeskydd?", opts:["Inget avdrag behövs alls", "Ett avdrag på upp till 50 % kan vara nödvändigt på grund av potentiellt extra slitage", "Ett avdrag på exakt 1 %", "Redskapet blir automatiskt starkare"], correct:1, fb:"Vid närvaro av mycket vassa kanter utan kantbeskydd kan det vara nödvändigt att göra ett avdrag på upp till 50 % från WLL."},
+    {q:"Vilka fyra huvudsakliga steg ingår i korrekt koppling av last enligt materialet?", opts:["Korrekt val av lyftredskap, kontroll av redskap, förstå lastens tyngdpunkt och använda kantbeskydd vid behov", "Enbart att välja billigast möjliga redskap", "Enbart att fråga signalmannen om lov", "Att aldrig kontrollera redskapen"], correct:0, fb:"Viktiga principer vid koppling av last är att välja lämpliga lyftredskap, kontrollera dem, förstå lastens tyngdpunkt och använda kantbeskydd vid vassa kanter."},
+    {q:"Vad bör göras innan det faktiska lyftet enligt avsnittet om koppling av last?", opts:["Ett provlyft, långsamt och kontrollerat, med lasten bara några centimeter från marken", "Att direkt lyfta lasten till full höjd", "Att koppla bort alla säkerhetsanordningar", "Att hoppa över alla kontroller om tiden är knapp"], correct:0, fb:"Innan det faktiska lyftet bör ett provlyft utföras för att testa kopplingens säkerhet och lastens balans, långsamt och med lasten nära marken."},
+    {q:"När är det särskilt viktigt att använda en styrlina vid lyft?", opts:["För långa, tunga eller otympliga laster, för att kontrollera lastens rörelse", "Enbart vid lyft av mycket lätta föremål", "Aldrig, styrlinor är förbjudna", "Endast vid lyft med lyftmagnet"], correct:0, fb:"Styrlinor används för att kontrollera lastens rörelse under lyftet, och är särskilt viktiga för långa, tunga eller otympliga laster."},
+    {q:"Varför ska man alltid dubbelkolla att kopplingarna är säkra innan lyftet inleds?", opts:["Det är en av flera säkerhetskontroller som minimerar risken för olyckor vid lyftoperationer", "Det är enbart en formalitet utan verklig betydelse", "Det krävs bara vid mycket tunga laster över 10 ton", "Det ersätter behovet av utbildning helt"], correct:0, fb:"Att dubbelkolla att kopplingarna är säkra och korrekt tillämpade innan lyftet inleds är en av flera säkerhetskontroller som minimerar riskerna."}
+  ],
+  ansvar: [
+    {q:"Vad har varje arbetstagare rätt och skyldighet att göra om ett arbete bedöms som farligt?", opts:["Att stoppa arbetet", "Att aldrig ifrågasätta arbetsledningen", "Att enbart rapportera efter avslutat arbetspass", "Att fortsätta arbetet till varje pris"], correct:0, fb:"Varje arbetstagare har inte bara rätten utan även skyldigheten att stoppa arbete som bedöms som farligt eller innebär en omedelbar risk för hälsa och säkerhet."},
+    {q:"Vilket är det första steget när en arbetstagare identifierar en risk och vill stoppa farligt arbete?", opts:["Identifiering av risken", "Att omedelbart kontakta media", "Att sluta sin anställning", "Att ignorera risken om den verkar liten"], correct:0, fb:"Det första steget innebär att arbetstagaren identifierar en potentiell fara eller risk som kan leda till skada eller ohälsa."},
+    {q:"Vad skyddar arbetsmiljölagen arbetstagare från när de stoppar farligt arbete?", opts:["Negativa konsekvenser (repressalier) från arbetsgivaren", "Alla ekonomiska kostnader i företaget", "Behovet av att någonsin arbeta igen", "Krav på fortsatt utbildning"], correct:0, fb:"Arbetsmiljölagen skyddar arbetstagare från negativa konsekvenser som följd av att ha stoppat arbete av säkerhetsskäl."},
+    {q:"Vad kännetecknar ensamarbete enligt materialet?", opts:["Arbetstagaren utför uppgifter utan omedelbar tillgång till hjälp eller övervakning från kollegor", "Arbete som alltid utförs av minst fem personer", "Arbete som aldrig innebär några risker", "Arbete som enbart sker på kontor"], correct:0, fb:"Ensamarbete innebär att arbetstagare utför uppgifter ensamma, utan omedelbar tillgång till hjälp eller övervakning från kollegor."},
+    {q:"Vad kan check-in-rutiner med jämna mellanrum bidra till vid ensamarbete?", opts:["Ingenting av värde", "Att arbetstagaren regelbundet kan rapportera sin status och omedelbart larma vid behov", "Att arbetsgivaren slipper ansvar helt", "Att arbetet automatiskt blir snabbare"], correct:1, fb:"Effektiva kommunikationssystem, som check-in-rutiner, gör att arbetstagaren regelbundet kan rapportera sin status och omedelbart larma om hjälp vid behov."},
+    {q:"Vad ska tydliga nödprocedurer vid ensamarbete inkludera?", opts:["Instruktioner om vad man ska göra vid olika typer av nödsituationer, inklusive medicinska nödsituationer", "Enbart telefonnumret till en kollega", "Inga särskilda instruktioner behövs", "Enbart en påminnelse om att jobba snabbare"], correct:0, fb:"Tydliga nödprocedurer bör etableras och kommuniceras, och inkludera instruktioner för olika typer av nödsituationer."},
+    {q:"Vilken typ av huvudskydd nämns i materialet om personlig skyddsutrustning?", opts:["Hjälm", "Endast en keps", "Endast solglasögon", "Ingen huvudskyddsutrustning behövs"], correct:0, fb:"Hjälmar skyddar mot huvudskador som kan orsakas av fallande objekt, stötar eller elektrisk stöt."},
+    {q:"Varför är hörselskydd viktigt enligt materialet?", opts:["Konstant exponering för höga ljudnivåer kan orsaka hörselskada", "Hörselskydd förbättrar synen", "Hörselskydd behövs bara vid tystare arbeten", "Hörselskydd är enbart en modedetalj"], correct:0, fb:"Konstant exponering för höga ljudnivåer från maskiner och utrustning kan orsaka hörselskada, vilket hörselskydd förebygger."},
+    {q:"Vad ska skyddsskor med stålhätta skydda mot?", opts:["Krosskador från fallande objekt, punkteringar och elektriska faror", "Enbart mot regn", "Enbart mot kyla", "Skyddsskor behövs bara inomhus"], correct:0, fb:"Skyddsskor eller säkerhetsstövlar med stålhätta skyddar fötterna mot krosskador från fallande objekt, punkteringar och elektriska faror."},
+    {q:"Vem ansvarar för att tillhandahålla lämplig personlig skyddsutrustning utan kostnad för de anställda?", opts:["Den anställde själv", "Arbetsgivaren", "Arbetsmiljöverket", "Fackförbundet enbart"], correct:1, fb:"Arbetsgivaren har ansvar för att tillhandahålla lämplig personlig skyddsutrustning utan kostnad för arbetstagarna och se till att den är lämplig för riskerna."},
+    {q:"Vilket släckmedel är olämpligt att använda vid elektriska bränder enligt materialet om brandsläckning?", opts:["Vattenbaserad brandsläckare", "Koldioxid (CO2)", "Pulverbaserad brandsläckare", "Skumbrandsläckare avsedd för elbränder"], correct:0, fb:"Vattenbaserade brandsläckare bör inte användas vid elektriska bränder; koldioxid, pulver och skumbrandsläckare har olika specifika användningsområden."},
+    {q:"Vad ska prioriteras om en brand inte kan kontrolleras omedelbart?", opts:["Att försöka släcka branden till varje pris", "Evakuering enligt etablerade evakueringsvägar och samlingsplatser", "Att stanna kvar och dokumentera händelsen", "Att ringa media först"], correct:1, fb:"Om branden inte kan kontrolleras omedelbart är evakuering prioritet, och etablerade evakueringsvägar och samlingsplatser ska följas."},
+    {q:"Vilken information är viktig att ge räddningstjänsten vid en brand enligt materialet?", opts:["Endast företagets organisationsnummer", "Brandens omfattning och placering samt eventuella särskilda risker på platsen", "Endast antalet anställda på företaget totalt", "Ingen information behövs, räddningstjänsten vet redan"], correct:1, fb:"Räddningstjänsten bör snabbt kontaktas med information om brandens omfattning, placering och eventuella särskilda risker på platsen."},
+    {q:"Vad bör göras med brandsläckningsutrustning enligt materialet?", opts:["Regelbundet underhåll och inspektion, bland annat kontroll av tryckmätare och att inget blockerar åtkomsten", "Den behöver aldrig kontrolleras efter installation", "Den ska förvaras inlåst och otillgänglig", "Den ska bytas ut varje vecka oavsett skick"], correct:0, fb:"Regelbundet underhåll och inspektion av brandsläckare är avgörande, inklusive kontroll av att tryckmätare visar korrekt och att inga hinder blockerar tillgången."}
+  ],
+  lagar: [
+    {q:"Vad är arbetsmiljölagens (AML) huvudsyfte?", opts:["Att förebygga ohälsa och olycksfall i arbetet och skapa en arbetsmiljö som gagnar fysisk och psykisk hälsa", "Att enbart reglera löner", "Att ersätta behovet av försäkringar", "Att enbart gälla kontorsarbete"], correct:0, fb:"Arbetsmiljölagen syftar till att förebygga ohälsa och olycksfall i arbetet samt att skapa en arbetsmiljö som är till gagn för både fysisk och psykisk hälsa."},
+    {q:"Vad innebär systematiskt arbetsmiljöarbete (SAM)?", opts:["Att arbetsmiljön kontinuerligt och systematiskt ska planeras, kontrolleras, utvecklas och förbättras", "Att arbetsmiljön granskas en gång vart tionde år", "Att endast skyddsombudet behöver engagera sig", "Att SAM enbart gäller stora företag med över 500 anställda"], correct:0, fb:"SAM innebär att arbetsmiljön kontinuerligt och systematiskt ska planeras, kontrolleras, utvecklas och förbättras, inklusive regelbunden riskbedömning."},
+    {q:"Vid hur många anställda ska en arbetsplats enligt lag ha ett skyddsombud?", opts:["Minst en anställd", "Minst fem anställda", "Minst femtio anställda", "Skyddsombud krävs aldrig enligt lag"], correct:1, fb:"Lagen föreskriver att på arbetsplatser med minst fem anställda ska det finnas ett skyddsombud, valt av arbetstagarna."},
+    {q:"Vilken särskild rättighet har ett skyddsombud vid omedelbar och allvarlig fara?", opts:["Stopprätt", "Rätt att avskeda kollegor", "Rätt att stänga hela företaget permanent", "Ingen särskild rättighet"], correct:0, fb:"Skyddsombudet har stopprätt om en omedelbar och allvarlig fara för liv eller hälsa upptäcks."},
+    {q:"Vilket av följande ingår i arbetstagarens skyldigheter enligt arbetsmiljölagen?", opts:["Att följa säkerhetsinstruktioner och rapportera risker och incidenter", "Att aldrig behöva använda skyddsutrustning", "Att enbart arbetsgivaren behöver bry sig om säkerhet", "Att aldrig delta i utbildningar"], correct:0, fb:"Arbetstagaren ska följa säkerhetsinstruktioner och rutiner, använda skyddsutrustning korrekt samt rapportera olyckor, tillbud och risker."},
+    {q:"Vilken rättighet har arbetstagaren kopplad till sitt ansvar enligt materialet?", opts:["Rätt till information, utbildning och medverkan i arbetsmiljöarbetet", "Rätt att helt undvika allt ansvar", "Rätt att aldrig rapportera något", "Rätt att ensam besluta om företagets budget"], correct:0, fb:"Arbetstagaren har rätt till information om risker, rätt till utbildning och rätt att medverka i utformningen av arbetsmiljön."},
+    {q:"Vad ingår i arbetsgivarens huvudsakliga skyldigheter enligt Arbetsmiljölagen?", opts:["Att enbart informera om risker en gång vid anställningens start", "Att genomföra regelbundna riskbedömningar och vidta förebyggande åtgärder", "Att aldrig behöva dokumentera något arbetsmiljöarbete", "Att överlåta allt ansvar till skyddsombudet"], correct:1, fb:"Arbetsgivaren ska genomföra regelbundna riskbedömningar för att identifiera potentiella faror och vidta lämpliga förebyggande åtgärder."},
+    {q:"Vad innebär arbetsgivarens ansvar för den psykosociala arbetsmiljön enligt materialet?", opts:["Det ingår inte i arbetsgivarens ansvar alls", "Åtgärder för att förebygga stress, utbrändhet och konflikter samt främja en inkluderande arbetskultur", "Enbart att erbjuda gratis kaffe på arbetsplatsen", "Att enbart fokusera på fysisk säkerhet, aldrig psykisk hälsa"], correct:1, fb:"Arbetsgivaren har även ansvar för den psykosociala arbetsmiljön, vilket inkluderar åtgärder mot stress, utbrändhet och konflikter samt en inkluderande arbetskultur."},
+    {q:"Vad kan Arbetsmiljöverket göra om en arbetsgivare inte uppfyller sina skyldigheter?", opts:["Ingripa med krav, förbud eller i värsta fall sanktionsavgifter", "Ingenting, Arbetsmiljöverket saknar befogenheter", "Enbart skicka ett tackkort", "Enbart informera media utan vidare åtgärd"], correct:0, fb:"Om en arbetsgivare inte uppfyller sina skyldigheter kan Arbetsmiljöverket ingripa med krav, förbud eller sanktionsavgifter."},
+    {q:"Vad är skillnaden mellan ett körtillstånd och ett utbildningsintyg?", opts:["Körtillstånd verifierar praktiska färdigheter, utbildningsintyg bekräftar genomgången teoretisk utbildning", "De är exakt samma dokument med olika namn", "Körtillstånd gäller bara för bilar, aldrig för kranar", "Utbildningsintyg krävs aldrig i Sverige"], correct:0, fb:"Ett körtillstånd verifierar praktiska färdigheter för att hantera specifika lyftanordningar, medan ett utbildningsintyg bekräftar avslutad teoretisk utbildning."},
+    {q:"Vem är ansvarig för att tillhandahålla utbildning och utfärda körtillstånd?", opts:["Arbetsgivaren", "Enbart den anställde själv", "Enbart Arbetsmiljöverket", "Ingen är ansvarig"], correct:0, fb:"Det är arbetsgivarens skyldighet att tillhandahålla nödvändig utbildning och utfärda körtillstånd samt underhålla ett register över dessa."},
+    {q:"Vilka exempel på överträdelser kan leda till sanktionsavgifter enligt materialet?", opts:["Brister i underhåll, otillräcklig utbildning och utebliven användning av personlig skyddsutrustning", "Att kranen är för nymålad", "Att för många raster hålls", "Att för mycket dokumentation upprättas"], correct:0, fb:"Exempel på överträdelser som kan leda till sanktionsavgifter är brister i underhåll/kontroll, otillräcklig utbildning och utebliven användning av personlig skyddsutrustning."},
+    {q:"Enligt tumregeln i materialet, hur många av 300 rapporterade tillbud resulterar i en allvarlig olycka?", opts:["1", "29", "150", "300"], correct:0, fb:"En vanlig tumregel är att av 300 rapporterade tillbud resulterar 29 i mindre olyckor och 1 i en allvarlig olycka."},
+    {q:"Varför är tillbudsrapportering viktig enligt materialet?", opts:["Tillbud fungerar som tidiga varningssignaler för potentiella risker som kan leda till mer allvarliga incidenter", "Tillbud har ingen koppling till framtida olyckor", "Rapportering av tillbud är frivilligt och sällan meningsfullt", "Endast allvarliga olyckor behöver rapporteras, aldrig tillbud"], correct:0, fb:"Tillbud kan ses som tidiga varningssignaler för potentiella risker som kan leda till mer allvarliga incidenter, vilket gör rapportering central för säkerhetsarbetet."}
+  ]
+};
+const CATS = [{id:"all", label:"Alla frågor"}].concat(
+  Object.keys(CAT_META).map(id => ({id, label: CAT_META[id].label}))
+);
+
+let currentCat = "all";
+let order = [];
+let idx = 0;
+let answered = false;
+let score = 0;
+let history = [];
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function shuffleOptions(item){
+  // Bygg par av [alternativtext, ärRätt], slumpa ordningen,
+  // och räkna sedan om vilket index som är rätt i den slumpade ordningen.
+  const pairs = item.opts.map((o, i) => ({ text: o, wasCorrect: i === item.correct }));
+  const shuffled = shuffle(pairs);
+  const newOpts = shuffled.map(p => p.text);
+  const newCorrect = shuffled.findIndex(p => p.wasCorrect);
+  return { ...item, opts: newOpts, correct: newCorrect };
+}
+
+function buildOrder(cat){
+  let items = [];
+  if(cat === "all"){
+    Object.keys(QUESTIONS).forEach(k => QUESTIONS[k].forEach(q => items.push({...q, cat:k})));
+  } else {
+    QUESTIONS[cat].forEach(q => items.push({...q, cat}));
+  }
+  items = shuffle(items).map(shuffleOptions);
+  return items.slice(0, Math.min(QUIZ_LENGTH, items.length));
+}
+
+function totalPoolSize(){
+  return Object.values(QUESTIONS).reduce((sum, arr) => sum + arr.length, 0);
+}
+
+function updatePoolNote(){
+  const note = document.getElementById('poolNote');
+  const poolSize = currentCat === "all" ? totalPoolSize() : QUESTIONS[currentCat].length;
+  const drawn = Math.min(QUIZ_LENGTH, poolSize);
+  note.textContent = `Frågebank: ${poolSize} frågor · ${drawn} slumpas ut denna omgång`;
+}
+
+function renderTabs(){
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = '';
+  CATS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.textContent = c.label;
+    btn.dataset.active = (c.id === currentCat) ? "true" : "false";
+    btn.onclick = () => { currentCat = c.id; startQuiz(); };
+    tabs.appendChild(btn);
+  });
+}
+
+function startQuiz(){
+  order = buildOrder(currentCat);
+  idx = 0; score = 0; history = [];
+  renderTabs();
+  updatePoolNote();
+  renderQuestion();
+}
+
+function updateProgress(){
+  const fill = document.getElementById('progressFill');
+  const label = document.getElementById('progressLabel');
+  const pct = order.length ? (idx/order.length)*100 : 0;
+  fill.style.width = pct + '%';
+  label.textContent = Math.min(idx+1, order.length) + ' / ' + order.length;
+}
+
+function renderQuestion(){
+  answered = false;
+  updateProgress();
+  const card = document.getElementById('card');
+  if(idx >= order.length){
+    renderResult();
+    return;
+  }
+  const item = order[idx];
+  const meta = CAT_META[item.cat];
+
+  const optHtml = item.opts.map((o,i) => {
+    const key = String.fromCharCode(65+i);
+    return `<button class="opt" data-i="${i}"><span class="k">${key}</span><span>${o}</span></button>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="qmeta">
+      <span class="qtag" style="background:${meta.bg}; color:${meta.color};">${meta.label}</span>
+      <span class="qnum">Fråga ${idx+1} av ${order.length}</span>
+    </div>
+    <div class="prompt">${item.q}</div>
+    <div class="options">${optHtml}</div>
+    <div class="feedback" id="feedback"></div>
+    <div class="controls"><button class="next" id="nextBtn" disabled>Nästa</button></div>
+  `;
+
+  card.querySelectorAll('.opt').forEach(btn => {
+    btn.addEventListener('click', () => selectAnswer(parseInt(btn.dataset.i)));
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    idx++;
+    renderQuestion();
+  });
+}
+
+function selectAnswer(i){
+  if(answered) return;
+  answered = true;
+  const item = order[idx];
+  const correct = item.correct;
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach((btn, bi) => {
+    btn.setAttribute('disabled','true');
+    if(bi === correct) btn.classList.add('correct');
+    if(bi === i && i !== correct) btn.classList.add('wrong');
+  });
+  const isCorrect = (i === correct);
+  if(isCorrect) score++;
+  history.push({q:item.q, correct:isCorrect, correctText:item.opts[correct], fb:item.fb});
+
+  const fb = document.getElementById('feedback');
+  fb.classList.add('show', isCorrect ? 'ok' : 'bad');
+  fb.innerHTML = `<b>${isCorrect ? 'Rätt!' : 'Inte riktigt.'}</b>${item.fb}`;
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function renderResult(){
+  const card = document.getElementById('card');
+  const pct = order.length ? Math.round((score/order.length)*100) : 0;
+  const reviewHtml = history.map(h => `
+    <div class="review-item ${h.correct ? 'ok' : 'bad'}">
+      <div class="q">${h.q}</div>
+      <div class="a">${h.correct ? 'Du svarade rätt.' : 'Rätt svar: ' + h.correctText}</div>
+    </div>
+  `).join('');
+
+  card.innerHTML = `
+    <div class="result">
+      <div class="big">${score} / ${order.length}</div>
+      <div class="of">${pct}% rätt</div>
+      <button class="restart" id="restartBtn">Kör igen (nya slumpade frågor)</button>
+      <div class="review">${reviewHtml}</div>
+    </div>
+  `;
+  document.getElementById('restartBtn').addEventListener('click', startQuiz);
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressLabel').textContent = order.length + ' / ' + order.length;
+}
+
+startQuiz();
+</script>
+<script src="../../assets/site.js"></script>
+</body>
+</html>

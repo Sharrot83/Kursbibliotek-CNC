@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matematik — Läsmaterial | Industriteknik BAS</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+
+  /* --- top nav --- */
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{
+    width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto;
+  }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{
+    content:""; position:absolute; background:var(--amber);
+  }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+
+  /* --- dimension-line divider (signature element) --- */
+  .dim{
+    display:flex; align-items:center; gap:10px; margin:38px 0 26px; color:var(--muted);
+    font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace; font-size:11.5px;
+    letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+  }
+  .dim::before, .dim::after{ content:""; flex:1; height:1px; background:var(--line);
+    background-image: linear-gradient(90deg, var(--line) 0, var(--line) 100%);
+    position:relative;
+  }
+  .dim .tick{position:relative;}
+  .dim-line{flex:1; height:1px; background:var(--line); position:relative;}
+  .dim-line::before{content:"";position:absolute; left:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim-line::after{content:"";position:absolute; right:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim .label{padding:2px 4px; flex:0 0 auto;}
+
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  h1 .accent{color:var(--amber);}
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+
+  /* --- buttons --- */
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+
+  /* --- reading material page --- */
+  article.reading h2{
+    font-family:"Arial Narrow",Arial,sans-serif; font-size:24px; font-weight:800; letter-spacing:-.005em;
+    margin:36px 0 12px; padding-top:4px; color:var(--text);
+  }
+  article.reading h2 .num{color:var(--accent,var(--amber)); margin-right:8px; font-family:"IBM Plex Mono",monospace; font-size:16px;}
+  article.reading h3{
+    font-size:16.5px; font-weight:700; margin:22px 0 8px; color:var(--accent,var(--amber));
+  }
+  article.reading p{color:#c9d2d9; font-size:15px; line-height:1.72; margin:0 0 14px;}
+  article.reading ul, article.reading ol{margin:0 0 16px; padding-left:0; list-style:none;}
+  article.reading ul li, article.reading ol li{
+    position:relative; padding-left:26px; margin-bottom:8px; color:#c9d2d9; font-size:14.6px; line-height:1.6;
+  }
+  article.reading ul li::before{
+    content:""; position:absolute; left:0; top:9px; width:7px; height:2px; background:var(--accent,var(--amber));
+  }
+  article.reading ol{counter-reset:step;}
+  article.reading ol li{counter-increment:step;}
+  article.reading ol li::before{
+    content:counter(step); position:absolute; left:0; top:0; width:18px; height:18px; border-radius:4px;
+    background:var(--accent,var(--amber)); color:#0f1115; font-size:11px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; font-family:"IBM Plex Mono",monospace;
+  }
+  article.reading strong{color:var(--text);}
+  .callout{
+    border-left:3px solid var(--accent,var(--amber)); background:var(--panel);
+    padding:13px 16px; margin:18px 0; border-radius:0 6px 6px 0; font-size:14.2px; color:#dfe6ea; line-height:1.6;
+  }
+  .callout b{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent,var(--amber)); margin-bottom:4px; font-family:"IBM Plex Mono",monospace;}
+  .lawbox{
+    margin:20px 0; padding:16px 18px; border:1px dashed var(--line); border-radius:6px;
+    font-style:italic; color:var(--text); font-size:15px; background:var(--bg2);
+  }
+  .lawbox b{font-style:normal; display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:6px; font-family:"IBM Plex Mono",monospace;}
+  .toc{
+    display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 6px;
+  }
+  .toc a{
+    font-size:12.5px; padding:6px 11px; border:1px solid var(--line); border-radius:999px;
+    text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;
+  }
+  .toc a:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+
+  .example{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    padding:14px 16px; margin:14px 0; font-size:14.4px; line-height:1.7; color:#dfe6ea;
+  }
+  .example b{color:var(--accent,var(--amber)); display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; font-family:"IBM Plex Mono",monospace;}
+  .example .eq{font-family:"IBM Plex Mono",monospace; font-size:15px; color:var(--text);}
+
+  .triwrap{
+    display:flex; align-items:center; justify-content:center; gap:28px; flex-wrap:wrap;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:22px; margin:18px 0;
+  }
+  .triwrap svg{max-width:280px; height:auto;}
+  .trikey{font-size:13.5px; color:#c9d2d9; line-height:2;}
+  .trikey b{color:var(--accent,var(--amber));}
+
+  .lathund-cta{
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    background:linear-gradient(135deg, #1c232b, #171e25); border:1px solid var(--line); border-radius:8px;
+    padding:18px 20px; margin:18px 0;
+  }
+  .lathund-cta .lt-txt{font-size:13.8px; color:var(--muted); max-width:48ch;}
+  .lathund-cta .lt-txt b{color:var(--text);}
+
+  .footcta{
+    margin-top:48px; border-top:1px solid var(--line); padding-top:26px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .footcta .ft-txt{font-size:13.5px; color:var(--muted); max-width:44ch;}
+
+  footer.sitefoot{text-align:center; color:var(--muted); font-size:12px; margin-top:50px; padding-bottom:10px;}
+
+  @media (max-width:640px){
+    .topnav nav{gap:12px; font-size:12px;}
+  }
+
+  /* --- shared topbar / crumbs (site-wide course switcher) --- */
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+
+<style>
+  article.reading{max-width:720px;}
+</style>
+<style>:root{--page-accent:#6fc3d6; --page-dim:#1c3a40; --accent:#6fc3d6;}
+  :root[data-theme="light"]{
+    --page-accent: #3f97ab;
+  }</style>
+
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="../material.html"><span class="mark"></span>INDUSTRITEKNIK BAS</a>
+  <nav>
+    <a href="../material.html">Kursmaterial</a>
+    <a href="../quiz-alla.html">Storquiz (657)</a>
+  </nav>
+</div>
+
+<main class="wrap narrow">
+  <header class="hero">
+    <div class="eyebrow">MTL-08 · Läsmaterial</div>
+    <h1>Matematik</h1>
+    <div class="sub">Grundläggande räknefärdigheter för industriteknik: ekvationer, trigonometri, Pythagoras sats och procenträkning.</div>
+    <div class="toc"><a href="#ekvationer">Ekvationer</a><a href="#trigonometri">Trigonometri</a><a href="#pythagoras">Pythagoras sats</a><a href="#procent">Procent</a></div>
+  </header>
+
+  <div class="lathund-cta">
+    <div class="lt-txt"><b>Fler formler (α, β och cotangens)</b><br>Lathunden visar samtliga formler för både vinklarna α och β i triangeln, plus en tabell för vilken formel du ska använda beroende på vad du känner till.</div>
+    <a class="btn btn-amber" href="../lathund-trigonometri.html" target="_blank" rel="noopener">Öppna lathunden &rarr;</a>
+  </div>
+
+  <div class="dim">TILL INNEHÅLLET</div>
+
+  <article class="reading">
+
+    <h2 id="ekvationer"><span class="num">01</span>Ekvationer</h2>
+    <p>En <strong>ekvation</strong> är ett matematiskt påstående om att två uttryck är lika mycket värda, t.ex. <span class="eq" style="font-family:'IBM Plex Mono',monospace;">2x = 10</span>. Bokstaven (oftast <strong>x</strong>) kallas den <strong>obekanta</strong> — det är värdet vi ska ta reda på. Att <strong>lösa</strong> ekvationen innebär att hitta det tal som x måste vara för att likheten ska stämma.</p>
+
+    <h3>Balansmetoden</h3>
+    <p>Tänk på ekvationen som en balansvåg — vänster och höger sida väger lika mycket. Gör du något med ena sidan (t.ex. drar bort ett tal, eller delar med ett tal) måste du göra exakt samma sak med andra sidan, annars slår vågen slint.</p>
+    <ol>
+      <li>Samla alla termer med x på ena sidan och alla vanliga tal på den andra, genom att addera eller subtrahera samma sak på båda sidor.</li>
+      <li>Dela båda sidor med talet framför x (koefficienten), så att x till slut står ensam.</li>
+      <li>Kontrollera svaret genom att sätta in det i den ursprungliga ekvationen.</li>
+    </ol>
+
+    <div class="example">
+      <b>Exempel — enkel ekvation</b>
+      <span class="eq">2x = 10</span><br>
+      Dela båda sidor med 2: <span class="eq">x = 10 / 2 = 5</span><br>
+      Kontroll: 2 · 5 = 10 ✓
+    </div>
+
+    <div class="example">
+      <b>Exempel — med en extra term</b>
+      <span class="eq">3x + 4 = 19</span><br>
+      Subtrahera 4 från båda sidor: <span class="eq">3x = 15</span><br>
+      Dela med 3: <span class="eq">x = 5</span>
+    </div>
+
+    <div class="example">
+      <b>Exempel — x på båda sidor</b>
+      <span class="eq">5x + 2 = 2x + 17</span><br>
+      Subtrahera 2x från båda sidor: <span class="eq">3x + 2 = 17</span><br>
+      Subtrahera 2: <span class="eq">3x = 15</span><br>
+      Dela med 3: <span class="eq">x = 5</span>
+    </div>
+
+    <div class="callout"><b>Tips</b>Om x har en negativ koefficient, t.ex. <span style="font-family:'IBM Plex Mono',monospace;">−2x = 8</span>, dela ändå på samma sätt: x = 8 / (−2) = −4. Glöm inte att svaret kan bli negativt eller ett decimaltal.</div>
+
+    <p>I quizet för Matematik ber vi dig skriva in svaret direkt (t.ex. <span style="font-family:'IBM Plex Mono',monospace;">5</span> eller <span style="font-family:'IBM Plex Mono',monospace;">x = 5</span>) istället för att välja bland svarsalternativ — precis som när du löser en ekvation på riktigt. Frågebanken innehåller allt från enkla en-stegs-ekvationer till ekvationer med x på båda sidor och parenteser, och 30 frågor slumpas ut varje omgång.</p>
+
+    <h2 id="trigonometri"><span class="num">02</span>Trigonometri</h2>
+    <p>Trigonometri handlar om sambanden mellan vinklar och sidor i en <strong>rätvinklig triangel</strong> (en triangel med ett 90°-hörn). Med hjälp av vinkeln och en känd sida kan man räkna ut de andra sidorna — eller tvärtom, räkna ut en vinkel om man känner till två sidor.</p>
+
+    <h3>Sidornas namn relativt vinkeln</h3>
+    <p>I varje trigonometrifråga finns en vinkel som allt utgår ifrån. De tre sidorna namnges alltid utifrån <strong>den vinkeln</strong>:</p>
+    <ul>
+      <li><strong>A — Motstående katet:</strong> sidan som ligger mitt emot vinkeln (rör inte vinkelns hörn alls).</li>
+      <li><strong>B — Närliggande katet:</strong> den kortare sidan som ligger an mot vinkeln (men som inte är hypotenusan).</li>
+      <li><strong>C — Hypotenusan:</strong> den längsta sidan, alltid mitt emot det räta hörnet (90°).</li>
+    </ul>
+
+    <div class="triwrap">
+      <svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="80,20 80,190 280,190" fill="none" stroke="#6fc3d6" stroke-width="2.5"/>
+        <path d="M80,170 L100,170 L100,190" fill="none" stroke="#6fc3d6" stroke-width="2"/>
+        <path d="M257.1,170.6 Q242.0,176.0 250.0,190.0" fill="none" stroke="#ff8a2b" stroke-width="2.5"/>
+        <text x="15" y="112" fill="#e9edf1" font-size="16" font-weight="700" font-family="Arial">A</text>
+        <text x="150" y="212" fill="#e9edf1" font-size="16" font-weight="700" font-family="Arial">B</text>
+        <text x="172" y="98" fill="#e9edf1" font-size="16" font-weight="700" font-family="Arial">C</text>
+        <text x="218" y="172" fill="#ff8a2b" font-size="15" font-weight="700" font-family="Arial">v</text>
+      </svg>
+      <div class="trikey">
+        <div><b>A</b> = Motstående katet</div>
+        <div><b>B</b> = Närliggande katet</div>
+        <div><b>C</b> = Hypotenusa</div>
+        <div><b>v</b> = vinkeln frågan utgår från</div>
+      </div>
+    </div>
+
+    <p>I quizfrågorna ritas triangeln alltid upp på samma sätt, med de kända värdena utsatta och det du ska räkna ut markerat med ett frågetecken.</p>
+
+    <h3>Formlerna (SOH-CAH-TOA)</h3>
+    <div class="lawbox">
+      <b>Grundformler</b>
+      sin(v) = A / C&nbsp;&nbsp;&nbsp;&nbsp;cos(v) = B / C&nbsp;&nbsp;&nbsp;&nbsp;tan(v) = A / B
+    </div>
+    <p>Ett enkelt sätt att minnas dem: <strong>SOH</strong> (Sinus = Opposite/Hypotenusa), <strong>CAH</strong> (Cosinus = Adjacent/Hypotenusa), <strong>TOA</strong> (Tangens = Opposite/Adjacent). Vill du räkna ut en sida löser du ut den ur rätt formel; vill du räkna ut vinkeln använder du den omvända funktionen (t.ex. <span style="font-family:'IBM Plex Mono',monospace;">v = tan⁻¹(A/B)</span>, ofta kallad "arctan" eller "atan" på räknaren).</p>
+
+    <div class="example">
+      <b>Exempel — räkna ut en sida</b>
+      Vinkeln är 30° och den närliggande kateten (B) är 10 cm. Sök hypotenusan (C).<br>
+      <span class="eq">cos(30°) = B / C &rArr; C = B / cos(30°) = 10 / 0,866 ≈ 11,5 cm</span>
+    </div>
+    <div class="example">
+      <b>Exempel — räkna ut en vinkel</b>
+      Motstående katet (A) är 6 cm och närliggande katet (B) är 8 cm. Sök vinkeln v.<br>
+      <span class="eq">tan(v) = A / B = 6 / 8 = 0,75 &rArr; v = tan⁻¹(0,75) ≈ 36,9°</span>
+    </div>
+
+    <p>Fler formler för både vinklarna α och β, samt en tabell för vilken formel du ska använda: se lathunden högst upp på sidan (öppnas i en ny flik, bra att ha bredvid när du räknar). Samma knapp finns tillgänglig direkt i quizet.</p>
+
+    <h2 id="pythagoras"><span class="num">03</span>Pythagoras sats</h2>
+    <p>Pythagoras sats beskriver sambandet mellan de tre sidorna i en rätvinklig triangel — helt utan att blanda in några vinklar. Satsen säger att kvadraten på hypotenusan är lika stor som summan av kvadraterna på de två kateterna.</p>
+
+    <div class="lawbox">
+      <b>Pythagoras sats</b>
+      a² + b² = c²&nbsp;&nbsp;&nbsp;&nbsp;(a och b är kateterna, c är hypotenusan)
+    </div>
+
+    <p>Satsen kan lösas ut på tre sätt beroende på vad du söker:</p>
+    <ul>
+      <li><strong>Söker du hypotenusan:</strong> c = √(a² + b²)</li>
+      <li><strong>Söker du en katet:</strong> a = √(c² − b²), eller b = √(c² − a²)</li>
+    </ul>
+
+    <div class="example">
+      <b>Exempel — söka hypotenusan</b>
+      Kateterna är 3 cm och 4 cm.<br>
+      <span class="eq">c = √(3² + 4²) = √(9 + 16) = √25 = 5 cm</span>
+    </div>
+    <div class="example">
+      <b>Exempel — söka en katet</b>
+      Hypotenusan är 13 cm och en katet är 5 cm.<br>
+      <span class="eq">b = √(13² − 5²) = √(169 − 25) = √144 = 12 cm</span>
+    </div>
+
+    <div class="callout"><b>Kom ihåg</b>Hypotenusan är alltid den längsta sidan och ligger alltid mitt emot det räta hörnet. Om ditt svar på en katet blir längre än hypotenusan har något blivit fel — kontrollera uträkningen.</div>
+
+    <h2 id="procent"><span class="num">04</span>Procent</h2>
+    <p><strong>Procent</strong> (%) betyder "per hundra" och används för att beskriva en andel av något. 1% av ett tal är talet delat med 100.</p>
+
+    <div class="lawbox">
+      <b>Grundformel</b>
+      Andel i procent = (delen / det hela) × 100
+    </div>
+
+    <div class="example">
+      <b>Exempel — hur mycket är X% av ett tal</b>
+      Vad är 15% av 400?<br>
+      <span class="eq">400 × 0,15 = 60</span>
+    </div>
+    <div class="example">
+      <b>Exempel — hur många procent är en del av helheten</b>
+      20 av 80 tillverkade detaljer är kasserade. Hur många procent?<br>
+      <span class="eq">(20 / 80) × 100 = 25 %</span>
+    </div>
+    <div class="example">
+      <b>Exempel — procentuell förändring</b>
+      Ett pris höjs från 200 kr till 250 kr. Hur många procent ökade priset?<br>
+      <span class="eq">((250 − 200) / 200) × 100 = 25 %</span>
+    </div>
+
+    <h3>Procent kontra procentenheter</h3>
+    <p>Det här är en vanlig felkälla: <strong>procentenheter</strong> beskriver den enkla differensen mellan två procentvärden, medan <strong>procent</strong> beskriver hur stor den relativa förändringen är jämfört med ursprungsvärdet.</p>
+    <div class="example">
+      <b>Exempel — andelen godkända detaljer ökar från 60% till 75%</b>
+      Ökning i <strong>procentenheter</strong>: 75 − 60 = <span class="eq">15 procentenheter</span><br>
+      Ökning i <strong>procent</strong> (jämfört med ursprungsvärdet 60%): <span class="eq">((75 − 60) / 60) × 100 ≈ 25 %</span>
+    </div>
+    <div class="callout"><b>Kom ihåg</b>15 procentenheters ökning och 25 procents ökning beskriver här exakt samma förändring — bara sett på två olika sätt. Läs frågan noga för att se vilket av de två svaren som efterfrågas.</div>
+
+  </article>
+
+  <div class="footcta">
+    <div class="ft-txt">Läs igenom materialet, testa sedan dina kunskaper i quizet för Matematik. Svaren skrivs in direkt — inga svarsalternativ.</div>
+    <a class="btn btn-amber" href="../quiz/matematik.html">Starta quiz &rarr;</a>
+  </div>
+</main>
+
+<script src="../../../assets/site.js"></script>
+</body>
+</html>

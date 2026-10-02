@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miljö, Hälsa & Säkerhet — Läsmaterial | Industriteknik BAS</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+
+  /* --- top nav --- */
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{
+    width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto;
+  }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{
+    content:""; position:absolute; background:var(--amber);
+  }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+
+  /* --- dimension-line divider (signature element) --- */
+  .dim{
+    display:flex; align-items:center; gap:10px; margin:38px 0 26px; color:var(--muted);
+    font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace; font-size:11.5px;
+    letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+  }
+  .dim::before, .dim::after{ content:""; flex:1; height:1px; background:var(--line);
+    background-image: linear-gradient(90deg, var(--line) 0, var(--line) 100%);
+    position:relative;
+  }
+  .dim .tick{position:relative;}
+  .dim-line{flex:1; height:1px; background:var(--line); position:relative;}
+  .dim-line::before{content:"";position:absolute; left:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim-line::after{content:"";position:absolute; right:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim .label{padding:2px 4px; flex:0 0 auto;}
+
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  h1 .accent{color:var(--amber);}
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+
+  /* --- subject grid / title-block cards --- */
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px; margin-top:30px;}
+  .tblock{
+    border:1px solid var(--line); border-radius:4px; background:var(--panel);
+    position:relative; overflow:hidden; display:flex; flex-direction:column;
+    transition:.18s; text-decoration:none; color:var(--text);
+  }
+  .tblock::before{ /* corner registration marks */
+    content:""; position:absolute; top:8px; left:8px; width:9px; height:9px;
+    border-top:1.5px solid var(--accent,var(--amber)); border-left:1.5px solid var(--accent,var(--amber));
+    opacity:.9;
+  }
+  .tblock::after{
+    content:""; position:absolute; bottom:8px; right:8px; width:9px; height:9px;
+    border-bottom:1.5px solid var(--accent,var(--amber)); border-right:1.5px solid var(--accent,var(--amber));
+    opacity:.9;
+  }
+  .tblock:hover{border-color:var(--accent,var(--amber)); transform:translateY(-2px); box-shadow:0 16px 30px -18px rgba(0,0,0,.7);}
+  .tblock .tb-top{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 18px; border-bottom:1px solid var(--line);
+    font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; letter-spacing:.06em; color:var(--muted);
+  }
+  .tblock .tb-top .code{color:var(--accent,var(--amber)); font-weight:700;}
+  .tblock .tb-body{padding:16px 18px 6px; flex:1;}
+  .tblock h3{margin:0 0 8px; font-family:"Arial Narrow",Arial,sans-serif; font-size:21px; font-weight:800; letter-spacing:-.01em;}
+  .tblock p{margin:0; color:var(--muted); font-size:13.6px; line-height:1.55;}
+  .tblock .tb-bottom{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:13px 18px; margin-top:14px; border-top:1px solid var(--line);
+    font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; color:var(--muted);
+  }
+  .tblock .tb-bottom .qn{color:var(--accent,var(--amber)); font-weight:700;}
+  .pillrow{display:flex; gap:8px; padding:0 18px 16px;}
+  .pill{
+    flex:1; text-align:center; padding:9px 6px; border-radius:5px; border:1px solid var(--line);
+    font-size:12.5px; font-weight:700; text-decoration:none; color:var(--text); transition:.15s;
+    background:var(--panel-2);
+  }
+  .pill:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+  .pill.solid{background:var(--accent,var(--amber)); border-color:var(--accent,var(--amber)); color:#0f1115;}
+  .pill.solid:hover{filter:brightness(1.08); color:#0f1115;}
+
+  /* --- master card (combined quiz) --- */
+  .master{
+    margin-top:34px; border:1px solid var(--line); border-radius:6px;
+    background:linear-gradient(135deg, #1c232b, #171e25);
+    padding:26px 26px 22px; position:relative; overflow:hidden;
+  }
+  .master::before{
+    content:""; position:absolute; inset:0; opacity:.5; pointer-events:none;
+    background-image: repeating-linear-gradient(135deg, rgba(255,138,43,.05) 0 2px, transparent 2px 14px);
+  }
+  .master .mtitle{font-family:"Arial Narrow",Arial,sans-serif; font-weight:800; font-size:23px; margin:2px 0 6px;}
+  .master p{color:var(--muted); font-size:14px; max-width:56ch; line-height:1.6; margin:0 0 16px;}
+
+  /* --- buttons --- */
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+
+  /* --- reading material page --- */
+  article.reading h2{
+    font-family:"Arial Narrow",Arial,sans-serif; font-size:24px; font-weight:800; letter-spacing:-.005em;
+    margin:36px 0 12px; padding-top:4px; color:var(--text);
+  }
+  article.reading h2 .num{color:var(--accent,var(--amber)); margin-right:8px; font-family:"IBM Plex Mono",monospace; font-size:16px;}
+  article.reading h3{
+    font-size:16.5px; font-weight:700; margin:22px 0 8px; color:var(--accent,var(--amber));
+  }
+  article.reading p{color:#c9d2d9; font-size:15px; line-height:1.72; margin:0 0 14px;}
+  article.reading ul{margin:0 0 16px; padding-left:0; list-style:none;}
+  article.reading ul li{
+    position:relative; padding-left:20px; margin-bottom:8px; color:#c9d2d9; font-size:14.6px; line-height:1.6;
+  }
+  article.reading ul li::before{
+    content:""; position:absolute; left:0; top:9px; width:7px; height:2px; background:var(--accent,var(--amber));
+  }
+  article.reading strong{color:var(--text);}
+  .callout{
+    border-left:3px solid var(--accent,var(--amber)); background:var(--panel);
+    padding:13px 16px; margin:18px 0; border-radius:0 6px 6px 0; font-size:14.2px; color:#dfe6ea; line-height:1.6;
+  }
+  .callout b{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent,var(--amber)); margin-bottom:4px; font-family:"IBM Plex Mono",monospace;}
+  .lawbox{
+    margin:20px 0; padding:16px 18px; border:1px dashed var(--line); border-radius:6px;
+    font-style:italic; color:var(--text); font-size:15px; background:var(--bg2);
+  }
+  .lawbox b{font-style:normal; display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:6px; font-family:"IBM Plex Mono",monospace;}
+  .toc{
+    display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 6px;
+  }
+  .toc a{
+    font-size:12.5px; padding:6px 11px; border:1px solid var(--line); border-radius:999px;
+    text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;
+  }
+  .toc a:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+
+  .footcta{
+    margin-top:48px; border-top:1px solid var(--line); padding-top:26px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .footcta .ft-txt{font-size:13.5px; color:var(--muted); max-width:44ch;}
+
+  footer.sitefoot{text-align:center; color:var(--muted); font-size:12px; margin-top:50px; padding-bottom:10px;}
+
+  @media (max-width:640px){
+    .topnav nav{gap:12px; font-size:12px;}
+    .master{padding:20px;}
+  }
+
+  /* --- shared topbar / crumbs (site-wide course switcher) --- */
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+
+<style>
+  article.reading{max-width:720px;}
+</style>
+<style>:root{--page-accent:#4fa571; --page-dim:#1f3d2b; --accent:#4fa571;}
+  :root[data-theme="light"]{
+    --page-accent: #2f8a52;
+  }</style>
+
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="../material.html"><span class="mark"></span>INDUSTRITEKNIK BAS</a>
+  <nav>
+    <a href="../material.html">Kursmaterial</a>
+    <a href="../quiz-alla.html">Storquiz (657)</a>
+  </nav>
+</div>
+
+<main class="wrap narrow">
+  <header class="hero">
+    <div class="eyebrow">MTL-02 · Läsmaterial</div>
+    <h1>Miljö, Hälsa & Säkerhet</h1>
+    <div class="sub">Miljömärkning, arbetsmiljölagen, maskinsäkerhet, kemikalier, första hjälpen och Sveriges energi.<br><span style="color:var(--muted); font-size:12.5px;">Källa: Miljö, Arbetsmiljö & Säkerhet – lättläst version</span></div>
+    <div class="toc"><a href="#miljo">Vad är miljö?</a><a href="#miljomarkningar">Miljömärkningar &amp; återvinning</a><a href="#miljoledning">ISO 14001 &amp; Miljöbalken</a><a href="#ansvar-sam">Ansvar, skyddsombud &amp; SAM</a><a href="#ce-buller">CE-märkning, buller &amp; hörsel</a><a href="#vibrationer-fall">Vibrationer, fall &amp; klimat</a><a href="#syn-skydd">Syn, belysning &amp; huvudskydd</a><a href="#skar-svets">Skärskador, ljusbåge &amp; svetsning</a><a href="#maskinsakerhet">Maskinsäkerhet</a><a href="#kemikalier-stralning">Kemikalier &amp; strålning</a><a href="#ergonomi">Lyft, ergonomi &amp; företagshälsovård</a><a href="#psykisk-trakasserier">Psykisk hälsa &amp; trakasserier</a><a href="#el-truckar">El, truckar &amp; lyftanordningar</a><a href="#brand-forsta-hjalpen">Brand &amp; första hjälpen</a><a href="#varselmarkning">Varselmärkning &amp; skyddsutrustning</a><a href="#energi">Sveriges energi</a></div>
+  </header>
+  <div class="dim">TILL INNEHÅLLET</div>
+  <article class="reading">
+    <h2 id="miljo"><span class="num">01</span>Vad är miljö?</h2>
+<p>Miljö är allt som finns runt omkring oss — luften, vattnet, djuren, växterna och naturen. Människor påverkar miljön, och miljön påverkar oss tillbaka: det vi släpper ut i naturen kommer förr eller senare tillbaka till oss. Sverige vill lämna över en frisk och ren miljö till nästa generation.</p>
+<ul><li><strong>Akut påverkan</strong> — du får i dig mycket gift på kort tid, blir sjuk men frisk igen efteråt</li><li><strong>Kronisk påverkan</strong> — du får i dig lite gift under lång tid; giftet stannar i kroppen och skadar dig och dina barn</li></ul>
+<div class="callout"><b>Exempel</b>En het Teflonpanna kan avge giftig gas. Gasen är farlig för burfåglar och kan döda dem.</div>
+
+    <h2 id="miljomarkningar"><span class="num">02</span>Miljömärkningar &amp; återvinning</h2>
+<p>Miljömärkningar hjälper dig att välja produkter som är bra för miljön:</p>
+<ul><li><strong>KRAV</strong> — kontrollerar ekologisk odling</li><li><strong>Bra Miljöval</strong> — Naturskyddsföreningens egen märkning</li><li><strong>EU-lövet</strong> — märke för ekologisk mat inom EU</li><li><strong>EU Ecolabel</strong> (EU-blomman) — EU:s miljömärke för bl.a. kläder, möbler och kemikalier</li><li><strong>Svanen</strong> — Nordens officiella miljömärke sedan 1989, granskar hela varans livstid</li></ul>
+<p>Skräp är egentligen resurser som hamnat fel. Att sortera skräp sparar råvaror och energi, och minskar behovet av att bryta ny råvara ur naturen.</p>
+<div class="lawbox"><b>Sveriges avfall (2020)</b>Energiåtervinning 46 % &middot; Materialåtervinning 33 % &middot; Biologisk återvinning 16 % &middot; Byggmaterial 4 % &middot; Deponering 1 %</div>
+<p><strong>Viktigt:</strong> Batterier kan innehålla farliga eller dyrbara metaller. Lämna alltid batterier på en återvinningsstation — kasta dem aldrig i vanliga soporna.</p>
+
+    <h2 id="miljoledning"><span class="num">03</span>ISO 14001 &amp; Miljöbalken</h2>
+<p><strong>ISO 14001</strong> är en standard som visar hur ett företag ska jobba med miljöfrågor: en grundläggande policy, tidsatta mål, en handlingsplan och uppföljning. Genom en oberoende revision kan ett företag bli certifierat enligt ISO 14001.</p>
+<p><strong>Miljöbalken</strong> är en svensk lag om naturen. Den säger att vi får bruka naturen — odla, fiska, bygga — men måste ta ansvar, göra så lite skada som möjligt och reparera den skada som ändå sker. Målet med lagen är att skydda människors hälsa och miljön, skydda värdefull natur och kultur, bevara djur- och växtarter, använda mark och vatten hållbart, och öka återanvändning och återvinning.</p>
+    <h2 id="ansvar-sam"><span class="num">04</span>Ansvar, skyddsombud &amp; SAM</h2>
+<p>Arbetsgivaren har huvudansvaret för arbetsmiljön. Arbetsgivare och anställda ska samarbeta för att jobbet ska bli säkert — struntar arbetsgivaren i säkerheten och någon skadas eller dör kan det räknas som ett brott. Arbetsmiljöverket är den myndighet som skriver regler (AFS) om hur branscher, ämnen och maskiner ska hanteras säkert.</p>
+<p><strong>Skyddsombudet</strong> representerar de anställda i arbetsmiljöfrågor, får utbildning, får se viktiga dokument och kan begära åtgärder. Vid akut fara kan skyddsombudet stoppa arbetet helt.</p>
+<h3>Systematiskt arbetsmiljöarbete (SAM)</h3>
+<p>Varje arbetsplats ska undersöka riskerna varje år, i fyra steg: undersök vilka risker som finns, bedöm hur allvarliga de är, gör något åt riskerna, och följ upp om åtgärderna fungerade. Ett allvarligt olycksfall eller tillbud ska alltid anmälas till Arbetsmiljöverket.</p>
+
+    <h2 id="ce-buller"><span class="num">05</span>CE-märkning, buller &amp; hörsel</h2>
+<p><strong>CE-märkning</strong> betyder att en produkt uppfyller EU:s krav på hälsa, miljö och säkerhet. Bara tillverkaren får sätta ett CE-märke på en produkt — aldrig den som säljer eller importerar den.</p>
+<p>Buller är oönskat ljud som stör eller stressar. Skadan är smygande — den gör inte ont och syns inte. Många söker hjälp först efter att redan ha förlorat 40 % av hörseln, och en hörselskada går inte att bota.</p>
+<div class="callout"><b>Enkelt test</b>Om du inte kan prata med någon på en meters håll i vanlig samtalston utan att höja rösten, är bullret troligen skadligt — eller så är du redan hörselskadad.</div>
+<ul><li><strong>80 dB</strong> — arbetsgivaren ska erbjuda hörselskydd</li><li><strong>85 dB</strong> — du måste använda hörselskydd</li><li><strong>85 dB (dag) / 115 dB (max) / 135 dB (impuls)</strong> — får aldrig överskridas, inte ens med hörselskydd på</li></ul>
+<p>Hörselkåpor ger bäst skydd (cirka 30 dB dämpning), proppar dämpar mindre (cirka 10–12 dB). Fel isatta proppar eller glasögonbågar under kåporna kan sänka skyddet med upp till 50 %. Snabba ljudchocker, som nithammare eller pistolskott, ökar risken för skada mer än ett jämnt brummande ljud. Minska bullret genom att i första hand angripa källan, sedan skärma av eller isolera, och först därefter använda personlig skyddsutrustning.</p>
+
+    <h2 id="vibrationer-fall"><span class="num">06</span>Vibrationer, fall &amp; klimat</h2>
+<p>Var tionde person i arbetslivet utsätts för vibrationer från händer och armar. Skador som "vita fingrar" kan bli permanenta. Verktyg som ofta orsakar skador: mutterdragare, slipmaskin, vinkelslip, borrmaskin. Låt verktyget göra jobbet, håll händerna varma och torra, ta pauser och byt hand, och använd vibrationsdämpande handskar.</p>
+<div class="lawbox"><b>Fallskydd</b>Du måste ha fallskydd om fallhöjden är 2 meter eller mer.</div>
+<p>Omkring 5 000 personer skadas varje år av halka och snubbling. Håll ordning, skotta och sanda i tid, och använd skor med bra grepp.</p>
+<h3>Klimat är inte bara temperatur</h3>
+<p>Drag, luftfuktighet och värmestrålning gör klimatet jobbigt — inte bara själva temperaturen. Vid tungt jobb i varmt klimat: ta täta korta pauser, drick ofta och ersätt saltförlust. I kallt klimat: undvik onödigt öppna dörrar och använd flera tunna klädlager.</p>
+<ul><li>Vintertid, kroppsarbete: 16–17 °C</li><li>Vintertid, stillasittande arbete: 20–23 °C</li><li>Sommartid/värmebölja: några grader högre är acceptabelt</li></ul>
+    <h2 id="syn-skydd"><span class="num">07</span>Syn, belysning &amp; huvudskydd</h2>
+<p>Dålig belysning kan ge ögontrötthet, allmän trötthet och huvudvärk — vilket ökar risken för olyckor. Belysningen ska vara jämn i hela lokalen och inte blända eller flimra. En 60-åring behöver normalt minst dubbelt så mycket ljus som en 20-åring, och en 50-åring ungefär 50 % mer. Om jobbet kräver ansträngning för att se ordentligt är det arbetsgivarens skyldighet att stå för individuellt anpassade synhjälpmedel.</p>
+<h3>Skador på huvud och ögon</h3>
+<p>Skyddshjälm används där saker kan falla ner — en stötskyddskeps skyddar bara mot att du själv slår i huvudet, aldrig mot fallande föremål. En hjälm håller normalt 3–5 år, kortare om den utsatts för kemikalier eller mycket sol; byt alltid en skadad, sprucken eller missfärgad hjälm.</p>
+<ul><li><strong>Mekanisk</strong> ögonskada — damm och flisor</li><li><strong>Optisk</strong> — strålning, t.ex. UV-ljus</li><li><strong>Kemisk</strong> — syra eller starka rengöringsmedel</li><li><strong>Termisk</strong> — stark värme eller kyla</li></ul>
+<p>Använd skyddsglasögon (stötar och strålning), korgglasögon (damm, stänk, smält metall) eller ansiktsskydd (stötar, kemikalier, värme) beroende på risken.</p>
+
+    <h2 id="skar-svets"><span class="num">08</span>Skärskador, ljusbåge &amp; svetsning</h2>
+<p>Skär- och stickskador är en av de vanligaste skadorna på jobbet — vanliga skyddshandskar räcker inte, det krävs särskilda skärskyddshandskar. Skärskyddsnivån märks A–F, där F är starkast skydd.</p>
+<p>En <strong>ljusbåge</strong> är en kraftig elektrisk urladdning mellan två strömförande ledare och kan bli hetare än 19 000 grader — mer än tre gånger så het som solens yta. Elektriker och industriarbetare är mest utsatta.</p>
+<div class="lawbox"><b>Styrka vid ljusbåge</b>1 cal/cm² ≈ handen sakta över ett stearinljus &middot; 3 cal/cm² ≈ ytlig solbränna &middot; 5 cal/cm² ≈ kraftig solbränna, kan kräva sjukhusvistelse &middot; 8 cal/cm² ≈ allvarlig, potentiellt dödlig brännskada</div>
+<p>Skydd mot ljusbåge: flam- och ljusbågeskyddade kläder från underkläder till ytterplagg, hjälm med godkänt visir och elektriskt isolerade hörselskydd. Svetsare skadas oftare på jobbet än genomsnittet — den största risken är svetsrök, som på lång sikt kan öka risken för lungcancer med upp till 40 %. Skyddsutrustning vid svetsning: svetshjälm/visir med rätt glasfilter, andningsskydd, heltäckande skyddskläder, stålhättaskor, läderförkläde och hörselskydd. Den som utför "heta arbeten" på en tillfällig arbetsplats behöver gå kursen Heta Arbeten.</p>
+
+    <h2 id="maskinsakerhet"><span class="num">09</span>Maskinsäkerhet</h2>
+<p>En maskin som är CE-märkt är inte automatiskt riskfri — du behöver alltid tydliga instruktioner om hur den används säkert.</p>
+<ul><li><strong>Nödstopp</strong> ska finnas nära dig och stanna maskinen direkt</li><li><strong>Säkerhetsstopp</strong> (t.ex. ljusstrålar) stoppar maskinen om någon kommer för nära</li><li><strong>Maskinskydd</strong> finns fasta, rörliga eller justerbara</li></ul>
+<p>Kontrollera alltid att skydden inte är borttagna och att arbetsstycket sitter fast innan du startar maskinen.</p>
+    <h2 id="kemikalier-stralning"><span class="num">10</span>Kemikalier &amp; strålning</h2>
+<p>Läs alltid etiketten och säkerhetsdatabladet innan du använder en kemisk produkt. Farliga ämnen kan komma in i kroppen genom inandning, hudkontakt eller förtäring.</p>
+<div class="callout"><b>Vid olycka med kemikalier</b>På huden: ta av kläderna direkt och tvätta med tvål och vatten. I ögonen: spola omedelbart med rikligt vatten i minst 15 minuter. Vid inandning: avbryt arbetet och gå ut i frisk luft. Ring 112 vid akut förgiftning, eller Giftinformationscentralen 08-33 12 31.</div>
+<p>Vanliga farliga ämnen: epoxiplast (mycket allergiframkallande), isocyanater (kan ge astma), styren (ångor mycket farliga, tränger in genom huden), aceton/thinner/toluen (irriterar hud och slemhinnor), tri- och perkloretylen (mycket farliga, bildar giftig gas vid upphettning), natriumhydroxid (starkt frätande), asbest (förbjudet men kan finnas i äldre isolering) och zink (kan ge "zinkfrossa" vid upphettning).</p>
+<h3>Strålning</h3>
+<ul><li><strong>UV-strålning</strong> — från solen och svetsning, största orsaken till hudcancer; skydda huden och använd svetsvisir</li><li><strong>Infraröd (IR)</strong> — från smält material och svetsning; kräver särskilda ögonskydd</li><li><strong>Laser</strong> — vid mätteknik och skärning; kräver skyddsglasögon för laser</li><li><strong>Radioaktiv strålning</strong> — kräver särskild information från arbetsgivaren</li></ul>
+<p>Varje år får cirka 35 000–40 000 personer i Sverige den mildare formen av hudcancer (basalcellscancer), och drygt 4 200 personer den allvarligare formen malignt melanom. Cirka 500 personer avlider varje år av det.</p>
+
+    <h2 id="ergonomi"><span class="num">11</span>Lyft, ergonomi &amp; företagshälsovård</h2>
+<p>Låga lyft från golvet är särskilt tunga för ryggen — en börda på 30 kilo kan ge en belastning på 800 kilo på ryggraden om du lyfter fel med en "hävarmseffekt". Ett enstaka lyft på 25 kilo går bra om bördan hålls nära kroppen. Undvik att lyfta tyngre än 15 kilo i det dagliga, återkommande arbetet, använd benmusklerna istället för ryggen, och undvik att vrida eller böja ryggen samtidigt som du lyfter.</p>
+<ul><li>Hantering av tyngre material: arbetshöjd 75–90 cm</li><li>Lätt arbete: 100–120 cm</li><li>Precisionsarbete: kan behöva ännu högre bordshöjd</li></ul>
+<p>Sitter du och arbetar ska du kunna nå utan att sträcka dig — en bra stol har justerbar höjd, svankstöd och stadig sittyta. Ensidigt upprepat arbete bör undvikas, och pauser är viktiga för återhämtning.</p>
+<p>Arbetsgivaren ska se till att det finns tillgång till <strong>företagshälsovård</strong> om arbetsförhållandena kräver det — en oberoende expertresurs inom arbetsmiljö och rehabilitering. Gå alltid när du blir kallad till en hälsokontroll.</p>
+    <h2 id="psykisk-trakasserier"><span class="num">12</span>Psykisk hälsa &amp; trakasserier</h2>
+<p>Psykisk ohälsa är enligt WHO ett av de snabbast växande hoten mot vår hälsa. Tecken kan vara oro, ångest och svårt att koncentrera sig.</p>
+<ul><li><strong>Positiv stress</strong> — ger extra fokus inför en utmaning, så länge du känner att du har kontroll</li><li><strong>Negativ stress</strong> — uppstår när kraven är för höga under lång tid utan återhämtning</li></ul>
+<p>Om du märker att någon mår dåligt på jobbet: prata med närmaste chef. Sexuella trakasserier är aldrig okej. Om du blir utsatt: säg ifrån, berätta för din chef, skriv ner vad som hände och när, och vänta inte för länge — kontakta facket om chefen inte agerar.</p>
+
+    <h2 id="el-truckar"><span class="num">13</span>El, truckar &amp; lyftanordningar</h2>
+<p>Elektriska arbeten ska alltid göras av en behörig elektriker. Kontrollera att sladdar och kontakter är i korrekt skick. <strong>Jordfelsbrytaren</strong> är inställd på 30 mA och stänger snabbt av strömmen om något går fel. Så lite som 30–50 milliampere växelström under några tiondels sekunder kan vara livsfarligt för en människa.</p>
+<p>Truckar, traktorer och andra fordon orsakar flest skador i industribranschen — sikten från förarplatsen är ofta dålig, och batteridrivna truckar hörs inte alltid i bullriga lokaler. Den som kör truck behöver dokumenterade teoretiska och praktiska kunskaper samt arbetsgivarens skriftliga tillstånd.</p>
+<p>Vid lyftanordningar (kran, travers, lyftok m.m.): besikta lyftredskap regelbundet, använd bara kontrollmärkta redskap, meddela arbetsledningen om skada eller förslitning, överlasta aldrig, håll lyfthöjden så låg som möjligt, låt aldrig någon åka med på lasten, och lämna aldrig last hängande — stå aldrig under den.</p>
+
+    <h2 id="brand-forsta-hjalpen"><span class="num">14</span>Brand &amp; första hjälpen</h2>
+<ul><li><strong>Trä, tyg, papper (klass A)</strong> — vatten, skum eller pulver</li><li><strong>Olja, bensin (klass B)</strong> — skum, pulver eller koldioxid</li><li><strong>Gas (klass C)</strong> — pulver, stäng gastillförseln</li></ul>
+<p>Använd aldrig vatten mot elbränder — vatten leder ström.</p>
+<h3>L-ABC och HLR</h3>
+<p>Kom ihåg ordningen: Livsfarligt läge (flytta till säker plats) → Andning (kontrollera om personen andas normalt) → Blödning (tryck på såret med förband) → Chock (låt personen ligga ner, håll varm och lugn). Ring alltid 112 vid en allvarlig olycka.</p>
+<p>Andas personen inte: ring 112 och starta HLR. Lägg personen på rygg på hårt underlag, tryck 30 gånger snabbt och rejält mitt på bröstkorgen (minst 5 cm djupt), öppna luftvägarna och gör 2 inblåsningar, upprepa tills hjälp kommer. Är du osäker på om du ska göra bröstkompressioner — gör det ändå. Andas personen normalt men är medvetslös: lägg i stabilt sidoläge.</p>
+<p>Frätskador sköljs genast med ljummet vatten i minst 15 minuter. Elskador: gör mun-mot-mun om personen inte andas, saknas puls — starta HLR. Brännskador kyls under rinnande kallt vatten; brännskador nära ögon, öron, mun eller större än en handflata ska läkarbehandlas. Vid förgiftning: kontakta läkare direkt, en gasförgiftad person ska genast ut i friska luften. Både den skadade och de som bevittnat en olycka kan behöva krisstöd.</p>
+
+    <h2 id="varselmarkning"><span class="num">15</span>Varselmärkning &amp; skyddsutrustning</h2>
+<table style="width:100%; border-collapse:collapse; margin:14px 0 20px; font-size:14px;"><tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 10px 6px 0; color:var(--muted);">Gult</td><td style="padding:6px 0; color:#c9d2d9;">Varning för risk eller fara</td></tr><tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 10px 6px 0; color:var(--muted);">Rött</td><td style="padding:6px 0; color:#c9d2d9;">Förbud eller brandskydd</td></tr><tr style="border-bottom:1px solid var(--line);"><td style="padding:6px 10px 6px 0; color:var(--muted);">Grönt</td><td style="padding:6px 0; color:#c9d2d9;">Trygghet — t.ex. första hjälpen, nödutgångar</td></tr><tr><td style="padding:6px 10px 6px 0; color:var(--muted);">Blått</td><td style="padding:6px 0; color:#c9d2d9;">Påbud — t.ex. "använd skyddsutrustning"</td></tr></table>
+<p>Vilken skyddsutrustning som behövs beror på jobb och arbetsplats: huvudskydd (hjälm, hårnät), hörselskydd (kåpor/proppar), andningsskydd (filter mot damm/gas), ögonskydd (glasögon/visir), handskar anpassade efter risk, och fotskydd med stålhätta och spiktrampskydd. Skägg, långt hår och glasögon kan minska effekten av skyddsutrustningen.</p>
+<p>Många olyckor beror på flera saker samtidigt — trasig utrustning, borttagna skydd eller att någon är ny på jobbet. Håll ordning på arbetsplatsen, håll transport- och utrymningsvägar fria, rapportera tillbud till chefen, och torka upp vatten, olja och annat som gör golvet halt.</p>
+
+    <h2 id="energi"><span class="num">16</span>Sveriges energi</h2>
+<ul><li><strong>Vattenkraft</strong> — stor del av elen, förnybar</li><li><strong>Kärnkraft</strong> — stabil källa, viktig del av elen</li><li><strong>Vindkraft</strong> — har ökat mycket, viktig för förnybar el</li><li><strong>Biobränsle</strong> — används mycket till fjärrvärme och industri</li><li><strong>Fossila bränslen</strong> — används mindre nu, men fortfarande viktigt för transport</li></ul>
+<p>Elen i Sverige är oftast stabil, men vädret kan påverka priserna, och när kärnkraftverk repareras kan tillgången bli lägre för en period. Fjärrvärmen har blivit dyrare på grund av högre bränslepriser. Sverige vill använda mer förnybar energi och mindre fossila bränslen, med målet att minska koldioxidutsläppen över tid.</p>
+  </article>
+  <div class="footcta">
+    <div class="ft-txt">Läs igenom materialet, testa sedan dina kunskaper i quizet för Miljö, Hälsa & Säkerhet.</div>
+    <a class="btn btn-amber" href="../quiz/mhs.html">Starta quiz &rarr;</a>
+  </div>
+</main>
+
+<script src="../../../assets/site.js"></script>
+</body>
+</html>

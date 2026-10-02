@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liftutbildning — Övningsquiz</title>
+<style>
+  :root{
+    --bg: #161b21;
+    --panel: #1f2730;
+    --panel-2: #26303b;
+    --line: #333e4a;
+    --text: #e9edf1;
+    --muted: #93a1ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+    --cyan: #59c3d6;
+    --cyan-dim: #1a3a40;
+    --lime: #a3c95a;
+    --lime-dim: #2e3a1a;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+    --cyan: #3f97ab;
+    --cyan-dim: #e2f2f5;
+    --lime: #6f8f2f;
+    --lime-dim: #eef3e0;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(1200px 500px at 15% -10%, #24303c 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, #2a2119 0%, transparent 55%),
+      var(--bg);
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      radial-gradient(1200px 500px at 15% -10%, #dce6f0 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+  }
+
+  .wrap{max-width:780px; margin:0 auto; padding:28px 20px 80px;}
+
+  header{margin-bottom:22px;}
+  .eyebrow{
+    font-family: "Arial Narrow", Arial, sans-serif;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    font-size:12px;
+    color:var(--amber);
+    font-weight:700;
+    display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family: "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    font-weight:800;
+    font-size: clamp(26px, 6vw, 38px);
+    letter-spacing:-0.01em;
+    margin: 6px 0 4px;
+    line-height:1.05;
+  }
+  .sub{color:var(--muted); font-size:15px; max-width:60ch;}
+  .pool-note{
+    margin-top:10px; font-size:13px; color:var(--amber); font-weight:600;
+    background:var(--amber-dim); display:inline-block; padding:5px 12px; border-radius:8px;
+  }
+
+  .tabs{display:flex; gap:8px; margin:22px 0 18px; flex-wrap:wrap;}
+  .tab{
+    padding:8px 13px; border-radius:999px; border:1px solid var(--line);
+    background:var(--panel); color:var(--muted); font-size:13px; font-weight:600;
+    cursor:pointer; transition:.15s;
+  }
+  .tab[data-active="true"]{
+    background:var(--amber); border-color:var(--amber); color:#1a1105;
+  }
+  .tab:hover:not([data-active="true"]){border-color:var(--amber); color:var(--text);}
+
+  .progress-row{display:flex; align-items:center; gap:10px; margin:4px 0 20px;}
+  .progress-track{flex:1; height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden;}
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--amber), var(--green)); width:0%; transition:width .25s;}
+  .progress-label{font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap;}
+
+  .card{
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:26px 24px;
+    box-shadow: 0 20px 40px -25px rgba(0,0,0,.6);
+  }
+  .qmeta{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;}
+  .qtag{
+    font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; font-weight:700;
+    padding:4px 9px; border-radius:6px;
+  }
+  .qnum{color:var(--muted); font-size:13px;}
+
+  .prompt{font-size:18.5px; font-weight:600; line-height:1.4; margin-bottom:18px;}
+
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .opt{
+    text-align:left;
+    padding:13px 15px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:#1a222b;
+    color:var(--text);
+    font-size:15px;
+    cursor:pointer;
+    transition:.12s;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .opt:hover:not([disabled]){border-color:var(--amber); background:#212b35;}
+  .opt .k{
+    flex:0 0 auto; width:22px; height:22px; border-radius:6px; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--muted); font-weight:700;
+  }
+  .opt[disabled]{cursor:default;}
+  .opt.correct{border-color:var(--green); background:var(--green-dim);}
+  .opt.correct .k{border-color:var(--green); color:var(--green); background:#122a1a;}
+  .opt.wrong{border-color:var(--red); background:var(--red-dim);}
+  .opt.wrong .k{border-color:var(--red); color:var(--red); background:#2a1513;}
+
+  .feedback{margin-top:16px; padding:14px 16px; border-radius:10px; font-size:14.5px; line-height:1.5; display:none;}
+  .feedback.show{display:block;}
+  .feedback.ok{background:var(--green-dim); border:1px solid #2f6b47; color:#cdeed9;}
+  .feedback.bad{background:var(--red-dim); border:1px solid #7a3833; color:#f3d2ce;}
+  .feedback b{display:block; margin-bottom:3px; font-size:13px; text-transform:uppercase; letter-spacing:.06em;}
+
+  .controls{display:flex; justify-content:flex-end; margin-top:20px;}
+  button.next{
+    background:var(--amber); color:#1a1105; border:none; padding:11px 22px;
+    border-radius:9px; font-weight:700; font-size:14.5px; cursor:pointer;
+  }
+  button.next:disabled{background:var(--panel-2); color:var(--muted); cursor:not-allowed;}
+  button.next:hover:not(:disabled){filter:brightness(1.08);}
+
+  .result{text-align:center; padding:20px 10px 10px;}
+  .result .big{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; font-size:56px; color:var(--amber); line-height:1;}
+  .result .of{color:var(--muted); font-size:15px; margin-top:6px;}
+  .review{margin-top:26px; text-align:left; display:flex; flex-direction:column; gap:10px;}
+  .review-item{border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-size:14px;}
+  .review-item.ok{border-left:3px solid var(--green);}
+  .review-item.bad{border-left:3px solid var(--red);}
+  .review-item .q{font-weight:600; margin-bottom:4px;}
+  .review-item .a{color:var(--muted);}
+  .restart{
+    margin-top:24px; background:none; border:1px solid var(--line); color:var(--text);
+    padding:10px 20px; border-radius:9px; cursor:pointer; font-size:14px; font-weight:600;
+  }
+  .restart:hover{border-color:var(--amber); color:var(--amber);}
+
+  footer{text-align:center; color:var(--muted); font-size:12px; margin-top:36px;}
+
+  /* --- shared topbar / crumbs / buttons (site-wide) --- */
+  .topbar{position:sticky; top:0; z-index:50; background:rgba(22,27,33,.9); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:780px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+  .crumbs{font-size:12.5px; color:var(--muted); display:flex; gap:6px; align-items:center;}
+  .crumbs a{color:var(--muted); text-decoration:none;}
+  .crumbs a:hover{color:var(--amber);}
+  .btn-row{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
+  .btn{display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px; font-weight:700; font-size:13.5px; text-decoration:none; border:1px solid var(--line); background:var(--panel); color:var(--text);}
+  .btn:hover{border-color:var(--amber);}
+</style>
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+<main class="wrap">
+  <div class="crumbs" style="margin-bottom:8px;"><a href="../../index.html">Kurser</a> / <a href="material.html">Liftutbildning</a> / Quiz</div>
+  <header>
+    <div class="eyebrow">Övningsquiz · Offline</div>
+    <h1>Liftutbildning</h1>
+    <div class="sub">Frågor om kursintroduktion, maskintyper, liftens uppbyggnad, kontroll &amp; besiktning, arbetssätt &amp; handhavande, säkerhet, lagar &amp; arbetsmiljö samt fallskydd. Fungerar helt utan internetuppkoppling.</div>
+    <div class="pool-note" id="poolNote"></div>
+    <div class="btn-row"><a class="btn ghost" href="material.html">← Till kursmaterialet</a></div>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 0</div>
+  </div>
+
+  <div class="card" id="card"></div>
+
+  <footer>Svara i din egen takt — resultatet sparas inte och skickas ingenstans.</footer>
+</main>
+
+<script>
+const QUIZ_LENGTH = 30;
+
+const CAT_META = {
+  intro:        {label:"Kursintroduktion", color:"var(--blue)", bg:"var(--blue-dim)"},
+  maskintyper:  {label:"Maskintyper", color:"var(--teal)", bg:"var(--teal-dim)"},
+  uppbyggnad:   {label:"Liftens uppbyggnad", color:"var(--amber)", bg:"var(--amber-dim)"},
+  kontroll:     {label:"Kontroll & besiktning", color:"var(--purple)", bg:"var(--purple-dim)"},
+  arbetssatt:   {label:"Arbetssätt & handhavande", color:"var(--pink)", bg:"var(--pink-dim)"},
+  sakerhet:     {label:"Säkerhet", color:"var(--red)", bg:"var(--red-dim)"},
+  lagar:        {label:"Lagar & arbetsmiljö", color:"var(--cyan)", bg:"var(--cyan-dim)"},
+  fallskydd:    {label:"Fallskydd", color:"var(--lime)", bg:"var(--lime-dim)"}
+};
+
+const QUESTIONS = {
+  intro: [
+    {q:"Vad är huvudsyftet med Liftutbildningen?", opts:["Att lära ut hur liftar tvättas och underhålls kosmetiskt", "Att ge deltagaren grundläggande kunskaper för att kunna använda liftar på ett säkert och korrekt sätt", "Att ersätta besiktning av liftar", "Att enbart repetera lagtext utan praktik"], correct:1, fb:"Syftet är att ge deltagaren grundläggande kunskaper för att kunna använda mobila arbetsplattformar på ett säkert och korrekt sätt och minska risker och olyckor."},
+    {q:"Vilken standard bygger Liftläroplanen (LLP) på?", opts:["SS-ISO 18878", "ISO 9001", "SS-EN 1090", "SS-ISO 45001"], correct:0, fb:"Utbildningen följer Liftläroplanen (LLP), som bygger på standarden SS-ISO 18878 och säkerställer en gemensam, kvalitetssäkrad branschnivå."},
+    {q:"Hur är utbildningen uppdelad enligt kursintroduktionen?", opts:["Enbart teori", "Teori, praktik och kunskapskontroll", "Enbart praktik utan teori", "Enbart en skriftlig tentamen"], correct:1, fb:"Utbildningen är uppdelad i teori, praktik och kunskapskontroll, med målet att skapa en tydlig koppling mellan teori och praktik."},
+    {q:"Vilka regelverk nämns som exempel på lagar och föreskrifter som styr arbete med liftar?", opts:["Arbetsmiljölagen (AML) och Arbetsmiljöverkets föreskrifter (AFS)", "Enbart interna företagsregler", "Endast tillverkarens garantivillkor", "Endast trafikförordningen"], correct:0, fb:"Exempel på regelverk är Arbetsmiljölagen (AML), Arbetsmiljöverkets föreskrifter (AFS) samt standarder inom EN och ISO."},
+    {q:"Vad erhåller deltagaren efter genomförd utbildning?", opts:["Ett körkort för tunga fordon", "Ett utbildningsintyg", "Automatiskt medlemskap i en branschorganisation", "Inget, endast muntlig bekräftelse"], correct:1, fb:"Efter genomförd utbildning erhålls ett utbildningsintyg som visar att deltagaren har genomgått utbildningen enligt gällande krav."},
+    {q:"Vem utfärdar körtillstånd för att använda en lift?", opts:["Arbetsgivaren", "Tillverkaren av liften", "Arbetsmiljöverket", "Deltagaren själv"], correct:0, fb:"Körtillstånd utfärdas av arbetsgivaren."},
+    {q:"Vad gäller vid inhyrning av personal som ska använda lift?", opts:["Inget särskilt krävs", "Det inhyrande företaget ansvarar för att tillstånd ges för arbete med aktuell utrustning", "Endast det uthyrande företaget ansvarar", "Personalen behöver aldrig körtillstånd vid inhyrning"], correct:1, fb:"Vid inhyrning av personal krävs samverkan mellan uthyrande och inhyrande företag, där det inhyrande företaget ansvarar för att tillstånd ges för arbete med aktuell utrustning på arbetsplatsen."},
+    {q:"Vad presenteras vid kursstarten enligt materialet?", opts:["Enbart prislistan för utbildningen", "Deltagare och instruktör, kursmaterial samt lokaler, övningsområden och liftar som ska användas", "Endast en säkerhetsfilm utan genomgång", "Bara nästa kurstillfälle"], correct:1, fb:"Vid kursstart presenterar sig deltagare och instruktör, kursmaterialet gås igenom och lokaler, övningsområden och liftar presenteras."},
+    {q:"Vad är syftet med att gå igenom tidsplan och genomförande i introduktionen?", opts:["Att skapa en tydlig struktur som gör det lättare att följa progressionen från grund till praktisk tillämpning", "Att förkorta utbildningen så mycket som möjligt", "Att undvika praktiska moment", "Att deltagarna ska memorera exakta klockslag"], correct:0, fb:"En tydlig struktur gör det lättare att följa utbildningen och förstå progressionen från grundläggande kunskap till praktisk tillämpning."},
+    {q:"Vilken roll spelar personlig skyddsutrustning enligt kursintroduktionen?", opts:["Den är oviktig och tas bara upp i förbigående", "Den är en viktig del av säkerheten och minskar risken för skador", "Den behövs bara vid arbete utomhus", "Den ersätter behovet av utbildning"], correct:1, fb:"Personlig skyddsutrustning är en viktig del av säkerheten vid arbete med lift och rätt utrustning minskar risken för skador."},
+    {q:"Vad ingår i maskinintroduktionen under utbildningen?", opts:["Enbart en teoretisk beskrivning utan liftarna närvarande", "Genomgång av funktioner, användningsområden och säker hantering av de aktuella liftarna", "Endast en genomgång av prislappar på maskinerna", "En genomgång av konkurrerande tillverkares modeller"], correct:1, fb:"Deltagarna får en introduktion till de aktuella liftarna, vilket inkluderar genomgång av funktioner, användningsområden och säker hantering."},
+    {q:"Vad innebär det att utbildningen \"är en grund\" enligt materialet?", opts:["Att inget mer behövs efter kursen", "Att ytterligare introduktion på arbetsplatsen ofta krävs, anpassad till specifika maskiner och arbetsuppgifter", "Att kursen är frivillig", "Att fördjupning aldrig är nödvändig"], correct:1, fb:"Utbildningen är en grund, och i många fall krävs ytterligare introduktion på arbetsplatsen, anpassad till specifika maskiner och arbetsuppgifter."},
+    {q:"Vad ska alltid vara högsta prioritet vid arbete med lift enligt avsnittet \"Viktigt att tänka på\"?", opts:["Snabbhet", "Säkerhet", "Kostnadsbesparing", "Att undvika kontakt med kollegor"], correct:1, fb:"Säkerhet ska alltid vara högsta prioritet vid arbete med lift."},
+    {q:"Hur beskrivs erfarenhet och säkerhetstänk i materialet?", opts:["De uppstår automatiskt direkt efter godkänd utbildning", "De utvecklas över tid, medan utbildningen ger en grund att stå på", "De är irrelevanta så länge instruktionerna följs", "De ersätter behovet av skyddsutrustning"], correct:1, fb:"Utbildningen ger en grund att stå på, men erfarenhet och säkerhetstänk utvecklas över tid."},
+    {q:"Vad innebär ett säkert arbetssätt enligt kursintroduktionen?", opts:["Att enbart skydda sig själv, oavsett omgivningen", "Att följa instruktioner, använda rätt utrustning och arbeta enligt gällande regler för att skydda både sig själv och andra", "Att arbeta så fort som möjligt", "Att undvika all kontroll före start"], correct:1, fb:"Ett säkert arbetssätt skyddar både dig själv och andra i din omgivning, genom att följa instruktioner, använda rätt utrustning och arbeta enligt gällande regler."}
+  ],
+  maskintyper: [
+    {q:"Vilka faktorer behöver beaktas vid val av lift enligt materialet?", opts:["Endast pris och färg", "Arbetshöjd, behov av sidräckvidd, underlagets beskaffenhet samt omgivande miljö", "Endast maskinens tillverkningsland", "Endast operatörens ålder"], correct:1, fb:"Vid val av lift behöver hänsyn tas till arbetshöjd, behov av sidräckvidd, underlagets beskaffenhet samt omgivande miljö."},
+    {q:"Vad kännetecknar Kategori 1-liftar?", opts:["De får endast köras i transportläge, det vill säga när plattformen är nedsänkt", "De styrs alltid från arbetskorgen", "De saknar hjul", "De får bara användas inomhus"], correct:0, fb:"Kategori 1 omfattar liftar som endast får köras i transportläge, det vill säga när plattformen är nedsänkt."},
+    {q:"Vad kännetecknar Kategori 2-liftar?", opts:["De kan köras när plattformen är upplyft, men styrningen sker från chassit", "De kan aldrig lyftas", "De styrs enbart från arbetskorgen", "De saknar stödben"], correct:0, fb:"Kategori 2 avser liftar som kan köras när plattformen är upplyft, men där styrningen sker från chassit."},
+    {q:"Vad kännetecknar Kategori 3-liftar och vad ställer det för krav?", opts:["De kan köras upplyft och styras direkt från arbetskorgen, vilket ställer högre krav på operatörens kunskap och riskbedömning", "De får aldrig lyftas över marknivå", "De kräver ingen utbildning alls", "De styrs enbart via fjärrkontroll från marken"], correct:0, fb:"Kategori 3 innebär att liften kan köras upplyft och styras direkt från arbetskorgen, vilket ställer högre krav på operatörens kunskap och riskbedömning."},
+    {q:"Vad kännetecknar liftar i Grupp A?", opts:["Plattformen rör sig enbart vertikalt och tyngdpunkten hålls inom chassits stödytor", "Plattformen rör sig fritt i alla riktningar utan begränsning", "De saknar helt tyngdpunkt", "De är alltid monterade på fordon"], correct:0, fb:"Grupp A omfattar liftar där plattformen rör sig enbart vertikalt, vilket ger en stabil konstruktion med liten risk för sidotippning vid korrekt användning."},
+    {q:"Vad kännetecknar liftar i Grupp B?", opts:["Plattformen kan röra sig både vertikalt och i sidled, vilket ger större räckvidd men högre krav på säker användning", "Plattformen rör sig enbart vertikalt", "De används aldrig utomhus", "De saknar arbetskorg"], correct:0, fb:"Grupp B omfattar liftar där plattformen kan röra sig både vertikalt och i sidled, vilket innebär att tyngdpunkten kan förflyttas utanför chassits centrum."},
+    {q:"Varför kräver bomliftar större försiktighet vid användning enligt materialet?", opts:["Eftersom tyngdpunkten i Grupp B i större utsträckning påverkas av räckvidd, last, vind och rörelser", "Eftersom de alltid är tyngre än saxliftar", "Eftersom de saknar bromsar", "Eftersom de inte har några säkerhetsfunktioner"], correct:0, fb:"Skillnaden mellan grupperna är central ur säkerhetssynpunkt — i Grupp B påverkas tyngdpunkten i större utsträckning av räckvidd, last, vind och rörelser."},
+    {q:"Vilken grupp och egenskap kännetecknar saxliftar?", opts:["Grupp A, kännetecknas av stabilitet och vertikal rörelse", "Grupp B, kännetecknas av stor sidoräckvidd", "Ingen av grupperna, saknar chassi", "Grupp B, monterade på fordon"], correct:0, fb:"Saxliftar tillhör Grupp A och kännetecknas av sin stabilitet och vertikala rörelse, och används ofta vid arbete rakt upp."},
+    {q:"Vilken grupp och egenskap kännetecknar bomliftar?", opts:["Grupp B, har stor räckvidd och kan arbeta både på höjd och i sidled", "Grupp A, kan bara arbeta rakt upp", "Grupp A, saknar hydraulik", "Ingen grupp, används endast inomhus"], correct:0, fb:"Bomliftar tillhör Grupp B och har stor räckvidd, vilket gör det möjligt att arbeta både på höjd och i sidled."},
+    {q:"Vad kännetecknar pelarliftar?", opts:["Kompakta liftar inom Grupp A, används främst för enklare arbeten i begränsade utrymmen", "Stora liftar avsedda för utomhusbruk med lång räckvidd", "Liftar som alltid är monterade på lastbil", "Liftar utan arbetskorg"], correct:0, fb:"Pelarliftar är kompakta liftar inom Grupp A och används främst för enklare arbeten i begränsade utrymmen."},
+    {q:"Vad kännetecknar billiftar?", opts:["De tillhör Grupp B och är monterade på fordon, vilket gör dem mobila och flexibla", "De tillhör Grupp A och är alltid stationära", "De saknar stödben helt", "De får bara användas i transportläge"], correct:0, fb:"Billiftar tillhör Grupp B och är monterade på fordon, vilket gör dem mobila och flexibla vid arbete på olika platser."},
+    {q:"Hur har liftar utvecklats historiskt enligt materialet?", opts:["Från enkla hjälpmedel som stegar och ställningar till dagens avancerade hydrauliska arbetsplattformar", "De har alltid varit hydrauliska sedan 1800-talet", "Utvecklingen har gått bakåt mot enklare lösningar", "De uppfanns direkt som eldrivna maskiner"], correct:0, fb:"Utvecklingen av liftar har gått från enkla hjälpmedel som stegar och ställningar till dagens avancerade hydrauliska arbetsplattformar."},
+    {q:"Vad fokuserar den framtida utvecklingen av liftar på enligt materialet?", opts:["Eldrift, förbättrade säkerhetssystem och smart teknik som sensorer och automatiska funktioner", "Att helt ta bort säkerhetssystem för högre effektivitet", "Att göra liftar tyngre för ökad stabilitet", "Att avskaffa hydraulsystem helt"], correct:0, fb:"Framtida utveckling fokuserar på eldrift, förbättrade säkerhetssystem och smart teknik, exempelvis sensorer och automatiska funktioner som minskar risken för felanvändning."},
+    {q:"Vad händer om liftens tyngdpunkt hamnar utanför det definierade säkerhetsområdet?", opts:["Ingenting, det spelar ingen roll", "Det uppstår risk för vältning", "Liften blir automatiskt stabilare", "Liften stängs av permanent"], correct:1, fb:"När tyngdpunkten hamnar utanför säkerhetsområdet uppstår risk för vältning."},
+    {q:"Vilka faktorer påverkar var liftens tyngdpunkt befinner sig?", opts:["Lastens placering, rörelser, räckvidd och yttre faktorer som vind", "Endast liftens färg", "Endast operatörens vikt", "Endast underlagets färg"], correct:0, fb:"Tyngdpunkten påverkas bland annat av lastens placering, rörelser, räckvidd och yttre faktorer som vind."},
+    {q:"Vad är det övergripande målet vid val och användning av lifttyp enligt kapitlet?", opts:["Att skapa en stabil och säker arbetsposition där operatören kan arbeta utan onödiga risker", "Att alltid välja den billigaste maskinen oavsett arbetsuppgift", "Att undvika all form av riskbedömning", "Att endast använda en och samma lifttyp till alla uppgifter"], correct:0, fb:"Målet är att skapa en stabil och säker arbetsposition där operatören kan utföra sitt arbete utan att utsättas för onödiga risker."}
+  ],
+  uppbyggnad: [
+    {q:"Varför används massiva däck ofta inomhus på liftar?", opts:["Eftersom de är punkteringsfria", "Eftersom de är billigast att tillverka", "Eftersom de ger sämst grepp", "Eftersom de kräver lufttryckskontroll"], correct:0, fb:"Massiva däck används ofta inomhus eftersom de är punkteringsfria, medan luftfyllda däck ger bättre grepp på ojämnt underlag."},
+    {q:"Vad används band eller larver till på liftar?", opts:["Att fördela vikten och öka bärigheten på mjuka eller ojämna ytor", "Att göra liften snabbare på asfalt", "Att ersätta bromssystemet", "Att minska liftens totalvikt"], correct:0, fb:"På särskilt mjuka eller ojämna ytor kan band eller larver användas för att fördela vikten och öka bärigheten."},
+    {q:"Vad gäller för en lift med bristande bromsfunktion?", opts:["Den får inte användas", "Den får användas om hastigheten sänks", "Den får användas endast inomhus", "Den får användas om operatören är erfaren"], correct:0, fb:"En lift med bristande bromsfunktion får inte användas."},
+    {q:"Vilka typer av styrning kan förekomma på en lift?", opts:["Mekanisk eller servostyrd", "Endast manuell utan hjälpmedel", "Endast röststyrd", "Endast fjärrstyrd via satellit"], correct:0, fb:"Styrningen kan vara mekanisk eller servostyrd och påverkar hur exakt maskinen kan manövreras."},
+    {q:"Vilken funktion har chassit på en lift?", opts:["Det bär upp hela maskinen, fördelar belastningen mot underlaget och fungerar som bas för lyftsystemet", "Det används enbart som förvaringsutrymme", "Det har ingen betydelse för stabiliteten", "Det styr enbart hydraulsystemet"], correct:0, fb:"Chassit är liftens bärande konstruktion och utgör grunden för maskinens stabilitet."},
+    {q:"Hur skiljer sig chassits utformning mellan saxliftar och bomliftar?", opts:["Saxliftar har oftast en bred och stabil bas, medan bomliftar har en smalare konstruktion som ställer högre krav på korrekt uppställning", "Bomliftar har alltid en bredare bas än saxliftar", "Chassits utformning skiljer sig aldrig mellan lifttyper", "Saxliftar saknar chassi helt"], correct:0, fb:"Saxliftar har oftast en bred och stabil bas, medan bomliftar har en smalare konstruktion och ställer därför högre krav på korrekt uppställning."},
+    {q:"Vad innebär att en lift är \"nivellerad\"?", opts:["Att den är justerad så att den står korrekt även om underlaget lutar", "Att den är helt nedsänkt i transportläge", "Att den är fulltankad med bränsle", "Att den är fullständigt tömd på hydraulolja"], correct:0, fb:"Nivellerad innebär att liften är justerad så att den står korrekt även om underlaget lutar."},
+    {q:"Vad ska en godkänd arbetskorg vara utrustad med enligt materialet?", opts:["Skyddsräcken, en säker öppning eller grind samt ett golv med halkskydd", "Enbart ett tak mot regn", "Endast en sittplats", "Ett låst skåp för verktyg"], correct:0, fb:"En godkänd arbetskorg ska vara stabil och dimensionerad för avsedd belastning, ha skyddsräcken, en säker öppning eller grind samt ett golv med halkskydd."},
+    {q:"Vad gäller för skyddsräcken i arbetskorgen?", opts:["De får aldrig användas som stege eller klättras på", "De får klättras på om arbetet kräver det", "De är valfria att montera", "De ska tas bort vid högt arbete"], correct:0, fb:"Skyddsräcken får aldrig användas som stege eller klättras på, eftersom detta kan leda till allvarliga olyckor."},
+    {q:"Vad räknas in i arbetskorgens maximala tillåtna last?", opts:["Både personer och material, jämnt fördelat", "Endast personer, aldrig material", "Endast material, aldrig personer", "Enbart liftens egenvikt"], correct:0, fb:"Arbetskorgen är konstruerad för en maximal tillåten last, vilket innebär att både personer och material räknas in och att lasten ska vara jämnt fördelad."},
+    {q:"Vad används hydraulsystemet till på en lift?", opts:["Att lyfta och sänka arbetskorgen, förlänga bommar och styra olika funktioner", "Enbart att ladda batteriet", "Enbart att driva bromsarna", "Att generera el till belysningen"], correct:0, fb:"Hydraulsystemet är det system som gör att liften kan röra sig, och används för att lyfta och sänka arbetskorgen, förlänga bommar och styra olika funktioner."},
+    {q:"Hur fungerar en enkelverkande hydraulcylinder?", opts:["Den arbetar med tryck i en riktning och återgår med hjälp av egenvikt eller fjäder", "Den arbetar med tryck i båda riktningarna samtidigt", "Den kräver ingen olja alls", "Den används endast i elsystemet"], correct:0, fb:"En enkelverkande cylinder arbetar med tryck i en riktning och återgår med hjälp av egenvikt eller fjäder, och används exempelvis i vissa stödben."},
+    {q:"Hur fungerar en dubbelverkande hydraulcylinder?", opts:["Den arbetar med tryck i båda riktningarna, vilket ger bättre kontroll vid ut- och inrörelse", "Den kan bara arbeta i en riktning", "Den saknar koppling till hydraulpumpen", "Den används enbart i bromssystemet"], correct:0, fb:"En dubbelverkande cylinder arbetar med tryck i båda riktningar, vilket ger bättre kontroll både vid ut- och inrörelse, och används i funktioner som bommar och lyftarmar."},
+    {q:"Vilken funktion har lasthållningsventilen i hydraulsystemet?", opts:["Den ser till att lasten hålls kvar i sitt läge och förhindrar att liften sjunker okontrollerat, även vid till exempel slangbrott", "Den ökar hastigheten på alla rörelser", "Den stänger av liftens motor vid överlast", "Den fyller på hydrauloljan automatiskt"], correct:0, fb:"Lasthållningsventilen ser till att lasten hålls kvar i sitt läge och förhindrar att liften sjunker okontrollerat, och fungerar även vid exempelvis slangbrott."},
+    {q:"Vad kännetecknar eldrivna liftar enligt materialet?", opts:["De är tystgående och fria från avgaser, men kräver regelbunden laddning", "De avger alltid avgaser inomhus", "De har alltid högre effekt än förbränningsmotordrivna liftar", "De behöver aldrig laddas"], correct:0, fb:"Eldrivna liftar drivs av batteri och är tystgående samt fria från avgaser, men kräver regelbunden laddning."},
+    {q:"Var ska förbränningsmotordrivna liftar inte användas?", opts:["I slutna utrymmen", "Utomhus på byggarbetsplatser", "På ojämnt underlag", "I alla miljöer utan begränsning"], correct:0, fb:"Förbränningsmotordrivna liftar avger avgaser och ska därför inte användas i slutna utrymmen."},
+    {q:"Vad är stödbens (stabilisatorers) huvudsakliga funktion?", opts:["Att öka maskinens stöd- och anläggningsyta och göra det möjligt att nivellera liften", "Att enbart bära liftens instrumentpanel", "Att ersätta hjulen helt", "Att förvara verktyg under transport"], correct:0, fb:"Stödben används för att öka maskinens stöd- och anläggningsyta och för att stabilisera och nivellera liften vid arbete."},
+    {q:"Vad används axellås till?", opts:["Att låsa hjulaxlar i ett fast läge och därmed minska rörelser i underredet", "Att öka liftens maxhastighet", "Att koppla samman två liftar", "Att styra arbetskorgens rotation"], correct:0, fb:"Axellås används för att låsa hjulaxlar i ett fast läge och därmed minska rörelser i underredet, vilket ökar stabiliteten vid arbete."},
+    {q:"Vad kan bildas vid laddning av batteri på eldrivna liftar och varför är det farligt?", opts:["Knallgas, som är explosiv", "Koldioxid, som är giftig i höga halter", "Kväve, som är brandfarligt", "Metangas, som fryser vid låga temperaturer"], correct:0, fb:"Vid laddning uppstår särskilda risker eftersom knallgas kan bildas och är explosiv, vilket innebär att gnistor eller öppen låga kan orsaka allvarliga olyckor."},
+    {q:"Vad är en grundläggande princip för hur manöverdon påverkar liftens rörelser?", opts:["Små rörelser i reglagen ger små rörelser i liften, medan större rörelser ger större påverkan", "Alla rörelser i reglagen ger samma effekt oavsett storlek", "Manöverdonen påverkar bara hastigheten, aldrig riktningen", "Manöverdon har ingen koppling till liftens faktiska rörelser"], correct:0, fb:"En grundläggande princip är att små rörelser i reglagen ger små rörelser i liften, medan större rörelser ger större påverkan, vilket kräver precision och kontroll."}
+  ],
+  kontroll: [
+    {q:"Vad gäller för en lift som inte uppfyller kraven för säkert handhavande?", opts:["Den får inte användas", "Den får användas med extra försiktighet", "Den får användas om ingen annan lift finns tillgänglig", "Den får användas om operatören har lång erfarenhet"], correct:0, fb:"En lift som inte uppfyller kraven för säkert handhavande får inte användas."},
+    {q:"Vem ska utföra återkommande besiktningar av liftar?", opts:["Behörig person", "Vem som helst på arbetsplatsen", "Enbart operatören själv", "Ingen, besiktning krävs inte"], correct:0, fb:"Det finns krav på återkommande kontroller som ska utföras av behörig person, för att säkerställa att maskinen är i gott skick."},
+    {q:"Vad visar CE-märkningen på en lift?", opts:["Att maskinen uppfyller de grundläggande säkerhetskrav som gäller inom EU", "Att maskinen är tillverkad i Sverige", "Att maskinen har lägsta möjliga pris", "Att maskinen inte behöver besiktigas"], correct:0, fb:"CE-märkningen visar att maskinen uppfyller de grundläggande säkerhetskrav som gäller inom EU."},
+    {q:"Vad ska finnas tillgängligt och läsbart för operatören till varje lift?", opts:["En bruksanvisning", "Endast inköpskvittot", "En lista över tidigare operatörer", "Ett kvitto på senaste tvätt"], correct:0, fb:"Till varje lift ska det finnas en bruksanvisning som ska finnas tillgänglig och vara läsbar för operatören."},
+    {q:"När ska kontroll före start genomföras?", opts:["Alltid, oavsett om maskinen använts tidigare under dagen", "Endast första gången liften används", "Endast en gång per vecka", "Endast om liften låter konstigt"], correct:0, fb:"Kontrollen är en del av det dagliga arbetet och ska alltid utföras, oavsett om maskinen använts tidigare under dagen."},
+    {q:"Vad ingår i den visuella genomgången vid kontroll före start?", opts:["Att inga synliga skador, läckage eller avvikelser finns", "Endast att kontrollera bränslenivån", "Endast att kontrollera färgen på liften", "Endast att väga liften"], correct:0, fb:"Operatören bör gå runt maskinen och visuellt kontrollera att inga synliga skador, läckage eller avvikelser finns."},
+    {q:"Vad görs efter den visuella kontrollen vid kontroll före start?", opts:["En funktionskontroll av bland annat styrning, broms och lyftrörelser", "Liften skickas direkt till besiktning", "Inget mer görs", "Endast ett foto tas på liften"], correct:0, fb:"Efter den visuella kontrollen ska en funktionskontroll göras, vilket inkluderar exempelvis styrning, broms och lyftrörelser."},
+    {q:"Vad ska ske om ett fel upptäcks under kontrollen före start?", opts:["Liften ska tas ur drift och felet rapporteras enligt arbetsplatsens rutiner", "Arbetet fortsätter som vanligt om felet verkar litet", "Endast operatören informeras muntligt utan vidare åtgärd", "Liften används tills den går sönder helt"], correct:0, fb:"Om ett fel upptäcks under kontrollen ska liften inte användas — den ska tas ur drift och felet rapporteras enligt arbetsplatsens rutiner."},
+    {q:"Vad omfattar kontrollen av underredet?", opts:["Hjul eller band, bromssystem och styrning", "Endast arbetskorgens golv", "Endast batteriets laddningsnivå", "Endast lackens skick"], correct:0, fb:"Efter den övergripande kontrollen ska operatören kontrollera de delar som påverkar liftens rörelse och stabilitet: hjul eller band, bromssystem och styrning."},
+    {q:"Vad har överlastskyddet för funktion?", opts:["Det förhindrar att liften används med för hög belastning och kan varna eller stoppa maskinens rörelser", "Det ökar liftens maxlast automatiskt", "Det stänger av liftens belysning", "Det låser upp arbetskorgens grind"], correct:0, fb:"Överlastskyddet förhindrar att liften används med för hög belastning; om den tillåtna lasten överskrids kan systemet varna eller stoppa maskinens rörelser."},
+    {q:"Vilka funktioner nämns som exempel på säkerhetssystem som ska förhindra farliga situationer?", opts:["Överlastskydd, lutningsvarnare och gränslägesbrytare", "Enbart en extra strålkastare", "Enbart en klocka i arbetskorgen", "Enbart en radioanslutning"], correct:0, fb:"Liftar är utrustade med olika säkerhetssystem som ska förhindra farliga situationer, till exempel överlastskydd, lutningsvarnare och gränslägesbrytare."},
+    {q:"Vilka delar räknas som lastbärande delar och ska kontrolleras noga?", opts:["Ram, bommar och infästningar", "Endast arbetskorgens färg", "Endast förarsätet", "Endast belysningen"], correct:0, fb:"De lastbärande delarna, såsom ram, bommar och infästningar, ska vara i gott skick — synliga skador kan påverka konstruktionens hållfasthet."},
+    {q:"Vilka vätskenivåer nämns som viktiga att kontrollera för att maskinen ska fungera korrekt?", opts:["Olja och eventuellt kylvätska", "Endast spolarvätska", "Endast diskmedel", "Endast rengöringsmedel"], correct:0, fb:"Vätskenivåer, såsom olja och eventuellt kylvätska, har betydelse för att maskinen ska fungera korrekt."},
+    {q:"Vad ska kontrolleras i arbetskorgen enligt avsnittet om arbetskorg och utrustning?", opts:["Att skyddsräcken är hela och stabila, golvet halkfritt samt att infästningspunkter för personlig skyddsutrustning är oskadade", "Enbart att korgen är ren från damm", "Enbart att korgen har rätt färg", "Enbart att korgen har en radio"], correct:0, fb:"Skyddsräcken ska vara hela och stabila, golvet ska ge tillräckligt halkskydd och infästningspunkter för personlig skyddsutrustning ska vara oskadade och korrekt monterade."},
+    {q:"Vad omfattar de \"övriga kontrollerna\" enligt kapitlet?", opts:["Bland annat läckage från hydraulik eller bränslesystem samt att kablar, slangar och ledningar är hela och korrekt monterade", "Endast kontroll av kaffemaskinen på arbetsplatsen", "Endast kontroll av väderprognosen", "Endast kontroll av parkeringsplatsen"], correct:0, fb:"Övriga kontroller omfattar bland annat förekomst av läckage samt att kablar, slangar och ledningar är hela och korrekt monterade."}
+  ],
+  arbetssatt: [
+    {q:"Vad ska operatören göra innan arbetet påbörjas enligt kapitlet om arbetssätt?", opts:["Göra en riskanalys och bedöma arbetsplatsen", "Enbart fylla i tidrapporten", "Enbart kontrollera vädret utan vidare bedömning", "Enbart informera kunden"], correct:0, fb:"Innan arbetet påbörjas ska operatören göra en riskanalys och bedöma arbetsplatsen — en grundläggande del av ett säkert arbetssätt."},
+    {q:"Vilka faktorer ska särskilt uppmärksammas vid riskanalys och arbetsplatsbedömning?", opts:["Underlagets bärighet, lutningar, hål/kanter, hinder, elledningar, personer i omgivningen samt väderförhållanden", "Endast liftens färg", "Endast tillverkarens logotyp", "Endast bränslepriset"], correct:0, fb:"Vid bedömningen ska operatören särskilt uppmärksamma bland annat underlagets bärighet och stabilitet, lutningar, hål, hinder, elledningar, personer i omgivningen och väderförhållanden."},
+    {q:"Vad ska valet av lift baseras på enligt kapitlet?", opts:["Arbetsuppgiftens art och arbetsplatsens förutsättningar, till exempel höjd, utrymme och underlag", "Endast liftens tillverkningsår", "Endast liftens färg", "Endast vilken lift som råkar stå närmast"], correct:0, fb:"Valet av lift ska baseras på flera faktorer, bland annat arbetsuppgiftens art och arbetsplatsens förutsättningar såsom utrymme, underlag och tillgänglighet."},
+    {q:"Hur ska liften placeras vid uppställning för att uppnå bästa stabilitet?", opts:["Så horisontellt som möjligt, vid behov med hjälp av stödben eller andra stabiliserande funktioner", "Alltid i högsta möjliga lutning", "Utan hänsyn till underlaget", "Endast på asfalterat underlag"], correct:0, fb:"Liften ska placeras i ett läge där den står så horisontellt som möjligt, vid behov med hjälp av stödben eller andra stabiliserande funktioner."},
+    {q:"Vad gäller vid arbete på lutande eller ojämnt underlag?", opts:["Kraven på noggrannhet ökar och stabiliteten behöver följas upp kontinuerligt", "Inga särskilda hänsyn behövs", "Liften får aldrig stå stilla", "Endast stödben på ena sidan behöver fällas ut"], correct:0, fb:"Vid arbete på lutande eller ojämnt underlag ökar kraven på noggrannhet, och stabiliteten behöver följas upp kontinuerligt eftersom underlaget kan förändras."},
+    {q:"Hur ska förflyttning i arbetsområdet ske enligt kapitlet?", opts:["Med låg hastighet och god kontroll", "Alltid i högsta möjliga hastighet", "Utan hänsyn till omgivningen", "Endast bakåt"], correct:0, fb:"Vid förflyttning i arbetsområdet ska körningen ske med låg hastighet och god kontroll, med särskild försiktighet i trånga utrymmen och nära andra personer."},
+    {q:"Vad gäller för körning med upplyft arbetskorg?", opts:["Den ska endast ske när det är tillåtet enligt maskinens konstruktion och alltid med mycket god kontroll", "Den är alltid förbjuden", "Den kräver ingen extra försiktighet", "Den får bara ske i hög hastighet"], correct:0, fb:"Om liften körs med upplyft arbetskorg ökar kraven på försiktighet, och körning i upplyft läge ska endast ske när det är tillåtet enligt maskinens konstruktion."},
+    {q:"Vad krävs vid transport av lift på till exempel släp eller lastbil?", opts:["Att liften säkras på ett korrekt sätt för att förhindra rörelse under transport", "Ingen särskild säkring behövs", "Att liften alltid körs dit på egna hjul", "Att arbetskorgen hålls upplyft under transporten"], correct:0, fb:"Transport av lift kräver att liften säkras på ett korrekt sätt för att förhindra rörelse under transport — felaktig lastsäkring kan innebära stora risker."},
+    {q:"Vad händer med liftens stabilitet ju högre upp och längre ut lasten befinner sig?", opts:["Marginalerna minskar och liften blir mer känslig för yttre påverkan", "Stabiliteten ökar alltid", "Det påverkar inte stabiliteten alls", "Liften blir automatiskt tyngre"], correct:0, fb:"Ju högre upp och längre ut lasten befinner sig, desto större påverkan får den på maskinens stabilitet, vilket innebär att marginalerna minskar."},
+    {q:"Hur kan vind påverka en lift vid utomhusarbete?", opts:["Kraftig vind kan påverka både maskinen och arbetskorgen, och material i korgen kan öka vindfånget", "Vind har aldrig någon påverkan på liftar", "Vind påverkar bara liftens färg", "Vind gör alltid liften stabilare"], correct:0, fb:"Liftar är konstruerade för att klara vissa vindförhållanden, men kraftig vind kan påverka både maskinen och arbetskorgen, och material i korgen kan öka vindfånget."},
+    {q:"Vad kan orsaka sidokrafter under arbete med lift?", opts:["Att operatören trycker mot en yta eller arbetar med verktyg som ger motstånd", "Enbart batteriets laddningsnivå", "Enbart liftens färg", "Enbart tid på dygnet"], correct:0, fb:"Sidokrafter kan uppstå vid arbete, till exempel om operatören trycker mot en yta eller arbetar med verktyg som ger motstånd."},
+    {q:"Vad visar informationen om tillåten last, arbetshöjd och räckvidd på liftens skyltar?", opts:["Vad liften är konstruerad för att klara och som inte får överskridas", "Rekommendationer som är valfria att följa", "Endast liftens vikt", "Endast tillverkarens serienummer"], correct:0, fb:"På maskinen finns information om tillåten last, maximal arbetshöjd och räckvidd, som visar vad liften är konstruerad för att klara och som inte får överskridas."},
+    {q:"Vad visar ett lastdiagram på en lift?", opts:["Hur kapaciteten förändras beroende på arbetsläge, till exempel vid olika räckvidder eller höjder", "Bränsleförbrukningen per timme", "Antalet operatörer som använt liften", "Färgkoder för underhållsintervall"], correct:0, fb:"Vissa liftar är utrustade med lastdiagram som visar hur kapaciteten förändras beroende på arbetsläge, till exempel vid olika räckvidder eller höjder."},
+    {q:"Vad innebär principen att liften endast får användas för det den är avsedd för?", opts:["Att använda maskinen på ett sätt den inte är avsedd för kan leda till instabilitet och ökad risk för olyckor", "Att liften kan användas för vilket ändamål som helst utan risk", "Att liften alltid kan lyfta obegränsad last", "Att endast originaltillbehör får finnas på arbetsplatsen"], correct:0, fb:"En grundläggande princip är att liften endast får användas för det ändamål den är tillverkad för — annan användning kan leda till instabilitet och ökad risk för olyckor."},
+    {q:"Vad ska göras när liften inte används enligt kapitlet om säker användning i praktiken?", opts:["Den ska lämnas i ett säkert läge och åtgärder ska vid behov vidtas för att förhindra att obehöriga startar eller använder den", "Den kan lämnas i valfritt läge utan vidare åtgärd", "Nyckeln kan lämnas i tändningen synligt för alla", "Arbetskorgen ska alltid lämnas i upplyft läge"], correct:0, fb:"Det är viktigt att förhindra att obehöriga använder maskinen — när liften inte används ska den lämnas i ett säkert läge."}
+  ],
+  sakerhet: [
+    {q:"Vad krävs särskilt vid ensamarbete med lift?", opts:["Rutiner för kommunikation och att någon känner till var arbetet utförs och hur länge det pågår", "Inget särskilt, ensamarbete kräver samma rutiner som vanligt arbete", "Att arbetet alltid avbryts efter en timme", "Att liften aldrig lyfts över marknivå"], correct:0, fb:"Vid ensamarbete är det särskilt viktigt att det finns rutiner för kommunikation och att någon känner till var arbetet utförs och hur länge det pågår."},
+    {q:"Var finns nödstopp vanligtvis placerat på en lift?", opts:["Både i arbetskorgen och på chassit", "Endast på chassit", "Endast i arbetskorgen", "Endast hos tillverkaren"], correct:0, fb:"Nödstopp finns vanligtvis både i arbetskorgen och på chassit, och används för att omedelbart stoppa alla rörelser."},
+    {q:"När används system för nödmanövrering?", opts:["När den ordinarie styrningen inte fungerar, till exempel vid strömavbrott eller tekniskt fel", "Varje gång liften startas", "Endast vid schemalagt underhåll", "Endast vid transport av liften"], correct:0, fb:"Nödmanövrering används när den ordinarie styrningen inte fungerar, till exempel vid strömavbrott eller tekniskt fel, för att sänka arbetskorgen eller flytta maskinen till ett säkert läge."},
+    {q:"Var är reglagen för nödmanövrering ofta placerade?", opts:["På chassit, och kan behöva manövreras av en person på marken", "Enbart i arbetskorgen", "Enbart i förarhytten på ett medföljande fordon", "De finns inte på liftar"], correct:0, fb:"Reglagen för nödmanövrering är ofta placerade på chassit och kan behöva manövreras av en person på marken."},
+    {q:"Vad bör göras om maskinen uppvisar ovanliga ljud, ryckiga rörelser eller utebliven respons?", opts:["Arbetet ska avbrytas och maskinen hanteras enligt gällande rutiner", "Arbetet fortsätter som vanligt", "Ljudet ignoreras om lyftet nästan är klart", "Endast volymen på liftens signalhorn ökas"], correct:0, fb:"Vid funktionsstörningar är det viktigt att uppmärksamma hur maskinen beter sig — ovanliga ljud eller ryckiga rörelser ska tas på allvar och arbetet avbrytas."},
+    {q:"Vad har spärranordningar för funktion på en lift?", opts:["De säkerställer att liften inte rör sig oavsiktligt i vissa situationer, till exempel vid service", "De ökar liftens maxhastighet", "De stänger av belysningen automatiskt", "De fyller på hydrauloljan"], correct:0, fb:"Spärranordningar används för att säkerställa att liften inte rör sig oavsiktligt i vissa situationer, till exempel vid arbete under arbetskorgen eller vid service."},
+    {q:"Får säkerhetsfunktioner på liften kopplas bort eller kringgås?", opts:["Nej, de ska alltid vara aktiva och fungera som avsett", "Ja, om operatören har lång erfarenhet", "Ja, om arbetet går fortare då", "Ja, men bara vid transport"], correct:0, fb:"Säkerhetsfunktionerna får inte kopplas bort eller kringgås, eftersom detta kan innebära att viktiga säkerhetsnivåer försvinner."},
+    {q:"Vilken personlig skyddsutrustning nämns som exempel vid arbete med lift?", opts:["Hjälm, skyddsskor och vid behov fallskyddsutrustning", "Endast solglasögon", "Endast keps", "Endast handskar av bomull"], correct:0, fb:"I många fall innebär personlig skyddsutrustning att operatören använder hjälm, skyddsskor och vid behov fallskyddsutrustning."},
+    {q:"Varför kan arbetsområdet behöva märkas ut eller spärras av?", opts:["För att minska risken för att obehöriga personer kommer in i riskzonen, särskilt nära trafik eller i offentliga miljöer", "För att det ser proffsigt ut", "Det är aldrig nödvändigt", "Endast för att undvika trafikböter"], correct:0, fb:"Arbetsområdet kan i vissa situationer behöva märkas ut eller spärras av, särskilt vid arbete i miljöer där andra personer vistas."},
+    {q:"Vad ska göras med liften efter avslutat arbete?", opts:["Den ska lämnas på ett säkert sätt så att den inte kan användas av obehöriga eller utgöra en risk för omgivningen", "Den kan lämnas i valfritt läge", "Arbetskorgen ska alltid lämnas i högsta läge", "Nyckeln ska lämnas kvar i tändningslåset synligt"], correct:0, fb:"Efter avslutat arbete är det viktigt att liften lämnas på ett säkert sätt, så att den inte kan användas av obehöriga och inte utgör en risk för omgivningen."},
+    {q:"Vad är syftet med varselmarkeringar och varningssystem på en arbetsplats med lift?", opts:["Att uppmärksamma omgivningen på att arbete pågår", "Att göra arbetsplatsen mer dekorativ", "Att ersätta behovet av riskbedömning", "Att endast informera myndigheter"], correct:0, fb:"Varselmarkeringar och varningssystem används för att uppmärksamma omgivningen på att arbete pågår, till exempel genom ljus eller skyltar."}
+  ],
+  lagar: [
+    {q:"Vilken lag utgör grunden för arbete med lift enligt kapitlet om lagar och arbetsmiljö?", opts:["Arbetsmiljölagen (SFS 1977:1160)", "Trafikförordningen", "Miljöbalken", "Konsumentköplagen"], correct:0, fb:"Ett av de viktigaste regelverken för arbete med liftar är Arbetsmiljölagen (SFS 1977:1160)."},
+    {q:"Vad reglerar AFS 2006:4?", opts:["Användning av arbetsutrustning", "Endast besiktning av lyftanordningar", "Endast brandsäkerhet i byggnader", "Endast miljöfarlig verksamhet"], correct:0, fb:"Arbetsmiljöverkets föreskrifter om användning av arbetsutrustning (AFS 2006:4) ställer krav på att arbetsutrustning ska användas på ett säkert sätt."},
+    {q:"Vad reglerar AFS 2006:6?", opts:["Användning av lyftanordningar och lyftredskap", "Endast arbetstider", "Endast kemikaliehantering", "Endast utbildning av chaufförer"], correct:0, fb:"Föreskrifterna om användning av lyftanordningar och lyftredskap (AFS 2006:6) anger att lyftanordningar ska användas så att risker för personskador förebyggs."},
+    {q:"Vad reglerar AFS 2003:6?", opts:["Besiktning av lyftanordningar", "Endast elsäkerhet", "Endast arbetskläder", "Endast rökning på arbetsplatsen"], correct:0, fb:"Krav på besiktning regleras i föreskrifter om besiktning av lyftanordningar (AFS 2003:6)."},
+    {q:"Vad har arbetsgivaren huvudansvar för enligt Arbetsmiljölagen?", opts:["Arbetsmiljön, det vill säga att rätt utrustning finns, är säker att använda och att personalen har tillräcklig utbildning", "Enbart att betala ut lön i tid", "Enbart marknadsföring av företaget", "Enbart bokföring"], correct:0, fb:"Enligt Arbetsmiljölagen har arbetsgivaren huvudansvaret för arbetsmiljön, vilket innebär bland annat rätt utrustning, säkerhet och tillräcklig utbildning."},
+    {q:"Vad ska operatören (arbetstagaren) göra enligt sitt ansvar för arbetsmiljön?", opts:["Följa instruktioner, använda skyddsutrustning, arbeta säkert samt uppmärksamma och rapportera risker och brister", "Endast rapportera till media vid problem", "Endast arbeta snabbare för att kompensera risker", "Inget särskilt ansvar ligger på arbetstagaren"], correct:0, fb:"Arbetstagaren ska medverka till en god arbetsmiljö genom att följa instruktioner, använda skyddsutrustning och arbeta på ett säkert sätt, samt uppmärksamma och rapportera risker."},
+    {q:"Hur beskrivs ansvarsfördelningen mellan arbetsgivare och operatör i materialet?", opts:["Arbetsgivaren skapar förutsättningarna för ett säkert arbete, medan operatören ansvarar för hur arbetet utförs i praktiken", "Endast operatören bär allt ansvar", "Endast arbetsgivaren bär allt ansvar", "Ansvaret ligger helt hos tillverkaren av liften"], correct:0, fb:"Ansvarsfördelningen innebär att arbetsgivaren skapar förutsättningarna för ett säkert arbete, medan operatören ansvarar för hur arbetet utförs i praktiken."},
+    {q:"Vilka faktorer nämns som vanliga orsaker till olyckor med lift?", opts:["Instabil uppställning, arbete på olämpligt underlag, påverkan från vind eller sidokrafter samt överskridna begränsningar", "Enbart dåligt väder", "Enbart för hög personaltäthet", "Enbart för nya maskiner"], correct:0, fb:"Vanliga orsaker till olyckor är instabil uppställning, arbete på olämpligt underlag, påverkan från vind eller sidokrafter samt att maskinens begränsningar överskrids."},
+    {q:"Vad menas med ett \"tillbud\" enligt kapitlet?", opts:["En händelse som hade kunnat leda till en olycka", "En redan inträffad allvarlig olycka", "Ett formellt klagomål från en kund", "Ett schemalagt underhållstillfälle"], correct:0, fb:"Tillbud, det vill säga händelser som hade kunnat leda till en olycka, är en viktig del av säkerhetsarbetet."},
+    {q:"Varför är det viktigt att rapportera och analysera tillbud?", opts:["Risker kan upptäckas i ett tidigt skede och åtgärdas innan de leder till skador", "Det är ett lagkrav helt utan koppling till säkerhet", "Det påverkar bara statistik utan praktisk nytta", "Det är enbart en administrativ rutin"], correct:0, fb:"Genom att rapportera och följa upp tillbud kan risker upptäckas i ett tidigt skede och åtgärdas innan de leder till skador."},
+    {q:"Vad bör operatören tänka på vid i- och urstigning ur arbetskorgen för att undvika förslitningsskador?", opts:["Att det sker kontrollerat och med god balans, med stabila grepp och utan hastiga rörelser", "Att det sker så snabbt som möjligt", "Att man hoppar ur korgen direkt", "Att man alltid vänder ryggen till korgen"], correct:0, fb:"I- och urstigning ska ske kontrollerat och med god balans — att använda stabila grepp och undvika hastiga rörelser minskar risken för både fall och belastningsskador."},
+    {q:"Vad rekommenderas vid längre arbetspass i arbetskorgen ur ett ergonomiskt perspektiv?", opts:["Att variera arbetsställning och undvika statiska positioner under lång tid", "Att alltid stå helt still i samma position", "Att sträcka sig så långt som möjligt utanför korgen", "Att aldrig ta pauser oavsett arbetets längd"], correct:0, fb:"Vid längre arbetspass är det viktigt att variera arbetsställning och undvika statiska positioner under lång tid, eftersom ensidigt arbete kan orsaka belastningsskador."}
+  ],
+  fallskydd: [
+    {q:"Vad är den vanligaste risken i liftar som fallskydd ska skydda mot?", opts:["Att operatören kastas ur korgen vid rörelser i maskinen (utkastningseffekt/catapult-effekt), inte att man \"ramlar ut\"", "Att operatören blir sjösjuk", "Att operatören fastnar i skyddsräcket", "Att operatören blir bländad av solen"], correct:0, fb:"Den vanligaste risken i liftar är inte att man ramlar ut, utan att man kastas ur korgen vid rörelser i maskinen — en så kallad utkastningseffekt (catapult-effekt)."},
+    {q:"I vilken typ av lift används fallskydd oftare enligt materialet?", opts:["Bomliftar, där arbetskorgen kan röra sig i sidled och längre från maskinens centrum", "Saxliftar, eftersom de rör sig snabbast", "Pelarliftar, eftersom de saknar räcken", "Ingen lifttyp kräver fallskydd"], correct:0, fb:"I bomliftar, där arbetskorgen kan röra sig i sidled och längre från maskinens centrum, är risken för utkastning större, varför fallskydd används oftare där."},
+    {q:"Hur ser behovet av fallskydd ut normalt i saxliftar?", opts:["Fallskydd används normalt inte, eftersom rörelsen främst sker rakt upp och ner och korgen är mer stabil", "Fallskydd krävs alltid i saxliftar", "Saxliftar saknar helt arbetskorg", "Fallskydd är förbjudet i saxliftar"], correct:0, fb:"I saxliftar, där rörelsen främst sker rakt upp och ner och arbetskorgen är mer stabil, används fallskydd normalt inte."},
+    {q:"Vem avgör när fallskydd ska användas enligt materialet?", opts:["Arbetsgivaren, baserat på riskbedömning och arbetsmiljö", "Enbart operatören själv utan grund", "Tillverkaren av liften bestämmer alltid för varje enskilt jobb", "Ingen avgör, det är alltid valfritt"], correct:0, fb:"Det är alltid arbetsgivaren som avgör när fallskydd ska användas, baserat på riskbedömning och arbetsmiljö. Operatören har ansvar att följa dessa instruktioner."},
+    {q:"Vilken utrustning är den vanligaste formen av fallskydd i lift?", opts:["Sele och lina", "Hjälm och skyddsglasögon", "Handskar och skyddsskor", "Hörselskydd och andningsmask"], correct:0, fb:"Den vanligaste utrustningen är sele och lina. Selen bärs av operatören och linan kopplar samman selen med liftens infästningspunkt."},
+    {q:"Vad är syftet med den korta linan som normalt används i liftar?", opts:["Att förhindra att operatören lämnar arbetskorgen, inte att fånga ett fritt fall", "Att fånga operatören vid ett fritt fall från stor höjd", "Att mäta liftens hastighet", "Att ladda liftens batteri"], correct:0, fb:"I liftar används normalt en kort lina avsedd för arbetspositionering eller fallbegränsning — syftet är att förhindra att operatören lämnar arbetskorgen, inte att fånga ett fritt fall."},
+    {q:"Hur lång ska linan vara enligt materialet?", opts:["Så kort att man inte kan nå utanför korgens skyddsräcken", "Så lång som möjligt för rörelsefrihet", "Exakt fem meter oavsett lifttyp", "Linans längd spelar ingen roll"], correct:0, fb:"Linan ska vara så kort att man inte kan nå utanför korgens skyddsräcken."},
+    {q:"Var ska fallskydd fästas i arbetskorgen?", opts:["I de särskilda förankringspunkter som finns i arbetskorgen, aldrig i räcken eller andra delar som inte är avsedda för detta", "Var som helst i korgen, till exempel i räcket", "Endast i golvet", "Fästpunkten spelar ingen roll så länge linan är kopplad"], correct:0, fb:"Infästning ska alltid ske i de särskilda förankringspunkter som finns i arbetskorgen — det är inte tillåtet att fästa fallskydd i räcken eller andra delar som inte är avsedda för detta."},
+    {q:"Vad ska operatören göra innan arbete med fallskydd påbörjas?", opts:["Säkerställa att selen är korrekt påtagen och justerad samt koppla in sig innan arbetet påbörjas", "Endast kontrollera bränslenivån", "Ta av selen för att arbeta friare", "Vänta tills arbetet är halvvägs klart innan inkoppling"], correct:0, fb:"Operatören ska säkerställa att selen är korrekt påtagen och justerad, kontrollera att linan är rätt kopplad och koppla in sig innan arbetet påbörjas."},
+    {q:"Vad ska särskilt uppmärksammas vid kontroll av fallskyddsutrustning?", opts:["Slitage/skador i selen, skador på linan, att karbiner och kopplingar låser korrekt samt att infästningspunkten är hel och tydligt märkt", "Endast selens färg", "Endast om selen är ren", "Endast tillverkningsåret på förpackningen"], correct:0, fb:"Vid kontroll ska man särskilt uppmärksamma slitage, skador eller sprickor i selen, skador på linan, att karbiner och kopplingar fungerar och låser korrekt samt att infästningspunkten är hel och tydligt märkt."},
+    {q:"Vad kan en för lång lina orsaka enligt materialet?", opts:["Att operatören ändå kastas utanför korgen", "Ökad komfort utan några nackdelar", "Snabbare arbete utan risker", "Bättre skydd mot fall"], correct:0, fb:"Felaktig användning av fallskydd kan innebära risker — en för lång lina kan göra att operatören ändå kastas utanför korgen."},
+    {q:"Vad innebär det att fallskydd är ett \"komplement\" till liftens inbyggda skydd?", opts:["Att det inte ersätter andra säkerhetsåtgärder, utan används när riskerna kräver det", "Att fallskydd alltid ersätter alla andra säkerhetsfunktioner", "Att fallskydd är helt onödigt om liften har skyddsräcken", "Att fallskydd bara behövs vid transport av liften"], correct:0, fb:"Fallskydd är en del av den personliga skyddsutrustningen och används som ett komplement till liftens inbyggda skydd — det ersätter inte andra säkerhetsåtgärder."},
+    {q:"Vad ansvarar arbetsgivaren för gällande fallskydd enligt kapitlet?", opts:["Att göra en riskbedömning, avgöra om fallskydd ska användas, tillhandahålla rätt utrustning och säkerställa att operatören har tillräcklig kunskap", "Enbart att köpa in valfri utrustning utan bedömning", "Enbart att kontrollera priset på utrustningen", "Inget ansvar, allt ligger på operatören"], correct:0, fb:"Arbetsgivaren ansvarar för att göra en riskbedömning av arbetet, avgöra om fallskydd ska användas, tillhandahålla rätt utrustning och säkerställa att operatören har tillräcklig kunskap."},
+    {q:"Vad ansvarar operatören för gällande fallskydd enligt kapitlet?", opts:["Att följa givna instruktioner, använda fallskydd när det krävs, kontrollera utrustningen före användning och rapportera fel och brister", "Att aldrig använda fallskydd oavsett instruktioner", "Att själv besluta om fallskydd behövs, oavsett arbetsgivarens riskbedömning", "Inget särskilt ansvar ligger på operatören"], correct:0, fb:"Operatören ansvarar för att följa givna instruktioner, använda fallskydd när det krävs, kontrollera utrustningen före användning och rapportera fel och brister."}
+  ]
+};
+const CATS = [{id:"all", label:"Alla frågor"}].concat(
+  Object.keys(CAT_META).map(id => ({id, label: CAT_META[id].label}))
+);
+
+let currentCat = "all";
+let order = [];
+let idx = 0;
+let answered = false;
+let score = 0;
+let history = [];
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function shuffleOptions(item){
+  // Bygg par av [alternativtext, ärRätt], slumpa ordningen,
+  // och räkna sedan om vilket index som är rätt i den slumpade ordningen.
+  const pairs = item.opts.map((o, i) => ({ text: o, wasCorrect: i === item.correct }));
+  const shuffled = shuffle(pairs);
+  const newOpts = shuffled.map(p => p.text);
+  const newCorrect = shuffled.findIndex(p => p.wasCorrect);
+  return { ...item, opts: newOpts, correct: newCorrect };
+}
+
+function buildOrder(cat){
+  let items = [];
+  if(cat === "all"){
+    Object.keys(QUESTIONS).forEach(k => QUESTIONS[k].forEach(q => items.push({...q, cat:k})));
+  } else {
+    QUESTIONS[cat].forEach(q => items.push({...q, cat}));
+  }
+  items = shuffle(items).map(shuffleOptions);
+  return items.slice(0, Math.min(QUIZ_LENGTH, items.length));
+}
+
+function totalPoolSize(){
+  return Object.values(QUESTIONS).reduce((sum, arr) => sum + arr.length, 0);
+}
+
+function updatePoolNote(){
+  const note = document.getElementById('poolNote');
+  const poolSize = currentCat === "all" ? totalPoolSize() : QUESTIONS[currentCat].length;
+  const drawn = Math.min(QUIZ_LENGTH, poolSize);
+  note.textContent = `Frågebank: ${poolSize} frågor · ${drawn} slumpas ut denna omgång`;
+}
+
+function renderTabs(){
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = '';
+  CATS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.textContent = c.label;
+    btn.dataset.active = (c.id === currentCat) ? "true" : "false";
+    btn.onclick = () => { currentCat = c.id; startQuiz(); };
+    tabs.appendChild(btn);
+  });
+}
+
+function startQuiz(){
+  order = buildOrder(currentCat);
+  idx = 0; score = 0; history = [];
+  renderTabs();
+  updatePoolNote();
+  renderQuestion();
+}
+
+function updateProgress(){
+  const fill = document.getElementById('progressFill');
+  const label = document.getElementById('progressLabel');
+  const pct = order.length ? (idx/order.length)*100 : 0;
+  fill.style.width = pct + '%';
+  label.textContent = Math.min(idx+1, order.length) + ' / ' + order.length;
+}
+
+function renderQuestion(){
+  answered = false;
+  updateProgress();
+  const card = document.getElementById('card');
+  if(idx >= order.length){
+    renderResult();
+    return;
+  }
+  const item = order[idx];
+  const meta = CAT_META[item.cat];
+
+  const optHtml = item.opts.map((o,i) => {
+    const key = String.fromCharCode(65+i);
+    return `<button class="opt" data-i="${i}"><span class="k">${key}</span><span>${o}</span></button>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="qmeta">
+      <span class="qtag" style="background:${meta.bg}; color:${meta.color};">${meta.label}</span>
+      <span class="qnum">Fråga ${idx+1} av ${order.length}</span>
+    </div>
+    <div class="prompt">${item.q}</div>
+    <div class="options">${optHtml}</div>
+    <div class="feedback" id="feedback"></div>
+    <div class="controls"><button class="next" id="nextBtn" disabled>Nästa</button></div>
+  `;
+
+  card.querySelectorAll('.opt').forEach(btn => {
+    btn.addEventListener('click', () => selectAnswer(parseInt(btn.dataset.i)));
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    idx++;
+    renderQuestion();
+  });
+}
+
+function selectAnswer(i){
+  if(answered) return;
+  answered = true;
+  const item = order[idx];
+  const correct = item.correct;
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach((btn, bi) => {
+    btn.setAttribute('disabled','true');
+    if(bi === correct) btn.classList.add('correct');
+    if(bi === i && i !== correct) btn.classList.add('wrong');
+  });
+  const isCorrect = (i === correct);
+  if(isCorrect) score++;
+  history.push({q:item.q, correct:isCorrect, correctText:item.opts[correct], fb:item.fb});
+
+  const fb = document.getElementById('feedback');
+  fb.classList.add('show', isCorrect ? 'ok' : 'bad');
+  fb.innerHTML = `<b>${isCorrect ? 'Rätt!' : 'Inte riktigt.'}</b>${item.fb}`;
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function renderResult(){
+  const card = document.getElementById('card');
+  const pct = order.length ? Math.round((score/order.length)*100) : 0;
+  const reviewHtml = history.map(h => `
+    <div class="review-item ${h.correct ? 'ok' : 'bad'}">
+      <div class="q">${h.q}</div>
+      <div class="a">${h.correct ? 'Du svarade rätt.' : 'Rätt svar: ' + h.correctText}</div>
+    </div>
+  `).join('');
+
+  card.innerHTML = `
+    <div class="result">
+      <div class="big">${score} / ${order.length}</div>
+      <div class="of">${pct}% rätt</div>
+      <button class="restart" id="restartBtn">Kör igen (nya slumpade frågor)</button>
+      <div class="review">${reviewHtml}</div>
+    </div>
+  `;
+  document.getElementById('restartBtn').addEventListener('click', startQuiz);
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressLabel').textContent = order.length + ' / ' + order.length;
+}
+
+startQuiz();
+</script>
+<script src="../../assets/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lathund — Skärdata (Fräsning, Svarvning, Borrning) | CNC-Grönt kort</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,"Segoe UI",Arial,sans-serif;}
+  a{color:inherit;}
+  .topnav{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:12px 24px; border-bottom:1px solid var(--line); background:var(--bg2);
+  }
+  .topnav .brand{display:flex; align-items:center; gap:8px; text-decoration:none; font-weight:800; letter-spacing:.04em; font-size:13.5px;}
+  .topnav .mark{position:relative; width:16px; height:16px; border:2px solid var(--amber); border-radius:3px; display:inline-block;}
+  .topnav .mark::before, .topnav .mark::after{content:""; position:absolute; background:var(--amber);}
+  .topnav .mark::before{left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%);}
+  .topnav .mark::after{top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%);}
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; font-size:13.5px;}
+  .topnav nav a:hover{color:var(--text);}
+
+  .wrap{max-width:900px; margin:0 auto; padding:32px 20px 60px;}
+  .eyebrow{color:var(--amber); font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;}
+  h1{margin:6px 0 8px; font-size:30px;}
+  .sub{color:var(--muted); font-size:14.5px; line-height:1.55; max-width:70ch;}
+
+  .tabs{display:flex; gap:8px; margin-top:24px; border-bottom:1px solid var(--line); flex-wrap:wrap;}
+  .tab{
+    background:none; border:none; color:var(--muted); font-size:14.5px; font-weight:700;
+    padding:10px 16px; cursor:pointer; border-bottom:3px solid transparent; font-family:inherit;
+  }
+  .tab.active{color:var(--text); border-bottom-color:var(--amber);}
+  .tab:hover{color:var(--text);}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:20px 22px; margin-top:22px;}
+  .card h2{margin:0 0 10px; font-size:17px; display:flex; align-items:center; gap:10px;}
+  .card h2 .n{
+    display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
+    border-radius:50%; background:var(--blue-dim); color:var(--blue); font-size:12.5px; font-weight:800;
+  }
+  .formula{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:19px;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:8px;
+    padding:14px 18px; margin:10px 0; display:inline-block;
+  }
+  .keys{font-size:13.5px; color:var(--muted); line-height:1.9; margin-top:6px;}
+  .keys b{color:var(--text); font-weight:700;}
+  .keys ul{margin:6px 0 0; padding-left:18px;}
+
+  .calc{background:var(--panel); border:1px solid var(--blue-dim); border-radius:10px; padding:22px; margin-top:26px;}
+  .calc h2{margin:0 0 4px; font-size:18px; color:var(--blue);}
+  .calc .hint{color:var(--muted); font-size:13px; margin-bottom:16px;}
+  .calc-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 18px;}
+  .field label{display:block; font-size:12.5px; color:var(--muted); margin-bottom:4px;}
+  .field input{
+    width:100%; background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    color:var(--text); padding:9px 10px; font-size:15px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  .field input:focus{outline:2px solid var(--blue); outline-offset:1px;}
+  .results{display:flex; gap:16px; margin-top:18px; flex-wrap:wrap;}
+  .result{
+    flex:1; min-width:180px; background:var(--green-dim); border:1px solid #2f5d3f; border-radius:8px;
+    padding:14px 16px;
+  }
+  .result .rlabel{font-size:12.5px; color:#8fd6a8;}
+  .result .rvalue{font-size:24px; font-weight:800; color:var(--green); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  .note{font-size:12.5px; color:var(--muted); margin-top:16px; line-height:1.6; border-top:1px solid var(--line); padding-top:14px;}
+  .presetbtn{
+    background:var(--panel-2); border:1px solid var(--line); color:var(--text); border-radius:6px;
+    padding:7px 12px; font-size:12.5px; cursor:pointer; margin-top:10px;
+  }
+  .presetbtn:hover{border-color:var(--blue);}
+
+  .tablewrap{overflow-x:auto; margin-top:10px; border:1px solid var(--line); border-radius:8px;}
+  table.data{border-collapse:collapse; width:100%; font-size:13px; white-space:nowrap;}
+  table.data th, table.data td{border:1px solid var(--line-soft); padding:6px 10px; text-align:center;}
+  table.data thead th{background:var(--panel-2); color:var(--text); font-weight:700; position:sticky; top:0;}
+  table.data thead tr:first-child th{background:var(--panel-2);}
+  table.data tbody th{background:var(--panel-2); text-align:left; font-weight:700; color:var(--text);}
+  table.data tbody tr:nth-child(even){background:var(--bg2);}
+  .srcnote{font-size:12px; color:var(--muted); margin-top:8px; line-height:1.6;}
+  .grouphdr{background:var(--blue-dim); color:var(--blue);}
+</style>
+</head>
+<body>
+<div class="topnav">
+  <a class="brand" href="material.html"><span class="mark"></span>CNC-GRÖNT KORT</a>
+  <nav>
+    <a href="material.html">Delkurser</a>
+    <a href="quiz-alla.html">Storquiz</a>
+  </nav>
+</div>
+
+<main class="wrap">
+  <div class="eyebrow">Lathund</div>
+  <h1>Skärdata — Fräsning, svarvning, borrning</h1>
+  <div class="sub">Riktvärden för skärhastighet och matning per materialgrupp, med formler och miniräknare för respektive bearbetning. Siffrorna är avskrivna från Verkstadshandboken (snabbstål/HSS-tabeller) — stäm alltid av mot maskinens och verktygstillverkarens egna rekommendationer.</div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="frasning">Fräsning</button>
+    <button class="tab" data-tab="svarvning">Svarvning</button>
+    <button class="tab" data-tab="borrning">Borrning</button>
+  </div>
+
+  <!-- ============ FRÄSNING ============ -->
+  <section class="panel active" id="panel-frasning">
+    <div class="card">
+      <h2><span class="n">1</span>Skärhastighet (Vc)</h2>
+      <div class="formula">Vc = (n × π × d) / 1000</div>
+      <div class="keys"><b>Vc</b> = skärhastighet (m/min) &nbsp;·&nbsp; <b>n</b> = varvtal (varv/min) &nbsp;·&nbsp; <b>d</b> = verktygsdiameter (mm)</div>
+    </div>
+    <div class="card">
+      <h2><span class="n">2</span>Varvtal (n)</h2>
+      <div class="formula">n = (Vc × 1000) / (π × d)</div>
+      <div class="keys">Samma formel omskriven — den du oftast räknar med: du vet skärhastigheten verktyget/materialet klarar, och vill veta varvtalet.</div>
+    </div>
+    <div class="card">
+      <h2><span class="n">3</span>Bordsmatning (Vf)</h2>
+      <div class="formula">Vf = fz × Zn × n</div>
+      <div class="keys"><b>Vf</b> = bordsmatning (mm/min) &nbsp;·&nbsp; <b>fz</b> = matning per tand (mm/tand) &nbsp;·&nbsp; <b>Zn</b> = antal tänder &nbsp;·&nbsp; <b>n</b> = varvtal (varv/min)</div>
+    </div>
+
+    <div class="card">
+      <h2>Skärhastigheter Vc och matningar/tand fz — Fräsning, snabbstål</h2>
+      <div class="tablewrap">
+        <table class="data">
+          <thead>
+            <tr>
+              <th rowspan="2">Material-<br>grupp</th>
+              <th colspan="2">Ändplanfräs</th>
+              <th>Slitsfräs</th>
+              <th>Skivfräs/<br>Profilfräs</th>
+              <th colspan="4">Pinnfräs</th>
+            </tr>
+            <tr>
+              <th>Vc obelagd</th><th>Vc belagd</th>
+              <th>Vc (m/min)</th>
+              <th>Vc (m/min)</th>
+              <th>Vc obelagd</th><th>Vc belagd</th>
+              <th>fz Ø6–8</th><th>fz (8)–16 / (16)–50</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th>1, 4</th><td>40</td><td>80</td><td>45</td><td>35</td><td>40</td><td>80</td><td>0,03/0,01</td><td>0,07/0,02 · 0,12/0,04</td></tr>
+            <tr><th>2, 3, 5, 8</th><td>35</td><td>70</td><td>40</td><td>30</td><td>35</td><td>70</td><td>0,03/0,01</td><td>0,07/0,02 · 0,12/0,04</td></tr>
+            <tr><th>6, 7, 9, 10, 11, 12</th><td>30</td><td>60</td><td>35</td><td>25</td><td>30</td><td>60</td><td>0,03/0,01</td><td>0,07/0,02 · 0,12/0,04</td></tr>
+            <tr><th>16</th><td>23</td><td>36</td><td>26</td><td>20</td><td>23</td><td>36</td><td>0,03/0,01</td><td>0,07/0,02 · 0,12/0,04</td></tr>
+            <tr><th>13, 15, 17</th><td>19</td><td>30</td><td>22</td><td>16</td><td>19</td><td>30</td><td>0,03/0,01</td><td>0,07/0,02 · 0,12/0,04</td></tr>
+            <tr><th>18</th><td>23</td><td>37</td><td>26</td><td>20</td><td>23</td><td>37</td><td>0,03/0,01</td><td>0,07/0,02 · 0,12/0,04</td></tr>
+            <tr><th>19</th><td>40</td><td>65</td><td>45</td><td>35</td><td>40</td><td>65</td><td>0,03/0,01</td><td>0,07/0,02 · 0,12/0,04</td></tr>
+            <tr><th>20, 21, 22</th><td>125</td><td>200</td><td>140</td><td>105</td><td>125</td><td>200</td><td>0,05/0,01</td><td>0,11/0,04 · 0,16/0,06</td></tr>
+            <tr><th>23</th><td>300</td><td>600</td><td>340</td><td>255</td><td>300</td><td>600</td><td>0,05/0,01</td><td>0,11/0,04 · 0,16/0,06</td></tr>
+            <tr><th>24</th><td>90</td><td>180</td><td>100</td><td>75</td><td>90</td><td>180</td><td>0,05/0,01</td><td>0,11/0,04 · 0,16/0,06</td></tr>
+            <tr><th>25</th><td>125</td><td>300</td><td>140</td><td>105</td><td>125</td><td>300</td><td>0,05/0,01</td><td>0,11/0,04 · 0,16/0,06</td></tr>
+            <tr><th>26</th><td>125</td><td>130</td><td>140</td><td>105</td><td>125</td><td>130</td><td>0,05/0,01</td><td>0,11/0,04 · 0,16/0,06</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="srcnote">fz-värden (mm/tand, radiellt/axiellt) för Ändplanfräs/Slitsfräs/Skivfräs: materialgrupp 1–19: 0,1 / 0,04 / 0,05. Materialgrupp 20–26: 0,2 / 0,08 / 0,1. Pinnfräs-fz ovan är radiell/axiell per diameterintervall. Ansats- och spårfräsning: medelspåntjocklek hm, se separat tabell. 2) Obelagd. 3) Belagd.</div>
+    </div>
+
+    <div class="calc">
+      <h2>Miniräknare — Fräsning</h2>
+      <div class="hint">Fyll i Vc, d, fz och antal tänder — n och Vf räknas ut automatiskt.</div>
+      <div class="calc-grid">
+        <div class="field"><label>Skärhastighet Vc (m/min)</label><input type="number" id="mf-vc" value="40" step="1"></div>
+        <div class="field"><label>Verktygsdiameter d (mm)</label><input type="number" id="mf-d" value="10" step="0.1"></div>
+        <div class="field"><label>Matning per tand fz (mm/tand)</label><input type="number" id="mf-fz" value="0.07" step="0.01"></div>
+        <div class="field"><label>Antal tänder Zn</label><input type="number" id="mf-zn" value="4" step="1"></div>
+      </div>
+      <button class="presetbtn" id="mf-preset">Återställ till riktvärden: grupp 1,4, pinnfräs Ø8–16</button>
+      <div class="results">
+        <div class="result"><div class="rlabel">Varvtal (n)</div><div class="rvalue" id="mf-n">— varv/min</div></div>
+        <div class="result"><div class="rlabel">Bordsmatning (Vf)</div><div class="rvalue" id="mf-vf">— mm/min</div></div>
+      </div>
+      <div class="note">Förvalda värden (Vc 40, fz 0,07) är riktvärden för materialgrupp 1,4 (olegerat/lågolegerat stål), pinnfräs i snabbstål (HSS), obelagd, Ø8–16 mm.</div>
+    </div>
+  </section>
+
+  <!-- ============ SVARVNING ============ -->
+  <section class="panel" id="panel-svarvning">
+    <div class="card">
+      <h2><span class="n">1</span>Skärhastighet (Vc)</h2>
+      <div class="formula">Vc = (n × π × D) / 1000</div>
+      <div class="keys"><b>Vc</b> = skärhastighet (m/min) &nbsp;·&nbsp; <b>n</b> = varvtal (varv/min) &nbsp;·&nbsp; <b>D</b> = arbetsstyckets diameter (mm) — vid svarvning är det alltså detaljens diameter, inte verktygets</div>
+    </div>
+    <div class="card">
+      <h2><span class="n">2</span>Varvtal (n)</h2>
+      <div class="formula">n = (Vc × 1000) / (π × D)</div>
+      <div class="keys">Kom ihåg att D minskar när du svarvar av material — varvtalet behöver då höjas för att hålla samma Vc, om inte maskinen har konstant skärhastighet (CSS) inställd.</div>
+    </div>
+    <div class="card">
+      <h2><span class="n">3</span>Matningshastighet (Vf)</h2>
+      <div class="formula">Vf = f × n</div>
+      <div class="keys"><b>Vf</b> = matningshastighet (mm/min) &nbsp;·&nbsp; <b>f</b> = matning (mm/varv) &nbsp;·&nbsp; <b>n</b> = varvtal (varv/min)</div>
+    </div>
+
+    <div class="card">
+      <h2>Skärhastigheter Vc — Svarvning, snabbstål</h2>
+      <div class="tablewrap">
+        <table class="data">
+          <thead>
+            <tr>
+              <th rowspan="2">Material-<br>grupp</th>
+              <th colspan="2">Finbearbetning</th>
+              <th colspan="2">Grovbearbetning</th>
+              <th colspan="2">Avstickning</th>
+            </tr>
+            <tr>
+              <th>utan skärv.</th><th>med skärv.</th>
+              <th>utan skärv.</th><th>med skärv.</th>
+              <th>utan skärv.</th><th>med skärv.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th>1</th><td>45</td><td>65</td><td>40</td><td>55</td><td>25</td><td>38</td></tr>
+            <tr><th>2, 3</th><td>30</td><td>45</td><td>28</td><td>40</td><td>20</td><td>28</td></tr>
+            <tr><th>4</th><td>45</td><td>65</td><td>40</td><td>55</td><td>25</td><td>38</td></tr>
+            <tr><th>5</th><td>40</td><td>55</td><td>30</td><td>45</td><td>20</td><td>30</td></tr>
+            <tr><th>6, 7, 8</th><td>30</td><td>45</td><td>28</td><td>40</td><td>20</td><td>28</td></tr>
+            <tr><th>9</th><td>28</td><td>40</td><td>25</td><td>35</td><td>18</td><td>25</td></tr>
+            <tr><th>10, 11, 12</th><td>20</td><td>30</td><td>18</td><td>25</td><td>13</td><td>18</td></tr>
+            <tr><th>13</th><td>15</td><td>20</td><td>10</td><td>15</td><td>7</td><td>10</td></tr>
+            <tr><th>15, 16, 17</th><td>18</td><td>25</td><td>15</td><td>20</td><td>10</td><td>15</td></tr>
+            <tr><th>18, 19</th><td>45</td><td>–</td><td>40</td><td>–</td><td>28</td><td>–</td></tr>
+            <tr><th>20</th><td>50</td><td>70</td><td>40</td><td>60</td><td>28</td><td>40</td></tr>
+            <tr><th>21, 22</th><td>90</td><td>115</td><td>70</td><td>100</td><td>50</td><td>70</td></tr>
+            <tr><th>23, 24</th><td>170</td><td>240</td><td>150</td><td>210</td><td>100</td><td>150</td></tr>
+            <tr><th>25, 26</th><td>150</td><td>–</td><td>125</td><td>–</td><td>125</td><td>–</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="srcnote">Vc i m/min. Finbearbetning/Grovbearbetning gäller längd- och plansvarvning. "–" betyder att skärvätska inte används vid den kombinationen.</div>
+    </div>
+
+    <div class="card">
+      <h2>Råd för avstickning</h2>
+      <div class="keys">
+        <ul>
+          <li>Centrumhöjd ±0,1 mm</li>
+          <li>Matning 0,05–0,1 mm/varv</li>
+          <li>Lägre matning i början och slutet av ingreppet</li>
+          <li>Rikligt med skärvätska</li>
+          <li>Använd uppfångare för avstuckna detaljer</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="calc">
+      <h2>Miniräknare — Svarvning</h2>
+      <div class="hint">Fyll i Vc, arbetsstyckets diameter och matning per varv — n och Vf räknas ut automatiskt.</div>
+      <div class="calc-grid">
+        <div class="field"><label>Skärhastighet Vc (m/min)</label><input type="number" id="ms-vc" value="30" step="1"></div>
+        <div class="field"><label>Arbetsstyckets diameter D (mm)</label><input type="number" id="ms-d" value="30" step="0.5"></div>
+        <div class="field"><label>Matning f (mm/varv)</label><input type="number" id="ms-f" value="0.2" step="0.01"></div>
+      </div>
+      <button class="presetbtn" id="ms-preset">Återställ till riktvärden: grupp 2,3, finbearbetning utan skärvätska</button>
+      <div class="results">
+        <div class="result"><div class="rlabel">Varvtal (n)</div><div class="rvalue" id="ms-n">— varv/min</div></div>
+        <div class="result"><div class="rlabel">Matningshastighet (Vf)</div><div class="rvalue" id="ms-vf">— mm/min</div></div>
+      </div>
+      <div class="note">Kom ihåg: D är detaljens diameter, inte verktygets — och den ändras under bearbetningen om du svarvar av utvändig diameter.</div>
+    </div>
+  </section>
+
+  <!-- ============ BORRNING ============ -->
+  <section class="panel" id="panel-borrning">
+    <div class="card">
+      <h2><span class="n">1</span>Skärhastighet (Vc)</h2>
+      <div class="formula">Vc = (n × π × d) / 1000</div>
+      <div class="keys"><b>Vc</b> = skärhastighet (m/min) &nbsp;·&nbsp; <b>n</b> = varvtal (varv/min) &nbsp;·&nbsp; <b>d</b> = borrdiameter (mm)</div>
+    </div>
+    <div class="card">
+      <h2><span class="n">2</span>Varvtal (n)</h2>
+      <div class="formula">n = (Vc × 1000) / (π × d)</div>
+    </div>
+    <div class="card">
+      <h2><span class="n">3</span>Matningshastighet (Vf)</h2>
+      <div class="formula">Vf = fn × n</div>
+      <div class="keys"><b>Vf</b> = matningshastighet (mm/min) &nbsp;·&nbsp; <b>fn</b> = matning (mm/varv) &nbsp;·&nbsp; <b>n</b> = varvtal (varv/min)</div>
+    </div>
+
+    <div class="card">
+      <h2>Skärhastigheter Vc och matning fn — Borrning, snabbstål</h2>
+      <div class="tablewrap">
+        <table class="data">
+          <thead>
+            <tr>
+              <th rowspan="2">Material-<br>grupp</th>
+              <th colspan="2">Utan skärvätska</th>
+              <th colspan="2">Med skärvätska</th>
+              <th colspan="6">Matning fn (mm/varv) — Diameter Dc (mm)</th>
+            </tr>
+            <tr>
+              <th>obelagd</th><th>belagd</th>
+              <th>obelagd</th><th>belagd</th>
+              <th>−6</th><th>(6)–10</th><th>(10)–15</th><th>(15)–25</th><th>(25)–40</th><th>(40)–</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th>1</th><td>25</td><td>32</td><td>35</td><td>45</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><th>2, 3</th><td>20</td><td>28</td><td>30</td><td>40</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><th>4</th><td>25</td><td>32</td><td>35</td><td>45</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><th>5</th><td>20</td><td>28</td><td>30</td><td>40</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><th>6, 7</th><td>14</td><td>20</td><td>20</td><td>27</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><th>8</th><td>20</td><td>28</td><td>30</td><td>40</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><th>9, 10, 11, 12</th><td>14</td><td>20</td><td>20</td><td>27</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><th>13</th><td>7</td><td>10</td><td>10</td><td>14</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><th>15, 17</th><td>7</td><td>10</td><td>10</td><td>14</td><td>0,08</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td></tr>
+            <tr><th>16</th><td>10</td><td>14</td><td>15</td><td>20</td><td>0,08</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td></tr>
+            <tr><th>18</th><td>18</td><td>23</td><td>25</td><td>32</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><th>19</th><td>14</td><td>20</td><td>20</td><td>27</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><th>20</th><td>28</td><td>40</td><td>40</td><td>55</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><th>21, 22</th><td>20</td><td>28</td><td>30</td><td>40</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><th>23, 24</th><td>50</td><td>67</td><td>70</td><td>95</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><th>25, 26</th><td>23</td><td>32</td><td>32</td><td>45</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="srcnote">Vc i m/min. Matning fn beror på borrdiameter Dc — läs av rätt kolumn. Grupp 15–17 och 16 har lägre matningsvärden (segare/svårbearbetade material).</div>
+    </div>
+
+    <div class="calc">
+      <h2>Miniräknare — Borrning</h2>
+      <div class="hint">Fyll i Vc, borrdiameter och matning per varv — n och Vf räknas ut automatiskt.</div>
+      <div class="calc-grid">
+        <div class="field"><label>Skärhastighet Vc (m/min)</label><input type="number" id="mb-vc" value="25" step="1"></div>
+        <div class="field"><label>Borrdiameter d (mm)</label><input type="number" id="mb-d" value="8" step="0.1"></div>
+        <div class="field"><label>Matning fn (mm/varv)</label><input type="number" id="mb-fn" value="0.15" step="0.01"></div>
+      </div>
+      <button class="presetbtn" id="mb-preset">Återställ till riktvärden: grupp 1,4, Ø8 (obelagd, utan skärvätska)</button>
+      <div class="results">
+        <div class="result"><div class="rlabel">Varvtal (n)</div><div class="rvalue" id="mb-n">— varv/min</div></div>
+        <div class="result"><div class="rlabel">Matningshastighet (Vf)</div><div class="rvalue" id="mb-vf">— mm/min</div></div>
+      </div>
+      <div class="note">Förvalda värden (Vc 25, fn 0,15) är riktvärden för materialgrupp 1,4, snabbstålsborr, obelagd, utan skärvätska, Ø(10)–15.</div>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  function wireCalc(prefix, feedInputId, feedMultiplierFn, defaults, presetBtnId) {
+    const vcEl = document.getElementById(prefix + '-vc');
+    const dEl = document.getElementById(prefix + '-d');
+    const feedEl = document.getElementById(feedInputId);
+    const nOut = document.getElementById(prefix + '-n');
+    const vfOut = document.getElementById(prefix + '-vf');
+    function calc() {
+      const vc = parseFloat(vcEl.value);
+      const d = parseFloat(dEl.value);
+      if (!(vc > 0) || !(d > 0)) { nOut.textContent = '— varv/min'; vfOut.textContent = '— mm/min'; return; }
+      const n = (vc * 1000) / (Math.PI * d);
+      nOut.textContent = Math.round(n).toLocaleString('sv-SE') + ' varv/min';
+      const vf = feedMultiplierFn(n);
+      if (vf != null) vfOut.textContent = Math.round(vf).toLocaleString('sv-SE') + ' mm/min';
+      else vfOut.textContent = '— mm/min';
+    }
+    [vcEl, dEl, feedEl].forEach(el => el && el.addEventListener('input', calc));
+    if (presetBtnId) {
+      document.getElementById(presetBtnId).addEventListener('click', () => {
+        Object.keys(defaults).forEach(k => { const el = document.getElementById(k); if (el) el.value = defaults[k]; });
+        calc();
+      });
+    }
+    calc();
+  }
+
+  // Fräsning: Vf = fz * Zn * n
+  (function() {
+    const fzEl = document.getElementById('mf-fz'), znEl = document.getElementById('mf-zn');
+    wireCalc('mf', 'mf-fz', (n) => {
+      const fz = parseFloat(fzEl.value), zn = parseFloat(znEl.value);
+      return (fz > 0 && zn > 0) ? fz * zn * n : null;
+    }, {'mf-vc':40, 'mf-d':10, 'mf-fz':0.07, 'mf-zn':4}, 'mf-preset');
+    znEl.addEventListener('input', () => document.getElementById('mf-vc').dispatchEvent(new Event('input')));
+  })();
+
+  // Svarvning: Vf = f * n
+  (function() {
+    const fEl = document.getElementById('ms-f');
+    wireCalc('ms', 'ms-f', (n) => {
+      const f = parseFloat(fEl.value);
+      return (f > 0) ? f * n : null;
+    }, {'ms-vc':30, 'ms-d':30, 'ms-f':0.2}, 'ms-preset');
+  })();
+
+  // Borrning: Vf = fn * n
+  (function() {
+    const fnEl = document.getElementById('mb-fn');
+    wireCalc('mb', 'mb-fn', (n) => {
+      const fn = parseFloat(fnEl.value);
+      return (fn > 0) ? fn * n : null;
+    }, {'mb-vc':25, 'mb-d':8, 'mb-fn':0.15}, 'mb-preset');
+  })();
+</script>
+</body>
+</html>

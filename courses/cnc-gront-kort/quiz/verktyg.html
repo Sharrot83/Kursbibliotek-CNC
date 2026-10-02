@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verktyg — Svenska/Engelska — Quiz | CNC-Grönt kort</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{ width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto; }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{ content:""; position:absolute; background:var(--amber); }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+  .footcta{
+    margin-top:48px; border-top:1px solid var(--line); padding-top:26px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .footcta .ft-txt{font-size:13.5px; color:var(--muted); max-width:44ch;}
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+
+<style>
+  .progress-row{display:flex; align-items:center; gap:10px; margin:24px 0 20px;}
+  .progress-track{flex:1; height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden;}
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--page-accent), var(--green)); width:0%; transition:width .25s;}
+  .progress-label{font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap; font-family:"IBM Plex Mono",monospace;}
+  .card{
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid var(--line); border-radius:14px; padding:26px 24px;
+    box-shadow: 0 20px 40px -25px rgba(0,0,0,.6);
+  }
+  .qmeta{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;}
+  .qtag{font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; font-weight:700; padding:4px 9px; border-radius:6px;}
+  .qnum{color:var(--muted); font-size:13px; font-family:"IBM Plex Mono",monospace;}
+  .prompt{font-size:18.5px; font-weight:600; line-height:1.4; margin-bottom:18px;}
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .opt{
+    text-align:left; padding:13px 15px; border-radius:10px; border:1px solid var(--line);
+    background:#161d24; color:var(--text); font-size:15px; cursor:pointer; transition:.12s;
+    display:flex; gap:10px; align-items:flex-start; width:100%;
+  }
+  .opt:hover:not([disabled]){border-color:var(--page-accent); background:#1a222b;}
+  .opt .k{
+    flex:0 0 auto; width:22px; height:22px; border-radius:6px; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--muted); font-weight:700;
+  }
+  .opt[disabled]{cursor:default;}
+  .opt.correct{border-color:var(--green); background:var(--green-dim);}
+  .opt.correct .k{border-color:var(--green); color:var(--green); background:#122a1a;}
+  .opt.wrong{border-color:var(--red); background:var(--red-dim);}
+  .opt.wrong .k{border-color:var(--red); color:var(--red); background:#2a1513;}
+  .feedback{margin-top:16px; padding:14px 16px; border-radius:10px; font-size:14.5px; line-height:1.5; display:none;}
+  .feedback.show{display:block;}
+  .feedback.ok{background:var(--green-dim); border:1px solid #2f6b47; color:#cdeed9;}
+  .feedback.bad{background:var(--red-dim); border:1px solid #7a3833; color:#f3d2ce;}
+  .feedback b{display:block; margin-bottom:3px; font-size:13px; text-transform:uppercase; letter-spacing:.06em;}
+  .controls{display:flex; justify-content:flex-end; margin-top:20px;}
+  button.next{
+    background:var(--page-accent); color:#12161b; border:none; padding:11px 22px;
+    border-radius:9px; font-weight:700; font-size:14.5px; cursor:pointer;
+  }
+  button.next:disabled{background:var(--panel-2); color:var(--muted); cursor:not-allowed;}
+  button.next:hover:not(:disabled){filter:brightness(1.08);}
+  .result{text-align:center; padding:20px 10px 10px;}
+  .result .big{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; font-size:56px; line-height:1;}
+  .result .of{color:var(--muted); font-size:15px; margin-top:6px;}
+  .review{margin-top:26px; text-align:left; display:flex; flex-direction:column; gap:10px;}
+  .review-item{border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-size:14px;}
+  .review-item.ok{border-left:3px solid var(--green);}
+  .review-item.bad{border-left:3px solid var(--red);}
+  .review-item .q{font-weight:600; margin-bottom:4px;}
+  .review-item .a{color:var(--muted);}
+  .restart{
+    margin-top:24px; background:none; border:1px solid var(--line); color:var(--text);
+    padding:10px 20px; border-radius:9px; cursor:pointer; font-size:14px; font-weight:600;
+  }
+  .restart:hover{border-color:var(--page-accent); color:var(--page-accent);}
+  .pool-note{margin-top:10px; font-size:13px; color:var(--page-accent); font-weight:600;
+    background:var(--page-dim); display:inline-block; padding:5px 12px; border-radius:8px;
+    font-family:"IBM Plex Mono",monospace;}
+</style>
+<style>:root{--page-accent:#a487d6; --page-dim:#2c2440;}
+  :root[data-theme="light"]{
+    --page-accent: #7d5cb8;
+  }</style>
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="../material.html"><span class="mark"></span>CNC-GRÖNT KORT</a>
+  <nav>
+    <a href="../material.html">Delkurser</a>
+    <a href="../quiz-alla.html">Storquiz</a>
+  </nav>
+</div>
+
+<main class="wrap narrow">
+  <header class="hero">
+    <div class="eyebrow">MTL-01 · Quiz</div>
+    <h1>Verktyg — Svenska/Engelska</h1>
+    <div class="sub">Öva på frågor från <a href="../material/verktyg.html" style="color:var(--page-accent); font-weight:600;">läsmaterialet om verktyg — svenska/engelska</a>. Frågorna och svarsalternativen slumpas varje omgång.</div>
+    <div class="pool-note" id="poolNote"></div>
+  </header>
+
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 0</div>
+  </div>
+
+  <div class="card" id="card"></div>
+
+  <div class="footcta">
+    <div class="ft-txt">Svara i din egen takt — resultatet sparas inte och skickas ingenstans.</div>
+    <a class="btn btn-ghost" href="../material.html">&larr; Alla delkurser</a>
+  </div>
+</main>
+
+<script>
+const CAT_ID = "verktyg";
+const CAT_LABEL = "Verktyg — Svenska/Engelska";
+const QUESTIONS = [
+{q:"Vad heter 'Skjutmått' på engelska?", opts:["Callipers", "Micrometer", "Dial gauge", "Reamer"], correct:0, fb:"Skjutmått heter Callipers på engelska."},
+    {q:"Vad heter 'Mikrometer' på engelska?", opts:["Micrometer", "Dial gauge", "Angle gauge", "Callipers"], correct:0, fb:"Mikrometer heter Micrometer på engelska — samma ord som på svenska, med engelsk stavning."},
+    {q:"Vilket svenskt verktyg motsvarar engelskans 'Allen wrench'?", opts:["Insexnyckel", "Ringnyckel", "Skiftnyckel", "Fast nyckel"], correct:0, fb:"Allen wrench är den engelska benämningen på en insexnyckel."},
+    {q:"Vilket svenskt verktyg motsvarar engelskans 'Adjustable wrench'?", opts:["Skiftnyckel", "Insexnyckel", "Ringnyckel", "Fast nyckel"], correct:0, fb:"Adjustable wrench motsvarar skiftnyckel på svenska."},
+    {q:"Vad heter 'Körnare' på engelska?", opts:["Centre punch", "Centre drill", "Live center", "Dial gauge"], correct:0, fb:"Körnare heter Centre punch på engelska, och används för att märka ut en exakt punkt innan borrning."},
+    {q:"Vilket svenskt verktyg motsvarar engelskans 'Box wrench'?", opts:["Fast nyckel", "Ringnyckel", "Skiftnyckel", "Insexnyckel"], correct:0, fb:"Box wrench motsvarar fast nyckel på svenska."},
+    {q:"Vilket svenskt verktyg motsvarar engelskans 'Box spanner'?", opts:["Ringnyckel", "Fast nyckel", "Skiftnyckel", "Insexnyckel"], correct:0, fb:"Box spanner motsvarar ringnyckel på svenska."},
+    {q:"Vad heter 'Roterande dubb' på engelska?", opts:["Live center", "Turning centre", "Angle gauge", "Knurling Tool"], correct:0, fb:"Roterande dubb heter Live center på engelska — den roterar tillsammans med arbetsstycket."},
+    {q:"Vad heter 'Svarvdubb' på engelska?", opts:["Turning centre", "Live center", "Dial gauge", "Callipers"], correct:0, fb:"Svarvdubb heter Turning centre på engelska."},
+    {q:"Vad heter 'Vinkelmätare' på engelska?", opts:["Angle gauge", "Dial gauge", "Dial test indicator", "Reamer"], correct:0, fb:"Vinkelmätare heter Angle gauge på engelska."},
+    {q:"Vad heter 'Mätklocka' på engelska?", opts:["Dial gauge", "Angle gauge", "Callipers", "Micrometer"], correct:0, fb:"Mätklocka heter Dial gauge på engelska."},
+    {q:"Vad heter 'Vippindikator' på engelska?", opts:["Dial test indicator", "Dial gauge", "Angle gauge", "Live center"], correct:0, fb:"Vippindikator heter Dial test indicator på engelska."},
+    {q:"Vad heter 'Lettringsgaffel' på engelska?", opts:["Knurling Tool", "Reamer", "Chamfermill", "Centre drill"], correct:0, fb:"Lettringsgaffel heter Knurling Tool på engelska, och används för att rulla in ett räfflat mönster på en yta."},
+{q:"Vad heter 'Pinnfräs' på engelska?", opts:["Endmill", "Facemill", "Shouldermill", "Chamfermill"], correct:0, fb:"Pinnfräs heter Endmill på engelska."},
+    {q:"Vad heter 'Planfräs' på engelska?", opts:["Facemill", "Endmill", "Reamer", "Centre drill"], correct:0, fb:"Planfräs heter Facemill på engelska."},
+    {q:"Vad heter 'Hörnfräs' på engelska?", opts:["Shouldermill", "Facemill", "Endmill", "Chamfermill"], correct:0, fb:"Hörnfräs heter Shouldermill på engelska."},
+    {q:"Vad heter 'Dubbhålsborr' på engelska?", opts:["Centre drill", "Reamer", "Centre punch", "Live center"], correct:0, fb:"Dubbhålsborr heter Centre drill på engelska, och används för att förborra ett hål inför exempelvis svarvdubb."},
+    {q:"Vilket svenskt verktyg motsvarar engelskans 'Reamer'?", opts:["Brotch", "Fasfräs", "Planfräs", "Insexnyckel"], correct:0, fb:"Reamer motsvarar brotch på svenska, ett verktyg för att finbearbeta hål till exakt mått."},
+    {q:"Vad heter 'Fasfräs' på engelska?", opts:["Chamfermill", "Facemill", "Shouldermill", "Endmill"], correct:0, fb:"Fasfräs heter Chamfermill på engelska, och används för att bryta kanter (fasa)."},
+    {q:"Vilket av dessa verktyg används för att finbearbeta ett hål till exakt mått och god ytfinhet?", opts:["Brotch (Reamer)", "Fasfräs (Chamfermill)", "Skiftnyckel (Adjustable wrench)", "Mätklocka (Dial gauge)"], correct:0, fb:"Brotch (engelska: Reamer) används för att finbearbeta ett redan förborrat hål till exakt mått och god ytfinhet."},
+    {q:"Vilket av dessa verktyg används typiskt för att fräsa en plan yta på ett arbetsstycke?", opts:["Planfräs (Facemill)", "Dubbhålsborr (Centre drill)", "Vinkelmätare (Angle gauge)", "Lettringsgaffel (Knurling Tool)"], correct:0, fb:"Planfräs (engelska: Facemill) används typiskt för att fräsa fram en plan, jämn yta på arbetsstycket."}
+];
+
+const QUIZ_LENGTH = 30;
+let order = [];
+let idx = 0;
+let answered = false;
+let score = 0;
+let history = [];
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function shuffleOptions(item){
+  const pairs = item.opts.map((o, i) => ({ text: o, wasCorrect: i === item.correct }));
+  const shuffled = shuffle(pairs);
+  const newOpts = shuffled.map(p => p.text);
+  const newCorrect = shuffled.findIndex(p => p.wasCorrect);
+  return { ...item, opts: newOpts, correct: newCorrect };
+}
+function buildOrder(){
+  return shuffle(QUESTIONS).slice(0, Math.min(QUIZ_LENGTH, QUESTIONS.length)).map(shuffleOptions);
+}
+function updateProgress(){
+  const fill = document.getElementById('progressFill');
+  const label = document.getElementById('progressLabel');
+  const pct = order.length ? (idx/order.length)*100 : 0;
+  fill.style.width = pct + '%';
+  label.textContent = Math.min(idx+1, order.length) + ' / ' + order.length;
+}
+function startQuiz(){
+  order = buildOrder();
+  idx = 0; score = 0; history = [];
+  document.getElementById('poolNote').textContent = `Frågebank: ${QUESTIONS.length} frågor · ${Math.min(QUIZ_LENGTH, QUESTIONS.length)} slumpas ut denna omgång`;
+  renderQuestion();
+}
+function renderQuestion(){
+  answered = false;
+  updateProgress();
+  const card = document.getElementById('card');
+  if(idx >= order.length){ renderResult(); return; }
+  const item = order[idx];
+  const optHtml = item.opts.map((o,i) => {
+    const key = String.fromCharCode(65+i);
+    return `<button class="opt" data-i="${i}"><span class="k">${key}</span><span>${o}</span></button>`;
+  }).join('');
+  card.innerHTML = `
+    <div class="qmeta">
+      <span class="qtag" style="background:var(--page-dim); color:var(--page-accent);">${CAT_LABEL}</span>
+      <span class="qnum">Fråga ${idx+1} av ${order.length}</span>
+    </div>
+    <div class="prompt">${item.q}</div>
+    <div class="options">${optHtml}</div>
+    <div class="feedback" id="feedback"></div>
+    <div class="controls"><button class="next" id="nextBtn" disabled>Nästa</button></div>
+  `;
+  card.querySelectorAll('.opt').forEach(btn => {
+    btn.addEventListener('click', () => selectAnswer(parseInt(btn.dataset.i)));
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => { idx++; renderQuestion(); });
+}
+function selectAnswer(i){
+  if(answered) return;
+  answered = true;
+  const item = order[idx];
+  const correct = item.correct;
+  document.querySelectorAll('.opt').forEach((btn, bi) => {
+    btn.setAttribute('disabled','true');
+    if(bi === correct) btn.classList.add('correct');
+    if(bi === i && i !== correct) btn.classList.add('wrong');
+  });
+  const isCorrect = (i === correct);
+  if(isCorrect) score++;
+  history.push({q:item.q, correct:isCorrect, correctText:item.opts[correct]});
+  const fb = document.getElementById('feedback');
+  fb.classList.add('show', isCorrect ? 'ok' : 'bad');
+  fb.innerHTML = `<b>${isCorrect ? 'Rätt!' : 'Inte riktigt.'}</b>${item.fb}`;
+  document.getElementById('nextBtn').disabled = false;
+}
+function renderResult(){
+  const card = document.getElementById('card');
+  const pct = order.length ? Math.round((score/order.length)*100) : 0;
+  const reviewHtml = history.map(h => `
+    <div class="review-item ${h.correct ? 'ok' : 'bad'}">
+      <div class="q">${h.q}</div>
+      <div class="a">${h.correct ? 'Du svarade rätt.' : 'Rätt svar: ' + h.correctText}</div>
+    </div>`).join('');
+  card.innerHTML = `
+    <div class="result">
+      <div class="big" style="color:var(--page-accent);">${score} / ${order.length}</div>
+      <div class="of">${pct}% rätt</div>
+      <button class="restart" id="restartBtn">Kör igen (nya slumpade frågor)</button>
+      <div class="review">${reviewHtml}</div>
+    </div>`;
+  document.getElementById('restartBtn').addEventListener('click', startQuiz);
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressLabel').textContent = order.length + ' / ' + order.length;
+}
+startQuiz();
+
+</script>
+
+<script src="../../../assets/site.js"></script>
+</body>
+</html>

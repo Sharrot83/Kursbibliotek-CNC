@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mätteknik — Läsmaterial | Industriteknik BAS</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+
+  /* --- top nav --- */
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{
+    width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto;
+  }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{
+    content:""; position:absolute; background:var(--amber);
+  }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+
+  /* --- dimension-line divider (signature element) --- */
+  .dim{
+    display:flex; align-items:center; gap:10px; margin:38px 0 26px; color:var(--muted);
+    font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace; font-size:11.5px;
+    letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+  }
+  .dim::before, .dim::after{ content:""; flex:1; height:1px; background:var(--line);
+    background-image: linear-gradient(90deg, var(--line) 0, var(--line) 100%);
+    position:relative;
+  }
+  .dim .tick{position:relative;}
+  .dim-line{flex:1; height:1px; background:var(--line); position:relative;}
+  .dim-line::before{content:"";position:absolute; left:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim-line::after{content:"";position:absolute; right:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim .label{padding:2px 4px; flex:0 0 auto;}
+
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  h1 .accent{color:var(--amber);}
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+
+  /* --- subject grid / title-block cards --- */
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px; margin-top:30px;}
+  .tblock{
+    border:1px solid var(--line); border-radius:4px; background:var(--panel);
+    position:relative; overflow:hidden; display:flex; flex-direction:column;
+    transition:.18s; text-decoration:none; color:var(--text);
+  }
+  .tblock::before{ /* corner registration marks */
+    content:""; position:absolute; top:8px; left:8px; width:9px; height:9px;
+    border-top:1.5px solid var(--accent,var(--amber)); border-left:1.5px solid var(--accent,var(--amber));
+    opacity:.9;
+  }
+  .tblock::after{
+    content:""; position:absolute; bottom:8px; right:8px; width:9px; height:9px;
+    border-bottom:1.5px solid var(--accent,var(--amber)); border-right:1.5px solid var(--accent,var(--amber));
+    opacity:.9;
+  }
+  .tblock:hover{border-color:var(--accent,var(--amber)); transform:translateY(-2px); box-shadow:0 16px 30px -18px rgba(0,0,0,.7);}
+  .tblock .tb-top{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 18px; border-bottom:1px solid var(--line);
+    font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; letter-spacing:.06em; color:var(--muted);
+  }
+  .tblock .tb-top .code{color:var(--accent,var(--amber)); font-weight:700;}
+  .tblock .tb-body{padding:16px 18px 6px; flex:1;}
+  .tblock h3{margin:0 0 8px; font-family:"Arial Narrow",Arial,sans-serif; font-size:21px; font-weight:800; letter-spacing:-.01em;}
+  .tblock p{margin:0; color:var(--muted); font-size:13.6px; line-height:1.55;}
+  .tblock .tb-bottom{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:13px 18px; margin-top:14px; border-top:1px solid var(--line);
+    font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; color:var(--muted);
+  }
+  .tblock .tb-bottom .qn{color:var(--accent,var(--amber)); font-weight:700;}
+  .pillrow{display:flex; gap:8px; padding:0 18px 16px;}
+  .pill{
+    flex:1; text-align:center; padding:9px 6px; border-radius:5px; border:1px solid var(--line);
+    font-size:12.5px; font-weight:700; text-decoration:none; color:var(--text); transition:.15s;
+    background:var(--panel-2);
+  }
+  .pill:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+  .pill.solid{background:var(--accent,var(--amber)); border-color:var(--accent,var(--amber)); color:#0f1115;}
+  .pill.solid:hover{filter:brightness(1.08); color:#0f1115;}
+
+  /* --- master card (combined quiz) --- */
+  .master{
+    margin-top:34px; border:1px solid var(--line); border-radius:6px;
+    background:linear-gradient(135deg, #1c232b, #171e25);
+    padding:26px 26px 22px; position:relative; overflow:hidden;
+  }
+  .master::before{
+    content:""; position:absolute; inset:0; opacity:.5; pointer-events:none;
+    background-image: repeating-linear-gradient(135deg, rgba(255,138,43,.05) 0 2px, transparent 2px 14px);
+  }
+  .master .mtitle{font-family:"Arial Narrow",Arial,sans-serif; font-weight:800; font-size:23px; margin:2px 0 6px;}
+  .master p{color:var(--muted); font-size:14px; max-width:56ch; line-height:1.6; margin:0 0 16px;}
+
+  /* --- buttons --- */
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+
+  /* --- reading material page --- */
+  article.reading h2{
+    font-family:"Arial Narrow",Arial,sans-serif; font-size:24px; font-weight:800; letter-spacing:-.005em;
+    margin:36px 0 12px; padding-top:4px; color:var(--text);
+  }
+  article.reading h2 .num{color:var(--accent,var(--amber)); margin-right:8px; font-family:"IBM Plex Mono",monospace; font-size:16px;}
+  article.reading h3{
+    font-size:16.5px; font-weight:700; margin:22px 0 8px; color:var(--accent,var(--amber));
+  }
+  article.reading p{color:#c9d2d9; font-size:15px; line-height:1.72; margin:0 0 14px;}
+  article.reading ul{margin:0 0 16px; padding-left:0; list-style:none;}
+  article.reading ul li{
+    position:relative; padding-left:20px; margin-bottom:8px; color:#c9d2d9; font-size:14.6px; line-height:1.6;
+  }
+  article.reading ul li::before{
+    content:""; position:absolute; left:0; top:9px; width:7px; height:2px; background:var(--accent,var(--amber));
+  }
+  article.reading strong{color:var(--text);}
+  .callout{
+    border-left:3px solid var(--accent,var(--amber)); background:var(--panel);
+    padding:13px 16px; margin:18px 0; border-radius:0 6px 6px 0; font-size:14.2px; color:#dfe6ea; line-height:1.6;
+  }
+  .callout b{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent,var(--amber)); margin-bottom:4px; font-family:"IBM Plex Mono",monospace;}
+  .lawbox{
+    margin:20px 0; padding:16px 18px; border:1px dashed var(--line); border-radius:6px;
+    font-style:italic; color:var(--text); font-size:15px; background:var(--bg2);
+  }
+  .lawbox b{font-style:normal; display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:6px; font-family:"IBM Plex Mono",monospace;}
+  .toc{
+    display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 6px;
+  }
+  .toc a{
+    font-size:12.5px; padding:6px 11px; border:1px solid var(--line); border-radius:999px;
+    text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;
+  }
+  .toc a:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+
+  .footcta{
+    margin-top:48px; border-top:1px solid var(--line); padding-top:26px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .footcta .ft-txt{font-size:13.5px; color:var(--muted); max-width:44ch;}
+
+  footer.sitefoot{text-align:center; color:var(--muted); font-size:12px; margin-top:50px; padding-bottom:10px;}
+
+  @media (max-width:640px){
+    .topnav nav{gap:12px; font-size:12px;}
+    .master{padding:20px;}
+  }
+
+  /* --- shared topbar / crumbs (site-wide course switcher) --- */
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+
+<style>
+  article.reading{max-width:720px;}
+</style>
+<style>:root{--page-accent:#a487d6; --page-dim:#2c2440; --accent:#a487d6;}
+  :root[data-theme="light"]{
+    --page-accent: #7d5cb8;
+  }</style>
+
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="../material.html"><span class="mark"></span>INDUSTRITEKNIK BAS</a>
+  <nav>
+    <a href="../material.html">Kursmaterial</a>
+    <a href="../quiz-alla.html">Storquiz (657)</a>
+  </nav>
+</div>
+
+<main class="wrap narrow">
+  <header class="hero">
+    <div class="eyebrow">MTL-03 · Läsmaterial</div>
+    <h1>Mätteknik</h1>
+    <div class="sub">Grundbegrepp, mätdon, mätfel och kontrollverksamhet inom mekanisk mätteknik — från stålskala till koordinatmätmaskin.<br><span style="color:var(--muted); font-size:12.5px;">Källa: Mekanisk mätning – studieguide</span></div>
+    <div class="toc"><a href="#grundbegrepp">Grundbegrepp</a><a href="#fasta-skalor">Fasta skalor</a><a href="#skjutmatt">Skjutmått</a><a href="#mikrometer">Mikrometer</a><a href="#fasta-matdon">Passbitar &amp; mallar</a><a href="#toleranstolkar">Toleranstolkar</a><a href="#visande-matdon">Visande mätdon</a><a href="#matfel-skotsel">Mätfel &amp; mätdonsvård</a><a href="#kontroll-protokoll">Kontroll &amp; kalibrering</a><a href="#vinkelmatning">Vinkelmätning</a><a href="#ytjamnhet">Ytjämnhet</a><a href="#gangmatning">Gängmätning</a><a href="#kuggmatning">Kuggmätning</a><a href="#elektroniska-matdon">Elektroniska mätdon</a></div>
+  </header>
+  <div class="dim">TILL INNEHÅLLET</div>
+  <article class="reading">
+    <h2 id="grundbegrepp"><span class="num">01</span>Mättekniska grundbegrepp</h2>
+<p>Grundenheten för längd är meter (m). Inom verkstadsindustrin används i praktiken meterns mindre enheter — <strong>millimeter</strong> (mm) och <strong>mikrometer</strong> (µm, uttalas "mykrometer" eller "myyoumeter"). Mått på en ritning anges alltid i millimeter. Behövs en mindre enhet används mikrometer: 1 µm är en miljondels meter, det vill säga en tusendels millimeter (0,001 mm), så 1 mm = 1000 µm. Vissa gängor anges fortfarande i tum ("), där 1 tum = 25,4 mm.</p>
+<p>Grundenheten för vinkel är grader (°). En grad delas i 60 minuter (′), och en minut delas i 60 sekunder (″). Sedan 1970 rekommenderar internationell standard att grader skrivs med decimaler (t.ex. 0,5°) i stället för minuter och sekunder, men äldre maskiner och mätdon har ofta kvar den gamla indelningen.</p>
+<h3>Viktiga definitioner</h3>
+<ul>
+<li><strong>Mätobjekt</strong> — föremålet eller detaljen som ska mätas</li>
+<li><strong>Mätdon</strong> — teknisk anordning för mätning</li>
+<li><strong>Mätning</strong> — att bestämma ett mätobjekts mått med hjälp av mätutrustning</li>
+<li><strong>Direkt mätmetod</strong> — måttet avläses direkt på mätdonet</li>
+<li><strong>Indirekt mätmetod</strong> — måttet överförs först till ett annat, avläsbart mätdon</li>
+<li><strong>Tolkning</strong> — en kontrollmetod där ett fast mätdon (en tolk) avgör om arbetsstycket är godkänt, för litet (undermått) eller för stort (övermått)</li>
+<li><strong>Mallning</strong> — en kontrollmetod där man avgör om arbetsstyckets form stämmer med mallens form</li>
+</ul>
+<p>Ett mätdons <strong>mätområde</strong> är det mätvärdesområde inom vilket mätdonet kan användas utan att det tillåtna felet överskrids. <strong>Visningsområdet</strong> är intervallet mellan mätdonets minsta och största mätområde. <strong>Skaldelen</strong> är avståndet mellan två på varandra följande skalstreck, och <strong>skaldelsvärdet</strong> är det storhetsvärde som motsvarar en skaldel (t.ex. 0,01 mm). <strong>Noggrannhet</strong> beskriver hur väl ett uppmätt värde stämmer med det verkliga, sanna värdet.</p>
+
+    <h2 id="fasta-skalor"><span class="num">02</span>Fasta skalor och enkla mätdon</h2>
+<p><strong>Tumstocken</strong> är ett av de vanligaste mätdonen i allmänhet, men används sällan inom verkstadsindustrin. Ledernas konstruktion gör att den slits med tiden, vilket försämrar noggrannheten — den lämpar sig därför bara för mindre noggranna mätningar.</p>
+<p><strong>Stålskalan</strong> hör däremot till en verkstadsmekanikers grundutrustning. Den används för längdmätning, måttinställning, som linjal och för grovkontroll av rak- och planhet. Stålskalor finns i längder mellan 100 och 1500 mm (vanligast 300 mm) och är graderade i både millimeter och tum. Som mätdon ger den bara en noggrannhet på ungefär 1 mm, och den ska hanteras varsamt eftersom den är ett mätdon, inte ett verktyg.</p>
+<p><strong>Märkmätaren</strong> är en vidareutveckling av stålmåttbandet, med en extra märkfunktion som gör det möjligt att föra över en mätsträcka utan att avläsa något mått. Den finns i längderna 2,1 m och 3,1 m, men har lägre noggrannhet än en stålskala.</p>
+<p><strong>Mätluppen</strong> är ett enkelt optiskt mätdon med utbytbara skalor och en förstoring på 5–10 gånger. Med den kan du mäta små längder, vinklar och radier med relativt hög noggrannhet, normalt ner till 0,1 mm.</p>
+
+    <h2 id="skjutmatt"><span class="num">03</span>Skjutmått och nonieavläsning</h2>
+<p>Skjutmåttet är ett direktmätande mätdon för utvändig och invändig mätning samt djupmätning. Det vanligaste skjutmåttet har ett mätområde på 0–150 mm och läser av med en <strong>nonieskala</strong> till en noggrannhet av 0,1 mm. För högre noggrannhet finns skjutmått med visarverk (enklare att avläsa) och skjutmått med elektronisk digitalvisning.</p>
+<h3>Så fungerar en nonieskala</h3>
+<p>Den vanligaste nonien är en 1/10-nonie, där 10 delstreck på nonieskalan motsvarar 9 mm på huvudskalan. Vid avläsning bestämmer du först hela millimetrar vid noniens 0-streck. Sedan letar du reda på det delstreck på nonien som sammanfaller exakt med ett streck på huvudskalan — det numret anger tiondels millimeter. En 1/20-nonie ger på samma sätt en noggrannhet av 0,05 mm. En 1/50-nonie finns också, men ger en skenbar noggrannhet som ett vanligt skjutmått i praktiken inte kan leva upp till och bör därför undvikas.</p>
+<div class="callout"><b>Kontroll före mätning</b>Skjut ihop mätskänklarna och kontrollera att skjutmåttet visar noll och att skänklarna ligger helt parallellt mot varandra, innan du mäter.</div>
+<h3>Varianter av skjutmått</h3>
+<ul>
+<li><strong>Skjutmått med visarverk</strong> — grovavläsning på en linjär millimeterskala, finavläsning på en urtavla med visare</li>
+<li><strong>Djupskjutmått</strong> — mäter djup, avläses på samma sätt som andra skjutmått</li>
+<li><strong>Höjdskjutmått</strong> — används för mät- och ritsoperationer på en planskiva, ofta med fininställningsskruv</li>
+<li><strong>Kilspårsskjutmått</strong> — specialform för mätning av kilspår i axlar, från 5 till 200 mm axeldiameter</li>
+</ul>
+<p>Håll alltid skjutmåttet vinkelrätt mot mätobjektet vid mätning, för att undvika mätfel.</p>
+
+    <h2 id="mikrometer"><span class="num">04</span>Mikrometer och specialmikrometrar</h2>
+<p>Mikrometern används för mått med relativt små toleranser och ger en noggrannhet av ca 0,01 mm — förutsatt att den sköts och hanteras rätt. Alla mikrometertyper har en mätskruvenhet med en rörlig mätkolv som förs mot en fast mätkolv med hjälp av en friktionsskruv, som ger rätt mätkraft. En låsanordning låser den rörliga mätkolven när mätningen är klar.</p>
+<h3>Avläsning</h3>
+<p>På hylsan finns två skalor graderade i millimeter, där den undre är förskjuten en halv millimeter i förhållande till den övre — så avläser du hela millimetrar på den övre skalan och halva på den undre. Mättrumman är graderad i 50 delar (varje del = 0,01 mm) och avläses mitt för indexhylsans nollinje. Ett varv på mättrumman motsvarar 0,5 mm förflyttning. Ett vanligt mätfel är att blanda ihop hel och halv millimeter, så var extra uppmärksam på just den avläsningen.</p>
+<h3>Kontroll av nollinställning</h3>
+<p>Rengör mätytorna, skruva försiktigt ihop den rörliga mot den fasta mätkolven och kontrollera att mikrometern visar noll. Visar den fel justerar du genom att vrida indexhylsan med en haknyckel så att indexstrecket hamnar mitt för mättrummans nolla. Från 25 mm och uppåt kontrolleras nollinställningen i stället mot en passbit eller ett referensdon mellan mätytorna.</p>
+<h3>Specialtyper</h3>
+<ul>
+<li><strong>Hålmikrometer</strong> — självcentrerande, tre mätklackar, för mätning av finbearbetade hål; trepunktsmätningen kan avslöja formfel men inte ovalitet</li>
+<li><strong>Djupmikrometer</strong> — mäter djup i bottenhål och kantavstånd; observera att gradering på skänkelhylsa och mättrumma är omvänd jämfört med en vanlig mikrometer</li>
+<li><strong>Mikrometerstickmått</strong> — för invändiga mått, ofta 50–75 mm grundmätområde, som kan byggas ut med skarvdelar</li>
+<li><strong>Ställbart stickmått</strong> — mäter indirekt: du känner in måttet mot arbetsstycket och läser sedan av det med en separat mikrometer; en van yrkesperson klarar cirka 0,02 mm noggrannhet</li>
+</ul>
+
+    <h2 id="fasta-matdon"><span class="num">05</span>Passbitar, bladmått, mallar och egglinjal</h2>
+<h3>Passbitar</h3>
+<p>Passbitar är noggrant slipade, planparallella stålbitar som används för att ställa in mått på andra mätdon och för kontrollmätning. Genom att kombinera passbitar ur en måttsats kan man bygga upp tiotusentals olika mått. Passbitar tillverkas i olika <strong>noggrannhetsgrader</strong> (t.ex. 00, 0, 01, 1 och 2), där grad 00 används i mätlaboratorier och grad 2 för vanligt verkstadsarbete med lägre krav. Vid ihopsättning väljer man ut passbitar med utgångspunkt från måttets sista decimal och arbetar sig stegvis mot ett heltal. Passbitar hålls samman av adhesion (vidhäftning) när man skjuter dem mot varandra under lätt vridning, och ska tas isär genom att vridas — aldrig brytas.</p>
+<div class="callout"><b>Skötsel av passbitar</b>Rengör alltid passbitar från fett med en mjuk duk, fetta in dem efter användning och förvara dem åtskilda och rena i sitt etui. Fukt ger snabbt rostbildning.</div>
+<h3>Bladmått</h3>
+<p>Bladmått används för att kontrollera små avstånd mellan två motvända ytor. De tunna stålbladen är märkta med sin tjocklek (från cirka 0,03 mm) och kan kombineras för att bygga upp ett visst mått. Ett vanligt tillvägagångssätt är att söka sig fram: välj ett blad som precis går in i springan, testa sedan i kombination med allt mindre blad tills kombinationen precis passar, och räkna till sist ihop tjocklekarna. Tvinga aldrig in ett blad — det böjs eller stukas då och blir oanvändbart.</p>
+<h3>Mallar</h3>
+<p>Mallar används för att kontrollera olika profiler genom jämförande synkontroll: man håller mallen mot mätobjektet och tittar efter en ljusspalt mellan mallens profil och arbetsstyckets yta mot en ljus bakgrund. Radiemallar finns samlade i hållare med olika radieintervall och används genom att man söker sig fram till det blad som ger minst ljusspalt. Det finns även profilmallar, svetsmallar (för a-måttet vid kälsvets), borrslipmallar och mallar för gängors profil och stigning.</p>
+<h3>Egglinjal</h3>
+<p>Egglinjalen har en eggformad, något rundad mätkant och används för att kontrollera rakhet och planhet genom ljusspaltmetoden. Noggrannheten är mycket hög — avvikelser ner till 0,001 mm går att se. En mycket väl bearbetad (läppad) yta lämnar ingen synlig ljusspalt alls. Egglinjaler förekommer som kniveggs-, trekants- och fyrkantslinjaler, ofta med ett skaft av isolerande material så att handvärmen inte påverkar mätningen.</p>
+
+    <h2 id="toleranstolkar"><span class="num">06</span>Toleranstolkar: hål-, hak-, kon- och normaltolkar</h2>
+<h3>Cylindrisk toleranstolk (gå/stopp-tolk)</h3>
+<p>Denna tolk används för att snabbt avgöra om ett hål ligger inom toleransen. Den har en <strong>GÅ-sida</strong> med något mindre diameter (motsvarar undre gränsmåttet) och en <strong>STOPP-sida</strong> med något större diameter (motsvarar övre gränsmåttet). GÅ-tolken ska gå in i hålet — annars är hålet för litet. STOPP-tolken ska inte gå in — gör den det är hålet för stort och detaljen kasseras. Tolka aldrig varma eller roterande mätobjekt, eftersom temperatur och rörelse ger felaktiga resultat.</p>
+<h3>Flacktolk och haktolk</h3>
+<p><strong>Flacktolkar</strong> har bara en del av cylinderytan kvar som mätyta, väger mindre och används bland annat för att avslöja om ett hål är ovalt. <strong>Haktolken</strong> används för snabb tolkning av utvändiga diametermått, t.ex. på axlar. Den har ställbara mätklackar: GÅ-måttet är inställt på övre gränsmåttet och ska passera arbetsstycket, medan STOPP-måttet är inställt på undre gränsmåttet och inte ska passera. Isoleringsbrickor på bygeln skyddar mot att handvärme påverkar mätresultatet.</p>
+<h3>Kontolk och konhylsa</h3>
+<p>Dessa används för att kontrollera koniska hål respektive koniska axlar med avseende på längd, diameter, konicitet, rundhet och rakhet. Genom att stryka på märkfärg eller dra blyertsstreck och sedan vrida mätdonet försiktigt ett litet varv över mätobjektet kan man se var ytkontakt uppstått, och därmed upptäcka konicitets- eller formfel. Kontolk och konhylsa ska förvaras separat för att undvika rostbildning där mätytorna annars skulle ligga an mot varandra.</p>
+<h3>Normaltolk och normalring</h3>
+<p>Normaltolken (en slipad mätcylinder på ett skaft) och normalringen (en härdad platta med ett slipat genomgående hål) används för att ställa in visande mätdon, t.ex. axel- och hålindikatorer, samt för att kontrollera hålmikrometrar. Noggrannheten är mycket hög eftersom inställning och kontrollmätning sker under samma förhållanden.</p>
+
+    <h2 id="visande-matdon"><span class="num">07</span>Visande mätdon</h2>
+<p>Visande mätdon — även kallade mekaniska längdindikatorer — mäter indirekt: de visar avvikelsen från ett mått som redan ställts in, t.ex. med en passbitskombination. Hit hör mätklockan, vippindikatorn och mikrokatorn. Gemensamt är att en mätrörelse växlas upp till en visare, via kugghjul, hävarmar eller — i mikrokatorns fall — ett vridet metallband.</p>
+<h3>Mätklockan</h3>
+<p>Mätklockan ska användas så att mätkraften verkar i mätkolvens längdriktning. Kommer kraften från sidan uppstår friktion mellan mätkolv och skaft, vilket försämrar mätresultatet — ett vanligt exempel är kastmätning av en cylinder mellan dubbar.</p>
+<h3>Vippindikatorn</h3>
+<p>Vippindikatorns mätspets ska helst vara parallell med mätytan. Är den snedställd uppstår ett mätfel som ökar med snedställningens storlek; håller sig snedställningen inom cirka 15° blir felet försumbart. Vippindikatorer monteras ofta i en hållare, t.ex. ett höjdritsmått eller en magnetfot, och används flitigt vid uppriktning av skruvstycken och andra fixturer i fräsmaskiner.</p>
+<h3>Mikrokatorn</h3>
+<p>Till skillnad från mätklockan och vippindikatorn arbetar mikrokatorn utan friktion — mätkolven är lagrad i ett membran kopplat till ett torsionsband — vilket ger extremt hög mätnoggrannhet. Den används ofta fastmonterad i stativ, för planskivemätning och i mätfixturer.</p>
+<h3>Hålindikator, axelindikator och unimeter</h3>
+<ul>
+<li><strong>Hålindikatorn</strong> mäter invändiga diametrar. Den centreras i hålet med en fjäderbelastad anordning och nollställs mot en normalring — man "pendlar" med indikatorn och läser av måttet där visaren vänder.</li>
+<li><strong>Axelindikatorn</strong> mäter noggranna utvändiga mått med en fast och en rörlig mätkolv, och är ett känsligt mätdon som inte tål stötar.</li>
+<li><strong>Unimetern</strong> har en rörlig mätarm med en rörlighet på 3–10 mm och ställs in mot passbitar, normalringar eller normaltolkar innan mätning.</li>
+</ul>
+<h3>Planskivemätning och pneumatiska mätdon</h3>
+<p>Planskivan är standardutrustning i verkstaden och tillverkas i gjutjärn eller diabas (en hård, spänningsfri natursten som inte ger grader). Den ska stå på tre justerbara stödpunkter och kontrolleras med vattenpass. Vid mätning med vippindikator eller mikrokator på en planskiva nollställer man mot en passbitskombination och läser sedan av avvikelsen när mätspetsen förs över arbetsstycket.</p>
+<p><strong>Pneumatiska mätdon (luftmätare)</strong> används framför allt för hålmätning direkt vid verktygsmaskinen. Ett konstant lufttryck delas upp i två munstycken — ett mot en nollställningsventil, ett mot mätobjektet via ett mätmunstycke — och skillnaden i mottryck omvandlas via ett bälgsystem till ett utslag på en visare.</p>
+
+    <h2 id="matfel-skotsel"><span class="num">08</span>Mätfel, temperaturens inverkan och mätdonsvård</h2>
+<p>All mätning innehåller en viss mätosäkerhet, och den ökar ju högre noggrannhetskrav som ställs. Det är därför viktigt att både välja rätt mätdon och känna till varför mätfel uppstår.</p>
+<h3>Typer av mätfel</h3>
+<ul>
+<li><strong>Systematiskt fel</strong> — återkommer med samma värde och tecken vid upprepade mätningar under samma förhållanden, t.ex. en felinställd mikrometer. Är felet känt kan det korrigeras genom att man räknar med omvänt tecken.</li>
+<li><strong>Tillfälligt fel</strong> — varierar slumpmässigt, orsakat av yttre störningar (temperatur, luftfuktighet, smuts, vibrationer) eller personliga fel (trötthet, avläsnings- och hanteringsfel).</li>
+<li><strong>Kontaktfel</strong> — orsakas av föroreningar mellan mätspets och mätobjekt.</li>
+<li><strong>Parallellitetsfel</strong> — uppstår om mätytorna inte är parallella eller mätdonet hålls fel i förhållande till mätobjektet.</li>
+<li><strong>Parallaxfel</strong> — ett avläsningsfel som beror på att man ser snett på skala och visare i stället för rakt framifrån.</li>
+<li><strong>Hävarmsfel</strong> — uppstår vid mätning med vippindikator om mätspetsen inte är vinkelrät mot ytan; håller sig snedställningen under ca 15° blir felet litet.</li>
+</ul>
+<h3>Temperaturens inverkan</h3>
+<p>Alla metaller utvidgas vid uppvärmning och krymper vid avkylning, så tekniska mätningar refereras till +20 °C. Olika material har olika <strong>längdutvidgningskoefficient</strong>, och skillnaden mellan mätdonets och arbetsstyckets temperatur kan ge betydande mätfel — särskilt direkt efter skärande bearbetning, då arbetsstycket ofta är varmt. Ett utvändigt mått som mäts upp varmt kan visa sig vara för litet sedan detaljen svalnat, vilket i värsta fall leder till kassation. För att minska temperaturfel bör mätdon förvaras på ett kylplan mellan mätningarna och hanteras så kort tid som möjligt.</p>
+<h3>Mätdonsvård</h3>
+<p>Gör alltid en snabb funktionskontroll (och för visande mätdon en inställningskontroll) innan mätning. Infettade mätdon rengörs med kristallolja, som lämnar kvar ett tunt skyddande fettskikt — kräver arbetet helt avfettade ytor används i stället eter. Grader kontrolleras med egglupp eller mätlupp och tas bort med ett fint oljebryne (diabasbryne för passbitar). Mellan mätningar placeras mätdon på ett kylplan eller ett mjukt, rent underlag. Efter mätning rengörs och torkas mätdonen, och smörjs in med vatten- och syrefri vaselin för att förhindra rostbildning från fukt och handsvett.</p>
+<h3>Mätdonstoleranser</h3>
+<p>Även mätdon har tillverkningstoleranser, och de är i regel mycket små jämfört med det de ska mäta. Tolkar som utsätts för slitage, t.ex. GÅ-sidan på en håltolk, ges dessutom en liten <strong>slitmån</strong> utöver tillverkningstoleransen. Det innebär att en ny GÅ-tolk kan vara något "för stor" jämfört med det nominella måttet, för att fortfarande vara korrekt när den slitits ner mot sin slitgräns.</p>
+
+    <h2 id="kontroll-protokoll"><span class="num">09</span>Kontrollverksamhet, mätprotokoll och kalibrering</h2>
+<p>Syftet med kontinuerlig kontroll i produktionen är att tidigt upptäcka avvikelser, kunna korrigera processen (t.ex. genom ändrad maskininställning) och föreslå åtgärder som förebygger fel. Kontrollverksamheten bör vara oberoende av tillverkningen och ledas på samma organisatoriska nivå som produktionen, för att kunna arbeta opartiskt.</p>
+<h3>Olika sätt att kontrollera tillverkningen</h3>
+<ul>
+<li><strong>Förstabitskontroll</strong> — kontroll av de första arbetsstyckena i en serie, för att avgöra om tillverkningen går rätt till</li>
+<li><strong>Operatörskontroll</strong> — operatören kontrollerar och justerar löpande under processens gång</li>
+<li><strong>Ambulerande/löpande kontroll</strong> — en kontrollant besöker tillverkningen regelbundet som komplement till operatörskontrollen</li>
+<li><strong>Sista bitskontroll</strong> — kontroll av att processens förutsättningar inte förändrats, så att nästa körning kan starta utan omställning</li>
+<li><strong>Avskiljande kontroll/slutkontroll</strong> — sker efter tillverkningen, antingen som <strong>allkontroll</strong> (alla detaljer) eller <strong>delkontroll</strong> (stickprov eller statistiskt urval)</li>
+</ul>
+<p>Man skiljer också på kontrollmetoder: <strong>mätning</strong> (mätdon anger ett värde), <strong>tolkning</strong> (fasta/inställbara mätdon avgör godkänt/underkänt), <strong>funktionskontroll</strong> (om felet påverkar helheten), <strong>okulärkontroll</strong> (synbedömning av t.ex. finish) samt förstörande respektive oförstörande kontroll.</p>
+<h3>Mätprotokoll</h3>
+<p>Ett mätprotokoll dokumenterar en tillverkad detaljs mått och egenskaper. Ett bra protokoll är lättläst och innehåller bland annat ritnings- och detaljnummer, material, uppmätta värden, vem som kontrollerat, ort och datum, vilket mätdon som använts samt mättemperatur och luftfuktighet. Vid serietillverkning kan man t.ex. protokollföra var tionde detalj för att snabbt upptäcka om mätvärdena börjar dra iväg, så att verktyg kan slipas eller bytas i tid.</p>
+<h3>Mätrum och mätdonskontroll</h3>
+<p>Mätrummet hjälper till med mätproblem som uppstår i produktionen och håller ofta tillsyn över de mätdon som används där ute. Arbetstemperaturen i ett mätrum hålls vid +20 °C (inom någon eller några graders marginal). Där finns ofta, utöver vanliga handmätdon, utrustning som verkstadsmikroskop, profilprojektor, ytjämnhetsmätare, koordinatmätmaskin och gängmätapparat.</p>
+<p>Eftersom alla mätdon slits med tiden måste de <strong>kalibreras</strong> (kontrolleras) regelbundet mot mätdon med ännu högre noggrannhet — varje företag bygger upp egna rutiner för hur ofta. Efter kalibrering märks mätdonet, ofta med en färgkodad tejp som visar nästa kalibreringstillfälle. I Sverige finns statliga riksmätplatser samt auktoriserade mätplatser som får ge service inom kalibrering och justering av mätdon.</p>
+
+    <h2 id="vinkelmatning"><span class="num">10</span>Mätning av vinklar</h2>
+<p>Vinkelmätdon delas in i fasta och ställbara mätdon, beroende på konstruktion.</p>
+<h3>Fasta vinklar och anslagsvinkeln</h3>
+<p>Den vanligaste fasta vinkeln är <strong>anslagsvinkeln</strong> med 90° (rät vinkel) mellan sina två skänklar, men vinklar med 30°, 45°, 60° och 120° förekommer också. Kontroll sker genom ljusspaltmetoden: anslaget hålls mot en yta, klingan förs mot en annan, och en ljus bakgrund gör en eventuell ljusspalt synlig. Med blotta ögat kan man se spalter ner mot 2–3 µm, vilket ger god noggrannhet för de allra minsta avvikelserna. En egen 90°-vinkel kan i sin tur kalibreras mot en vinkelcylinder på en planskiva.</p>
+<h3>Vinkelmätare</h3>
+<p>Den enklaste vinkelmätaren saknar nonie och avläser till en noggrannhet av 1°. Den <strong>universella vinkelmätaren med nonie</strong> har en gradskala (0–90° i fyra kvadranter) och en nonieskala där varje delstreck motsvarar 5 bågminuter, vilket ger betydligt högre noggrannhet. Vid vinklar större än 90° avläser man skalan som vanligt och räknar sedan om genom att subtrahera det avlästa värdet från 180°.</p>
+<h3>Vattenpass och sinuslinjal</h3>
+<p><strong>Vattenpasset</strong> mäter små vinkelavvikelser med en vätskefylld libell och används mycket vid uppställning av maskiner. Ett vanligt verkstadsvattenpass har en känslighet på 0,3 mm per meter mätlängd, det vill säga luftblåsan flyttar sig ett delstreck vid en så liten lutning. Med formeln t = n · l · S (antal delstreck × mätlängd i meter × skalvärde) kan man räkna ut hur tjockt underlägg som krävs för att räta upp ett arbetsstycke.</p>
+<p><strong>Sinuslinjalen</strong> används tillsammans med passbitar, en planskiva och en indikator för att ställa in och mäta exakta vinklar, med hjälp av sambandet sin α = a/c, där c är centrumavståndet mellan linjalens två cylindrar (oftast 100 mm) och a är höjden på den passbitskombination som placeras under ena cylindern. Lutningsvinkeln bör inte överstiga 45° för att metoden ska hålla sin noggrannhet.</p>
+<p>Saknas ett direkt mätdon för koner eller vinklar kan man i stället använda mätkulor eller mätrullar tillsammans med en mikrometer och räkna fram vinkeln eller konheten trigonometriskt.</p>
+
+    <h2 id="ytjamnhet"><span class="num">11</span>Ytjämnhetsmätning</h2>
+<p>Ytjämnhet, funktion och tillverkningskostnad hänger nära samman: en finare yta kostar mer att tillverka men kan krävas av funktionsskäl — t.ex. bättre rostbeständighet, mindre risk för utmattningsbrott vid bearbetningsrepor, mindre kärvning mellan rörliga delar (axel/lager) eller helt enkelt av utseendeskäl. Av kostnadsskäl bör man aldrig göra ytan finare än vad ritningen kräver.</p>
+<h3>Profilkurvan och R<sub>a</sub>-värdet</h3>
+<p>En <strong>profilkurva</strong> visar ytans verkliga form kraftigt förstorad, ofta med olika förstoring i horisontal- och vertikalled (horisontalt kring 100 gånger, vertikalt 1 000–10 000 gånger beroende på hur fin ytan är). Ur profilkurvan kan man ta fram <strong>R<sub>max</sub></strong> (avståndet mellan topp- och bottenlinje inom en referenslängd), <strong>R<sub>a</sub>-värdet</strong> (den aritmetiska medelytavvikelsen, och den internationella (ISO) standardbeteckningen för ytjämnhet) samt <strong>profildjupet H</strong>. I praktiken bestäms R<sub>a</sub> nästan alltid med elektroniska instrument som ger värdet direkt, snarare än genom att man ritar upp kurvan för hand.</p>
+<p>Ytjämnhet kan också anges med ett äldre <strong>ytjämnhetsnummer</strong> (N1–N12), som motsvarar bestämda R<sub>a</sub>-värden, från mycket fin yta (N1 ≈ 0,025 µm) till mycket grov (N12 = 50 µm). På ritningar markeras kravet med en ytjämnhetssymbol som också kan ange bearbetningsmetod, bearbetningsriktning och eventuellt bearbetningstillägg.</p>
+<h3>Mätmetoder</h3>
+<ul>
+<li><strong>Ytjämnhetslikare</strong> — jämförelseplattor i plast med kända, bearbetade referensytor; man skrapar med nageln på likaren och mätobjektet och jämför känselintryck och synintryck</li>
+<li><strong>Ytindikator</strong> — mäter R<sub>max</sub> direkt via en mätspets kopplad till ett mikrokatorsystem, med en noggrannhet ner mot 1 µm; kan även användas för att bygga upp en profilkurva</li>
+<li><strong>Elektronisk ytjämnhetsmätare</strong> — en givare med mätspets dras över ytan och ger R<sub>a</sub>- och R<sub>max</sub>-värde direkt, ofta med möjlighet att skriva ut en diagramremsa; noggrannheten kan gå ner till 0,1 µm</li>
+<li><strong>MECRIN</strong> — ett enklare instrument som bygger på ytans friktionsegenskaper mot ett tunt stålband, för mätområdet ca 0,025–4,8 µm R<sub>a</sub></li>
+</ul>
+
+    <h2 id="gangmatning"><span class="num">12</span>Mätning av gängor</h2>
+<p>En fullständig gängkontroll omfattar ytterdiameter, innerdiameter, medeldiameter, stigning och profilvinkel. I normal produktion räcker det oftast att mäta ytter- och medeldiameter (utvändig gänga) respektive inner- och medeldiameter (invändig gänga), eftersom standardiserade gängverktyg redan garanterar rätt stigning och profilform.</p>
+<h3>Gängtolk, gängring och gänghaktolk</h3>
+<p><strong>Gängtolken</strong> (för invändiga gängor) och <strong>gängringen</strong> (för utvändiga gängor) avgör bara om gängan ligger inom toleransgränserna, inte hur stor en eventuell avvikelse är. En GÅ-gängtolk kontrollerar samtidigt profilvinkel, stigning, ytter- och medeldiameter, och ska gå att skruva in helt utan tvång; en STOPP-gängtolk kontrollerar bara medeldiametern och ska högst gå in ett par varv. För snabb kontroll av massproducerade utvändiga gängor används ofta i stället en <strong>gänghaktolk</strong> med rullande GÅ- och STOPP-mätrullar, som ger mycket liten förslitning eftersom rullarna roterar under mätningen i stället för att glida.</p>
+<h3>Gängmikrometer och trådmätning</h3>
+<p>En <strong>gängmikrometer</strong> liknar en vanlig mikrometer men har utbytbara mätkolvar formade efter gängans profil, och mäter medeldiametern direkt. Vid högre krav på noggrannhet används i stället <strong>två- eller tretrådsmätning</strong>: särskilt noggranna mättrådar placeras i gänggångarna och mäts över med en vanlig mikrometer. Genom att kombinera mätningar med olika tråddiameter kan man även räkna fram gängans profilvinkel.</p>
+<h3>Gängmall och gängtoleranser</h3>
+<p><strong>Gängmallen</strong> (gängräknaren) används för att snabbt kontrollera gängans stigning enligt ljusspaltmetoden, medan <strong>gängvinkeln</strong> används vid tillverkning och omslipning av gängstål. Gängtoleranser anges enligt standard (SS-ISO 965/1) med toleransgrader och toleranslägen, t.ex. den vanliga kombinationen 6H/6g för standardpassningar mellan mutter- och skruvgänga. Unified-gängor (tum-gängor) har en egen beteckning: 1A–3A för utvändiga och 1B–3B för invändiga gängor, där 3A/3B är den finaste kvaliteten och 1A/1B den grövsta.</p>
+
+    <h2 id="kuggmatning"><span class="num">13</span>Mätning av kuggar</h2>
+<p>Vid tillverkning av kugghjul kontrolleras flera mätstorheter: toppdiameter, delningsdiameter, grunddiameter och kuggtjocklek. Kontroll av var och en av dessa kallas delfelskontroll.</p>
+<h3>Rundgång, delning och totalfel</h3>
+<p><strong>Rundgången</strong> hos kugghjulsämnet kontrolleras redan innan kuggarna skärs, genom att montera ämnet mellan dubbar och avläsa radial- och axialkast med en vippindikator. <strong>Delningen</strong> är avståndet mellan två kuggflankar mätt i delningscirkeln (transversaldelning) eller som avståndet mellan parallella tangenter till flankerna (grunddelning). Ett färdigt kugghjul kan slutligen genomgå en <strong>totalfelskontroll</strong>, där det avrullas mot ett mycket noggrant tillverkat masterhjul — vanligen med tvåflanksavrullning, där kugghjulen pressas samman utan spel.</p>
+<h3>Kuggtjocklek</h3>
+<p>Ska två kugghjul med ett bestämt axelavstånd fungera ihop måste kuggtjockleken stämma: för tjock kuggtjocklek gör att hjulen inte går att montera, för tunn ger onödigt stort spel. Kuggtjockleken mäts med:</p>
+<ul>
+<li><strong>Kuggskjutmått</strong> — mäter kordans längd över kuggen vid ett bestämt djup från toppdiametern, med värden hämtade ur tabeller för modul 1 och sedan multiplicerade med aktuell modul</li>
+<li><strong>Kuggviddsmikrometer</strong> — mäter över flera kuggar samtidigt (kuggviddsmätning), vilket är känsligare för mätfel och därför ofta ger en säkrare bild av kuggtjockleken vid pågående bearbetning</li>
+<li>Mätpinnar eller kulor tillsammans med en vanlig mikrometer</li>
+</ul>
+<p>Fördelen med kuggviddsmätning är att man kan kontrollera kuggtjockleken löpande under fräsningen och justera fräsens ansättning vid behov.</p>
+
+    <h2 id="elektroniska-matdon"><span class="num">14</span>Elektroniska mätdon och mätmaskiner</h2>
+<p>Handmätdon finns numera ofta med digital avläsning, och en del kan även kopplas till en dator för beräkning och lagring av mätvärden.</p>
+<h3>Digitalskjutmått och digitalmikrometer</h3>
+<p>Ett digitalskjutmått har i praktiken en liten dator inbyggd i löparen. Displayen visar värden i steg om 0,01 mm, men eftersom den mekaniska noggrannheten sällan är så hög i praktiken bör man avrunda till 0,1 mm (i bästa fall 0,05 mm). En digitalmikrometer kan, förutom absolutmätning, ofta även göra <strong>jämförande mätning</strong> (nollställd mot en passbitskombination), <strong>toleransmätning</strong> (visar direkt om måttet ligger inom, över eller under inställda gränser) och enkel statistisk bearbetning av flera mätvärden (antal, max, min, medelvärde, standardavvikelse).</p>
+<h3>Koordinatmätmaskin</h3>
+<p>En treaxlig koordinatmätmaskin mäter längdmått, vinklar och hålavstånd i x-, y- och z-led. Noggrannheten beror på maskinens storlek — för en maskin med mätområdet 800×800×500 mm är ±0,015 mm en vanlig noggrannhet. Maskinen består i huvudsak av mätbord, en avkännare som känner av mätpunkterna, en dator som lagrar och räknar ut mätstorheter, samt en skrivare eller skärm som presenterar resultatet.</p>
+<h3>Profilprojektor och verkstadsmikroskop</h3>
+<p><strong>Profilprojektorn</strong> projicerar en förstorad silhuett eller spegelbild av mätobjektet på en bildskärm, där den kan jämföras direkt mot en profilritning eller mätas med mikrometerskruvar i x- och y-led — lämplig för dimensioner, profilform och vinklar. <strong>Verkstadsmikroskopet</strong> är en universell mätutrustning för mindre mätobjekt, med ett koordinatbord (mikrometrar med 0,01 mm skaldelsvärde) och ett rundbord med gradskala för vinkelmätning, samt utbytbara streckplattor med hårkors, måttskalor och profiler.</p>
+<h3>Elektroniska längdmätningsinstrument</h3>
+<p>Här överförs mätkolvens rörelse elektroniskt till en givare kopplad till ett avläsningsinstrument, t.ex. en elektronisk haktolk för löpande kontroll av ytterdiameter, rakhet eller parallellitet. Vid kontroll av stora serier kan enkla signallampor (grön/gul/röd) kopplas in för att snabbt visa om detaljen är godkänd, utan att operatören behöver läsa av ett exakt mätvärde för varje detalj.</p>
+  </article>
+  <div class="footcta">
+    <div class="ft-txt">Läs igenom materialet, testa sedan dina kunskaper i quizet för Mätteknik.</div>
+    <a class="btn btn-amber" href="../quiz/matteknik.html">Starta quiz &rarr;</a>
+  </div>
+</main>
+
+<script src="../../../assets/site.js"></script>
+</body>
+</html>

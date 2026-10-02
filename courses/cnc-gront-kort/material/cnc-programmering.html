@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNC-programmering — Läsmaterial | CNC-Grönt kort</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{
+    width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto;
+  }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{
+    content:""; position:absolute; background:var(--amber);
+  }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+
+  .dim{
+    display:flex; align-items:center; gap:10px; margin:38px 0 26px; color:var(--muted);
+    font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace; font-size:11.5px;
+    letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+  }
+  .dim::before, .dim::after{ content:""; flex:1; height:1px; background:var(--line);
+    background-image: linear-gradient(90deg, var(--line) 0, var(--line) 100%);
+    position:relative;
+  }
+  .dim .tick{position:relative;}
+  .dim-line{flex:1; height:1px; background:var(--line); position:relative;}
+  .dim-line::before{content:"";position:absolute; left:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim-line::after{content:"";position:absolute; right:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim .label{padding:2px 4px; flex:0 0 auto;}
+
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  h1 .accent{color:var(--amber);}
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+
+  article.reading h2{
+    font-family:"Arial Narrow",Arial,sans-serif; font-size:24px; font-weight:800; letter-spacing:-.005em;
+    margin:36px 0 12px; padding-top:4px; color:var(--text);
+  }
+  article.reading h2 .num{color:var(--accent,var(--amber)); margin-right:8px; font-family:"IBM Plex Mono",monospace; font-size:16px;}
+  article.reading h3{
+    font-size:16.5px; font-weight:700; margin:22px 0 8px; color:var(--accent,var(--amber));
+  }
+  article.reading p{color:#c9d2d9; font-size:15px; line-height:1.72; margin:0 0 14px;}
+  article.reading ul{margin:0 0 16px; padding-left:0; list-style:none;}
+  article.reading ul li{
+    position:relative; padding-left:20px; margin-bottom:8px; color:#c9d2d9; font-size:14.6px; line-height:1.6;
+  }
+  article.reading ul li::before{
+    content:""; position:absolute; left:0; top:9px; width:7px; height:2px; background:var(--accent,var(--amber));
+  }
+  article.reading strong{color:var(--text);}
+  article.reading table.ref-table{width:100%; border-collapse:collapse; margin:14px 0 20px; font-size:14.5px;}
+  article.reading table.ref-table th, article.reading table.ref-table td{text-align:left; padding:8px 12px; border-bottom:1px solid var(--line);}
+  article.reading table.ref-table th{color:var(--muted); font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; font-weight:700;}
+  article.reading table.ref-table tr:hover td{background:var(--panel-2);}
+  .callout{
+    border-left:3px solid var(--accent,var(--amber)); background:var(--panel);
+    padding:13px 16px; margin:18px 0; border-radius:0 6px 6px 0; font-size:14.2px; color:#dfe6ea; line-height:1.6;
+  }
+  .callout b{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent,var(--amber)); margin-bottom:4px; font-family:"IBM Plex Mono",monospace;}
+  .lathund-cta{
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    background:linear-gradient(135deg, #1c232b, #171e25); border:1px solid var(--line); border-radius:8px;
+    padding:18px 20px; margin:18px 0;
+  }
+  .lathund-cta .lt-txt{font-size:13.8px; color:var(--muted); max-width:48ch;}
+  .lathund-cta .lt-txt b{color:var(--text);}
+  .lathund-cta .btn{
+    display:inline-block; background:var(--amber); color:#1a1206; font-weight:800; text-decoration:none;
+    padding:10px 18px; border-radius:7px; font-size:13.5px; white-space:nowrap;
+  }
+  .toc{
+    display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 6px;
+  }
+  .toc a{
+    font-size:12.5px; padding:6px 11px; border:1px solid var(--line); border-radius:999px;
+    text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;
+  }
+  .toc a:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+
+  .footcta{
+    margin-top:48px; border-top:1px solid var(--line); padding-top:26px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .footcta .ft-txt{font-size:13.5px; color:var(--muted); max-width:44ch;}
+
+  footer.sitefoot{text-align:center; color:var(--muted); font-size:12px; margin-top:50px; padding-bottom:10px;}
+
+  @media (max-width:640px){
+    .topnav nav{gap:12px; font-size:12px;}
+  }
+
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+
+<style>
+  article.reading{max-width:720px;}
+</style>
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="../material.html"><span class="mark"></span>CNC-GRÖNT KORT</a>
+  <nav>
+    <a href="../material.html">Delkurser</a>
+    <a href="../quiz-alla.html">Storquiz</a>
+  </nav>
+</div>
+
+<main class="wrap narrow">
+  <header class="hero">
+    <div class="eyebrow">MTL-03 · Läsmaterial</div>
+    <h1>CNC-programmering</h1>
+    <div class="sub">Styrsystem, koordinatsystem, programplanering, programstruktur, G-koder, M-funktioner samt mått och sekvensblock.<br><span style="color:var(--muted); font-size:12.5px;">Baserat på grundläggande CNC-programmeringsteori</span></div>
+    <div class="toc"><a href="#cnc_grunder">CNC-grunder</a><a href="#koordinatsystem">Koordinatsystem &amp; geometri</a><a href="#styrsystem">Styrsystemet</a><a href="#programplanering">Programplanering</a><a href="#programstruktur">Programstruktur</a><a href="#g_koder">G-koder — förberedande kommandon</a><a href="#m_funktioner">M-funktioner — diverse funktioner</a><a href="#matt_installningar">Mått &amp; sekvensblock</a></div>
+  </header>
+
+  <div class="lathund-cta">
+    <div class="lt-txt"><b>Skärdata — varvtal, skärhastighet, bordsmatning</b><br>Lathund med de tre grundformlerna (n, Vc, Vf) och en inbyggd miniräknare som räknar ut varvtal och bordsmatning automatiskt.</div>
+    <a class="btn" href="../lathund-skardata.html" target="_blank" rel="noopener">Öppna lathunden &rarr;</a>
+  </div>
+
+  <div class="dim">TILL INNEHÅLLET</div>
+  <article class="reading" style="--accent:#5b9bd5">
+
+    <h2 id="cnc_grunder"><span class="num">01</span>CNC-grunder</h2>
+<p>NC (Numerical Control) betyder numerisk styrning — att en maskins rörelser styrs av siffror och koder i stället för att en operatör manuellt vrider på rattar och spakar. CNC (Computer Numerical Control) är dagens variant, där en inbyggd dator läser, tolkar och exekverar programmet, samt hanterar allt från säkerhetsfunktioner till diagnostik. I dagligt tal används CNC och NC ofta som synonymer.</p>
+        <h3>Konventionell bearbetning jämfört med CNC</h3>
+        <p>I en konventionell (manuell) maskin styr operatören varje rörelse för hand under hela bearbetningen. I en CNC-maskin har ett program tagits fram i förväg, och maskinen utför sedan rörelserna automatiskt utifrån programmet.</p>
+        <h3>Fördelar med CNC</h3>
+        <ul>
+          <li><b>Kortare ställtid</b> — verktyg och nollpunkter kan lagras och återanvändas, vilket snabbar upp omställning mellan jobb.</li>
+          <li><b>Kortare ledtid</b> — hela vägen från ritning till färdig detalj kan effektiviseras genom CAD/CAM.</li>
+          <li><b>Hög noggrannhet och repeterbarhet</b> — samma program ger samma resultat, gång på gång.</li>
+          <li><b>Komplexa former</b> — konturer, kurvor och 3D-geometrier som är svåra eller omöjliga att göra för hand.</li>
+          <li><b>Förenklad verktygshållning och fastspänning</b> — färre specialverktyg och fixturer behövs jämfört med konventionell bearbetning.</li>
+          <li><b>Högre produktivitet</b> — kortare bearbetningstider och möjlighet till obemannad drift under delar av processen.</li>
+        </ul>
+        <h3>Typer av CNC-maskiner</h3>
+        <ul>
+          <li><b>Fräsmaskiner och bearbetningscentrum</b> — verktyget roterar och flyttas i förhållande till ett fast eller rörligt arbetsstycke. Finns som vertikala och horisontella bearbetningscentrum.</li>
+          <li><b>Svarvar och svarvcentrum</b> — arbetsstycket roterar medan ett stillastående skärverktyg matas mot det.</li>
+        </ul>
+        <h3>Personal inom CNC</h3>
+        <ul>
+          <li><b>CNC-programmerare</b> — tar fram bearbetningsprogrammet utifrån ritning, väljer verktyg, skärdata och bearbetningsstrategi.</li>
+          <li><b>CNC-operatör</b> — sköter den dagliga driften: spänner fast material och verktyg, startar och övervakar programmet, gör mätkontroller och mindre korrigeringar.</li>
+        </ul>
+        <h3>Säkerhet vid CNC-arbete</h3>
+        <p>CNC-maskiner rör sig snabbt, med stor kraft och ofta utan förvarning. Grundregler är att aldrig sträcka in händerna i arbetsområdet medan maskinen är i drift, alltid ha skyddskåpor och dörrar stängda under bearbetning, känna till var nödstoppet sitter, samt köra nya program stegvis (single block) och med reducerad hastighet första gången.</p>
+
+    <h2 id="koordinatsystem"><span class="num">02</span>Koordinatsystem &amp; geometri</h2>
+<p>All CNC-programmering bygger på att positioner beskrivs med siffror i ett koordinatsystem. Det vanligaste är det rektangulära (kartesiska) koordinatsystemet, uppbyggt av räta vinklar mellan axlarna.</p>
+        <h3>Axlar och plan</h3>
+        <ul>
+          <li><b>X-axeln</b> — vanligen den längsta rörelsen, ofta i sidled.</li>
+          <li><b>Y-axeln</b> — vinkelrät mot X, ofta djupled på en fräsmaskin.</li>
+          <li><b>Z-axeln</b> — vanligen kopplad till spindelns riktning (upp/ned på en fräs, in/ut på en svarv).</li>
+        </ul>
+        <p>Tillsammans bildar axlarna tre koordinatplan: XY, XZ och YZ. Vilket plan som används avgör t.ex. i vilken riktning en cirkelrörelse tolkas.</p>
+        <h3>Origo och kvadranter</h3>
+        <p>Origo (nollpunkten) är den punkt där alla axlars värden är noll. Man skiljer ofta på <b>maskinens nollpunkt</b> (fast, satt av tillverkaren) och <b>programmets/arbetsstyckets nollpunkt</b> (vald av programmeraren utifrån ritningen). Koordinatsystemet delas in i fyra kvadranter beroende på om X- och Y-värdena är positiva eller negativa.</p>
+        <h3>Höger-handsregeln</h3>
+        <p>Riktningen på de tre axlarna bestäms med höger-handsregeln: tummen pekar i positiv X-riktning, pekfingret i positiv Y-riktning och långfingret (vinkelrätt mot de andra två) i positiv Z-riktning. Rotationsaxlarna A, B och C följer motsvarande högerhandsregel runt X-, Y- respektive Z-axeln.</p>
+        <h3>Maskingeometri</h3>
+        <p>På en <b>fräsmaskin</b> är Z-axeln normalt parallell med spindelns rotationsaxel, och positiv Z pekar bort från arbetsstycket (uppåt). På en <b>svarv</b> är Z-axeln parallell med spindelns rotationsaxel (längs arbetsstycket) medan X-axeln är radiell (mot/från centrum). Många moderna maskiner har även ytterligare axlar, t.ex. en fjärde rotationsaxel (A eller B), för mer komplex bearbetning.</p>
+
+    <h2 id="styrsystem"><span class="num">03</span>Styrsystemet</h2>
+<p>Styrsystemet (t.ex. Fanuc, Siemens eller Heidenhain) är maskinens "hjärna" — det läser programmet, beräknar rörelserna och styr motorerna. Operatören interagerar med systemet via en manöverpanel.</p>
+        <h3>Manöverpanelen</h3>
+        <ul>
+          <li><b>Skärm och tangentbord</b> — visar programmet, positioner, larm och menyer, och används för att skriva in och redigera program.</li>
+          <li><b>Handhjul</b> — används för finjustering och manuell förflyttning av axlarna, t.ex. vid nollpunktssättning.</li>
+        </ul>
+        <h3>Systeminställningar</h3>
+        <p>Styrsystemet har <b>parametrar</b> som anpassar det efter den specifika maskinen (t.ex. axelhastigheter, mjukvarugränser) samt <b>systemstandarder (defaults)</b> som avgör hur programmet tolkas om inget annat anges. <b>Minneskapaciteten</b> avgör hur stora och hur många program som kan lagras i styrsystemet.</p>
+        <h3>Manuella avbrott under körning</h3>
+        <ul>
+          <li><b>Enstegskörning (single block)</b> — programmet körs ett block i taget; operatören måste trycka igen för nästa block. Används ofta vid provkörning av nya program.</li>
+          <li><b>Matningsstopp (feedhold)</b> — pausar matningsrörelsen omedelbart utan att avbryta programmet.</li>
+          <li><b>Nödstopp</b> — stänger av all rörelse och drivkraft omedelbart vid fara.</li>
+          <li><b>Manuell datainmatning (MDI)</b> — enstaka kommandon kan matas in och köras direkt, utan att vara del av ett sparat program.</li>
+        </ul>
+        <h3>Överstyrningar och testfunktioner</h3>
+        <p>Operatören kan under körning justera <b>snabbtransportöverstyrning</b>, <b>spindelvarvtalsöverstyrning</b> och <b>matningsöverstyrning</b> för att öka eller minska hastigheten utan att ändra själva programmet. Vid provkörning kan funktioner som <b>testkörning (dry run)</b> (kör programmet utan att skära), <b>maskinlås</b> (rörelser simuleras utan att axlarna faktiskt flyttas) och grafisk simulering användas för att kontrollera programmet innan skarp körning.</p>
+
+    <h2 id="programplanering"><span class="num">04</span>Programplanering</h2>
+<p>Innan ett CNC-program skrivs måste programmeraren samla in och gå igenom all nödvändig information om detaljen, maskinen och verktygen som ska användas.</p>
+        <h3>Underlag</h3>
+        <ul>
+          <li><b>Ritningen</b> — innehåller titelblock (benämning, materialuppgift, skala), måttsättning, toleranser, krav på ytfinhet, eventuella ritningsrevisioner och särskilda instruktioner.</li>
+          <li><b>Materialspecifikationer</b> — vilket material detaljen ska tillverkas av, dess enhetlighet och bearbetbarhet (hur lätt eller svårt materialet är att skära i).</li>
+          <li><b>Maskinens egenskaper</b> — vilken typ och storlek av maskin och styrsystem som ska användas, samt maskinens kapacitet.</li>
+        </ul>
+        <h3>Manuell programmering jämfört med CAD/CAM</h3>
+        <p>Enkla detaljer kan programmeras manuellt direkt i G-kod. För mer komplexa geometrier används i stället CAD/CAM-system, där en 3D-modell av detaljen skapas och programvaran räknar fram verktygsbanorna automatiskt, vilket sedan omvandlas (postprocessas) till maskinspecifik G-kod.</p>
+        <h3>Från ritning till program</h3>
+        <ul>
+          <li><b>Metodblad</b> — en arbetsbeskrivning som sammanfattar bearbetningsordning, verktyg och skärdata.</li>
+          <li><b>Bearbetningssekvens</b> — i vilken ordning olika operationer (t.ex. grovfräsning, finfräsning, borrning, gängning) ska utföras.</li>
+          <li><b>Verktygsval</b> — vilka skärverktyg som krävs för att uppnå önskad geometri och ytfinhet.</li>
+          <li><b>Uppsättning av arbetsstycket</b> — hur och var detaljen ska spännas fast, och vilken referenspunkt (nollpunkt) som ska användas.</li>
+        </ul>
+        <h3>Tekniska beslut</h3>
+        <p>Programmeraren behöver också ta ställning till skärverktygets bana (t.ex. i vilken ordning ytor bearbetas för minsta möjliga bearbetningstid och bästa ytfinhet), maskinens effektbehov för vald bearbetning, samt vilket kylmedel eller smörjmedel som passar materialet och operationen. Kvalitet i CNC-programmering handlar om att i förväg minimera risken för kollisioner, felaktiga mått och onödigt lång bearbetningstid.</p>
+
+    <h2 id="programstruktur"><span class="num">05</span>Programstruktur</h2>
+<p>Ett CNC-program är uppbyggt av mindre beståndsdelar i en bestämd hierarki.</p>
+        <h3>Grundbegrepp</h3>
+        <ul>
+          <li><b>Tecken</b> — en enskild bokstav, siffra eller symbol (t.ex. "G", "0", "1").</li>
+          <li><b>Ord</b> — en bokstav (adress) följd av ett numeriskt värde, t.ex. <code>X50.0</code> eller <code>G01</code>.</li>
+          <li><b>Block</b> — en rad i programmet, bestående av ett eller flera ord som tillsammans beskriver en instruktion, t.ex. <code>N10 G01 X50.0 Y20.0 F150</code>.</li>
+          <li><b>Program</b> — en fullständig sekvens av block som tillsammans bearbetar en färdig detalj.</li>
+        </ul>
+        <h3>Ordadressformat</h3>
+        <p>De flesta styrsystem använder ordadressformat, där varje ord inleds med en bokstav som anger dess funktion (t.ex. G för förberedande kommando, X/Y/Z för positioner, F för matning, S för spindelvarvtal, T för verktyg, M för diverse funktion). Ordningen på orden inom ett block följer normalt en fast konvention för att undvika feltolkning.</p>
+        <h3>Symboler och tecken</h3>
+        <p>Plus- och minustecken används för att ange riktning på koordinater och andra värden. Om inget tecken anges tolkas värdet oftast som positivt.</p>
+        <h3>Programrubrik och programkommentarer</h3>
+        <p>Programmet inleds ofta med en rubrik (header) som identifierar programmet, t.ex. programnummer, datum och detaljbeteckning. Kommentarer kan läggas till i programmet, vanligen inom parenteser, för att förklara vad olika sektioner gör — de påverkar inte själva bearbetningen men underlättar felsökning och underhåll av programmet.</p>
+        <h3>Modala värden och exekveringsordning</h3>
+        <p>Många kommandon är <b>modala</b>, vilket betyder att de gäller tills de ändras av ett nytt kommando av samma typ — de behöver alltså inte upprepas i varje block. Om flera kommandon i samma block skulle motsäga varandra följer styrsystemet en fast prioritetsordning för att avgöra vilket som gäller.</p>
+
+    <h2 id="g_koder"><span class="num">06</span>G-koder — förberedande kommandon</h2>
+<p>G-koder (förberedande kommandon) talar om för styrsystemet vilken typ av rörelse eller funktion som ska utföras, t.ex. rätlinjig rörelse, cirkelrörelse eller val av koordinatsystem.</p>
+        <h3>Grupper och modalitet</h3>
+        <p>G-koder delas in i grupper där koderna inom samma grupp utesluter varandra (t.ex. kan man inte köra rätlinjig och cirkulär rörelse samtidigt). De flesta G-koder är modala och gäller tills en annan kod i samma grupp anges.</p>
+        <h3>Vanliga G-koder</h3>
+        <table class="ref-table">
+          <thead><tr><th>Kod</th><th>Funktion</th></tr></thead>
+          <tbody>
+            <tr><td>G00</td><td>Snabbtransport (ilgång) till angiven position</td></tr>
+            <tr><td>G01</td><td>Rätlinjig interpolation (linjär matning)</td></tr>
+            <tr><td>G02 / G03</td><td>Cirkulär interpolation, medurs / moturs</td></tr>
+            <tr><td>G17 / G18 / G19</td><td>Val av arbetsplan XY / XZ / YZ</td></tr>
+            <tr><td>G20 / G21</td><td>Tumindelning (inch) / metriskt mått (mm)</td></tr>
+            <tr><td>G28</td><td>Återgång till maskinens referenspunkt</td></tr>
+            <tr><td>G40 / G41 / G42</td><td>Verktygsradiekompensering av / vänster / höger</td></tr>
+            <tr><td>G54–G59</td><td>Val av arbetsstyckets nollpunkt (koordinatsystem 1–6)</td></tr>
+            <tr><td>G90 / G91</td><td>Absolut / inkrementellt läge</td></tr>
+          </tbody>
+        </table>
+        <h3>Tillämpningar</h3>
+        <p>Vid <b>fräsning</b> används G-koder bland annat för konturfräsning, fickfräsning och borrcykler. Vid <b>svarvning</b> används de bland annat för längd- och plansvarvning, gängning och spårsvarvning. Programmets ordning av G-koder inom ett block är viktig — konflikterande koder inom samma grupp i samma block ger normalt ett larm.</p>
+
+    <h2 id="m_funktioner"><span class="num">07</span>M-funktioner — diverse funktioner</h2>
+<p>M-funktioner (diverse funktioner) styr sådant som inte är själva rörelsen, utan maskinens övriga funktioner: på/av för spindel, kylmedel, verktygsväxling och programflöde.</p>
+        <h3>Maskinrelaterade och programrelaterade funktioner</h3>
+        <p>Man skiljer på funktioner som styr <b>maskinen</b> (t.ex. spindel och kylmedel) och funktioner som styr <b>programflödet</b> (t.ex. stopp och programslut). En del M-funktioner startar en åtgärd omedelbart, medan andra gäller tills de upphävs av en annan M-funktion.</p>
+        <h3>Vanliga M-funktioner</h3>
+        <table class="ref-table">
+          <thead><tr><th>Kod</th><th>Funktion</th></tr></thead>
+          <tbody>
+            <tr><td>M00</td><td>Programstopp (kräver manuell återstart)</td></tr>
+            <tr><td>M01</td><td>Valfritt programstopp (aktiveras endast om funktionen slagits på)</td></tr>
+            <tr><td>M02 / M30</td><td>Programslut (M30 återställer även programmet till start)</td></tr>
+            <tr><td>M03 / M04 / M05</td><td>Spindel medurs / moturs / stopp</td></tr>
+            <tr><td>M06</td><td>Verktygsväxling</td></tr>
+            <tr><td>M08 / M09</td><td>Kylmedel på / av</td></tr>
+            <tr><td>M98 / M99</td><td>Anrop av subprogram / återgång från subprogram</td></tr>
+          </tbody>
+        </table>
+        <h3>Tillämpningar</h3>
+        <p>Vid både fräsning och svarvning används M-funktioner löpande genom hela programmet, ofta i samma block som G-koder och positionsord. Programstopp (M00) används t.ex. för att låta operatören kontrollmäta en detalj mitt i programmet, medan valfritt programstopp (M01) ger operatören möjlighet att själv välja om den pausen ska ske.</p>
+
+    <h2 id="matt_installningar"><span class="num">08</span>Mått &amp; sekvensblock</h2>
+<h3>Blockstruktur och programidentifikation</h3>
+        <p>Varje block i programmet kan inledas med ett <b>sekvensnummer</b> (t.ex. N10, N20), vilket gör det enklare att hitta och referera till en specifik rad, exempelvis vid felsökning eller vid omstart mitt i programmet. Numreringen sker oftast i jämna intervall (t.ex. i steg om 10) för att kunna lägga in extra block senare utan att behöva numrera om hela programmet. Programmet identifieras normalt med ett <b>programnummer</b> och ibland även ett <b>programnamn</b>.</p>
+        <h3>Slut på block</h3>
+        <p>Varje block avslutas med ett radslutstecken. Många program inleds även med ett <b>startblock (säkerhetsblock)</b> som återställer maskinen till kända, säkra grundinställningar innan bearbetningen påbörjas.</p>
+        <h3>Enheter</h3>
+        <p>Mått kan anges i antingen <b>metriska enheter</b> (millimeter) eller <b>tumenheter</b> (inch) — vilket väljs med en G-kod (se kapitel 6). Det är viktigt att programmerare och operatör är överens om vilken enhet som gäller, eftersom en felaktig enhetsinställning kan ge mått som är fel med en faktor på ungefär 25.</p>
+        <h3>Absolut och inkrementellt läge</h3>
+        <p>I <b>absolut läge</b> anges varje position som ett koordinatvärde räknat från programmets nollpunkt. I <b>inkrementellt läge</b> anges varje ny position i stället som en förflyttning relativt den föregående positionen. De flesta program använder huvudsakligen absolut läge, men inkrementellt läge kan vara praktiskt för upprepade, likadana förflyttningar (t.ex. ett rutmönster av hål).</p>
+
+  </article>
+  <div class="footcta">
+    <div class="ft-txt">Läs igenom materialet, testa sedan dina kunskaper i quizet för CNC-programmering.</div>
+    <a class="btn btn-amber" style="background:#5b9bd5;" href="../quiz/cnc-programmering.html">Starta quiz &rarr;</a>
+  </div>
+</main>
+
+<script src="../../../assets/site.js"></script>
+</body>
+</html>

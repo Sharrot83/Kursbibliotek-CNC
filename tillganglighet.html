@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tillgänglighetsredogörelse — Kursbibliotek</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .legal { max-width: 760px; margin: 0 auto; padding: 0 20px 60px; line-height: 1.65; }
+  .legal h2 { margin-top: 34px; font-size: 19px; }
+  .legal p, .legal li { color: var(--text); font-size: 15px; }
+  .legal ul { padding-left: 20px; }
+  .legal .updated { color: var(--muted); font-size: 13px; margin-top: -6px; }
+  .status { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; padding:3px 10px; border-radius:999px; }
+  .status.ok { background: var(--green-dim); color: var(--green); }
+  .status.warn { background: var(--amber-dim); color: var(--amber); }
+  .status.unknown { background: var(--line); color: var(--muted); }
+  .checklist { list-style:none; padding:0; margin:14px 0; }
+  .checklist li { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .fillin { background: var(--amber-dim); color: var(--amber); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<main class="wrap">
+  <header class="page-head">
+    <div class="eyebrow">Kursbiblioteket</div>
+    <h1>Tillgänglighetsredogörelse</h1>
+    <div class="sub">Det här är en pågående process, inte ett färdigt intyg. Sidan beskriver ärligt vad som är kontrollerat och vad som återstår.</div>
+  </header>
+
+  <div class="legal">
+    <p class="updated">Senast uppdaterad: <span class="fillin">[fyll i datum vid publicering]</span> — granskning utförd av Claude (Anthropic) på uppdrag av sajtens ägare, ej av en oberoende tillgänglighetsexpert.</p>
+
+    <h2>Vad är kontrollerat</h2>
+    <ul class="checklist">
+      <li>Färgkontrast text/bakgrund (WCAG AA, 4,5:1) <span class="status ok">✓ Godkänt</span></li>
+      <li>Alt-text på bilder <span class="status ok">✓ Alla bilder har alt-text</span></li>
+      <li><code>lang</code>-attribut på sidorna <span class="status ok">✓ Finns på alla sidor</span></li>
+      <li>Tangentbordsnavigering (knappar, menyer, formulär) <span class="status unknown">Ej kontrollerat</span></li>
+      <li>Skärmläsarkompatibilitet (ARIA, fokusordning) <span class="status unknown">Ej kontrollerat</span></li>
+      <li>Rubrikstruktur (h1–h3 i logisk ordning) <span class="status unknown">Ej kontrollerat på samtliga sidor</span></li>
+      <li>G-kodsvisualiseraren och sänka skepp-spelet (canvas-baserade, mycket interaktiva) <span class="status warn">Sannolikt bristfällig tangentbords-/skärmläsarstöd</span></li>
+    </ul>
+
+    <h2>Kända begränsningar</h2>
+    <p>De två interaktiva verktygen — G-kodsvisualiseraren och sänka skepp-spelet — bygger till stor del på musstyrd interaktion med en HTML5 canvas-yta. Sådana ytor är generellt svåra att göra fullt tillgängliga för skärmläsare och ren tangentbordsnavigering, och har <strong>inte</strong> anpassats för detta ännu. Övriga sidor (kursmaterial, quiz) bygger på vanlig HTML och bör fungera väsentligt bättre med hjälpmedel, men har inte testats med faktisk skärmläsare.</p>
+
+    <h2>Hur vi jobbar vidare</h2>
+    <p>Nästa steg är att testa sidorna med tangentbord enbart (utan mus) och med en skärmläsare, samt gå igenom rubrikstrukturen sida för sida. Den här redogörelsen uppdateras när det är gjort.</p>
+
+    <h2>Rapportera brister</h2>
+    <p>Om du stöter på ett tillgänglighetsproblem, kontakta: <span class="fillin">[fyll i kontaktuppgift]</span></p>
+
+    <h2>Tillsynsmyndighet</h2>
+    <p>Om du inte är nöjd med vårt svar kan du anmäla till Myndigheten för digital förvaltning (DIGG): <a href="https://www.digg.se" target="_blank" rel="noopener">digg.se</a></p>
+  </div>
+</main>
+
+<script src="assets/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNC-Grönt kort — Storquiz (156 frågor)</title>
+<style>
+  .topnav{
+    max-width:780px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{ width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto; }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{ content:""; position:absolute; background:var(--amber); }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+  :root{
+    --bg: #161b21;
+    --panel: #1f2730;
+    --panel-2: #26303b;
+    --line: #333e4a;
+    --text: #e9edf1;
+    --muted: #93a1ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+    --cyan: #59c3d6;
+    --cyan-dim: #1a3a40;
+    --lime: #a3c95a;
+    --lime-dim: #2e3a1a;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+    --cyan: #3f97ab;
+    --cyan-dim: #e2f2f5;
+    --lime: #6f8f2f;
+    --lime-dim: #eef3e0;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(1200px 500px at 15% -10%, #24303c 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, #2a2119 0%, transparent 55%),
+      var(--bg);
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      radial-gradient(1200px 500px at 15% -10%, #dce6f0 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+  }
+
+  .wrap{max-width:780px; margin:0 auto; padding:28px 20px 80px;}
+
+  header{margin-bottom:22px;}
+  .eyebrow{
+    font-family: "Arial Narrow", Arial, sans-serif;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    font-size:12px;
+    color:var(--amber);
+    font-weight:700;
+    display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family: "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    font-weight:800;
+    font-size: clamp(26px, 6vw, 38px);
+    letter-spacing:-0.01em;
+    margin: 6px 0 4px;
+    line-height:1.05;
+  }
+  .sub{color:var(--muted); font-size:15px; max-width:60ch;}
+  .pool-note{
+    margin-top:10px; font-size:13px; color:var(--amber); font-weight:600;
+    background:var(--amber-dim); display:inline-block; padding:5px 12px; border-radius:8px;
+  }
+
+  .tabs{display:flex; gap:8px; margin:22px 0 18px; flex-wrap:wrap;}
+  .tab{
+    padding:8px 13px; border-radius:999px; border:1px solid var(--line);
+    background:var(--panel); color:var(--muted); font-size:13px; font-weight:600;
+    cursor:pointer; transition:.15s;
+  }
+  .tab[data-active="true"]{
+    background:var(--amber); border-color:var(--amber); color:#1a1105;
+  }
+  .tab:hover:not([data-active="true"]){border-color:var(--amber); color:var(--text);}
+
+  .progress-row{display:flex; align-items:center; gap:10px; margin:4px 0 20px;}
+  .progress-track{flex:1; height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden;}
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--amber), var(--green)); width:0%; transition:width .25s;}
+  .progress-label{font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap;}
+
+  .card{
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:26px 24px;
+    box-shadow: 0 20px 40px -25px rgba(0,0,0,.6);
+  }
+  .qmeta{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;}
+  .qtag{
+    font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; font-weight:700;
+    padding:4px 9px; border-radius:6px;
+  }
+  .qnum{color:var(--muted); font-size:13px;}
+
+  .prompt{font-size:18.5px; font-weight:600; line-height:1.4; margin-bottom:18px;}
+
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .opt{
+    text-align:left;
+    padding:13px 15px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:#1a222b;
+    color:var(--text);
+    font-size:15px;
+    cursor:pointer;
+    transition:.12s;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .opt:hover:not([disabled]){border-color:var(--amber); background:#212b35;}
+  .opt .k{
+    flex:0 0 auto; width:22px; height:22px; border-radius:6px; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--muted); font-weight:700;
+  }
+  .opt[disabled]{cursor:default;}
+  .opt.correct{border-color:var(--green); background:var(--green-dim);}
+  .opt.correct .k{border-color:var(--green); color:var(--green); background:#122a1a;}
+  .opt.wrong{border-color:var(--red); background:var(--red-dim);}
+  .opt.wrong .k{border-color:var(--red); color:var(--red); background:#2a1513;}
+
+  .feedback{margin-top:16px; padding:14px 16px; border-radius:10px; font-size:14.5px; line-height:1.5; display:none;}
+  .feedback.show{display:block;}
+  .feedback.ok{background:var(--green-dim); border:1px solid #2f6b47; color:#cdeed9;}
+  .feedback.bad{background:var(--red-dim); border:1px solid #7a3833; color:#f3d2ce;}
+  .feedback b{display:block; margin-bottom:3px; font-size:13px; text-transform:uppercase; letter-spacing:.06em;}
+
+  .controls{display:flex; justify-content:flex-end; margin-top:20px;}
+  button.next{
+    background:var(--amber); color:#1a1105; border:none; padding:11px 22px;
+    border-radius:9px; font-weight:700; font-size:14.5px; cursor:pointer;
+  }
+  button.next:disabled{background:var(--panel-2); color:var(--muted); cursor:not-allowed;}
+  button.next:hover:not(:disabled){filter:brightness(1.08);}
+
+  .result{text-align:center; padding:20px 10px 10px;}
+  .result .big{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; font-size:56px; color:var(--amber); line-height:1;}
+  .result .of{color:var(--muted); font-size:15px; margin-top:6px;}
+  .review{margin-top:26px; text-align:left; display:flex; flex-direction:column; gap:10px;}
+  .review-item{border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-size:14px;}
+  .review-item.ok{border-left:3px solid var(--green);}
+  .review-item.bad{border-left:3px solid var(--red);}
+  .review-item .q{font-weight:600; margin-bottom:4px;}
+  .review-item .a{color:var(--muted);}
+  .restart{
+    margin-top:24px; background:none; border:1px solid var(--line); color:var(--text);
+    padding:10px 20px; border-radius:9px; cursor:pointer; font-size:14px; font-weight:600;
+  }
+  .restart:hover{border-color:var(--amber); color:var(--amber);}
+
+  footer{text-align:center; color:var(--muted); font-size:12px; margin-top:36px;}
+
+  /* --- shared topbar / crumbs / buttons (site-wide) --- */
+  .topbar{position:sticky; top:0; z-index:50; background:rgba(22,27,33,.9); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:780px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+  .crumbs{font-size:12.5px; color:var(--muted); display:flex; gap:6px; align-items:center;}
+  .crumbs a{color:var(--muted); text-decoration:none;}
+  .crumbs a:hover{color:var(--amber);}
+  .btn-row{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
+  .btn{display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px; font-weight:700; font-size:13.5px; text-decoration:none; border:1px solid var(--line); background:var(--panel); color:var(--text);}
+  .btn:hover{border-color:var(--amber);}
+</style>
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+<div class="topnav">
+  <a class="brand" href="material.html"><span class="mark"></span>CNC-GRÖNT KORT</a>
+  <nav>
+    <a href="material.html">Kursmaterial</a>
+    <a href="quiz-alla.html">Storquiz (156)</a>
+  </nav>
+</div>
+<main class="wrap">
+  <header>
+    <div class="eyebrow">Storquiz · Offline</div>
+    <h1>CNC-Grönt kort</h1>
+    <div class="sub">Frågor om verktyg (svenska/engelska), materialkunskap och CNC-programmering — samtliga delkurser blandade. Fungerar helt utan internetuppkoppling.</div>
+    <div class="pool-note" id="poolNote"></div>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 0</div>
+  </div>
+
+  <div class="card" id="card"></div>
+
+  <footer>Svara i din egen takt — resultatet sparas inte och skickas ingenstans.</footer>
+</main>
+
+<script>
+const QUIZ_LENGTH = 30;
+
+const CAT_META = {
+  cnc_grunder:        {label:"CNC-grunder", color:"var(--blue)", bg:"var(--blue-dim)"},
+  koordinatsystem:    {label:"Koordinatsystem & geometri", color:"var(--teal)", bg:"var(--teal-dim)"},
+  styrsystem:         {label:"Styrsystemet", color:"var(--amber)", bg:"var(--amber-dim)"},
+  programplanering:   {label:"Programplanering", color:"var(--purple)", bg:"var(--purple-dim)"},
+  programstruktur:    {label:"Programstruktur", color:"var(--pink)", bg:"var(--pink-dim)"},
+  g_koder:            {label:"G-koder", color:"var(--green)", bg:"var(--green-dim)"},
+  m_funktioner:       {label:"M-funktioner", color:"var(--cyan)", bg:"var(--cyan-dim)"},
+  matt_installningar: {label:"Mått & sekvensblock", color:"var(--lime)", bg:"var(--lime-dim)"},
+  vad_ar_material:        {label:"Vad är material?", color:"var(--blue)", bg:"var(--blue-dim)"},
+  fran_malm_till_metall:  {label:"Från malm till metall", color:"var(--teal)", bg:"var(--teal-dim)"},
+  materialegenskaper:     {label:"Materialegenskaper", color:"var(--amber)", bg:"var(--amber-dim)"},
+  materialprovning:       {label:"Materialprovning", color:"var(--purple)", bg:"var(--purple-dim)"},
+  materialstandard:       {label:"Materialstandard", color:"var(--pink)", bg:"var(--pink-dim)"},
+  metalliska_material:    {label:"Metalliska material", color:"var(--green)", bg:"var(--green-dim)"},
+  materialbeteckningar:   {label:"Materialbeteckningar", color:"var(--red)", bg:"var(--red-dim)"},
+  handverktyg_matdon: {label:"Handverktyg & mätdon", color:"var(--blue)", bg:"var(--blue-dim)"},
+  skarande_verktyg:   {label:"Skärande verktyg", color:"var(--teal)", bg:"var(--teal-dim)"}
+};
+
+const QUESTIONS = {
+  cnc_grunder: [
+    {q:"Vad betyder NC i sammanhanget CNC-teknik?", opts:["Numerical Control (numerisk styrning)", "New Calibration", "Network Connection", "Normal Cutting"], correct:0, fb:"NC står för Numerical Control, alltså numerisk styrning — maskinens rörelser styrs med siffror och koder."},
+    {q:"Vad är den huvudsakliga skillnaden mellan NC och CNC?", opts:["Det finns ingen skillnad, orden betyder exakt samma sak i alla sammanhang", "CNC har en inbyggd dator som tolkar och exekverar programmet", "NC används bara för svarvar, CNC bara för fräsar", "CNC kräver alltid manuell styrning av varje rörelse"], correct:1, fb:"CNC (Computer Numerical Control) har en inbyggd dator som läser, tolkar och exekverar programmet samt sköter diagnostik och säkerhetsfunktioner."},
+    {q:"Vilken är INTE en fördel med CNC-bearbetning jämfört med konventionell bearbetning?", opts:["Hög repeterbarhet mellan detaljer", "Kortare ställtid", "Att operatören måste styra varje rörelse för hand", "Möjlighet att bearbeta komplexa former"], correct:2, fb:"Att operatören måste styra varje rörelse för hand är kännetecknande för konventionell, manuell bearbetning — inte en fördel med CNC."},
+    {q:"Vilka två huvudtyper av CNC-maskiner nämns i materialet?", opts:["Fräsmaskiner/bearbetningscentrum och svarvar/svarvcentrum", "Borrmaskiner och slipmaskiner", "3D-skrivare och laserskärare", "Press och stans"], correct:0, fb:"De två grundläggande maskintyperna är fräsmaskiner/bearbetningscentrum (verktyget roterar) och svarvar/svarvcentrum (arbetsstycket roterar)."},
+    {q:"Vad kännetecknar en CNC-svarv jämfört med en fräsmaskin?", opts:["I svarven roterar arbetsstycket medan skärverktyget matas mot det", "I svarven roterar verktyget medan arbetsstycket står still", "Svarven används bara för borrning", "Svarven saknar helt ett koordinatsystem"], correct:0, fb:"På en svarv roterar arbetsstycket medan ett stillastående skärverktyg matas mot det, till skillnad från på en fräsmaskin där verktyget roterar."},
+    {q:"Vad är CNC-programmerarens huvudsakliga uppgift?", opts:["Att städa maskinhallen", "Att ta fram bearbetningsprogrammet utifrån ritning, verktyg och skärdata", "Att enbart sköta ekonomin", "Att enbart svara i telefon till kunder"], correct:1, fb:"CNC-programmeraren tar fram bearbetningsprogrammet utifrån ritningen och väljer verktyg, skärdata och bearbetningsstrategi."},
+    {q:"Vad är CNC-operatörens huvudsakliga uppgift under produktion?", opts:["Att skriva om hela programmet varje dag", "Att spänna fast material/verktyg, starta och övervaka programmet samt göra mätkontroller", "Att aldrig behöva mäta detaljerna", "Att enbart designa nya maskiner"], correct:1, fb:"Operatören sköter den dagliga driften: fastspänning, uppstart, övervakning av programmet och mätkontroller."},
+    {q:"Vad bör man ALDRIG göra medan en CNC-maskin är i drift?", opts:["Ha skyddskåporna stängda", "Sträcka in händerna i arbetsområdet", "Känna till var nödstoppet sitter", "Köra ett nytt program stegvis första gången"], correct:1, fb:"Man ska aldrig sträcka in händerna i arbetsområdet medan maskinen är i drift — det är en grundläggande säkerhetsregel."},
+    {q:"Varför körs ofta nya, oprövade program i single block-läge första gången?", opts:["För att spara ström", "För att kunna stoppa och kontrollera efter varje block innan hela programmet körs i full hastighet", "Det finns inget skäl, det görs slumpmässigt", "För att det är obligatoriskt enligt lag i alla länder"], correct:1, fb:"Single block-körning gör att man kan kontrollera varje steg innan man litar på att köra hela programmet i normal hastighet."},
+    {q:"Vad innebär hög repeterbarhet i CNC-sammanhang?", opts:["Att maskinen alltid ger samma resultat för samma program, gång på gång", "Att operatören måste upprepa samma kommando manuellt varje gång", "Att programmet måste skrivas om för varje detalj", "Att maskinen bara kan köra ett program en gång totalt"], correct:0, fb:"Repeterbarhet innebär att samma program ger samma resultat om och om igen, vilket är en av CNC-teknikens största fördelar."}
+  ],
+  koordinatsystem: [
+    {q:"Vilket koordinatsystem används normalt vid CNC-programmering?", opts:["Det rektangulära (kartesiska) koordinatsystemet", "Ett slumpmässigt talsystem utan axlar", "Enbart polära koordinater utan raka axlar", "Ett system baserat enbart på tid"], correct:0, fb:"CNC-programmering bygger normalt på det rektangulära (kartesiska) koordinatsystemet med räta vinklar mellan axlarna."},
+    {q:"Vilka tre huvudaxlar bygger upp det grundläggande koordinatsystemet?", opts:["X, Y och Z", "A, B och C", "N, G och M", "P, Q och R"], correct:0, fb:"De tre huvudaxlarna är X, Y och Z, som tillsammans bildar det rektangulära koordinatsystemet."},
+    {q:"Vad kallas den punkt där alla axlars värden är noll?", opts:["Kvadranten", "Origo (nollpunkten)", "Sekvensnumret", "Modalpunkten"], correct:1, fb:"Origo, eller nollpunkten, är den punkt där X-, Y- och Z-värdena alla är noll."},
+    {q:"Vad är skillnaden mellan maskinens nollpunkt och programmets nollpunkt?", opts:["Det finns ingen skillnad", "Maskinens nollpunkt är fast och satt av tillverkaren, programmets nollpunkt väljs av programmeraren utifrån ritningen", "Programmets nollpunkt gäller bara för svarvar", "Maskinens nollpunkt ändras varje gång man startar ett nytt program"], correct:1, fb:"Maskinens nollpunkt är fast och satt av tillverkaren, medan programmets/arbetsstyckets nollpunkt väljs av programmeraren utifrån var på detaljen det passar bäst."},
+    {q:"Hur många kvadranter delas det rektangulära koordinatsystemet in i?", opts:["Två", "Tre", "Fyra", "Sex"], correct:2, fb:"Koordinatsystemet delas in i fyra kvadranter, beroende på om X- och Y-värdena är positiva eller negativa."},
+    {q:"Vad används höger-handsregeln till?", opts:["Att avgöra vilken hand man ska hålla i handhjulet", "Att bestämma de positiva riktningarna på koordinataxlarna", "Att räkna ut materialets densitet", "Att välja rätt skärvätska"], correct:1, fb:"Höger-handsregeln används för att bestämma de positiva riktningarna på X-, Y- och Z-axeln (samt rotationsaxlarna A, B, C)."},
+    {q:"Enligt höger-handsregeln, vilket finger representerar den positiva Z-riktningen?", opts:["Tummen", "Pekfingret", "Långfingret, vinkelrätt mot de andra två", "Lillfingret"], correct:2, fb:"Långfingret, hållet vinkelrätt mot tummen (X) och pekfingret (Y), representerar den positiva Z-riktningen."},
+    {q:"På en fräsmaskin, vilken axel är normalt parallell med spindelns rotationsaxel?", opts:["X-axeln", "Y-axeln", "Z-axeln", "Ingen av axlarna"], correct:2, fb:"På en fräsmaskin är Z-axeln normalt parallell med spindelns rotationsaxel, och positiv Z pekar bort från arbetsstycket."},
+    {q:"På en svarv, hur är X-axeln vanligtvis orienterad?", opts:["Radiellt, mot eller från centrum", "Parallellt med golvet i valfri riktning", "Alltid lodrätt uppåt", "Den existerar inte på en svarv"], correct:0, fb:"På en svarv är X-axeln radiell (mot/från centrum), medan Z-axeln är parallell med spindelns rotationsaxel, längs arbetsstycket."},
+    {q:"Vad kan ytterligare axlar som A eller B användas till på en CNC-maskin?", opts:["De används aldrig i praktiken", "De ger möjlighet till rotation för mer komplex bearbetning", "De ersätter alltid X-axeln", "De styr enbart kylmedelsflödet"], correct:1, fb:"Ytterligare rotationsaxlar (t.ex. A eller B) ger möjlighet till mer komplex bearbetning genom att detaljen eller verktyget kan roteras under bearbetningen."}
+  ],
+  styrsystem: [
+    {q:"Vad är styrsystemets huvudsakliga roll i en CNC-maskin?", opts:["Att läsa programmet, beräkna rörelserna och styra motorerna", "Att enbart visa klockan", "Att ersätta behovet av verktyg", "Att sköta fakturering till kund"], correct:0, fb:"Styrsystemet är maskinens 'hjärna' — det läser programmet, beräknar rörelserna och styr motorerna som utför dem."},
+    {q:"Vad används handhjulet på manöverpanelen till?", opts:["Att stänga av hela maskinen permanent", "Finjustering och manuell förflyttning av axlarna, t.ex. vid nollpunktssättning", "Att skriva in hela CNC-programmet", "Att byta verktyg automatiskt"], correct:1, fb:"Handhjulet används för finjustering och manuell förflyttning av axlarna, exempelvis vid inställning av nollpunkten."},
+    {q:"Vad avgör styrsystemets parametrar?", opts:["Hur programmet tolkas om inget annat anges", "Hur systemet anpassas efter den specifika maskinen, t.ex. axelhastigheter och mjukvarugränser", "Enbart färgen på skärmen", "Vilka verktyg som finns i verktygsmagasinet"], correct:1, fb:"Parametrarna anpassar styrsystemet efter den specifika maskinen, exempelvis axelhastigheter och mjukvarugränser."},
+    {q:"Vad innebär single block-körning?", opts:["Programmet körs ett block i taget, operatören måste trycka igen för nästa block", "Programmet körs baklänges", "Maskinen stänger av sig automatiskt efter ett block", "Endast ett enda block får finnas i hela programmet"], correct:0, fb:"Single block innebär att programmet körs ett block i taget och kräver en ny knapptryckning för varje block, ofta använt vid provkörning."},
+    {q:"Vad gör matningsstopp (feedhold)?", opts:["Avslutar programmet permanent", "Pausar matningsrörelsen omedelbart utan att avbryta programmet", "Ökar matningshastigheten kraftigt", "Byter automatiskt verktyg"], correct:1, fb:"Feedhold pausar matningsrörelsen omedelbart, men programmet kan sedan återupptas — det avbryts inte permanent."},
+    {q:"Vad händer när nödstoppet aktiveras?", opts:["All rörelse och drivkraft stängs av omedelbart", "Enbart spindeln saktar ner något", "Programmet fortsätter men i lägre hastighet", "Endast skärmen släcks"], correct:0, fb:"Nödstoppet stänger av all rörelse och drivkraft omedelbart vid fara — det är den mest akuta säkerhetsfunktionen."},
+    {q:"Vad står MDI för och vad används det till?", opts:["Manual Data Input — enstaka kommandon kan köras direkt utan att vara del av ett sparat program", "Machine Diagnostics Interface — enbart för felsökning av elsystemet", "Maximum Drive Indicator — visar maskinens toppfart", "Metric Data Input — anger enbart måttenhet"], correct:0, fb:"MDI (Manual Data Input) gör att enstaka kommandon kan matas in och köras direkt, utan att sparas som ett fullständigt program."},
+    {q:"Vad gör en snabbtransport-, spindel- eller matningsöverstyrning?", opts:["Den ändrar programmets G-koder permanent", "Den låter operatören justera hastigheten under körning utan att ändra själva programmet", "Den byter automatiskt ut verktyget", "Den fungerar bara i simuleringsläge"], correct:1, fb:"Överstyrningar låter operatören öka eller minska hastigheten (snabbtransport, spindel, matning) under körning, utan att programmet i sig ändras."},
+    {q:"Vad innebär testkörning (dry run)?", opts:["Programmet körs utan att faktiskt skära i materialet", "Maskinen provkörs med dubbel hastighet på riktigt material", "En extern firma testar maskinen en gång per år", "Operatören kör programmet baklänges"], correct:0, fb:"Dry run innebär att programmet körs igenom utan att skära, för att kontrollera rörelserna innan skarp körning."},
+    {q:"Vad är syftet med maskinlås vid provkörning av ett nytt program?", opts:["Att fysiskt låsa in maskinoperatören i hytten", "Att simulera rörelserna utan att axlarna faktiskt flyttas", "Att förhindra att programmet någonsin kan köras", "Att öka spindelvarvtalet automatiskt"], correct:1, fb:"Maskinlås gör att rörelserna simuleras (t.ex. i styrsystemets display) utan att axlarna faktiskt förflyttas fysiskt."}
+  ],
+  programplanering: [
+    {q:"Vad bör programmeraren göra innan ett CNC-program skrivs?", opts:["Samla in information om detaljen, maskinen och verktygen som ska användas", "Alltid hoppa direkt till att skriva G-koder utan förberedelse", "Ignorera ritningen helt", "Endast fråga operatören om åsikt"], correct:0, fb:"Innan programmering påbörjas behöver programmeraren samla in nödvändig information om detalj, maskin och verktyg."},
+    {q:"Vad innehåller normalt en ritnings titelblock?", opts:["Enbart datumet för dagens väder", "Benämning, materialuppgift och skala", "Endast operatörens lönenivå", "Endast en lista på tidigare kunder"], correct:1, fb:"Titelblocket innehåller uppgifter som benämning, materialuppgift och skala för detaljen."},
+    {q:"Vad menas med materialets bearbetbarhet?", opts:["Hur lätt eller svårt materialet är att skära i", "Materialets färg", "Endast materialets pris per kilo", "Hur många år materialet håller i lager"], correct:0, fb:"Bearbetbarhet handlar om hur lätt eller svårt materialet är att bearbeta med skärande verktyg."},
+    {q:"Vad är skillnaden mellan manuell programmering och CAD/CAM-baserad programmering?", opts:["Ingen skillnad alls", "Manuell programmering skrivs direkt i G-kod, medan CAD/CAM räknar fram verktygsbanor automatiskt utifrån en 3D-modell", "CAD/CAM kan bara användas till enkla detaljer", "Manuell programmering kräver alltid en superdator"], correct:1, fb:"Vid manuell programmering skrivs G-koden direkt för hand, medan CAD/CAM räknar fram verktygsbanor automatiskt utifrån en 3D-modell som sedan postprocessas till G-kod."},
+    {q:"Vad kallas processen där en CAD/CAM-genererad bana omvandlas till maskinspecifik G-kod?", opts:["Postprocessning", "Anlöpning", "Sekvensåtergång", "Kvadrering"], correct:0, fb:"Postprocessning är steget där den generella verktygsbanan från CAD/CAM omvandlas till kod som passar den specifika maskinen och styrsystemet."},
+    {q:"Vad är ett metodblad?", opts:["En arbetsbeskrivning som sammanfattar bearbetningsordning, verktyg och skärdata", "Ett kvitto på inköpt material", "Ett dokument som bara används vid rekrytering", "En lista på maskinens garantivillkor"], correct:0, fb:"Metodbladet är en arbetsbeskrivning som sammanfattar bearbetningsordning, verktyg och skärdata för jobbet."},
+    {q:"Vad avgör bearbetningssekvensen i ett program?", opts:["I vilken ordning olika operationer, t.ex. grovfräsning och finfräsning, ska utföras", "Enbart vilken färg detaljen har", "Enbart hur många anställda som är på plats", "Vilket datum programmet skrevs"], correct:0, fb:"Bearbetningssekvensen bestämmer i vilken ordning operationer som grovfräsning, finfräsning, borrning och gängning ska utföras."},
+    {q:"Vad innebär uppsättning av arbetsstycket?", opts:["Hur och var detaljen ska spännas fast samt vilken referenspunkt som ska användas", "Att skriva om hela CNC-programmet", "Att beställa nytt material", "Att byta ut styrsystemet"], correct:0, fb:"Uppsättningen handlar om hur och var arbetsstycket spänns fast, samt vilken nollpunkt/referens som ska användas."},
+    {q:"Vad påverkas av valet av skärverktygets bana i programplaneringen?", opts:["Bearbetningstid och ytfinhet", "Enbart maskinens färg", "Endast fakturans belopp", "Endast operatörens rast"], correct:0, fb:"Skärverktygets bana påverkar både bearbetningstiden och den resulterande ytfinheten på detaljen."},
+    {q:"Vad handlar 'kvalitet i CNC-programmering' framför allt om?", opts:["Att i förväg minimera risken för kollisioner, felaktiga mått och onödigt lång bearbetningstid", "Att programmet ska se estetiskt tilltalande ut på skärmen", "Att aldrig testköra programmet", "Att alltid använda så få G-koder som möjligt oavsett resultat"], correct:0, fb:"Kvalitet i programmeringen handlar om att i förväg minimera risker som kollisioner, felmått och onödigt lång bearbetningstid."}
+  ],
+  programstruktur: [
+    {q:"Vad kallas den minsta beståndsdelen i ett CNC-program, t.ex. en enskild bokstav eller siffra?", opts:["Ett tecken", "Ett program", "Ett block", "En kvadrant"], correct:0, fb:"Ett tecken är den minsta beståndsdelen — en enskild bokstav, siffra eller symbol."},
+    {q:"Vad är ett 'ord' i CNC-programmering?", opts:["En hel mening i kommentaren", "En bokstav (adress) följd av ett numeriskt värde, t.ex. X50.0", "Ett helt program från start till slut", "Enbart ett G-nummer utan värde"], correct:1, fb:"Ett ord består av en adressbokstav följd av ett numeriskt värde, till exempel X50.0 eller G01."},
+    {q:"Vad kallas en hel rad i programmet, som består av ett eller flera ord?", opts:["Ett block", "Ett tecken", "En kvadrant", "En parameter"], correct:0, fb:"Ett block är en hel rad i programmet, bestående av ett eller flera ord som tillsammans utgör en instruktion."},
+    {q:"Vad kallas det vanligaste formatet där varje ord inleds med en bokstav som anger dess funktion?", opts:["Ordadressformat", "Kvadrantformat", "Binärformat", "Procentformat"], correct:0, fb:"Ordadressformat innebär att varje ord inleds med en bokstav (adress) som visar dess funktion, t.ex. G, X, F, S, T eller M."},
+    {q:"Vad anger bokstaven F i ett programblock normalt?", opts:["Matningshastighet", "Spindelvarvtal", "Verktygsnummer", "Diverse funktion"], correct:0, fb:"F anger matningshastigheten, alltså hur fort verktyget rör sig genom materialet."},
+    {q:"Vad används plus- och minustecken till i ett CNC-program?", opts:["Att ange riktning på koordinater och andra värden", "Att markera kommentarer", "Att avsluta programmet", "Att välja vilket verktyg som ska användas"], correct:0, fb:"Plus- och minustecken används för att ange riktningen på koordinatvärden och andra tal i programmet."},
+    {q:"Var i programmet placeras normalt programrubriken (header)?", opts:["Allra sist i programmet", "I början av programmet, med t.ex. programnummer och detaljbeteckning", "Endast i en separat fil som aldrig körs", "Den finns aldrig med i ett CNC-program"], correct:1, fb:"Programrubriken placeras i början och identifierar programmet, ofta med programnummer, datum och detaljbeteckning."},
+    {q:"Hur markeras vanligen en programkommentar?", opts:["Med versaler i hela raden", "Inom parenteser", "Genom att skriva ordet 'KOMMENTAR' överst", "Kommentarer kan aldrig läggas till i ett CNC-program"], correct:1, fb:"Kommentarer skrivs vanligen inom parenteser och påverkar inte själva bearbetningen, men underlättar felsökning."},
+    {q:"Vad betyder att ett kommando är 'modalt'?", opts:["Det gäller bara i exakt ett block och måste alltid upprepas", "Det gäller tills det ändras av ett nytt kommando av samma typ", "Det kan aldrig ändras under programmets gång", "Det fungerar bara i simuleringsläge"], correct:1, fb:"Ett modalt kommando gäller tills det ändras av ett nytt kommando i samma grupp — det behöver inte upprepas i varje block."},
+    {q:"Vad avgör vilket kommando som gäller om flera motstridiga kommandon råkar hamna i samma block?", opts:["Slumpen", "Styrsystemets fasta prioritetsordning (exekveringsprioritet)", "Vilket kommando som skrivits med störst bokstäver", "Det spelar ingen roll, båda körs samtidigt oavsett konflikt"], correct:1, fb:"Styrsystemet följer en fast prioritetsordning (exekveringsprioritet) för att avgöra vilket kommando som gäller vid en konflikt."}
+  ],
+  g_koder: [
+    {q:"Vad kallas kommandon som talar om vilken typ av rörelse eller funktion som ska utföras, t.ex. rätlinjig eller cirkulär rörelse?", opts:["G-koder (förberedande kommandon)", "M-funktioner", "Sekvensnummer", "Programrubriker"], correct:0, fb:"G-koder, även kallade förberedande kommandon, styr vilken typ av rörelse eller funktion som ska utföras."},
+    {q:"Vad innebär det att G-koder delas in i grupper?", opts:["Koder inom samma grupp kan alltid köras samtidigt utan problem", "Koder inom samma grupp utesluter varandra, t.ex. rätlinjig och cirkulär rörelse samtidigt", "Grupperna avgör enbart färgen i styrsystemets meny", "Grupperna har ingenting med programflödet att göra"], correct:1, fb:"Koder inom samma grupp utesluter varandra — man kan till exempel inte köra rätlinjig och cirkulär rörelse samtidigt."},
+    {q:"Vilken G-kod används vanligen för snabbtransport (ilgång) till en position?", opts:["G00", "G01", "G02", "G91"], correct:0, fb:"G00 används för snabbtransport, där maskinen förflyttar sig så snabbt som möjligt utan att skära."},
+    {q:"Vilken G-kod används vanligen för rätlinjig interpolation (linjär matning vid skärning)?", opts:["G00", "G01", "G28", "G54"], correct:1, fb:"G01 används för rätlinjig interpolation, det vill säga rak matningsrörelse med skärning."},
+    {q:"Vilka G-koder används vanligen för cirkulär interpolation?", opts:["G02 och G03", "G17 och G18", "G40 och G41", "G90 och G91"], correct:0, fb:"G02 (medurs) och G03 (moturs) används för cirkulär interpolation."},
+    {q:"Vad styr G17, G18 och G19?", opts:["Val av arbetsplan (XY, XZ respektive YZ)", "Val av verktyg", "Val av kylmedel", "Val av programnummer"], correct:0, fb:"G17, G18 och G19 väljer vilket arbetsplan (XY, XZ eller YZ) som gäller, vilket bland annat påverkar cirkelrörelser."},
+    {q:"Vad skiljer G20 från G21?", opts:["G20 väljer tumindelning (inch), G21 väljer metriskt mått (mm)", "G20 är för fräsning, G21 enbart för svarvning", "G20 stänger av kylmedlet, G21 slår på det", "Det finns ingen skillnad"], correct:0, fb:"G20 väljer tumbaserade mått (inch) och G21 väljer metriska mått (mm) — viktigt att ställa rätt för att undvika grova felmått."},
+    {q:"Vad används G54–G59 till?", opts:["Att välja arbetsstyckets nollpunkt (koordinatsystem 1–6)", "Att styra spindelns rotationsriktning", "Att slå av och på kylmedel", "Att ange verktygsnummer"], correct:0, fb:"G54–G59 används för att välja mellan olika förinställda nollpunkter/koordinatsystem för arbetsstycket."},
+    {q:"Vad styr G40, G41 och G42?", opts:["Verktygsradiekompensering (av / vänster / höger)", "Val av arbetsplan", "Val av enhet, mm eller inch", "Programstopp"], correct:0, fb:"G40 stänger av verktygsradiekompensering, medan G41 och G42 aktiverar kompensering till vänster respektive höger om banan."},
+    {q:"Vad skiljer G90 från G91?", opts:["G90 är absolut läge, G91 är inkrementellt läge", "G90 gäller bara vid borrning, G91 bara vid fräsning", "G90 stänger av spindeln, G91 startar den", "Ingen skillnad, båda betyder samma sak"], correct:0, fb:"G90 anger absolut läge (positioner räknat från nollpunkten) och G91 anger inkrementellt läge (positioner relativt föregående punkt)."}
+  ],
+  m_funktioner: [
+    {q:"Vad kallas kommandon som styr sådant som spindel, kylmedel och verktygsväxling snarare än själva rörelsen?", opts:["M-funktioner (diverse funktioner)", "G-koder", "Sekvensnummer", "Kvadranter"], correct:0, fb:"M-funktioner, eller diverse funktioner, styr maskinens övriga funktioner snarare än själva rörelsebanan."},
+    {q:"Vilken skillnad görs mellan maskinrelaterade och programrelaterade M-funktioner?", opts:["Maskinrelaterade styr t.ex. spindel/kylmedel, programrelaterade styr programflödet som stopp och programslut", "Det finns ingen skillnad", "Maskinrelaterade funktioner finns bara på svarvar", "Programrelaterade funktioner kan aldrig kombineras med G-koder"], correct:0, fb:"Maskinrelaterade funktioner styr t.ex. spindel och kylmedel, medan programrelaterade funktioner styr programflödet (stopp, slut osv.)."},
+    {q:"Vad gör M00?", opts:["Programstopp som kräver manuell återstart", "Startar spindeln medurs", "Slår på kylmedlet", "Anropar ett subprogram"], correct:0, fb:"M00 pausar programmet helt och kräver att operatören manuellt startar det igen."},
+    {q:"Vad är skillnaden mellan M00 och M01?", opts:["M01 (valfritt programstopp) pausar bara om funktionen aktiverats av operatören, M00 pausar alltid", "Ingen skillnad", "M01 stoppar maskinen permanent, M00 gör ingenting", "M00 används bara vid svarvning"], correct:0, fb:"M00 stannar alltid programmet, medan M01 (valfritt programstopp) bara pausar om operatören aktiverat funktionen i förväg."},
+    {q:"Vad gör M03, M04 och M05?", opts:["Styr spindeln: medurs, moturs respektive stopp", "Styr kylmedlet: på, av och spolning", "Anger enhet: mm, inch och grader", "Väljer arbetsplan XY, XZ och YZ"], correct:0, fb:"M03 startar spindeln medurs, M04 moturs, och M05 stoppar spindeln."},
+    {q:"Vilken M-funktion används vanligen för verktygsväxling?", opts:["M06", "M08", "M30", "M99"], correct:0, fb:"M06 används normalt för att initiera verktygsväxling i maskinen."},
+    {q:"Vad styr M08 och M09?", opts:["Kylmedel på och av", "Spindelns rotationsriktning", "Programstart och programslut", "Absolut och inkrementellt läge"], correct:0, fb:"M08 slår på kylmedlet och M09 stänger av det."},
+    {q:"Vad används M98 och M99 till?", opts:["Anrop av subprogram respektive återgång från subprogram", "Att välja arbetsstyckets nollpunkt", "Att ange spindelvarvtal", "Att stänga av hela styrsystemet"], correct:0, fb:"M98 anropar ett subprogram och M99 returnerar körningen till huvudprogrammet (eller upprepar subprogrammet)."},
+    {q:"Vad är skillnaden mellan M02 och M30?", opts:["Båda avslutar programmet, men M30 återställer även programmet till start", "M02 startar programmet, M30 avslutar det", "M02 gäller bara fräsning, M30 bara svarvning", "Ingen skillnad alls"], correct:0, fb:"Både M02 och M30 avslutar programmet, men M30 återställer dessutom programmet till startpunkten för nästa körning."},
+    {q:"Varför används ibland M00 mitt i ett program?", opts:["För att låta operatören kontrollmäta en detalj innan bearbetningen fortsätter", "För att alltid avsluta programmet i förtid av misstag", "Det används aldrig mitt i ett program", "För att byta programnummer"], correct:0, fb:"M00 kan medvetet placeras mitt i programmet för att ge operatören möjlighet att kontrollmäta detaljen innan resten av bearbetningen körs."}
+  ],
+  matt_installningar: [
+    {q:"Vad används sekvensnummer (t.ex. N10, N20) till i ett program?", opts:["Att göra det enklare att hitta och referera till en specifik rad, t.ex. vid felsökning", "Att ange spindelvarvtalet", "Att välja måttenhet", "Att stänga av kylmedlet"], correct:0, fb:"Sekvensnummer gör det enklare att identifiera och referera till specifika rader i programmet, exempelvis vid felsökning eller omstart."},
+    {q:"Varför numreras block ofta i jämna intervall, t.ex. i steg om 10?", opts:["För att kunna lägga in extra block senare utan att behöva numrera om hela programmet", "Det är bara en estetisk vana utan praktisk funktion", "För att styrsystemet kräver exakt tio block per program", "För att det gör programmet kortare"], correct:0, fb:"Genom att numrera i jämna intervall (t.ex. steg om 10) kan man lägga in nya block senare utan att behöva numrera om allt."},
+    {q:"Vad identifierar normalt ett helt CNC-program?", opts:["Ett programnummer och ibland ett programnamn", "Enbart datumet det skrevs", "Enbart operatörens initialer", "Endast maskinens serienummer"], correct:0, fb:"Programmet identifieras normalt med ett programnummer, och ibland även ett programnamn."},
+    {q:"Vad är syftet med ett startblock (säkerhetsblock) i början av ett program?", opts:["Att återställa maskinen till kända, säkra grundinställningar innan bearbetningen börjar", "Att alltid stänga av maskinen direkt", "Att hoppa över hela första delen av bearbetningen", "Att byta programnummer automatiskt"], correct:0, fb:"Startblocket säkerställer att maskinen börjar från kända, säkra grundinställningar, oavsett vilket tillstånd den var i innan."},
+    {q:"Vilken G-kod väljer normalt metriska mått (mm)?", opts:["G21", "G20", "G90", "G91"], correct:0, fb:"G21 väljer metriska mått (millimeter), medan G20 väljer tumindelning (inch)."},
+    {q:"Vad kan hända om fel måttenhet (mm/inch) är vald i ett program?", opts:["Ingenting, det spelar aldrig någon roll", "Måtten kan bli fel med en faktor på ungefär 25, vilket kan orsaka kollisioner eller skadade detaljer", "Maskinen stängs alltid av automatiskt utan skada", "Programmet blir automatiskt korrigerat av styrsystemet"], correct:1, fb:"Fel enhetsval kan ge mått som är fel med en faktor på ungefär 25 (1 inch ≈ 25,4 mm), vilket är en allvarlig risk för kollision."},
+    {q:"Vad innebär absolut läge (G90)?", opts:["Varje position anges som ett koordinatvärde räknat från programmets nollpunkt", "Varje position anges relativt föregående position", "Positioner kan bara anges i tumindelning", "Absolut läge finns bara på svarvar"], correct:0, fb:"I absolut läge (G90) anges varje position som ett koordinatvärde räknat från programmets nollpunkt."},
+    {q:"Vad innebär inkrementellt läge (G91)?", opts:["Varje ny position anges som en förflyttning relativt föregående position", "Varje position anges alltid från maskinens nollpunkt", "Det är samma sak som absolut läge, bara med ett annat namn", "Det kan bara användas för cirkulära rörelser"], correct:0, fb:"I inkrementellt läge (G91) anges varje ny position som en förflyttning relativt den föregående positionen, inte från nollpunkten."},
+    {q:"När kan inkrementellt läge vara praktiskt att använda?", opts:["Vid upprepade, likadana förflyttningar, t.ex. ett rutmönster av hål", "Aldrig, absolut läge ska alltid användas uteslutande", "Bara när maskinen saknar nollpunkt", "Bara vid programstart"], correct:0, fb:"Inkrementellt läge kan vara praktiskt vid upprepade, likadana förflyttningar, till exempel ett rutmönster av hål med samma avstånd mellan varje hål."},
+    {q:"Vad avslutar normalt varje block i ett CNC-program?", opts:["Ett radslutstecken (end of block)", "Ett M30-kommando i varje rad", "Ett nytt programnummer", "En kommentar inom parentes"], correct:0, fb:"Varje block avslutas med ett radslutstecken (end of block) som markerar var blocket tar slut."}
+  ],
+  vad_ar_material: [
+    {q:"Vad kallas de material en produkts detaljer är tillverkade av?", opts:["Konstruktionsmaterial", "Slaggprodukter", "Gråberg", "Halvledare"], correct:0, fb:"Delar i en produkt tillverkas av så kallade konstruktionsmaterial, valda utifrån funktion och ekonomi."},
+    {q:"Vilka två huvudfaktorer styr valet av material till en produkt?", opts:["Funktion och ekonomi", "Färg och doft", "Vikt och doft", "Ålder och form"], correct:0, fb:"Material väljs med tanke på funktion (vad produkten ska användas till) och ekonomi (kostnad för tillverkning och personal)."},
+    {q:"Vad kan hända vid ett felaktigt materialval?", opts:["Materialet överbelastas och går sönder", "Produkten blir alltid billigare", "Inget särskilt, materialval saknar betydelse", "Produkten blir automatiskt starkare"], correct:0, fb:"Ett felaktigt materialval kan leda till att materialet överbelastas och går sönder."},
+    {q:"Vad menas med att 'sätta rätt material på rätt plats'?", opts:["Att välja den bästa kombinationen av olika material eftersom inget material har alla önskvärda egenskaper samtidigt", "Att alltid använda samma material i hela produkten", "Att bara tänka på priset, aldrig på funktionen", "Att aldrig kombinera flera material i samma produkt"], correct:0, fb:"Eftersom inget enskilt material har alla önskvärda egenskaper samtidigt får man välja den bästa kombinationen och sätta rätt material på rätt plats."},
+    {q:"Vilket är INTE en av de önskvärda egenskaperna som nämns för material i en produkt?", opts:["Starka och lätta", "Lämpliga att bearbeta och sammanfoga", "Så dyra som möjligt att köpa in", "Lätta att återanvända vid skrotning"], correct:2, fb:"Ett material bör vara billigt att använda (lågt inköpspris och låg bearbetningskostnad) — inte så dyrt som möjligt."},
+    {q:"Ett typiskt exempel som nämns på en produkt med många olika material är:", opts:["En bil", "En sten", "Ett glas vatten", "Ett träd"], correct:0, fb:"En bil innehåller bland annat aluminium, gummi, plast, stål och tunnplåt, alla valda med tanke på funktion och hållbarhet."},
+    {q:"Vart går den största delen av världens energiförbrukning enligt materialet?", opts:["Till utvinning och förädling av material", "Till belysning i hemmen", "Till matlagning", "Till tillverkning av kläder"], correct:0, fb:"Den största delen av den energi som förbrukas i världen går åt till utvinning och förädling av material."},
+    {q:"Ungefär hur stor andel av energin krävs för att smälta om aluminiumskrot jämfört med att nyframställa aluminium ur bauxit?", opts:["Cirka 5 %", "Cirka 50 %", "Cirka 95 %", "Exakt lika mycket"], correct:0, fb:"Att smälta om aluminiumskrot kräver bara ungefär 5 % av energin som går åt vid nyframställning ur bauxit, vilket gör återvinning mycket energieffektivt."}
+  ],
+  fran_malm_till_metall: [
+    {q:"Vad kallas mineraler som innehåller utvinningsbara metaller?", opts:["Malmer", "Halvledare", "Legeringar", "Isolatorer"], correct:0, fb:"Mineraler som innehåller utvinningsbara metaller kallas malmer."},
+    {q:"Vad kallas det värdelösa material som måste avskiljas från metallen i malmen?", opts:["Gråberg", "Anlöpning", "Martensit", "Perlit"], correct:0, fb:"Metaller förekommer aldrig rena i naturen utan är blandade med gråberg som måste tas bort."},
+    {q:"Vilka två malmer nämns som de viktigaste i Sverige, och vilken metall ger de?", opts:["Svartmalm och blodstensmalm — järn", "Bauxit och kopparkis — aluminium", "Blyglans och guldmalm — bly", "Zinkmalm och nickelmalm — zink"], correct:0, fb:"De viktigaste malmerna i Sverige är svartmalm och blodstensmalm, som ger järn."},
+    {q:"I vilken anläggning befrias järnmalmen från syre så att endast järn (råstål) finns kvar?", opts:["En masugn", "Ett kylskåp", "En pendelhejare", "En dragprovningsmaskin"], correct:0, fb:"I ett järnverk befrias malmen från syre i en masugn, så att endast järn (råstål) finns kvar."},
+    {q:"Vilka egenskaper kännetecknar metaller (jämfört med icke-metaller)?", opts:["Leder elektricitet bra och är glansiga/reflekterar ljus bra", "Leder elektricitet dåligt och är matta", "Är alltid flytande vid rumstemperatur", "Kan aldrig kombineras med andra grundämnen"], correct:0, fb:"Metaller leder elektricitet bra och är glansiga med god ljusreflektion — nästan alla är dessutom fasta vid rumstemperatur (utom kvicksilver)."},
+    {q:"Vad kallas grundämnen som har egenskaper mitt emellan metaller och icke-metaller, t.ex. arsenik och germanium?", opts:["Halvmetaller eller halvledare", "Legeringar", "Malmer", "Tungmetaller"], correct:0, fb:"Grundämnen med egenskaper mitt emellan metaller och icke-metaller kallas halvmetaller eller halvledare."},
+    {q:"Vad är en legering?", opts:["En blandning av en metall med ett eller flera andra grundämnen", "Ett rent grundämne utan tillsatser", "Ett annat namn för gråberg", "En typ av oförstörande provning"], correct:0, fb:"En legering är en blandning av en metall med ett eller flera andra grundämnen, t.ex. stål (järn + kol) eller mässing (koppar + zink)."},
+    {q:"Vilken kromhalt krävs ungefär för att stål ska bli rostfritt?", opts:["Minst 12 %", "Minst 1 %", "Minst 50 %", "Krom påverkar inte rostfrihet"], correct:0, fb:"Minst 12 % krom som legeringsämne gör stålet rostfritt."}
+  ],
+  materialegenskaper: [
+    {q:"Hur beräknas ett materials densitet?", opts:["Vikt dividerat med volym", "Volym dividerat med vikt", "Vikt multiplicerat med temperatur", "Smältpunkt dividerat med hårdhet"], correct:0, fb:"Densitet beräknas som vikt dividerat med volym, uttryckt i t.ex. kg/dm³."},
+    {q:"Vilken gräns skiljer normalt lättmetaller från tungmetaller?", opts:["Lättmetaller under 4,5 kg/dm³, tungmetaller från 6,7 kg/dm³", "Lättmetaller över 10 kg/dm³", "Det finns ingen sådan gräns", "Gränsen sätts av smältpunkten, inte densiteten"], correct:0, fb:"Lättmetaller har densitet under 4,5 kg/dm³, medan tungmetaller har densitet från 6,7 kg/dm³ och uppåt."},
+    {q:"Vad kallas temperaturen då ett material övergår från fast till flytande form?", opts:["Smältpunkt", "Densitet", "Slagseghet", "Korrosionsgräns"], correct:0, fb:"Smältpunkten är temperaturen då materialet smälter och övergår från fast till flytande form."},
+    {q:"Varför är kunskap om värmeutvidgning viktig vid t.ex. svarvning?", opts:["Materialet expanderar när det värms av bearbetningen, vilket kan ge fel mått vid mätning innan det svalnat", "Värmeutvidgning påverkar aldrig mätresultat", "Det gäller bara vid extremt låga temperaturer", "Endast plaster påverkas av värmeutvidgning"], correct:0, fb:"Materialet blir varmt och expanderar under bearbetning, vilket kan ge missvisande mått om man mäter innan det hunnit svalna."},
+    {q:"Vilken metall nämns ha bäst värmeledningsförmåga och därför används i värmeväxlare och kylare?", opts:["Koppar", "Bly", "Plast", "Trä"], correct:0, fb:"Koppar har bäst värmeledningsförmåga bland de vanliga metallerna och används därför i värmeväxlare och kylare."},
+    {q:"Varför används plast ofta som elektrisk isolator?", opts:["Plast är en dålig elektrisk ledare", "Plast leder el bättre än koppar", "Plast har högst densitet av alla material", "Plast smälter aldrig"], correct:0, fb:"Plaster är oftast dåliga elektriska ledare och används därför som isolatorer runt t.ex. elkablar."},
+    {q:"Vad kallas materialets förmåga att motstå angrepp från t.ex. syror och saltvatten?", opts:["Korrosionsmotstånd", "Slitstyrka", "Densitet", "Smältintervall"], correct:0, fb:"Korrosionsmotstånd är materialets förmåga att motstå miljöpåverkan som syror, alkalier och saltvatten."},
+    {q:"Vad beskriver begreppet slitstyrka?", opts:["Materialets motstånd mot nötning när ytor gnids mot varandra", "Materialets förmåga att leda värme", "Materialets vikt per volymenhet", "Materialets färg efter bearbetning"], correct:0, fb:"Slitstyrka beskriver hur väl materialytan står emot nötning, till exempel när grus ligger på ett lastbilsflak."}
+  ],
+  materialprovning: [
+    {q:"Vilka tre värden får man vanligen fram ur en dragprovning?", opts:["Sträckgräns, brottgräns och brottförlängning", "Densitet, smältpunkt och hårdhet", "Färg, doft och ljud", "Kolhalt, kromhalt och nickelhalt"], correct:0, fb:"Dragprovning ger sträckgräns, brottgräns och brottförlängning — grundläggande hållfasthetsbegrepp."},
+    {q:"Vad kallas den belastning materialet tål utan att få en bestående formförändring?", opts:["Sträckgräns", "Brottgräns", "Brottförlängning", "Utmattningsgräns"], correct:0, fb:"Sträckgränsen är den belastning materialet tål utan kvarstående formförändring — provbiten återgår till sin ursprungliga form efteråt."},
+    {q:"Vad mäter en slagprovning?", opts:["Materialets slagseghet, dvs. förmåga att stå emot slag utan att brista", "Materialets densitet", "Materialets färgkod", "Materialets smältpunkt"], correct:0, fb:"Slagprovning mäter slagsegheten — materialets förmåga att motstå slag utan att brista."},
+    {q:"Vad avslöjar en utmattningsprovning?", opts:["Hur materialet klarar upprepad, växlande belastning över tid", "Materialets täthet", "Materialets ytfärg", "Materialets elektriska ledningsförmåga"], correct:0, fb:"Utmattningsprovning visar hur materialet klarar upprepad växlande belastning, även vid belastningar under brottgränsen."},
+    {q:"Vad studeras vid mikroskopering av ett material?", opts:["Kornstorlek, utskiljningar och mikrosprickor", "Materialets pris", "Materialets ljudnivå", "Materialets doft"], correct:0, fb:"Vid mikroskopering studeras materialets struktur — kornstorlek, utskiljningar och mikrosprickor — i kraftig förstoring."},
+    {q:"Vilka metoder nämns för hårdhetsprovning?", opts:["Brinell-, Rockwell- och Vickersprovning", "Radiografi, ultraljud och magnetpulver", "Dragprovning och slagprovning", "Penetrantprovning och mikroskopering"], correct:0, fb:"De vanligaste hårdhetsprovningsmetoderna är Brinell-, Rockwell- och Vickersprovning."},
+    {q:"Vad kännetecknar oförstörande provningsmetoder?", opts:["Detaljen förblir hel och kan användas efter provningen", "Provstaven förstörs alltid", "De kan bara användas på plast", "De kräver alltid att materialet smälts"], correct:0, fb:"Oförstörande provning låter detaljen förbli hel — man letar efter dolda fel utan att förstöra materialet."},
+    {q:"Hur upptäcks sprickor vid magnetpulverprovning?", opts:["Sprickor stör magnetfältet och drar till sig järnpulver, vilket syns som mörka ränder", "Sprickor lyser upp i mörker", "Sprickor ändrar materialets färg permanent", "Sprickor gör att materialet blir magnetiskt kallt"], correct:0, fb:"Vid magnetpulverprovning stör sprickor magnetfältet och drar till sig järnpulver, vilket gör sprickorna synliga som mörka ränder."}
+  ],
+  materialstandard: [
+    {q:"Vad är huvudsyftet med standardisering enligt materialet?", opts:["Att skapa regler för att lösa återkommande, gemensamma tekniska och ekonomiska problem", "Att göra alla produkter likadana i utseende", "Att öka priset på material", "Att minska antalet leverantörer till exakt en"], correct:0, fb:"Standardisering skapar regler för att lösa återkommande tekniska och ekonomiska problem, t.ex. genom att definiera begrepp och säkerställa utbytbarhet."},
+    {q:"Vilken standardbeteckning används för internationell standard?", opts:["ISO", "EN", "SS", "DIN"], correct:0, fb:"ISO (International Organization for Standardization) är beteckningen för internationell standard."},
+    {q:"Vilken organisation utför standardiseringsarbetet för europeisk standard (EN)?", opts:["CEN i Bryssel", "SIS i Sverige", "FN", "Arbetsmiljöverket"], correct:0, fb:"CEN i Bryssel utför standardiseringsarbetet i Europa och består av de nationella standardiseringsorganen inom EU/EFTA-länderna."},
+    {q:"Vilken organisation ansvarar för svensk metallstandard (SS)?", opts:["SIS, Swedish Standards Institute", "CEN", "ISO centralt", "Arbetsmiljöverket"], correct:0, fb:"SIS (Swedish Standards Institute) utarbetar och fastställer svensk metallstandard, samt bevakar arbetet inom CEN och ISO för Sveriges räkning."},
+    {q:"Vad betyder beteckningen S235JR ungefär, enligt stålbeteckningssystemet EN 10027 grupp 1?", opts:["Ett allmänt konstruktionsstål med minsta sträckgräns 235 MPa", "Ett rostfritt stål med 23,5 % krom", "Ett gjutjärn med 235 % kolhalt", "Ett verktygsstål härdat vid 235 grader"], correct:0, fb:"S anger allmänt konstruktionsstål och talet 235 anger minsta sträckgräns i MPa (N/mm²)."},
+    {q:"Vad grundas beteckningarna i grupp 2 av stålstandarden på?", opts:["Stålets kemiska sammansättning", "Enbart färgen på stålet", "Endast tillverkningsdatumet", "Endast leverantörens namn"], correct:0, fb:"Grupp 2-beteckningar (t.ex. C35E) grundas på stålets kemiska sammansättning, till skillnad från grupp 1 som grundas på användningsområde och hållfasthet."},
+    {q:"Vilken beteckning används i Europastandarden för rostfria stål?", opts:["1.4xxx", "S2xx", "C3xE", "G P24x"], correct:0, fb:"Rostfria stål har i Europastandarden beteckningen 1.4xxx, där x representerar en siffra."},
+    {q:"Varför är färgmärkning av material viktig i en verkstad?", opts:["Den underlättar för operatörer att välja rätt materialkvalitet och undvika sammanblandning", "Den avgör materialets pris automatiskt", "Den ersätter behovet av ritningar helt", "Den har enbart en dekorativ funktion"], correct:0, fb:"Färgmärkning gör det lättare att snabbt identifiera rätt materialkvalitet och undvika att t.ex. blanda samman olika stålsorter."}
+  ],
+  metalliska_material: [
+    {q:"Vilket grundämne, förutom järn, är det vanligaste och viktigaste legeringsämnet i stål?", opts:["Kol", "Syre", "Kväve", "Väte"], correct:0, fb:"Kol är det vanligaste och viktigaste legeringsämnet i stål, oftast i halter under 2 %."},
+    {q:"Vilka tre huvudgrupper delas stål ofta in i efter användningsområde?", opts:["Konstruktionsstål, verktygsstål och rostfria stål", "Gråjärn, segjärn och vitjärn", "Hårdmetall, snabbstål och pulverstål", "Malm, gråberg och legering"], correct:0, fb:"Stål delas efter användningsområde in i konstruktionsstål, verktygsstål och rostfria stål."},
+    {q:"Vilken egenskap är särskilt viktig hos konstruktionsstål?", opts:["God svetsbarhet, tack vare relativt låg kolhalt", "Extremt hög kolhalt för maximal hårdhet", "Total avsaknad av kol", "Endast hög densitet, inget annat"], correct:0, fb:"Konstruktionsstål har relativt låg kolhalt, vilket ger god svetsbarhet — viktigt för bärande konstruktioner."},
+    {q:"Vad är syftet med härdning av stål?", opts:["Att öka hårdheten väsentligt genom snabb avkylning från hög temperatur", "Att göra stålet mjukare", "Att sänka stålets smältpunkt permanent", "Att ta bort allt kol ur stålet"], correct:0, fb:"Härdning innebär snabb avkylning (t.ex. i vatten, olja eller gas) från hög temperatur, vilket ger en hård men spröd struktur."},
+    {q:"Vad görs alltid efter en härdning, för att minska sprödheten?", opts:["Anlöpning", "Ytterligare härdning", "Smältning", "Malmbrytning"], correct:0, fb:"Efter härdning anlöps stålet — det värms upp till en lägre temperatur för att minska sprödheten och öka segheten."},
+    {q:"Vad används glödgning till?", opts:["Att göra stålet mjukt eller återställa strukturen efter bearbetning", "Att göra stålet hårdare än efter härdning", "Att öka stålets kolhalt permanent", "Att smälta ner stål till flytande form för gjutning"], correct:0, fb:"Glödgning används för att göra stålet mjukt eller återställa den inre strukturen efter felaktig bearbetning eller värmebehandling."},
+    {q:"Vilket gjutjärn är vanligast och har god dämpningsförmåga mot vibrationer?", opts:["Gråjärn", "Segjärn", "Aducerjärn", "Vitjärn"], correct:0, fb:"Gråjärn är det vanligaste gjutjärnet och har god dämpningsförmåga mot vibrationer och buller."},
+    {q:"Vad kännetecknar hårdmetall respektive snabbstål (HSS)?", opts:["Hårdmetall är metallkarbider bundna med kobolt/nickel, snabbstål behåller sin hårdhet upp till 600 °C — båda används i skärverktyg", "De är två namn för exakt samma material", "Hårdmetall används enbart i fordonsdäck", "Snabbstål kan aldrig användas till fräsar eller borrar"], correct:0, fb:"Hårdmetall består av metallkarbider bundna med kobolt eller nickel, medan snabbstål (HSS) behåller sin hårdhet vid höga temperaturer — båda är material som används i skärande verktyg, inte egna materialgrupper."}
+  ],
+  materialbeteckningar: [
+    {q:"I beteckningen EN AW-6082 [AlSiMgMn] T6, vad betyder bokstaven W?", opts:["Plastiskt bearbetad (Wrought)", "Gjuten (Wet cast)", "Svetsad (Welded)", "Vägd (Weighed)"], correct:0, fb:"W står för Wrought, det vill säga plastiskt bearbetad — till skillnad från gjutna produkter."},
+    {q:"Vad anger tillståndsbeteckningen T6 i en aluminiumbeteckning?", opts:["Att materialet är lösningsglödgat och konstgjort åldrat", "Att materialet är gjutet i sex delar", "Att materialet innehåller 6 % titan", "Att materialet är sexkantigt i tvärsnitt"], correct:0, fb:"T6 är en tillståndsbeteckning enligt EN 515 som visar att materialet lösningsglödgats och därefter konstgjort åldrats för att uppnå sina slutliga egenskaper."},
+    {q:"Vilken bokstav inleder alla kopparlegeringars EN-beteckning (t.ex. CW024A)?", opts:["C", "K", "Cu", "A"], correct:0, fb:"Bokstaven C står först och anger kopparlegering; W som följer visar att materialet är plastiskt bearbetat."},
+    {q:"Vad står förkortningen GJL för i en gjutjärnsbeteckning som EN-GJL-250?", opts:["Grått gjutjärn med lamellgrafit", "Glödgat järn, legerat", "Gjutet, järnfritt, lätt", "Gjutstål med lågt kolinnehåll"], correct:0, fb:"GJL står för gjutjärn med lamellgrafit (gråjärn); talet 250 anger lägsta brottgräns i MPa."},
+    {q:"Ungefär vilken smältpunkt har rent järn?", opts:["Cirka 1 538 °C", "Cirka 660 °C", "Cirka 232 °C", "Cirka 3 400 °C"], correct:0, fb:"Rent järn smälter vid cirka 1 538 °C, vilket är betydligt högre än t.ex. aluminium (658 °C) eller koppar (1 083 °C)."},
+    {q:"Varför smälter legerat stål oftast vid en lägre temperatur än rent järn?", opts:["Legeringsämnen som kol sänker smältpunkten och ger ett smältintervall", "Legerat stål innehåller inget järn alls", "Det är faktiskt tvärtom — legerat stål smälter alltid vid högre temperatur", "Smältpunkten påverkas aldrig av legeringsämnen"], correct:0, fb:"Legeringsämnen som kol sänker smältpunkten jämfört med rent järn, och legeringar smälter ofta över ett temperaturintervall i stället för vid en exakt punkt."},
+    {q:"Varför följer plaster inte samma EN-beteckningssystem (prefix, bokstav, lagringsnummer, tillståndsbeteckning) som metaller?", opts:["Plaster är inte metallegeringar och betecknas i stället med korta bokstavskoder enligt ISO 1043", "Plaster saknar helt standardiserade beteckningar", "Plaster använder exakt samma EN-nummersystem som aluminium", "Plaster betecknas alltid med romerska siffror"], correct:0, fb:"Plaster är inte metallegeringar, så de följer ett annat system (ISO 1043) med korta bokstavsförkortningar som PE, PA eller POM i stället för EN:s legeringsnummer."}
+  ],
+  handverktyg_matdon: [
+    {q:"Vad heter 'Skjutmått' på engelska?", opts:["Callipers", "Micrometer", "Dial gauge", "Reamer"], correct:0, fb:"Skjutmått heter Callipers på engelska."},
+    {q:"Vad heter 'Mikrometer' på engelska?", opts:["Micrometer", "Dial gauge", "Angle gauge", "Callipers"], correct:0, fb:"Mikrometer heter Micrometer på engelska — samma ord som på svenska, med engelsk stavning."},
+    {q:"Vilket svenskt verktyg motsvarar engelskans 'Allen wrench'?", opts:["Insexnyckel", "Ringnyckel", "Skiftnyckel", "Fast nyckel"], correct:0, fb:"Allen wrench är den engelska benämningen på en insexnyckel."},
+    {q:"Vilket svenskt verktyg motsvarar engelskans 'Adjustable wrench'?", opts:["Skiftnyckel", "Insexnyckel", "Ringnyckel", "Fast nyckel"], correct:0, fb:"Adjustable wrench motsvarar skiftnyckel på svenska."},
+    {q:"Vad heter 'Körnare' på engelska?", opts:["Centre punch", "Centre drill", "Live center", "Dial gauge"], correct:0, fb:"Körnare heter Centre punch på engelska, och används för att märka ut en exakt punkt innan borrning."},
+    {q:"Vilket svenskt verktyg motsvarar engelskans 'Box wrench'?", opts:["Fast nyckel", "Ringnyckel", "Skiftnyckel", "Insexnyckel"], correct:0, fb:"Box wrench motsvarar fast nyckel på svenska."},
+    {q:"Vilket svenskt verktyg motsvarar engelskans 'Box spanner'?", opts:["Ringnyckel", "Fast nyckel", "Skiftnyckel", "Insexnyckel"], correct:0, fb:"Box spanner motsvarar ringnyckel på svenska."},
+    {q:"Vad heter 'Roterande dubb' på engelska?", opts:["Live center", "Turning centre", "Angle gauge", "Knurling Tool"], correct:0, fb:"Roterande dubb heter Live center på engelska — den roterar tillsammans med arbetsstycket."},
+    {q:"Vad heter 'Svarvdubb' på engelska?", opts:["Turning centre", "Live center", "Dial gauge", "Callipers"], correct:0, fb:"Svarvdubb heter Turning centre på engelska."},
+    {q:"Vad heter 'Vinkelmätare' på engelska?", opts:["Angle gauge", "Dial gauge", "Dial test indicator", "Reamer"], correct:0, fb:"Vinkelmätare heter Angle gauge på engelska."},
+    {q:"Vad heter 'Mätklocka' på engelska?", opts:["Dial gauge", "Angle gauge", "Callipers", "Micrometer"], correct:0, fb:"Mätklocka heter Dial gauge på engelska."},
+    {q:"Vad heter 'Vippindikator' på engelska?", opts:["Dial test indicator", "Dial gauge", "Angle gauge", "Live center"], correct:0, fb:"Vippindikator heter Dial test indicator på engelska."},
+    {q:"Vad heter 'Lettringsgaffel' på engelska?", opts:["Knurling Tool", "Reamer", "Chamfermill", "Centre drill"], correct:0, fb:"Lettringsgaffel heter Knurling Tool på engelska, och används för att rulla in ett räfflat mönster på en yta."}
+  ],
+  skarande_verktyg: [
+    {q:"Vad heter 'Pinnfräs' på engelska?", opts:["Endmill", "Facemill", "Shouldermill", "Chamfermill"], correct:0, fb:"Pinnfräs heter Endmill på engelska."},
+    {q:"Vad heter 'Planfräs' på engelska?", opts:["Facemill", "Endmill", "Reamer", "Centre drill"], correct:0, fb:"Planfräs heter Facemill på engelska."},
+    {q:"Vad heter 'Hörnfräs' på engelska?", opts:["Shouldermill", "Facemill", "Endmill", "Chamfermill"], correct:0, fb:"Hörnfräs heter Shouldermill på engelska."},
+    {q:"Vad heter 'Dubbhålsborr' på engelska?", opts:["Centre drill", "Reamer", "Centre punch", "Live center"], correct:0, fb:"Dubbhålsborr heter Centre drill på engelska, och används för att förborra ett hål inför exempelvis svarvdubb."},
+    {q:"Vilket svenskt verktyg motsvarar engelskans 'Reamer'?", opts:["Brotch", "Fasfräs", "Planfräs", "Insexnyckel"], correct:0, fb:"Reamer motsvarar brotch på svenska, ett verktyg för att finbearbeta hål till exakt mått."},
+    {q:"Vad heter 'Fasfräs' på engelska?", opts:["Chamfermill", "Facemill", "Shouldermill", "Endmill"], correct:0, fb:"Fasfräs heter Chamfermill på engelska, och används för att bryta kanter (fasa)."},
+    {q:"Vilket av dessa verktyg används för att finbearbeta ett hål till exakt mått och god ytfinhet?", opts:["Brotch (Reamer)", "Fasfräs (Chamfermill)", "Skiftnyckel (Adjustable wrench)", "Mätklocka (Dial gauge)"], correct:0, fb:"Brotch (engelska: Reamer) används för att finbearbeta ett redan förborrat hål till exakt mått och god ytfinhet."},
+    {q:"Vilket av dessa verktyg används typiskt för att fräsa en plan yta på ett arbetsstycke?", opts:["Planfräs (Facemill)", "Dubbhålsborr (Centre drill)", "Vinkelmätare (Angle gauge)", "Lettringsgaffel (Knurling Tool)"], correct:0, fb:"Planfräs (engelska: Facemill) används typiskt för att fräsa fram en plan, jämn yta på arbetsstycket."}
+  ]
+};
+
+const CATS = [{id:"all", label:"Alla frågor"}].concat(
+  Object.keys(CAT_META).map(id => ({id, label: CAT_META[id].label}))
+);
+
+let currentCat = "all";
+let order = [];
+let idx = 0;
+let answered = false;
+let score = 0;
+let history = [];
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function shuffleOptions(item){
+  const pairs = item.opts.map((o, i) => ({ text: o, wasCorrect: i === item.correct }));
+  const shuffled = shuffle(pairs);
+  const newOpts = shuffled.map(p => p.text);
+  const newCorrect = shuffled.findIndex(p => p.wasCorrect);
+  return { ...item, opts: newOpts, correct: newCorrect };
+}
+
+function buildOrder(cat){
+  let items = [];
+  if(cat === "all"){
+    Object.keys(QUESTIONS).forEach(k => QUESTIONS[k].forEach(q => items.push({...q, cat:k})));
+  } else {
+    QUESTIONS[cat].forEach(q => items.push({...q, cat}));
+  }
+  items = shuffle(items).map(shuffleOptions);
+  return items.slice(0, Math.min(QUIZ_LENGTH, items.length));
+}
+
+function totalPoolSize(){
+  return Object.values(QUESTIONS).reduce((sum, arr) => sum + arr.length, 0);
+}
+
+function updatePoolNote(){
+  const note = document.getElementById('poolNote');
+  const poolSize = currentCat === "all" ? totalPoolSize() : QUESTIONS[currentCat].length;
+  const drawn = Math.min(QUIZ_LENGTH, poolSize);
+  note.textContent = `Frågebank: ${poolSize} frågor · ${drawn} slumpas ut denna omgång`;
+}
+
+function renderTabs(){
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = '';
+  CATS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.textContent = c.label;
+    btn.dataset.active = (c.id === currentCat) ? "true" : "false";
+    btn.onclick = () => { currentCat = c.id; startQuiz(); };
+    tabs.appendChild(btn);
+  });
+}
+
+function startQuiz(){
+  order = buildOrder(currentCat);
+  idx = 0; score = 0; history = [];
+  renderTabs();
+  updatePoolNote();
+  renderQuestion();
+}
+
+function updateProgress(){
+  const fill = document.getElementById('progressFill');
+  const label = document.getElementById('progressLabel');
+  const pct = order.length ? (idx/order.length)*100 : 0;
+  fill.style.width = pct + '%';
+  label.textContent = Math.min(idx+1, order.length) + ' / ' + order.length;
+}
+
+function renderQuestion(){
+  answered = false;
+  updateProgress();
+  const card = document.getElementById('card');
+  if(idx >= order.length){
+    renderResult();
+    return;
+  }
+  const item = order[idx];
+  const meta = CAT_META[item.cat];
+
+  const optHtml = item.opts.map((o,i) => {
+    const key = String.fromCharCode(65+i);
+    return `<button class="opt" data-i="${i}"><span class="k">${key}</span><span>${o}</span></button>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="qmeta">
+      <span class="qtag" style="background:${meta.bg}; color:${meta.color};">${meta.label}</span>
+      <span class="qnum">Fråga ${idx+1} av ${order.length}</span>
+    </div>
+    <div class="prompt">${item.q}</div>
+    <div class="options">${optHtml}</div>
+    <div class="feedback" id="feedback"></div>
+    <div class="controls"><button class="next" id="nextBtn" disabled>Nästa</button></div>
+  `;
+
+  card.querySelectorAll('.opt').forEach(btn => {
+    btn.addEventListener('click', () => selectAnswer(parseInt(btn.dataset.i)));
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    idx++;
+    renderQuestion();
+  });
+}
+
+function selectAnswer(i){
+  if(answered) return;
+  answered = true;
+  const item = order[idx];
+  const correct = item.correct;
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach((btn, bi) => {
+    btn.setAttribute('disabled','true');
+    if(bi === correct) btn.classList.add('correct');
+    if(bi === i && i !== correct) btn.classList.add('wrong');
+  });
+  const isCorrect = (i === correct);
+  if(isCorrect) score++;
+  history.push({q:item.q, correct:isCorrect, correctText:item.opts[correct], fb:item.fb});
+
+  const fb = document.getElementById('feedback');
+  fb.classList.add('show', isCorrect ? 'ok' : 'bad');
+  fb.innerHTML = `<b>${isCorrect ? 'Rätt!' : 'Inte riktigt.'}</b>${item.fb}`;
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function renderResult(){
+  const card = document.getElementById('card');
+  const pct = order.length ? Math.round((score/order.length)*100) : 0;
+  const reviewHtml = history.map(h => `
+    <div class="review-item ${h.correct ? 'ok' : 'bad'}">
+      <div class="q">${h.q}</div>
+      <div class="a">${h.correct ? 'Du svarade rätt.' : 'Rätt svar: ' + h.correctText}</div>
+    </div>
+  `).join('');
+
+  card.innerHTML = `
+    <div class="result">
+      <div class="big">${score} / ${order.length}</div>
+      <div class="of">${pct}% rätt</div>
+      <button class="restart" id="restartBtn">Kör igen (nya slumpade frågor)</button>
+      <div class="review">${reviewHtml}</div>
+    </div>
+  `;
+  document.getElementById('restartBtn').addEventListener('click', startQuiz);
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressLabel').textContent = order.length + ' / ' + order.length;
+}
+
+startQuiz();
+</script>
+<script src="../../assets/site.js"></script>
+</body>
+</html>

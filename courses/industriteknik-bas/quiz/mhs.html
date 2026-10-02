@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miljö, Hälsa & Säkerhet — Quiz | Industriteknik BAS</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+
+  /* --- top nav --- */
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{
+    width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto;
+  }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{
+    content:""; position:absolute; background:var(--amber);
+  }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+
+  /* --- dimension-line divider (signature element) --- */
+  .dim{
+    display:flex; align-items:center; gap:10px; margin:38px 0 26px; color:var(--muted);
+    font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace; font-size:11.5px;
+    letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+  }
+  .dim::before, .dim::after{ content:""; flex:1; height:1px; background:var(--line);
+    background-image: linear-gradient(90deg, var(--line) 0, var(--line) 100%);
+    position:relative;
+  }
+  .dim .tick{position:relative;}
+  .dim-line{flex:1; height:1px; background:var(--line); position:relative;}
+  .dim-line::before{content:"";position:absolute; left:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim-line::after{content:"";position:absolute; right:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim .label{padding:2px 4px; flex:0 0 auto;}
+
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  h1 .accent{color:var(--amber);}
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+
+  /* --- subject grid / title-block cards --- */
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px; margin-top:30px;}
+  .tblock{
+    border:1px solid var(--line); border-radius:4px; background:var(--panel);
+    position:relative; overflow:hidden; display:flex; flex-direction:column;
+    transition:.18s; text-decoration:none; color:var(--text);
+  }
+  .tblock::before{ /* corner registration marks */
+    content:""; position:absolute; top:8px; left:8px; width:9px; height:9px;
+    border-top:1.5px solid var(--accent,var(--amber)); border-left:1.5px solid var(--accent,var(--amber));
+    opacity:.9;
+  }
+  .tblock::after{
+    content:""; position:absolute; bottom:8px; right:8px; width:9px; height:9px;
+    border-bottom:1.5px solid var(--accent,var(--amber)); border-right:1.5px solid var(--accent,var(--amber));
+    opacity:.9;
+  }
+  .tblock:hover{border-color:var(--accent,var(--amber)); transform:translateY(-2px); box-shadow:0 16px 30px -18px rgba(0,0,0,.7);}
+  .tblock .tb-top{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 18px; border-bottom:1px solid var(--line);
+    font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; letter-spacing:.06em; color:var(--muted);
+  }
+  .tblock .tb-top .code{color:var(--accent,var(--amber)); font-weight:700;}
+  .tblock .tb-body{padding:16px 18px 6px; flex:1;}
+  .tblock h3{margin:0 0 8px; font-family:"Arial Narrow",Arial,sans-serif; font-size:21px; font-weight:800; letter-spacing:-.01em;}
+  .tblock p{margin:0; color:var(--muted); font-size:13.6px; line-height:1.55;}
+  .tblock .tb-bottom{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:13px 18px; margin-top:14px; border-top:1px solid var(--line);
+    font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; color:var(--muted);
+  }
+  .tblock .tb-bottom .qn{color:var(--accent,var(--amber)); font-weight:700;}
+  .pillrow{display:flex; gap:8px; padding:0 18px 16px;}
+  .pill{
+    flex:1; text-align:center; padding:9px 6px; border-radius:5px; border:1px solid var(--line);
+    font-size:12.5px; font-weight:700; text-decoration:none; color:var(--text); transition:.15s;
+    background:var(--panel-2);
+  }
+  .pill:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+  .pill.solid{background:var(--accent,var(--amber)); border-color:var(--accent,var(--amber)); color:#0f1115;}
+  .pill.solid:hover{filter:brightness(1.08); color:#0f1115;}
+
+  /* --- master card (combined quiz) --- */
+  .master{
+    margin-top:34px; border:1px solid var(--line); border-radius:6px;
+    background:linear-gradient(135deg, #1c232b, #171e25);
+    padding:26px 26px 22px; position:relative; overflow:hidden;
+  }
+  .master::before{
+    content:""; position:absolute; inset:0; opacity:.5; pointer-events:none;
+    background-image: repeating-linear-gradient(135deg, rgba(255,138,43,.05) 0 2px, transparent 2px 14px);
+  }
+  .master .mtitle{font-family:"Arial Narrow",Arial,sans-serif; font-weight:800; font-size:23px; margin:2px 0 6px;}
+  .master p{color:var(--muted); font-size:14px; max-width:56ch; line-height:1.6; margin:0 0 16px;}
+
+  /* --- buttons --- */
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+
+  /* --- reading material page --- */
+  article.reading h2{
+    font-family:"Arial Narrow",Arial,sans-serif; font-size:24px; font-weight:800; letter-spacing:-.005em;
+    margin:36px 0 12px; padding-top:4px; color:var(--text);
+  }
+  article.reading h2 .num{color:var(--accent,var(--amber)); margin-right:8px; font-family:"IBM Plex Mono",monospace; font-size:16px;}
+  article.reading h3{
+    font-size:16.5px; font-weight:700; margin:22px 0 8px; color:var(--accent,var(--amber));
+  }
+  article.reading p{color:#c9d2d9; font-size:15px; line-height:1.72; margin:0 0 14px;}
+  article.reading ul{margin:0 0 16px; padding-left:0; list-style:none;}
+  article.reading ul li{
+    position:relative; padding-left:20px; margin-bottom:8px; color:#c9d2d9; font-size:14.6px; line-height:1.6;
+  }
+  article.reading ul li::before{
+    content:""; position:absolute; left:0; top:9px; width:7px; height:2px; background:var(--accent,var(--amber));
+  }
+  article.reading strong{color:var(--text);}
+  .callout{
+    border-left:3px solid var(--accent,var(--amber)); background:var(--panel);
+    padding:13px 16px; margin:18px 0; border-radius:0 6px 6px 0; font-size:14.2px; color:#dfe6ea; line-height:1.6;
+  }
+  .callout b{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent,var(--amber)); margin-bottom:4px; font-family:"IBM Plex Mono",monospace;}
+  .lawbox{
+    margin:20px 0; padding:16px 18px; border:1px dashed var(--line); border-radius:6px;
+    font-style:italic; color:var(--text); font-size:15px; background:var(--bg2);
+  }
+  .lawbox b{font-style:normal; display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:6px; font-family:"IBM Plex Mono",monospace;}
+  .toc{
+    display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 6px;
+  }
+  .toc a{
+    font-size:12.5px; padding:6px 11px; border:1px solid var(--line); border-radius:999px;
+    text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;
+  }
+  .toc a:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+
+  .footcta{
+    margin-top:48px; border-top:1px solid var(--line); padding-top:26px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .footcta .ft-txt{font-size:13.5px; color:var(--muted); max-width:44ch;}
+
+  footer.sitefoot{text-align:center; color:var(--muted); font-size:12px; margin-top:50px; padding-bottom:10px;}
+
+  @media (max-width:640px){
+    .topnav nav{gap:12px; font-size:12px;}
+    .master{padding:20px;}
+  }
+
+  /* --- shared topbar / crumbs (site-wide course switcher) --- */
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+
+<style>
+  .progress-row{display:flex; align-items:center; gap:10px; margin:24px 0 20px;}
+  .progress-track{flex:1; height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden;}
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--page-accent), var(--green)); width:0%; transition:width .25s;}
+  .progress-label{font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap; font-family:"IBM Plex Mono",monospace;}
+  .card{
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid var(--line); border-radius:14px; padding:26px 24px;
+    box-shadow: 0 20px 40px -25px rgba(0,0,0,.6);
+  }
+  .qmeta{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;}
+  .qtag{font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; font-weight:700; padding:4px 9px; border-radius:6px;}
+  .qnum{color:var(--muted); font-size:13px; font-family:"IBM Plex Mono",monospace;}
+  .prompt{font-size:18.5px; font-weight:600; line-height:1.4; margin-bottom:18px;}
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .opt{
+    text-align:left; padding:13px 15px; border-radius:10px; border:1px solid var(--line);
+    background:#161d24; color:var(--text); font-size:15px; cursor:pointer; transition:.12s;
+    display:flex; gap:10px; align-items:flex-start; width:100%;
+  }
+  .opt:hover:not([disabled]){border-color:var(--page-accent); background:#1a222b;}
+  .opt .k{
+    flex:0 0 auto; width:22px; height:22px; border-radius:6px; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--muted); font-weight:700;
+  }
+  .opt[disabled]{cursor:default;}
+  .opt.correct{border-color:var(--green); background:var(--green-dim);}
+  .opt.correct .k{border-color:var(--green); color:var(--green); background:#122a1a;}
+  .opt.wrong{border-color:var(--red); background:var(--red-dim);}
+  .opt.wrong .k{border-color:var(--red); color:var(--red); background:#2a1513;}
+  .feedback{margin-top:16px; padding:14px 16px; border-radius:10px; font-size:14.5px; line-height:1.5; display:none;}
+  .feedback.show{display:block;}
+  .feedback.ok{background:var(--green-dim); border:1px solid #2f6b47; color:#cdeed9;}
+  .feedback.bad{background:var(--red-dim); border:1px solid #7a3833; color:#f3d2ce;}
+  .feedback b{display:block; margin-bottom:3px; font-size:13px; text-transform:uppercase; letter-spacing:.06em;}
+  .controls{display:flex; justify-content:flex-end; margin-top:20px;}
+  button.next{
+    background:var(--page-accent); color:#12161b; border:none; padding:11px 22px;
+    border-radius:9px; font-weight:700; font-size:14.5px; cursor:pointer;
+  }
+  button.next:disabled{background:var(--panel-2); color:var(--muted); cursor:not-allowed;}
+  button.next:hover:not(:disabled){filter:brightness(1.08);}
+  .result{text-align:center; padding:20px 10px 10px;}
+  .result .big{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; font-size:56px; line-height:1;}
+  .result .of{color:var(--muted); font-size:15px; margin-top:6px;}
+  .review{margin-top:26px; text-align:left; display:flex; flex-direction:column; gap:10px;}
+  .review-item{border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-size:14px;}
+  .review-item.ok{border-left:3px solid var(--green);}
+  .review-item.bad{border-left:3px solid var(--red);}
+  .review-item .q{font-weight:600; margin-bottom:4px;}
+  .review-item .a{color:var(--muted);}
+  .restart{
+    margin-top:24px; background:none; border:1px solid var(--line); color:var(--text);
+    padding:10px 20px; border-radius:9px; cursor:pointer; font-size:14px; font-weight:600;
+  }
+  .restart:hover{border-color:var(--page-accent); color:var(--page-accent);}
+  .pool-note{margin-top:10px; font-size:13px; color:var(--page-accent); font-weight:600;
+    background:var(--page-dim); display:inline-block; padding:5px 12px; border-radius:8px;
+    font-family:"IBM Plex Mono",monospace;}
+</style>
+<style>:root{--page-accent:#4fa571; --page-dim:#1f3d2b;}
+  :root[data-theme="light"]{
+    --page-accent: #2f8a52;
+  }</style>
+
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="../material.html"><span class="mark"></span>INDUSTRITEKNIK BAS</a>
+  <nav>
+    <a href="../material.html">Kursmaterial</a>
+    <a href="../quiz-alla.html">Storquiz (657)</a>
+  </nav>
+</div>
+
+<main class="wrap narrow">
+  <header class="hero">
+    <div class="eyebrow">MTL-02 · Quiz</div>
+    <h1>Miljö, Hälsa & Säkerhet</h1>
+    <div class="sub">Öva på frågor från <a href="../material/mhs.html" style="color:var(--page-accent); font-weight:600;">läsmaterialet om miljö, hälsa & säkerhet</a>. Frågorna och svarsalternativen slumpas varje omgång.</div>
+    <div class="pool-note" id="poolNote"></div>
+  </header>
+
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 0</div>
+  </div>
+
+  <div class="card" id="card"></div>
+
+  <div class="footcta">
+    <div class="ft-txt">Svara i din egen takt — resultatet sparas inte och skickas ingenstans.</div>
+    <a class="btn btn-ghost" href="../material.html">&larr; Alla ämnen</a>
+  </div>
+</main>
+
+<script>
+const CAT_ID = "mhs";
+const CAT_LABEL = "Miljö, Hälsa & Säkerhet";
+const QUESTIONS = [
+    {q:"Vad menas med akut påverkan av ett miljögift?", opts:["Man får i sig mycket gift på kort tid, blir sjuk men frisk igen", "Man får i sig lite gift under lång tid och blir aldrig frisk", "Man aldrig påverkas av gifter", "Endast djur påverkas, inte människor"], correct:0, fb:"Akut påverkan innebär att man får i sig mycket gift på kort tid, blir sjuk men blir frisk igen efteråt."},
+    {q:"Vad menas med kronisk påverkan av ett miljögift?", opts:["Man får i sig lite gift under lång tid, och giftet stannar i kroppen och skadar en och ens barn", "Man blir omedelbart frisk igen", "Det gäller bara utsläpp i vatten", "Det är samma sak som akut påverkan"], correct:0, fb:"Kronisk påverkan innebär att man får i sig lite gift under lång tid; giftet stannar kvar och skadar både en själv och kommande generationer."},
+    {q:"Vilken miljömärkning kontrollerar ekologisk odling?", opts:["KRAV", "Svanen", "CE", "EU Ecolabel"], correct:0, fb:"KRAV är märkningen som kontrollerar ekologisk odling."},
+    {q:"Vilken miljömärkning är Nordens officiella miljömärke sedan 1989?", opts:["Svanen", "KRAV", "Bra Miljöval", "EU-lövet"], correct:0, fb:"Svanen är Nordens officiella miljömärke sedan 1989 och granskar hela varans livstid."},
+    {q:"Vad ska man göra med uttjänta batterier enligt materialet?", opts:["Lämna dem alltid på en återvinningsstation", "Kasta dem i vanliga soporna", "Bränna dem hemma", "Gräva ner dem i trädgården"], correct:0, fb:"Batterier kan innehålla farliga eller dyrbara metaller och ska alltid lämnas på en återvinningsstation, aldrig i vanliga soporna."},
+    {q:"Hur stor andel av Sveriges avfall gick till energiåtervinning år 2020?", opts:["46 %", "10 %", "70 %", "33 %"], correct:0, fb:"År 2020 gick 46 % av Sveriges avfall till energiåtervinning (blev till el och värme)."},
+    {q:"Vad krävs för att ett företag ska bli certifierat enligt ISO 14001?", opts:["En oberoende granskning (revision)", "Endast en skriftlig ansökan", "Ett besök av kommunen", "Inget särskilt krävs"], correct:0, fb:"Genom en oberoende granskning, en revision, kan ett företag bli certifierat enligt ISO 14001."},
+    {q:"Vad innehåller ett fungerande miljöledningssystem enligt ISO 14001?", opts:["En grundläggande policy, tidsatta mål, en handlingsplan och uppföljning", "Enbart en lista på anställda", "Bara ekonomiska mål", "En prislista på produkter"], correct:0, fb:"ISO 14001 kräver en grundläggande policy, tidsatta mål, en handlingsplan och uppföljning av miljöarbetet."},
+    {q:"Vad är Miljöbalken?", opts:["En svensk lag om naturen som reglerar hur vi får bruka den", "Ett internationellt certifikat", "Ett frivilligt branschavtal", "En EU-förordning om kemikalier"], correct:0, fb:"Miljöbalken är en svensk lag som säger att vi får bruka naturen men måste ta ansvar och minimera skadan."},
+    {q:"Vem har huvudansvaret för arbetsmiljön på en arbetsplats?", opts:["Arbetsgivaren", "Skyddsombudet", "Arbetsmiljöverket", "Fackförbundet"], correct:0, fb:"Arbetsgivaren har huvudansvaret för arbetsmiljön, men arbetsgivare och anställda ska samarbeta för att jobbet ska bli säkert."},
+    {q:"Vilken myndighet skriver regler (AFS) om säker hantering av branscher, ämnen och maskiner?", opts:["Arbetsmiljöverket", "Naturvårdsverket", "Skatteverket", "Livsmedelsverket"], correct:0, fb:"Arbetsmiljöverket är myndigheten som skriver AFS-regler om hur olika branscher, ämnen och maskiner ska hanteras säkert."},
+    {q:"Vad kan ett skyddsombud göra vid akut fara?", opts:["Stoppa arbetet helt", "Endast rapportera muntligt till chefen", "Ingenting, det är bara arbetsgivarens beslut", "Bötfälla arbetsgivaren"], correct:0, fb:"Vid akut fara kan skyddsombudet stoppa arbetet helt, vilket är en viktig del av dess mandat."},
+    {q:"Vilka fyra steg ingår i systematiskt arbetsmiljöarbete (SAM)?", opts:["Undersök, bedöm, åtgärda, följ upp", "Planera, budgetera, sälja, leverera", "Anställa, utbilda, avskeda, nyanställa", "Mäta, certifiera, revidera, skrota"], correct:0, fb:"SAM görs i fyra steg: undersök riskerna, bedöm hur allvarliga de är, gör något åt dem, och följ upp om åtgärderna fungerade."},
+    {q:"Vad ska alltid anmälas till Arbetsmiljöverket enligt materialet?", opts:["Ett allvarligt olycksfall eller tillbud", "Endast dödsolyckor", "Bara skador som kostar mer än en viss summa", "Ingenting behöver anmälas"], correct:0, fb:"Ett allvarligt olycksfall eller tillbud (nästan-olycka) ska alltid anmälas till Arbetsmiljöverket."},
+    {q:"Vad betyder CE-märkning på en produkt?", opts:["Att produkten uppfyller EU:s krav på hälsa, miljö och säkerhet", "Att produkten är tillverkad i Europa", "Att produkten är miljömärkt av Svanen", "Att produkten är godkänd av facket"], correct:0, fb:"CE betyder att produkten uppfyller EU:s krav på hälsa, miljö och säkerhet."},
+    {q:"Vem får sätta ett CE-märke på en produkt?", opts:["Bara tillverkaren", "Både tillverkare och importör", "Endast återförsäljaren", "Vem som helst i butiken"], correct:0, fb:"Bara tillverkaren får sätta ett CE-märke på en produkt – aldrig den som säljer eller importerar den."},
+    {q:"Vid vilken ljudnivå måste du använda hörselskydd enligt materialet?", opts:["85 dB", "50 dB", "70 dB", "100 dB"], correct:0, fb:"Vid 85 dB måste du använda hörselskydd; redan vid 80 dB ska arbetsgivaren erbjuda hörselskydd."},
+    {q:"Ungefär hur mycket dämpning ger hörselkåpor jämfört med proppar?", opts:["Kåpor cirka 30 dB, proppar cirka 10–12 dB", "Kåpor och proppar dämpar exakt lika mycket", "Proppar dämpar mer än kåpor", "Ingen av dem dämpar något alls"], correct:0, fb:"Hörselkåpor ger bäst skydd (cirka 30 dB dämpning), medan proppar dämpar mindre (cirka 10–12 dB)."},
+    {q:"Vad kan sänka effekten av hörselskydd med upp till 50 %?", opts:["Fel isatta proppar, smutsiga hygiensatser eller glasögonbågar under kåporna", "Att man byter kåpor för ofta", "Att man använder för nya kåpor", "Att man arbetar för nära chefen"], correct:0, fb:"Fel isatta proppar, smutsiga hygiensatser eller glasögonbågar under kåporna kan sänka skyddet med upp till 50 %."},
+    {q:"Vilken typ av ljud ökar risken för hörselskada mest enligt materialet?", opts:["Snabba ljudchocker, som nithammare eller pistolskott", "Ett jämnt, svagt brummande ljud", "Tystnad", "Musik i låg volym"], correct:0, fb:"Snabba ljudchocker, som från nithammare eller pistolskott, ökar risken för hörselskada mer än ett jämnt brummande ljud."},
+    {q:"Vad är första steget för att minska buller enligt materialet?", opts:["Försöka minska bullret vid källan", "Direkt köpa hörselkåpor till alla", "Öka bullret i andra delar av lokalen", "Ignorera problemet"], correct:0, fb:"Det första steget är att försöka minska bullret vid källan, t.ex. vid själva maskinen, innan man skärmar av eller använder personlig skyddsutrustning."},
+    {q:"Vilken skada kan bli permanent av vibrationer i händer och armar?", opts:["Vita fingrar", "Grönt öga", "Gul hud", "Blå läppar"], correct:0, fb:"Vibrationsskador i händer och armar kan ge upphov till permanenta skador som kallas 'vita fingrar'."},
+    {q:"Vilka verktyg orsakar ofta vibrationsskador enligt materialet?", opts:["Mutterdragare, slipmaskin, vinkelslip, borrmaskin", "Hammare och skruvmejsel", "Pensel och rulle", "Sax och kniv"], correct:0, fb:"Mutterdragare, slipmaskin, vinkelslip och borrmaskin är verktyg som ofta orsakar vibrationsskador."},
+    {q:"Vid vilken fallhöjd krävs fallskydd enligt materialet?", opts:["2 meter eller mer", "0,5 meter eller mer", "5 meter eller mer", "10 meter eller mer"], correct:0, fb:"Regeln är att du måste ha fallskydd om fallhöjden är 2 meter eller mer."},
+    {q:"Ungefär hur många personer skadas varje år av halka och snubbling enligt materialet?", opts:["Omkring 5 000", "Omkring 100", "Omkring 50 000", "Omkring 500"], correct:0, fb:"Omkring 5 000 personer skadas varje år av halka och snubbling enligt materialet."},
+    {q:"Vad, förutom temperatur, gör att klimatet på jobbet upplevs jobbigt?", opts:["Drag, luftfuktighet och värmestrålning", "Endast ljudnivån", "Bara belysningen", "Endast luftfuktigheten"], correct:0, fb:"Drag, hög eller låg luftfuktighet och värmestrålning gör klimatet jobbigt – inte bara själva temperaturen."},
+    {q:"Vilken rekommenderad temperatur gäller vintertid vid stillasittande arbete?", opts:["20–23 °C", "10–12 °C", "30–35 °C", "0–5 °C"], correct:0, fb:"Vid stillasittande arbete vintertid rekommenderas en temperatur på 20–23 °C."},
+    {q:"Hur mycket mer ljus behöver en 60-åring jämfört med en 20-åring enligt materialet?", opts:["Minst dubbelt så mycket", "Hälften så mycket", "Exakt lika mycket", "10 % mer"], correct:0, fb:"En 60-åring behöver normalt minst dubbelt så mycket ljus som en 20-åring."},
+    {q:"Vad skyddar en stötskyddskeps mot?", opts:["Att man själv slår i huvudet, t.ex. i trånga utrymmen", "Fallande föremål", "Kemikalier", "Elektrisk ström"], correct:0, fb:"En stötskyddskeps skyddar bara om man själv slår i huvudet, aldrig mot fallande föremål."},
+    {q:"Hur länge håller en skyddshjälm normalt innan den bör bytas?", opts:["3–5 år", "1 månad", "10–15 år", "20 år"], correct:0, fb:"En hjälm håller normalt i 3–5 år, kortare tid om den utsatts för kemikalier eller mycket sol."},
+    {q:"Vilken typ av ögonskada orsakas av damm och flisor?", opts:["Mekanisk", "Optisk", "Kemisk", "Termisk"], correct:0, fb:"Mekaniska ögonskador orsakas av damm och flisor som skadar ögat."},
+    {q:"Vilken typ av ögonskada orsakas av UV-ljus?", opts:["Optisk", "Mekanisk", "Kemisk", "Termisk"], correct:0, fb:"Optiska ögonskador orsakas av strålning, t.ex. UV-ljus."},
+    {q:"Vad märks skärskyddsnivån på handskar med, enligt materialet?", opts:["Bokstäverna A–F, där F är starkast skydd", "Siffrorna 1–10, där 10 är svagast", "Färgkoder utan bokstäver eller siffror", "Det finns ingen märkning"], correct:0, fb:"Skärskyddsnivån märks med bokstäverna A–F, där F ger starkast skydd."},
+    {q:"Hur het kan en ljusbåge bli enligt materialet?", opts:["Hetare än 19 000 grader", "Cirka 100 grader", "Cirka 1 000 grader", "Aldrig varmare än kokande vatten"], correct:0, fb:"En ljusbåge kan bli hetare än 19 000 grader, mer än tre gånger så het som solens yta."},
+    {q:"Vilken exponering motsvarar ungefär 5 cal/cm² vid en ljusbåge?", opts:["Kraftig solbränna som kan kräva sjukhusvistelse", "En mycket lätt värmekänsla", "Ingen synlig effekt alls", "En dödlig brännskada över hela kroppen"], correct:0, fb:"5 cal/cm² motsvarar ungefär en kraftig solbränna som kan kräva sjukhusvistelse."},
+    {q:"Vad är den största hälsorisken för svetsare enligt materialet, på lång sikt?", opts:["Svetsrök, som kan öka risken för lungcancer med upp till 40 %", "Ljudet från svetsmaskinen", "Kylan i verkstaden", "Tunga lyft är den enda risken"], correct:0, fb:"Den största risken för svetsare på lång sikt är svetsrök, som kan öka risken för lungcancer med upp till 40 %."},
+    {q:"Vad krävs av den som utför 'heta arbeten' på en tillfällig arbetsplats?", opts:["Att gå kursen Heta Arbeten", "Inget särskilt krav", "Enbart muntligt godkännande från en kollega", "Ett körkort för truck"], correct:0, fb:"Den som utför heta arbeten på en tillfällig arbetsplats behöver ha gått kursen Heta Arbeten."},
+    {q:"Är en CE-märkt maskin automatiskt riskfri att använda?", opts:["Nej, tydliga instruktioner om säker användning krävs alltid", "Ja, CE-märkning garanterar total säkerhet", "Ja, men bara för nya maskiner", "Nej, CE-märkning saknar betydelse för säkerhet"], correct:0, fb:"En CE-märkt maskin är inte automatiskt riskfri – tydliga instruktioner om säker användning behövs alltid."},
+    {q:"Vad ska ett nödstopp göra på en maskin?", opts:["Stanna maskinen direkt", "Bara sänka hastigheten", "Skicka ett meddelande till chefen", "Stänga av belysningen i lokalen"], correct:0, fb:"Ett nödstopp ska finnas nära operatören och stanna maskinen direkt."},
+    {q:"Vad bör du kontrollera innan du startar en maskin, enligt materialet?", opts:["Att skydden inte är borttagna och att arbetsstycket sitter fast", "Bara att strömmen är påslagen", "Att alla kollegor är informerade muntligt", "Att maskinen är CE-märkt, inget annat"], correct:0, fb:"Innan start bör man kontrollera att skydden inte är borttagna och att arbetsstycket sitter fast."},
+    {q:"På vilka tre sätt kan farliga kemiska ämnen komma in i kroppen?", opts:["Inandning, hudkontakt och förtäring", "Endast genom inandning", "Endast genom huden", "Genom hörseln"], correct:0, fb:"Farliga ämnen kan komma in i kroppen genom inandning, hudkontakt eller förtäring."},
+    {q:"Hur länge bör man spola ögonen vid kemikaliestänk enligt materialet?", opts:["Minst 15 minuter", "5 sekunder", "1 minut", "Det behövs ingen spolning"], correct:0, fb:"Vid stänk i ögonen ska man spola omedelbart med rikligt vatten i minst 15 minuter."},
+    {q:"Vilket ämne beskrivs som ett av de mest allergiframkallande som används industriellt?", opts:["Epoxiplast", "Vatten", "Koksalt", "Zink"], correct:0, fb:"Epoxiplast, som finns i lim, beskrivs som ett av de mest allergiframkallande ämnena som används industriellt."},
+    {q:"Vad kan isocyanater i lim, lack och färg ge upphov till?", opts:["Astma", "Hörselskada", "Ryggskott", "Solbränna"], correct:0, fb:"Isocyanater kan ge astma, och man bör undvika uppvärmning över vissa temperaturer beroende på produkttyp."},
+    {q:"Vad är den största orsaken till hudcancer enligt materialet?", opts:["UV-strålning", "Infraröd strålning", "Laser", "Radioaktiv strålning"], correct:0, fb:"UV-strålning, från t.ex. solen och svetsning, är den största orsaken till hudcancer."},
+    {q:"Ungefär hur många personer avlider varje år i Sverige av malignt melanom enligt materialet?", opts:["Cirka 500", "Cirka 5", "Cirka 50 000", "Cirka 5 000"], correct:0, fb:"Cirka 500 personer avlider varje år av malignt melanom, den allvarligare formen av hudcancer."},
+    {q:"Hur stor belastning kan ett fellyft av 30 kilo ge på ryggraden enligt materialets exempel?", opts:["Upp till 800 kilo, på grund av hävarmseffekten", "Exakt 30 kilo, ingen skillnad", "10 kilo", "2 000 kilo"], correct:0, fb:"En börda på 30 kilo kan ge en belastning på 800 kilo på ryggraden vid felaktigt lyft med hävarmseffekt."},
+    {q:"Hur tung börda avråds man från att lyfta i det dagliga, återkommande arbetet?", opts:["Tyngre än 15 kilo", "Tyngre än 100 kilo", "Tyngre än 2 kilo", "Det finns ingen rekommendation"], correct:0, fb:"Man bör undvika att lyfta tyngre än 15 kilo i det dagliga, återkommande arbetet."},
+    {q:"Vilken arbetshöjd rekommenderas för hantering av tyngre material, stående?", opts:["75–90 cm", "20–30 cm", "150–160 cm", "40–50 cm"], correct:0, fb:"Rekommenderad arbetshöjd för hantering av tyngre material stående är 75–90 cm."},
+    {q:"Vad ansvarar företagshälsovården för enligt materialet?", opts:["Att vara en oberoende expertresurs inom arbetsmiljö och rehabilitering", "Att sälja skyddsutrustning", "Att sköta lönehantering", "Att certifiera maskiner"], correct:0, fb:"Företagshälsovården är en oberoende expertresurs inom arbetsmiljö och rehabilitering, som arbetsgivaren ska ge tillgång till vid behov."},
+    {q:"Vad kännetecknar positiv stress enligt materialet?", opts:["Den ger extra fokus inför en utmaning, så länge man känner att man har kontroll", "Den uppstår alltid vid för höga krav under lång tid", "Den är alltid skadlig", "Den förekommer bara på fritiden"], correct:0, fb:"Positiv stress ger extra fokus inför en utmaning, så länge personen känner att den har kontroll över situationen."},
+    {q:"Vad bör du göra först om du blir utsatt för sexuella trakasserier enligt materialet?", opts:["Säga ifrån", "Sluta jobbet direkt", "Ignorera det och hoppas att det upphör", "Prata bara med en vän utanför jobbet"], correct:0, fb:"Materialet rekommenderar att man först säger ifrån, sedan berättar för sin chef och dokumenterar vad som hänt."},
+    {q:"Vad är jordfelsbrytarens funktion?", opts:["Den stänger snabbt av strömmen om något går fel", "Den ökar strömstyrkan vid behov", "Den lagrar reservström", "Den mäter vattenförbrukning"], correct:0, fb:"Jordfelsbrytaren är inställd på 30 mA och stänger snabbt av strömmen om något går fel, t.ex. vid en trasig strömförande apparat."},
+    {q:"Hur låg strömstyrka kan vara livsfarlig för en människa enligt materialet?", opts:["30–50 milliampere växelström under några tiondels sekunder", "Endast över 10 ampere", "Aldrig under 1 ampere", "Endast likström är farlig"], correct:0, fb:"Så lite som 30–50 milliampere växelström under några tiondels sekunder kan vara livsfarligt för en människa."},
+    {q:"Vad orsakar flest skador i industribranschen enligt materialet?", opts:["Truckar, traktorer och andra fordon", "Handverktyg", "Datorer", "Belysning"], correct:0, fb:"Truckar, traktorer och andra fordon orsakar flest skador i industribranschen."},
+    {q:"Vad krävs för att få köra truck på en arbetsplats?", opts:["Dokumenterade teoretiska och praktiska kunskaper samt arbetsgivarens skriftliga tillstånd", "Enbart muntligt godkännande från en kollega", "Inget särskilt krävs", "Endast ett vanligt körkort för bil"], correct:0, fb:"Den som kör truck behöver dokumenterade teoretiska och praktiska kunskaper samt arbetsgivarens skriftliga tillstånd."},
+    {q:"Vad bör man aldrig göra med en lyftanordnings last enligt materialet?", opts:["Lämna den hängande eller stå under den", "Sänka den så lågt som möjligt", "Besikta den regelbundet", "Rapportera skador på den"], correct:0, fb:"Man ska aldrig lämna en last hängande, och man ska aldrig stå under den."},
+    {q:"Vilket släckmedel ska användas mot elbränder?", opts:["Aldrig vatten – vatten leder ström", "Alltid vatten", "Bara koldioxid, aldrig pulver", "Bara skum"], correct:0, fb:"Vatten ska aldrig användas mot elbränder eftersom vatten leder ström."},
+    {q:"Vad står bokstäverna L-ABC för i första hjälpen enligt materialet?", opts:["Livsfarligt läge, Andning, Blödning, Chock", "Lugn, Andas, Bedöm, Konsultera", "Larma, Avvakta, Behandla, Checka", "Ledarskap, Ansvar, Beslut, Agera"], correct:0, fb:"L-ABC står för Livsfarligt läge, Andning, Blödning och Chock – ordningen att komma ihåg vid första hjälpen."},
+    {q:"Hur djupt och snabbt ska bröstkompressioner göras vid HLR enligt materialet?", opts:["Minst 5 cm djupt, 30 tryck snabbt och rejält", "1 cm djupt, långsamt", "10 cm djupt, mycket långsamt", "Djupet spelar ingen roll"], correct:0, fb:"Vid HLR ska man trycka 30 gånger snabbt och rejält mitt på bröstkorgen, minst 5 cm djupt."},
+    {q:"Vad ska man göra om man är osäker på om man ska göra bröstkompressioner?", opts:["Göra det ändå – det behövs", "Avstå helt tills sjukvårdspersonal kommer", "Bara ringa 112 och vänta", "Fråga offret om lov"], correct:0, fb:"Materialet är tydligt: är du osäker på om du ska göra bröstkompressioner – gör det ändå, det behövs."},
+    {q:"Vad ska man göra om en person andas normalt men är medvetslös?", opts:["Lägga personen i stabilt sidoläge", "Sätta personen upprätt", "Ge personen vatten att dricka", "Lämna personen som den ligger på mage"], correct:0, fb:"Om personen andas normalt men är medvetslös ska den läggas i stabilt sidoläge för att underlätta andningen."},
+    {q:"Hur länge bör en frätskada sköljas med ljummet vatten?", opts:["Minst 15 minuter", "Några sekunder", "En timme", "Det behövs ingen sköljning"], correct:0, fb:"Frätskador ska sköljas genast med ljummet vatten i minst 15 minuter."},
+    {q:"Vad betyder färgen gult vid varselmärkning?", opts:["Varning för risk eller fara", "Förbud", "Trygghet", "Påbud"], correct:0, fb:"Gult betyder varning för risk eller fara vid varselmärkning."},
+    {q:"Vad betyder färgen grönt vid varselmärkning?", opts:["Trygghet, t.ex. första hjälpen och nödutgångar", "Varning för fara", "Förbud eller brandskydd", "Påbud om skyddsutrustning"], correct:0, fb:"Grönt betyder trygghet, t.ex. skyltar för första hjälpen och nödutgångar."},
+    {q:"Vilken energikälla står för en stor del av Sveriges el och är förnybar enligt materialet?", opts:["Vattenkraft", "Kolkraft", "Oljekraft", "Naturgas"], correct:0, fb:"Vattenkraft står för en stor del av den svenska elproduktionen och är förnybar."},
+    {q:"Vad har hänt med fjärrvärmepriset enligt materialet?", opts:["Det har blivit dyrare på grund av högre bränslepriser", "Det har blivit billigare varje år", "Det är helt oförändrat", "Fjärrvärme finns inte i Sverige"], correct:0, fb:"Fjärrvärmen har blivit dyrare på grund av högre bränslepriser enligt materialet."},
+    {q:"Vad är Sveriges mål för energianvändningen enligt materialet?", opts:["Att använda mer förnybar energi och minska utsläppen av koldioxid över tid", "Att sluta använda el helt", "Att enbart satsa på fossila bränslen", "Att importera all energi från andra länder"], correct:0, fb:"Sverige vill använda mer förnybar energi och mindre fossila bränslen, med målet att minska koldioxidutsläppen över tid."}
+];
+
+const QUIZ_LENGTH = 30;
+let order = [];
+let idx = 0;
+let answered = false;
+let score = 0;
+let history = [];
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function shuffleOptions(item){
+  const pairs = item.opts.map((o, i) => ({ text: o, wasCorrect: i === item.correct }));
+  const shuffled = shuffle(pairs);
+  const newOpts = shuffled.map(p => p.text);
+  const newCorrect = shuffled.findIndex(p => p.wasCorrect);
+  return { ...item, opts: newOpts, correct: newCorrect };
+}
+function buildOrder(){
+  return shuffle(QUESTIONS).slice(0, Math.min(QUIZ_LENGTH, QUESTIONS.length)).map(shuffleOptions);
+}
+function updateProgress(){
+  const fill = document.getElementById('progressFill');
+  const label = document.getElementById('progressLabel');
+  const pct = order.length ? (idx/order.length)*100 : 0;
+  fill.style.width = pct + '%';
+  label.textContent = Math.min(idx+1, order.length) + ' / ' + order.length;
+}
+function startQuiz(){
+  order = buildOrder();
+  idx = 0; score = 0; history = [];
+  document.getElementById('poolNote').textContent = `Frågebank: ${QUESTIONS.length} frågor · ${Math.min(QUIZ_LENGTH, QUESTIONS.length)} slumpas ut denna omgång`;
+  renderQuestion();
+}
+function renderQuestion(){
+  answered = false;
+  updateProgress();
+  const card = document.getElementById('card');
+  if(idx >= order.length){ renderResult(); return; }
+  const item = order[idx];
+  const optHtml = item.opts.map((o,i) => {
+    const key = String.fromCharCode(65+i);
+    return `<button class="opt" data-i="${i}"><span class="k">${key}</span><span>${o}</span></button>`;
+  }).join('');
+  card.innerHTML = `
+    <div class="qmeta">
+      <span class="qtag" style="background:var(--page-dim); color:var(--page-accent);">${CAT_LABEL}</span>
+      <span class="qnum">Fråga ${idx+1} av ${order.length}</span>
+    </div>
+    <div class="prompt">${item.q}</div>
+    <div class="options">${optHtml}</div>
+    <div class="feedback" id="feedback"></div>
+    <div class="controls"><button class="next" id="nextBtn" disabled>Nästa</button></div>
+  `;
+  card.querySelectorAll('.opt').forEach(btn => {
+    btn.addEventListener('click', () => selectAnswer(parseInt(btn.dataset.i)));
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => { idx++; renderQuestion(); });
+}
+function selectAnswer(i){
+  if(answered) return;
+  answered = true;
+  const item = order[idx];
+  const correct = item.correct;
+  document.querySelectorAll('.opt').forEach((btn, bi) => {
+    btn.setAttribute('disabled','true');
+    if(bi === correct) btn.classList.add('correct');
+    if(bi === i && i !== correct) btn.classList.add('wrong');
+  });
+  const isCorrect = (i === correct);
+  if(isCorrect) score++;
+  history.push({q:item.q, correct:isCorrect, correctText:item.opts[correct]});
+  const fb = document.getElementById('feedback');
+  fb.classList.add('show', isCorrect ? 'ok' : 'bad');
+  fb.innerHTML = `<b>${isCorrect ? 'Rätt!' : 'Inte riktigt.'}</b>${item.fb}`;
+  document.getElementById('nextBtn').disabled = false;
+}
+function renderResult(){
+  const card = document.getElementById('card');
+  const pct = order.length ? Math.round((score/order.length)*100) : 0;
+  const reviewHtml = history.map(h => `
+    <div class="review-item ${h.correct ? 'ok' : 'bad'}">
+      <div class="q">${h.q}</div>
+      <div class="a">${h.correct ? 'Du svarade rätt.' : 'Rätt svar: ' + h.correctText}</div>
+    </div>`).join('');
+  card.innerHTML = `
+    <div class="result">
+      <div class="big" style="color:var(--page-accent);">${score} / ${order.length}</div>
+      <div class="of">${pct}% rätt</div>
+      <button class="restart" id="restartBtn">Kör igen (nya slumpade frågor)</button>
+      <div class="review">${reviewHtml}</div>
+    </div>`;
+  document.getElementById('restartBtn').addEventListener('click', startQuiz);
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressLabel').textContent = order.length + ' / ' + order.length;
+}
+startQuiz();
+</script>
+
+<script src="../../../assets/site.js"></script>
+</body>
+</html>

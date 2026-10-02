@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOMBARDEMANG · CNC-styrning</title>
+<style>
+  :root{
+    --panel-bg: #1B1F1D;
+    --panel-bg-raised: #212624;
+    --screen-bg: #0B120F;
+    --grid-line: #26433F;
+    --grid-line-soft: #1B2E2B;
+    --amber: #F0A83A;
+    --amber-dim: #8A6423;
+    --cyan: #4FD1C5;
+    --hit: #E1552C;
+    --text-primary: #DCE6E1;
+    --text-dim: #6B7A74;
+    --border: #33403C;
+  }
+  *{ box-sizing: border-box; }
+  html,body{
+    margin:0; padding:0;
+    background: var(--screen-bg);
+    color: var(--text-primary);
+    font-family: 'IBM Plex Mono', monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap{ max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; }
+  .plate{
+    background: linear-gradient(180deg, var(--panel-bg-raised), var(--panel-bg));
+    border: 1px solid var(--border);
+    padding: 14px 18px;
+    display: flex; align-items: baseline; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px;
+  }
+  .plate h1{ font-family: 'Arial Narrow','Helvetica Neue',Arial,sans-serif; font-weight: 600; letter-spacing: 0.04em; font-size: 20px; margin: 0; color: var(--text-primary); }
+  .plate h1 span{ color: var(--amber); }
+  .plate .sub{ font-size: 12px; color: var(--text-dim); letter-spacing: 0.03em; display:flex; gap:10px; align-items:center; }
+  .phase-badge{ border: 1px solid var(--amber-dim); color: var(--amber); padding: 2px 8px; font-size: 10px; letter-spacing: 0.06em; }
+  .boards{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+  @media (max-width: 680px){ .boards{ grid-template-columns: 1fr; } }
+  .board-panel{ border: 1px solid var(--border); background: var(--panel-bg); padding: 12px; transition: opacity .2s; }
+  .board-panel.locked{ opacity: 0.35; pointer-events: none; }
+  .board-panel h2{
+    font-family: 'Arial Narrow','Helvetica Neue',Arial,sans-serif; font-weight: 500; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+    margin: 0 0 8px 0; color: var(--text-dim); display:flex; justify-content: space-between; align-items:center;
+  }
+  .board-panel h2 .status-dot{ width: 8px; height:8px; border-radius:50%; background: var(--grid-line); display:inline-block; margin-right:6px; }
+  .board-panel h2 .status-dot.live{ background: var(--amber); }
+  .grid-outer{ display: grid; grid-template-columns: 20px 1fr; grid-template-rows: 1fr 20px; gap: 2px; }
+  .yaxis{ display: flex; flex-direction: column-reverse; justify-content: space-between; }
+  .yaxis span, .xaxis span{ font-size: 9px; color: var(--text-dim); text-align: center; }
+  .xaxis{ grid-column: 2; display: flex; justify-content: space-between; padding: 0 1px; }
+  .grid{
+    grid-column: 2; grid-row: 1; display: grid;
+    grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); gap: 2px;
+    aspect-ratio: 1; background: var(--grid-line-soft); border: 1px solid var(--grid-line);
+  }
+  .cell{ background: var(--screen-bg); position: relative; display:flex; align-items:center; justify-content:center; font-size: 11px; cursor: default; }
+  .cell.clickable{ cursor: crosshair; }
+  .cell.clickable:hover{ outline: 1px solid var(--amber-dim); }
+  .cell.ship{ background: #22302B; }
+  .cell.hit{ background: var(--hit); color:#1B0A05; }
+  .cell.hit::after{ content:"×"; font-weight:600; }
+  .cell.miss{ color: var(--cyan); }
+  .cell.miss::after{ content:"·"; font-size:22px; line-height:0; }
+  .cell.scan-empty{ box-shadow: inset 0 0 0 1px var(--cyan); }
+  .cell.scan-ship{ box-shadow: inset 0 0 0 1px var(--amber); background:#2B2415; }
+  .cell.sunk{ background: #4a1e10; color:#1B0A05; }
+  .cell.sunk::after{ content:"×"; font-weight:600; }
+  .console{ margin-top: 14px; border: 1px solid var(--border); background: var(--panel-bg); }
+  .log{ height: 150px; overflow-y: auto; padding: 10px 12px; font-size: 12px; line-height: 1.6; border-bottom: 1px solid var(--border); background: var(--screen-bg); }
+  .log .ln{ white-space: pre-wrap; }
+  .log .ln.err{ color: var(--hit); }
+  .log .ln.you{ color: var(--amber); }
+  .log .ln.bot{ color: var(--cyan); }
+  .log .ln.sys{ color: var(--text-dim); }
+  .status-row{
+    display:flex; gap: 16px; align-items:center; padding: 8px 12px; font-size: 11px; color: var(--text-dim);
+    border-bottom: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .status-row b{ color: var(--text-primary); font-weight: 500; }
+  .mode-toggle{ display:flex; border: 1px solid var(--border); }
+  .mode-toggle button{ background: transparent; color: var(--text-dim); border: none; font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 3px 8px; cursor: pointer; }
+  .mode-toggle button.active{ background: var(--amber-dim); color: #1B1206; font-weight: 600; }
+  .input-row{ display:flex; align-items:center; padding: 10px 12px; gap: 8px; }
+  .prompt{ color: var(--amber); font-size: 14px; }
+  input#cmd{ flex: 1; background: transparent; border: none; outline: none; color: var(--text-primary); font-family: 'IBM Plex Mono', monospace; font-size: 14px; letter-spacing: 0.02em; }
+  input#cmd:disabled{ color: var(--text-dim); }
+  button.run{ background: var(--amber); color: #1B1206; border: none; font-family: 'Arial Narrow','Helvetica Neue',Arial,sans-serif; font-weight: 600; letter-spacing: 0.04em; font-size: 12px; padding: 8px 14px; cursor: pointer; }
+  button.run:disabled{ background: var(--amber-dim); cursor: not-allowed; }
+  .quickbar{ display:flex; gap:6px; padding: 0 12px 10px; flex-wrap: wrap; }
+  .quickbar button{ background: var(--panel-bg-raised); border: 1px solid var(--border); color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 4px 8px; cursor: pointer; }
+  .quickbar button:hover{ color: var(--text-primary); border-color: var(--amber-dim); }
+  .quickbar button.depleted{ opacity: 0.4; }
+  .quickbar button.emph{ background: var(--amber); color:#1B1206; font-weight:600; border-color: var(--amber); }
+  .quickbar button.emph:disabled{ background: var(--amber-dim); opacity:.5; cursor:not-allowed; }
+  .legend{
+    margin-top: 14px; border: 1px solid var(--border); background: var(--panel-bg); padding: 12px 16px;
+    font-size: 11.5px; color: var(--text-dim); display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px 18px;
+  }
+  .legend b{ color: var(--amber); font-weight: 600; }
+  .legend .grp-title{ font-family:'Arial Narrow','Helvetica Neue',Arial,sans-serif; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-primary); margin-top: 6px; }
+  .fleet-row{ display:flex; gap:14px; flex-wrap:wrap; padding: 8px 12px 0; font-size: 11px; color: var(--text-dim); }
+  .fleet-row .ok{ color: var(--text-primary); }
+  .fleet-row .down{ color: var(--hit); text-decoration: line-through; }
+  .banner{ margin-top: 14px; text-align:center; padding: 14px; border: 1px solid var(--amber-dim); background: var(--panel-bg-raised); font-family: 'Arial Narrow','Helvetica Neue',Arial,sans-serif; letter-spacing: 0.04em; display: none; }
+  .banner.show{ display:block; }
+  .banner .big{ font-size: 18px; color: var(--amber); margin-bottom: 6px; }
+  .banner button{ margin-top: 8px; background: var(--amber); border:none; color:#1B1206; font-family:'Arial Narrow','Helvetica Neue',Arial,sans-serif; font-weight:600; padding: 7px 16px; cursor:pointer; }
+</style>
+</head>
+<body>
+<a href="material.html" style="display:block;padding:10px 22px;background:var(--panel-bg-raised);border-bottom:1px solid var(--border);color:var(--text-dim);text-decoration:none;font-size:13px;font-family:'IBM Plex Mono',monospace;">&larr; Tillbaka till CNC-Grönt kort</a>
+<main class="wrap">
+
+  <div class="plate">
+    <h1>BOMBARDEMANG <span>·</span> CNC-STYRNING</h1>
+    <div class="sub"><span class="phase-badge" id="phase-badge">PLACERING</span>ARBETSKOORDINATSYSTEM G54 — 8×8</div>
+  </div>
+
+  <div class="boards">
+    <div class="board-panel" id="panel-you">
+      <h2><span><span class="status-dot" id="dot-you"></span>DITT VARV</span></h2>
+      <div class="grid-outer">
+        <div class="yaxis" id="yaxis-you"></div>
+        <div class="grid" id="grid-you"></div>
+        <div class="xaxis" id="xaxis-you"></div>
+      </div>
+      <div class="fleet-row" id="fleet-you"></div>
+    </div>
+    <div class="board-panel" id="panel-target">
+      <h2><span><span class="status-dot" id="dot-target"></span>MÅLOMRÅDE</span></h2>
+      <div class="grid-outer">
+        <div class="yaxis" id="yaxis-target"></div>
+        <div class="grid" id="grid-target"></div>
+        <div class="xaxis" id="xaxis-target"></div>
+      </div>
+      <div class="fleet-row" id="fleet-target"></div>
+    </div>
+  </div>
+
+  <div class="console">
+    <div class="log" id="log"></div>
+
+    <!-- placement status -->
+    <div class="status-row" id="status-placement">
+      <span>PLACERAR: <b id="placement-current">—</b></span>
+      <span>KVAR I KÖ: <b id="placement-remaining">0</b></span>
+    </div>
+
+    <!-- combat status -->
+    <div class="status-row" id="status-combat" style="display:none">
+      <span>MCP <b id="mcp-pos">X0 Y0</b></span>
+      <span>LÄGE
+        <span class="mode-toggle">
+          <button id="mode-abs" class="active">G90 ABS</button><button id="mode-inc">G91 INC</button>
+        </span>
+      </span>
+      <span id="turn-indicator">TUR: <b>DIG</b></span>
+    </div>
+
+    <div class="input-row">
+      <span class="prompt">&gt;</span>
+      <input id="cmd" type="text" autocomplete="off" spellcheck="false">
+      <button class="run" id="run-btn">KÖR</button>
+    </div>
+
+    <!-- placement quickbar -->
+    <div class="quickbar" id="quickbar-placement">
+      <button data-ins="I0" data-mode="append">I0 vågrät</button>
+      <button data-ins="I1" data-mode="append">I1 lodrät</button>
+      <button id="placement-random">Slumpa om flottan</button>
+      <button id="start-battle" class="emph" disabled>Starta strid</button>
+    </div>
+
+    <!-- combat quickbar -->
+    <div class="quickbar" id="quickbar-combat" style="display:none">
+      <button data-ins="G00 ">G00 · sond</button>
+      <button id="qb-g01" data-ins="G01 ">G01 · mattbombning</button>
+      <button id="qb-g02" data-ins="G02 ">G02 · radar 3×3</button>
+      <button data-ins="I0" data-mode="append">I0 vågrät</button>
+      <button data-ins="I1" data-mode="append">I1 lodrät</button>
+      <button id="new-game">Nytt program</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="grp-title">Placering (innan striden)</div>
+    <div>Ange en ändpunkt och riktning: <b>X1 Y3 I0</b> placerar nästa enhet i kön med första rutan vid (1,3), växande i +X-led. I1 växer i +Y-led. Enrutiga enheter behöver ingen riktning.</div>
+    <div class="grp-title">Rörelsekoder (under strid)</div>
+    <div><b>X.. Y..</b> utan G-kod tolkas automatiskt som <b>G00</b> — enkel sond, alltid tillgänglig.</div>
+    <div><b>G01 X.. Y.. [I0/I1]</b> — mattbombning, 3 rutor i rad kring angiven mittpunkt. Magasin: 1 st.</div>
+    <div><b>G02 X.. Y..</b> — radarsvep 3×3, avslöjar innehåll utan skada. Magasin: 2 st.</div>
+    <div class="grp-title">Positioneringsläge</div>
+    <div><b>G90</b> — absoluta koordinater. <b>G91</b> — inkrementella koordinater (offset från senaste positionen, MCP).</div>
+  </div>
+
+  <div class="banner" id="banner">
+    <div class="big" id="banner-text"></div>
+    <button id="banner-restart">KÖR NYTT PROGRAM</button>
+  </div>
+
+</main>
+
+<script>
+const SIZE = 8;
+const FLEET_COMPOSITION = [
+  {size:5, count:1},
+  {size:3, count:2},
+  {size:2, count:3},
+  {size:1, count:3},
+];
+const MAGAZINE_DEFAULT = () => ({G01:1, G02:2});
+
+function buildFleetQueue(){
+  const queue = [];
+  FLEET_COMPOSITION.forEach(def=>{
+    for(let i=0;i<def.count;i++){
+      const suffix = def.count>1 ? '-'+String.fromCharCode(65+i) : '';
+      queue.push({len:def.size, name:'Enhet '+def.size+suffix});
+    }
+  });
+  return queue;
+}
+
+function emptyBoard(){
+  const cells = {};
+  for(let x=0;x<SIZE;x++) for(let y=0;y<SIZE;y++) cells[x+','+y] = {ship:null, hit:false, scanned:false};
+  return {cells, ships:[]};
+}
+
+function inBounds(x,y){ return x>=0 && x<SIZE && y>=0 && y<SIZE; }
+
+function placeShipsRandom(board){
+  const queue = buildFleetQueue();
+  for(const ship of queue){
+    let placed = false;
+    while(!placed){
+      const horiz = Math.random() < 0.5;
+      const x = Math.floor(Math.random()*SIZE);
+      const y = Math.floor(Math.random()*SIZE);
+      const coords = [];
+      for(let i=0;i<ship.len;i++) coords.push(horiz ? [x+i,y] : [x,y+i]);
+      if(coords.every(([cx,cy]) => inBounds(cx,cy) && !board.cells[cx+','+cy].ship)){
+        const shipObj = {name:ship.name, len:ship.len, coords, hits:0, sunk:false};
+        coords.forEach(([cx,cy]) => board.cells[cx+','+cy].ship = shipObj);
+        board.ships.push(shipObj);
+        placed = true;
+      }
+    }
+  }
+}
+
+let state = null;
+
+function newState(){
+  const playerBoard = emptyBoard();
+  const botBoard = emptyBoard();
+  placeShipsRandom(botBoard);
+  return {
+    phase: 'placement',
+    placementQueue: buildFleetQueue(),
+    playerBoard, botBoard,
+    playerMCP: {x:0, y:0, mode:'ABS'},
+    playerMagazine: MAGAZINE_DEFAULT(),
+    turn: 'player',
+    gameOver: false,
+    botAI: {mode:'hunt', queue:[], lineHits:null, magazine: MAGAZINE_DEFAULT()},
+  };
+}
+
+function logLine(text, cls){
+  const log = document.getElementById('log');
+  const div = document.createElement('div');
+  div.className = 'ln ' + (cls||'');
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function fmtCoord(x,y){ return 'X'+x+' Y'+y; }
+
+// ---------- Combat command parsing ----------
+function parseCommand(raw){
+  const s = raw.trim().toUpperCase();
+  if(s === 'G90') return {kind:'mode', mode:'ABS'};
+  if(s === 'G91') return {kind:'mode', mode:'INC'};
+  const bare = s.match(/^X(-?\d+)\s+Y(-?\d+)$/);
+  if(bare) return {kind:'move', code:'G00', x:parseInt(bare[1],10), y:parseInt(bare[2],10), orient:0, implicit:true};
+  const m = s.match(/^G(\d{2})(?:\s+X(-?\d+))?(?:\s+Y(-?\d+))?(?:\s+I([01]))?$/);
+  if(!m) return {kind:'error', msg:'SYNTAXFEL — okänd instruktion: "'+raw+'"'};
+  const code = m[1];
+  if(!['00','01','02'].includes(code)) return {kind:'error', msg:'OKÄND G-KOD: G'+code};
+  if(m[2] === undefined || m[3] === undefined) return {kind:'error', msg:'SAKNAR KOORDINAT — ange både X och Y'};
+  const x = parseInt(m[2],10), y = parseInt(m[3],10);
+  const orient = m[4] !== undefined ? parseInt(m[4],10) : 0;
+  return {kind:'move', code:'G'+code, x, y, orient};
+}
+
+function parsePlacementInput(raw){
+  const s = raw.trim().toUpperCase();
+  const m = s.match(/^X(-?\d+)\s+Y(-?\d+)(?:\s+I([01]))?$/);
+  if(!m) return {kind:'error', msg:'SYNTAXFEL — ange t.ex. X1 Y3 I0'};
+  return {kind:'place', x:parseInt(m[1],10), y:parseInt(m[2],10), orient: m[3]!==undefined?parseInt(m[3],10):0};
+}
+
+function resolveAbsolute(mcp, x, y){
+  if(mcp.mode === 'INC') return {ax: mcp.x + x, ay: mcp.y + y};
+  return {ax: x, ay: y};
+}
+
+function targetCellsFor(code, ax, ay, orient){
+  if(code === 'G00') return [[ax,ay]];
+  if(code === 'G01') return orient===1 ? [[ax,ay-1],[ax,ay],[ax,ay+1]] : [[ax-1,ay],[ax,ay],[ax+1,ay]];
+  if(code === 'G02'){
+    const out = [];
+    for(let dx=-1; dx<=1; dx++) for(let dy=-1; dy<=1; dy++) out.push([ax+dx, ay+dy]);
+    return out;
+  }
+  return [];
+}
+
+function checkSunk(ship){
+  if(ship.hits >= ship.len && !ship.sunk){ ship.sunk = true; return true; }
+  return false;
+}
+
+function executeMove(board, code, ax, ay, orient){
+  const cellsRaw = targetCellsFor(code, ax, ay, orient);
+  const cells = cellsRaw.filter(([cx,cy]) => inBounds(cx,cy));
+  const results = [];
+  const sunkNow = [];
+  for(const [cx,cy] of cells){
+    const cell = board.cells[cx+','+cy];
+    if(code === 'G02'){
+      cell.scanned = true;
+      results.push({x:cx,y:cy, type: cell.ship ? 'scan-ship' : 'scan-empty'});
+      continue;
+    }
+    if(cell.hit){ results.push({x:cx,y:cy, type:'repeat'}); continue; }
+    cell.hit = true;
+    if(cell.ship){
+      cell.ship.hits += 1;
+      results.push({x:cx,y:cy, type:'hit', shipName:cell.ship.name});
+      if(checkSunk(cell.ship)) sunkNow.push(cell.ship);
+    } else {
+      results.push({x:cx,y:cy, type:'miss'});
+    }
+  }
+  return {results, sunkNow};
+}
+
+// ---------- Rendering ----------
+function buildAxes(){
+  ['yaxis-you','yaxis-target'].forEach(id=>{
+    const el = document.getElementById(id); el.innerHTML = '';
+    for(let y=0;y<SIZE;y++){ const s=document.createElement('span'); s.textContent=y; el.appendChild(s); }
+  });
+  ['xaxis-you','xaxis-target'].forEach(id=>{
+    const el = document.getElementById(id); el.innerHTML = '';
+    for(let x=0;x<SIZE;x++){ const s=document.createElement('span'); s.textContent=x; el.appendChild(s); }
+  });
+}
+
+function buildGrid(gridEl){
+  gridEl.innerHTML = '';
+  for(let y=SIZE-1; y>=0; y--){
+    for(let x=0; x<SIZE; x++){
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.x = x; cell.dataset.y = y;
+      gridEl.appendChild(cell);
+    }
+  }
+}
+
+function renderBoard(gridEl, board, revealShips){
+  for(const el of gridEl.children){
+    const x = +el.dataset.x, y = +el.dataset.y;
+    const c = board.cells[x+','+y];
+    const clickable = el.classList.contains('clickable');
+    el.className = 'cell' + (clickable ? ' clickable' : '');
+    if(c.hit){ el.classList.add(c.ship ? (c.ship.sunk ? 'sunk' : 'hit') : 'miss'); }
+    else if(c.scanned){ el.classList.add(c.ship ? 'scan-ship' : 'scan-empty'); }
+    else if(revealShips && c.ship){ el.classList.add('ship'); }
+  }
+}
+
+function setClickable(gridEl, on){
+  Array.from(gridEl.children).forEach(c => c.classList.toggle('clickable', on));
+}
+
+function renderFleet(elId, board){
+  const el = document.getElementById(elId);
+  el.innerHTML = '';
+  board.ships.forEach(s=>{
+    const span = document.createElement('span');
+    span.className = s.sunk ? 'down' : 'ok';
+    span.textContent = s.name + ' (' + s.len + ')';
+    el.appendChild(span);
+  });
+}
+
+function renderAll(){
+  const gridYou = document.getElementById('grid-you');
+  const gridTarget = document.getElementById('grid-target');
+
+  setClickable(gridYou, state.phase === 'placement');
+  setClickable(gridTarget, state.phase === 'combat' && state.turn === 'player' && !state.gameOver);
+
+  renderBoard(gridYou, state.playerBoard, true);
+  renderBoard(gridTarget, state.botBoard, false);
+  renderFleet('fleet-you', state.playerBoard);
+  renderFleet('fleet-target', state.botBoard);
+
+  document.getElementById('panel-target').classList.toggle('locked', state.phase === 'placement');
+  document.getElementById('phase-badge').textContent = state.phase === 'placement' ? 'PLACERING' : 'STRID';
+
+  document.getElementById('status-placement').style.display = state.phase === 'placement' ? '' : 'none';
+  document.getElementById('status-combat').style.display = state.phase === 'combat' ? '' : 'none';
+  document.getElementById('quickbar-placement').style.display = state.phase === 'placement' ? '' : 'none';
+  document.getElementById('quickbar-combat').style.display = state.phase === 'combat' ? '' : 'none';
+
+  if(state.phase === 'placement'){
+    const current = state.placementQueue[0];
+    document.getElementById('placement-current').textContent = current ? current.name + ' (' + current.len + ' rutor)' : 'Flottan komplett';
+    document.getElementById('placement-remaining').textContent = state.placementQueue.length;
+    document.getElementById('start-battle').disabled = state.placementQueue.length > 0;
+  } else {
+    document.getElementById('mcp-pos').textContent = fmtCoord(state.playerMCP.x, state.playerMCP.y);
+    document.getElementById('mode-abs').classList.toggle('active', state.playerMCP.mode==='ABS');
+    document.getElementById('mode-inc').classList.toggle('active', state.playerMCP.mode==='INC');
+    document.getElementById('turn-indicator').innerHTML = 'TUR: <b>' + (state.turn==='player' ? 'DIG' : 'MOTSTÅNDARE') + '</b>';
+    document.getElementById('dot-you').classList.toggle('live', state.turn==='player');
+    document.getElementById('dot-target').classList.toggle('live', state.turn==='bot');
+
+    const g01btn = document.getElementById('qb-g01');
+    const g02btn = document.getElementById('qb-g02');
+    g01btn.textContent = 'G01 · mattbombning (' + state.playerMagazine.G01 + ' kvar)';
+    g02btn.textContent = 'G02 · radar 3×3 (' + state.playerMagazine.G02 + ' kvar)';
+    g01btn.classList.toggle('depleted', state.playerMagazine.G01 <= 0);
+    g02btn.classList.toggle('depleted', state.playerMagazine.G02 <= 0);
+  }
+
+  const input = document.getElementById('cmd');
+  const runBtn = document.getElementById('run-btn');
+  runBtn.textContent = state.phase === 'placement' ? 'PLACERA' : 'KÖR';
+  let disabled;
+  if(state.phase === 'placement') disabled = state.placementQueue.length === 0;
+  else disabled = state.turn !== 'player' || state.gameOver;
+  input.disabled = disabled;
+  runBtn.disabled = disabled;
+}
+
+// ---------- Placement ----------
+function runPlacementCommand(){
+  const input = document.getElementById('cmd');
+  const raw = input.value;
+  if(!raw.trim()) return;
+  logLine('> ' + raw, 'you');
+  const parsed = parsePlacementInput(raw);
+  if(parsed.kind === 'error'){ logLine('ALARM: ' + parsed.msg, 'err'); input.value = 'X Y'; return; }
+
+  const ship = state.placementQueue[0];
+  if(!ship) return;
+  const coords = [];
+  for(let i=0;i<ship.len;i++) coords.push(parsed.orient===1 ? [parsed.x, parsed.y+i] : [parsed.x+i, parsed.y]);
+  const valid = coords.every(([cx,cy]) => inBounds(cx,cy) && !state.playerBoard.cells[cx+','+cy].ship);
+  if(!valid){ logLine('ALARM: PLACERING OGILTIG — utanför rutnät eller kolliderar med annan enhet', 'err'); input.value = 'X Y'; return; }
+
+  const shipObj = {name:ship.name, len:ship.len, coords, hits:0, sunk:false};
+  coords.forEach(([cx,cy]) => state.playerBoard.cells[cx+','+cy].ship = shipObj);
+  state.playerBoard.ships.push(shipObj);
+  state.placementQueue.shift();
+  logLine(ship.name + ' placerad: ' + coords.map(([cx,cy]) => fmtCoord(cx,cy)).join(', '), 'sys');
+  input.value = 'X Y';
+  renderAll();
+  if(state.placementQueue.length === 0) logLine('Flottan är komplett — tryck Starta strid', 'sys');
+}
+
+// ---------- Player combat turn ----------
+function describeResults(results){
+  const lines = [];
+  for(const r of results){
+    const coord = fmtCoord(r.x, r.y);
+    if(r.type === 'hit') lines.push('TRÄFF vid ' + coord + ' — ' + r.shipName);
+    else if(r.type === 'miss') lines.push('BOM vid ' + coord);
+    else if(r.type === 'repeat') lines.push(coord + ' redan bearbetad — ingen ny data');
+    else if(r.type === 'scan-ship') lines.push('RADARKONTAKT vid ' + coord);
+    else if(r.type === 'scan-empty') lines.push('Rent vid ' + coord);
+  }
+  return lines;
+}
+
+function runPlayerCommand(){
+  if(state.gameOver || state.turn !== 'player') return;
+  const input = document.getElementById('cmd');
+  const raw = input.value;
+  if(!raw.trim()) return;
+  const parsed = parseCommand(raw);
+  logLine('> ' + raw, 'you');
+
+  if(parsed.kind === 'error'){ logLine('ALARM: ' + parsed.msg, 'err'); input.value = 'X Y'; return; }
+  if(parsed.kind === 'mode'){
+    state.playerMCP.mode = parsed.mode;
+    logLine('Läge satt till ' + (parsed.mode==='ABS' ? 'G90 (absolut)' : 'G91 (inkrementell)'), 'sys');
+    input.value = 'X Y';
+    renderAll();
+    return;
+  }
+
+  if(parsed.code === 'G01' || parsed.code === 'G02'){
+    if(state.playerMagazine[parsed.code] <= 0){
+      logLine('ALARM: MAGASIN TOMT — inga fler ' + parsed.code + ' kvar', 'err');
+      input.value = 'X Y';
+      return;
+    }
+  }
+
+  const {ax, ay} = resolveAbsolute(state.playerMCP, parsed.x, parsed.y);
+  if(!inBounds(ax,ay)){
+    logLine('ALARM: AXELGRÄNS ÖVERSKRIDEN — ' + fmtCoord(ax,ay) + ' ligger utanför 0–' + (SIZE-1), 'err');
+    input.value = 'X Y';
+    return;
+  }
+
+  if(parsed.implicit) logLine('Tolkat som G00 (enkel sond) — inget vapen angivet', 'sys');
+
+  const {results, sunkNow} = executeMove(state.botBoard, parsed.code, ax, ay, parsed.orient);
+  state.playerMCP.x = ax; state.playerMCP.y = ay;
+  if(parsed.code === 'G01' || parsed.code === 'G02') state.playerMagazine[parsed.code] -= 1;
+  describeResults(results).forEach(l => logLine(l, 'sys'));
+  sunkNow.forEach(s => logLine('MOTSTÅNDARENS ' + s.name.toUpperCase() + ' SÄNKT', 'you'));
+
+  input.value = 'X Y';
+  renderAll();
+
+  if(state.botBoard.ships.every(s=>s.sunk)){ endGame(true); return; }
+  state.turn = 'bot';
+  renderAll();
+  setTimeout(botTurn, 700);
+}
+
+function onRun(){
+  if(state.phase === 'placement') runPlacementCommand();
+  else runPlayerCommand();
+}
+
+// ---------- Bot AI ----------
+function unattackedCells(board){
+  const out = [];
+  for(let x=0;x<SIZE;x++) for(let y=0;y<SIZE;y++) if(!board.cells[x+','+y].hit) out.push([x,y]);
+  return out;
+}
+
+function pickHuntTarget(board){
+  const candidates = unattackedCells(board).filter(([x,y]) => (x+y)%2===0);
+  const pool = candidates.length ? candidates : unattackedCells(board);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function neighborsOf(x,y){
+  return [[x+1,y],[x-1,y],[x,y+1],[x,y-1]].filter(([cx,cy])=>inBounds(cx,cy));
+}
+
+function botTurn(){
+  if(state.gameOver) return;
+  const board = state.playerBoard;
+  const ai = state.botAI;
+
+  if(ai.mode === 'hunt' && ai.magazine.G02 > 0 && Math.random() < 0.18){
+    const [sx,sy] = pickHuntTarget(board);
+    ai.magazine.G02 -= 1;
+    const {results} = executeMove(board, 'G02', sx, sy, 0);
+    logLine('> G02 ' + fmtCoord(sx,sy), 'bot');
+    describeResults(results).forEach(l => logLine(l, 'sys'));
+    const contact = results.find(r=>r.type==='scan-ship');
+    if(contact) ai.queue.push([contact.x, contact.y]);
+    finishBotStep();
+    return;
+  }
+
+  let x,y,code='G00',orient=0;
+  if(ai.mode==='target' && ai.magazine.G01 > 0 && ai.lineHits && ai.lineHits.length>=2){
+    const [[x1,y1],[x2,y2]] = ai.lineHits.slice(-2);
+    const horiz = y1===y2;
+    const center = horiz ? [x2 + Math.sign(x2-x1), y2] : [x2, y2 + Math.sign(y2-y1)];
+    if(inBounds(center[0],center[1]) && !board.cells[center[0]+','+center[1]].hit){
+      x=center[0]; y=center[1]; code='G01'; orient = horiz?0:1;
+      ai.magazine.G01 -= 1;
+    }
+  }
+  if(code==='G00'){
+    if(ai.queue.length){
+      [x,y] = ai.queue.shift();
+      while(board.cells[x+','+y] && board.cells[x+','+y].hit && ai.queue.length){ [x,y] = ai.queue.shift(); }
+    }
+    if(x===undefined || (board.cells[x+','+y] && board.cells[x+','+y].hit)){
+      [x,y] = pickHuntTarget(board);
+      ai.mode = 'hunt';
+    }
+  }
+
+  logLine('> ' + code + ' ' + fmtCoord(x,y) + (code==='G01' ? ' I'+orient : ''), 'bot');
+  const {results, sunkNow} = executeMove(board, code, x, y, orient);
+  describeResults(results).forEach(l => logLine(l, 'sys'));
+
+  for(const r of results){
+    if(r.type==='hit'){
+      ai.mode = 'target';
+      if(!ai.lineHits) ai.lineHits = [];
+      ai.lineHits.push([r.x,r.y]);
+      neighborsOf(r.x,r.y).forEach(([nx,ny])=>{ if(!board.cells[nx+','+ny].hit) ai.queue.push([nx,ny]); });
+    }
+  }
+  sunkNow.forEach(s=>{
+    logLine('DIN ' + s.name.toUpperCase() + ' ÄR SÄNKT', 'err');
+    ai.mode='hunt'; ai.queue=[]; ai.lineHits=null;
+  });
+
+  finishBotStep();
+
+  function finishBotStep(){
+    renderAll();
+    if(board.ships.every(s=>s.sunk)){ endGame(false); return; }
+    state.turn = 'player';
+    renderAll();
+  }
+}
+
+function endGame(playerWon){
+  state.gameOver = true;
+  const banner = document.getElementById('banner');
+  document.getElementById('banner-text').textContent = playerWon ? 'VERKSTADEN ÄR NERLAGD — DU VANN' : 'PROGRAMMET AVBRUTET — DU FÖRLORADE';
+  banner.classList.add('show');
+  logLine(playerWon ? '=== ALLA MÅL SÄNKTA ===' : '=== EGET VARV FÖRLORAT ===', 'sys');
+  renderAll();
+}
+
+// ---------- Wiring ----------
+function startNewGame(){
+  state = newState();
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('banner').classList.remove('show');
+  document.getElementById('cmd').value = 'X Y';
+  logLine('NYTT PROGRAM LADDAT — placera din flotta', 'sys');
+  buildAxes();
+  buildGrid(document.getElementById('grid-you'));
+  buildGrid(document.getElementById('grid-target'));
+  renderAll();
+}
+
+document.getElementById('run-btn').addEventListener('click', onRun);
+document.getElementById('cmd').addEventListener('keydown', e=>{ if(e.key==='Enter') onRun(); });
+document.getElementById('mode-abs').addEventListener('click', ()=>{ if(state.phase==='combat' && state.turn==='player'){ state.playerMCP.mode='ABS'; logLine('Läge satt till G90 (absolut)','sys'); renderAll(); }});
+document.getElementById('mode-inc').addEventListener('click', ()=>{ if(state.phase==='combat' && state.turn==='player'){ state.playerMCP.mode='INC'; logLine('Läge satt till G91 (inkrementell)','sys'); renderAll(); }});
+document.getElementById('new-game').addEventListener('click', startNewGame);
+document.getElementById('banner-restart').addEventListener('click', startNewGame);
+
+document.getElementById('start-battle').addEventListener('click', ()=>{
+  if(state.placementQueue.length > 0) return;
+  state.phase = 'combat';
+  document.getElementById('cmd').value = 'X Y';
+  logLine('=== STRID INLEDD — G54 aktivt, läge G90 ===', 'sys');
+  renderAll();
+});
+
+document.getElementById('placement-random').addEventListener('click', ()=>{
+  if(state.phase !== 'placement') return;
+  state.playerBoard = emptyBoard();
+  const queue = buildFleetQueue();
+  for(const ship of queue){
+    let placed = false;
+    while(!placed){
+      const horiz = Math.random()<0.5;
+      const x = Math.floor(Math.random()*SIZE);
+      const y = Math.floor(Math.random()*SIZE);
+      const coords = [];
+      for(let i=0;i<ship.len;i++) coords.push(horiz?[x+i,y]:[x,y+i]);
+      if(coords.every(([cx,cy])=>inBounds(cx,cy) && !state.playerBoard.cells[cx+','+cy].ship)){
+        const shipObj = {name:ship.name, len:ship.len, coords, hits:0, sunk:false};
+        coords.forEach(([cx,cy]) => state.playerBoard.cells[cx+','+cy].ship = shipObj);
+        state.playerBoard.ships.push(shipObj);
+        placed = true;
+      }
+    }
+  }
+  state.placementQueue = [];
+  logLine('Flottan omslumpad — tryck igen för ny uppställning, eller Starta strid', 'sys');
+  document.getElementById('cmd').value = 'X Y';
+  renderAll();
+});
+
+document.querySelectorAll('.quickbar button[data-ins]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const input = document.getElementById('cmd');
+    if(btn.dataset.mode==='append'){ input.value = (input.value.trim() + ' ' + btn.dataset.ins).trim(); }
+    else { input.value = btn.dataset.ins; }
+    input.focus();
+  });
+});
+
+document.getElementById('grid-target').addEventListener('click', (e)=>{
+  if(state.phase!=='combat' || state.turn!=='player' || state.gameOver) return;
+  const cell = e.target.closest('.cell');
+  if(!cell) return;
+  const x = cell.dataset.x, y = cell.dataset.y;
+  const input = document.getElementById('cmd');
+  const m = input.value.match(/^(G\d{2})/i);
+  const prefix = m ? m[1] + ' ' : '';
+  const orientMatch = input.value.match(/I[01]/i);
+  input.value = prefix + 'X' + x + ' Y' + y + (orientMatch ? ' ' + orientMatch[0] : '');
+  input.focus();
+});
+
+document.getElementById('grid-you').addEventListener('click', (e)=>{
+  if(state.phase!=='placement') return;
+  const cell = e.target.closest('.cell');
+  if(!cell) return;
+  const x = cell.dataset.x, y = cell.dataset.y;
+  const input = document.getElementById('cmd');
+  const orientMatch = input.value.match(/I[01]/i);
+  input.value = 'X' + x + ' Y' + y + (orientMatch ? ' ' + orientMatch[0] : '');
+  input.focus();
+});
+
+startNewGame();
+</script>
+</body>
+</html>

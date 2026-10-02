@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verktyg — Svenska/Engelska — Läsmaterial | CNC-Grönt kort</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{
+    width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto;
+  }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{
+    content:""; position:absolute; background:var(--amber);
+  }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+
+  .dim{
+    display:flex; align-items:center; gap:10px; margin:38px 0 26px; color:var(--muted);
+    font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace; font-size:11.5px;
+    letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+  }
+  .dim::before, .dim::after{ content:""; flex:1; height:1px; background:var(--line);
+    background-image: linear-gradient(90deg, var(--line) 0, var(--line) 100%);
+    position:relative;
+  }
+  .dim .tick{position:relative;}
+  .dim-line{flex:1; height:1px; background:var(--line); position:relative;}
+  .dim-line::before{content:"";position:absolute; left:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim-line::after{content:"";position:absolute; right:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim .label{padding:2px 4px; flex:0 0 auto;}
+
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  h1 .accent{color:var(--amber);}
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+
+  article.reading h2{
+    font-family:"Arial Narrow",Arial,sans-serif; font-size:24px; font-weight:800; letter-spacing:-.005em;
+    margin:36px 0 12px; padding-top:4px; color:var(--text);
+  }
+  article.reading h2 .num{color:var(--accent,var(--amber)); margin-right:8px; font-family:"IBM Plex Mono",monospace; font-size:16px;}
+  article.reading h3{
+    font-size:16.5px; font-weight:700; margin:22px 0 8px; color:var(--accent,var(--amber));
+  }
+  article.reading p{color:#c9d2d9; font-size:15px; line-height:1.72; margin:0 0 14px;}
+  article.reading ul{margin:0 0 16px; padding-left:0; list-style:none;}
+  article.reading ul li{
+    position:relative; padding-left:20px; margin-bottom:8px; color:#c9d2d9; font-size:14.6px; line-height:1.6;
+  }
+  article.reading ul li::before{
+    content:""; position:absolute; left:0; top:9px; width:7px; height:2px; background:var(--accent,var(--amber));
+  }
+  article.reading strong{color:var(--text);}
+  article.reading table.ref-table{width:100%; border-collapse:collapse; margin:14px 0 20px; font-size:14.5px;}
+  article.reading table.ref-table th, article.reading table.ref-table td{text-align:left; padding:8px 12px; border-bottom:1px solid var(--line);}
+  article.reading table.ref-table th{color:var(--muted); font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; font-weight:700;}
+  article.reading table.ref-table tr:hover td{background:var(--panel-2);}
+  .callout{
+    border-left:3px solid var(--accent,var(--amber)); background:var(--panel);
+    padding:13px 16px; margin:18px 0; border-radius:0 6px 6px 0; font-size:14.2px; color:#dfe6ea; line-height:1.6;
+  }
+  .callout b{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent,var(--amber)); margin-bottom:4px; font-family:"IBM Plex Mono",monospace;}
+  .toc{
+    display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 6px;
+  }
+  .toc a{
+    font-size:12.5px; padding:6px 11px; border:1px solid var(--line); border-radius:999px;
+    text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;
+  }
+  .toc a:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+
+  .footcta{
+    margin-top:48px; border-top:1px solid var(--line); padding-top:26px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .footcta .ft-txt{font-size:13.5px; color:var(--muted); max-width:44ch;}
+
+  footer.sitefoot{text-align:center; color:var(--muted); font-size:12px; margin-top:50px; padding-bottom:10px;}
+
+  @media (max-width:640px){
+    .topnav nav{gap:12px; font-size:12px;}
+  }
+
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+
+<style>
+  article.reading{max-width:720px;}
+  .tool-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px; margin:18px 0 24px;}
+  .tool-card{
+    border:1px solid var(--line); border-radius:8px; background:var(--panel);
+    padding:16px 12px; display:flex; flex-direction:column; align-items:center; gap:10px;
+    text-align:center; transition:.15s;
+  }
+  .tool-card:hover{border-color:var(--accent,var(--amber)); transform:translateY(-2px);}
+  .tool-icon{
+    width:100px; height:76px; border-radius:8px; background:#eef1f4;
+    display:flex; align-items:center; justify-content:center; padding:8px;
+  }
+  .tool-icon img{max-width:100%; max-height:100%; object-fit:contain; display:block;}
+  .tool-names{display:flex; flex-direction:column; gap:2px;}
+  .tool-sv{font-weight:700; font-size:13.5px; color:var(--text);}
+  .tool-en{font-size:12px; color:var(--muted); font-style:italic;}
+</style>
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="../material.html"><span class="mark"></span>CNC-GRÖNT KORT</a>
+  <nav>
+    <a href="../material.html">Delkurser</a>
+    <a href="../quiz-alla.html">Storquiz</a>
+  </nav>
+</div>
+
+<main class="wrap narrow">
+  <header class="hero">
+    <div class="eyebrow">MTL-01 · Läsmaterial</div>
+    <h1>Verktyg — Svenska/Engelska</h1>
+    <div class="sub">Vanliga verktyg och mätdon på svenska och engelska — handverktyg, mätdon och skärande verktyg.<br><span style="color:var(--muted); font-size:12.5px;">Källa: Verktyg Svenska/Engelska – ordlista</span></div>
+    <div class="toc"><a href="#handverktyg_matdon">Handverktyg &amp; mätdon</a><a href="#skarande_verktyg">Skärande verktyg</a></div>
+  </header>
+  <div class="dim">TILL INNEHÅLLET</div>
+  <article class="reading" style="--accent:#a487d6">
+
+    <h2 id="handverktyg_matdon"><span class="num">01</span>Handverktyg &amp; mätdon</h2>
+<p>Grundläggande handverktyg och mätdon som används dagligen vid inställning, fastspänning och kontrollmätning i verkstaden.</p>
+        <div class="tool-grid">
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/insexnyckel.png" alt="Insexnyckel" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Insexnyckel</span><span class="tool-en">Allen wrench</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/fast_nyckel.png" alt="Fast nyckel" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Fast nyckel</span><span class="tool-en">Box wrench</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/ringnyckel.png" alt="Ringnyckel" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Ringnyckel</span><span class="tool-en">Box spanner</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/skiftnyckel.png" alt="Skiftnyckel" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Skiftnyckel</span><span class="tool-en">Adjustable wrench</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/kornare.png" alt="Körnare" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Körnare</span><span class="tool-en">Centre punch</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/roterande_dubb.png" alt="Roterande dubb" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Roterande dubb</span><span class="tool-en">Live center</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/svarvdubb.png" alt="Svarvdubb" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Svarvdubb</span><span class="tool-en">Turning centre</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/vinkelmatare.png" alt="Vinkelmätare" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Vinkelmätare</span><span class="tool-en">Angle gauge</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/skjutmatt.png" alt="Skjutmått" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Skjutmått</span><span class="tool-en">Callipers</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/mikrometer.png" alt="Mikrometer" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Mikrometer</span><span class="tool-en">Micrometer</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/matklocka.png" alt="Mätklocka" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Mätklocka</span><span class="tool-en">Dial gauge</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/vippindikator.png" alt="Vippindikator" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Vippindikator</span><span class="tool-en">Dial test indicator</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/lettringsgaffel.png" alt="Lettringsgaffel" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Lettringsgaffel</span><span class="tool-en">Knurling Tool</span></div>
+        </div>
+      </div>
+
+    <h2 id="skarande_verktyg"><span class="num">02</span>Skärande verktyg</h2>
+<p>Verktyg som används vid själva den skärande bearbetningen — borrning, fräsning och finbearbetning av hål.</p>
+        <div class="tool-grid">
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/dubbhalsborr.png" alt="Dubbhålsborr" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Dubbhålsborr</span><span class="tool-en">Centre drill</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/brotch.png" alt="Brotch" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Brotch</span><span class="tool-en">Reamer</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/fasfras.png" alt="Fasfräs" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Fasfräs</span><span class="tool-en">Chamfermill</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/planfras.png" alt="Planfräs" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Planfräs</span><span class="tool-en">Facemill</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/hornfras.png" alt="Hörnfräs" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Hörnfräs</span><span class="tool-en">Shouldermill</span></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon"><img src="img/pinnfras.png" alt="Pinnfräs" loading="lazy"></div>
+          <div class="tool-names"><span class="tool-sv">Pinnfräs</span><span class="tool-en">Endmill</span></div>
+        </div>
+      </div>
+
+  </article>
+  <div class="footcta">
+    <div class="ft-txt">Läs igenom materialet, testa sedan dina kunskaper i quizet för Verktyg — Svenska/Engelska.</div>
+    <a class="btn btn-amber" style="background:#a487d6;" href="../quiz/verktyg.html">Starta quiz &rarr;</a>
+  </div>
+</main>
+
+<script src="../../../assets/site.js"></script>
+</body>
+</html>

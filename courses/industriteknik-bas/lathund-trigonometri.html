@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lathund — Trigonometri | Industriteknik BAS</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --panel: #1a222b;
+    --line: #2c3844;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --panel: #ffffff;
+    --line: #d7dbe0;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+  }
+  a{color:inherit;}
+  .topnav{
+    max-width:900px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{
+    width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto;
+  }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{
+    content:""; position:absolute; background:var(--amber);
+  }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav .back{ text-decoration:none; color:var(--muted); font-weight:600; }
+  .topnav .back:hover{ color:var(--amber); }
+
+  .wrap{max-width:900px; margin:0 auto; padding:24px 20px 60px;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(22px,5vw,32px); margin:6px 0 4px;
+  }
+  .sub{color:var(--muted); font-size:14px; margin-bottom:20px;}
+  .sheet{
+    background:#fff; color:#111; border-radius:6px; padding:26px 30px 34px; border:1px solid var(--line);
+    box-shadow:0 20px 50px -25px rgba(0,0,0,.7);
+    font-family: Georgia, "Times New Roman", serif;
+  }
+  .sheet h2{ font-family:-apple-system,"Segoe UI",Arial,sans-serif; font-size:22px; letter-spacing:.03em; border-bottom:2px solid #111; padding-bottom:6px; margin:0 0 18px; }
+  .sheet h3{ font-family:-apple-system,"Segoe UI",Arial,sans-serif; font-size:16px; margin:16px 0 4px; }
+  .formrow{ display:flex; gap:40px; font-size:17px; margin:2px 0 2px 6px; }
+  .top-cols{ display:flex; gap:30px; align-items:flex-start; }
+  .top-cols .formulas{ flex:1; min-width:0; }
+  .tri-wrap{ flex:0 0 auto; text-align:center; padding-top:4px; }
+  .tri-note{ font-size:15px; margin-top:4px; }
+  .note{ font-size:14.5px; margin:18px 0 26px; }
+  .sheet table{ width:100%; border-collapse:collapse; font-size:14.5px; margin-bottom:10px; }
+  .sheet th, .sheet td{ border:1px solid #333; padding:6px 10px; text-align:center; vertical-align:middle; }
+  .sheet th{ background:#f2f2f2; font-family:-apple-system,"Segoe UI",Arial,sans-serif; }
+  .tables{ display:flex; gap:24px; }
+  .tables > div{ flex:1; }
+  @media (max-width:640px){
+    .top-cols{ flex-direction:column; align-items:center; }
+    .tables{ flex-direction:column; }
+  }
+</style>
+</head>
+<body>
+<div class="topnav">
+  <a class="brand" href="material.html"><span class="mark"></span>INDUSTRITEKNIK BAS</a>
+  <a class="back" href="javascript:history.back()">&larr; Tillbaka till quizet</a>
+</div>
+<main class="wrap">
+  <h1>Lathund — Trigonometri</h1>
+  <div class="sub">Formler för sinus, cosinus, tangens och cotangens, samt tabell för vilken formel du ska använda beroende på vad du känner till och vad du söker. Denna sida kan hållas öppen i en egen flik medan du räknar.</div>
+  <div class="sheet">
+    <h2>TRIGONOMETRI</h2>
+
+    <div class="top-cols">
+      <div class="formulas">
+        <h3>Sinus</h3>
+        <div class="formrow"><div>sin α = a / c</div><div>sin β = b / c</div></div>
+        <h3>Cosinus</h3>
+        <div class="formrow"><div>cos α = b / c</div><div>cos β = a / c</div></div>
+        <h3>Tangens</h3>
+        <div class="formrow"><div>tan α = a / b</div><div>tan β = b / a</div></div>
+        <h3>Cotangens</h3>
+        <div class="formrow"><div>cot α = b / a</div><div>cot β = a / b</div></div>
+      </div>
+      <div class="tri-wrap">
+        <svg viewBox="0 0 240 190" width="220" height="174" aria-hidden="true">
+          <polygon points="50,170 50,20 230,170" fill="none" stroke="#111" stroke-width="2"/>
+          <rect x="50" y="158" width="12" height="12" fill="none" stroke="#111" stroke-width="1.5"/>
+          <text x="30" y="100" font-size="16" font-style="italic" text-anchor="middle">a</text>
+          <text x="140" y="188" font-size="16" font-style="italic" text-anchor="middle">b</text>
+          <text x="150" y="90" font-size="16" font-style="italic" text-anchor="middle">c</text>
+          <text x="66" y="42" font-size="15" text-anchor="middle">β</text>
+          <text x="205" y="158" font-size="15" text-anchor="middle">α</text>
+        </svg>
+        <div class="tri-note">α + β = 90°</div>
+      </div>
+    </div>
+
+    <div class="note">Cotangens används sällan vid tekniska beräkningar.</div>
+
+    <div class="tables">
+      <div>
+        <table>
+          <tr><th>Givet</th><th>Sökt</th><th>Lösning</th></tr>
+          <tr><td rowspan="3">a, b</td><td>α</td><td>tan α = a / b</td></tr>
+          <tr><td>β</td><td>tan β = b / a</td></tr>
+          <tr><td>c</td><td>c = √(a² + b²)<br><small>(Pythagoras sats)</small></td></tr>
+          <tr><td rowspan="3">a, c</td><td>α</td><td>sin α = a / c</td></tr>
+          <tr><td>β</td><td>cos β = a / c</td></tr>
+          <tr><td>b</td><td>b = √(c² − a²)<br><small>(Pythagoras sats)</small></td></tr>
+          <tr><td rowspan="3">b, c</td><td>α</td><td>cos α = b / c</td></tr>
+          <tr><td>β</td><td>sin β = b / c</td></tr>
+          <tr><td>a</td><td>a = √(c² − b²)<br><small>(Pythagoras sats)</small></td></tr>
+        </table>
+      </div>
+      <div>
+        <table>
+          <tr><th>Givet</th><th>Sökt</th><th>Lösning</th></tr>
+          <tr><td rowspan="2">a, α</td><td>b</td><td>b = a / tan α</td></tr>
+          <tr><td>c</td><td>c = a / sin α</td></tr>
+          <tr><td rowspan="2">b, α</td><td>a</td><td>a = b · tan α</td></tr>
+          <tr><td>c</td><td>c = b / cos α</td></tr>
+          <tr><td rowspan="2">c, α</td><td>a</td><td>a = c · sin α</td></tr>
+          <tr><td>b</td><td>b = c · cos α</td></tr>
+          <tr><td rowspan="2">a, β</td><td>b</td><td>b = a · tan β</td></tr>
+          <tr><td>c</td><td>c = a / cos β</td></tr>
+          <tr><td rowspan="2">b, β</td><td>a</td><td>a = b / tan β</td></tr>
+          <tr><td>c</td><td>c = b / sin β</td></tr>
+          <tr><td rowspan="2">c, β</td><td>a</td><td>a = c · cos β</td></tr>
+          <tr><td>b</td><td>b = c · sin β</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

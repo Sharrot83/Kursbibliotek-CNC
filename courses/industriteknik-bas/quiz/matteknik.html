@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mätteknik — Quiz | Industriteknik BAS</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+
+  /* --- top nav --- */
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{
+    width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto;
+  }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{
+    content:""; position:absolute; background:var(--amber);
+  }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+
+  /* --- dimension-line divider (signature element) --- */
+  .dim{
+    display:flex; align-items:center; gap:10px; margin:38px 0 26px; color:var(--muted);
+    font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace; font-size:11.5px;
+    letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+  }
+  .dim::before, .dim::after{ content:""; flex:1; height:1px; background:var(--line);
+    background-image: linear-gradient(90deg, var(--line) 0, var(--line) 100%);
+    position:relative;
+  }
+  .dim .tick{position:relative;}
+  .dim-line{flex:1; height:1px; background:var(--line); position:relative;}
+  .dim-line::before{content:"";position:absolute; left:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim-line::after{content:"";position:absolute; right:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim .label{padding:2px 4px; flex:0 0 auto;}
+
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  h1 .accent{color:var(--amber);}
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+
+  /* --- subject grid / title-block cards --- */
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px; margin-top:30px;}
+  .tblock{
+    border:1px solid var(--line); border-radius:4px; background:var(--panel);
+    position:relative; overflow:hidden; display:flex; flex-direction:column;
+    transition:.18s; text-decoration:none; color:var(--text);
+  }
+  .tblock::before{ /* corner registration marks */
+    content:""; position:absolute; top:8px; left:8px; width:9px; height:9px;
+    border-top:1.5px solid var(--accent,var(--amber)); border-left:1.5px solid var(--accent,var(--amber));
+    opacity:.9;
+  }
+  .tblock::after{
+    content:""; position:absolute; bottom:8px; right:8px; width:9px; height:9px;
+    border-bottom:1.5px solid var(--accent,var(--amber)); border-right:1.5px solid var(--accent,var(--amber));
+    opacity:.9;
+  }
+  .tblock:hover{border-color:var(--accent,var(--amber)); transform:translateY(-2px); box-shadow:0 16px 30px -18px rgba(0,0,0,.7);}
+  .tblock .tb-top{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 18px; border-bottom:1px solid var(--line);
+    font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; letter-spacing:.06em; color:var(--muted);
+  }
+  .tblock .tb-top .code{color:var(--accent,var(--amber)); font-weight:700;}
+  .tblock .tb-body{padding:16px 18px 6px; flex:1;}
+  .tblock h3{margin:0 0 8px; font-family:"Arial Narrow",Arial,sans-serif; font-size:21px; font-weight:800; letter-spacing:-.01em;}
+  .tblock p{margin:0; color:var(--muted); font-size:13.6px; line-height:1.55;}
+  .tblock .tb-bottom{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:13px 18px; margin-top:14px; border-top:1px solid var(--line);
+    font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; color:var(--muted);
+  }
+  .tblock .tb-bottom .qn{color:var(--accent,var(--amber)); font-weight:700;}
+  .pillrow{display:flex; gap:8px; padding:0 18px 16px;}
+  .pill{
+    flex:1; text-align:center; padding:9px 6px; border-radius:5px; border:1px solid var(--line);
+    font-size:12.5px; font-weight:700; text-decoration:none; color:var(--text); transition:.15s;
+    background:var(--panel-2);
+  }
+  .pill:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+  .pill.solid{background:var(--accent,var(--amber)); border-color:var(--accent,var(--amber)); color:#0f1115;}
+  .pill.solid:hover{filter:brightness(1.08); color:#0f1115;}
+
+  /* --- master card (combined quiz) --- */
+  .master{
+    margin-top:34px; border:1px solid var(--line); border-radius:6px;
+    background:linear-gradient(135deg, #1c232b, #171e25);
+    padding:26px 26px 22px; position:relative; overflow:hidden;
+  }
+  .master::before{
+    content:""; position:absolute; inset:0; opacity:.5; pointer-events:none;
+    background-image: repeating-linear-gradient(135deg, rgba(255,138,43,.05) 0 2px, transparent 2px 14px);
+  }
+  .master .mtitle{font-family:"Arial Narrow",Arial,sans-serif; font-weight:800; font-size:23px; margin:2px 0 6px;}
+  .master p{color:var(--muted); font-size:14px; max-width:56ch; line-height:1.6; margin:0 0 16px;}
+
+  /* --- buttons --- */
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+
+  /* --- reading material page --- */
+  article.reading h2{
+    font-family:"Arial Narrow",Arial,sans-serif; font-size:24px; font-weight:800; letter-spacing:-.005em;
+    margin:36px 0 12px; padding-top:4px; color:var(--text);
+  }
+  article.reading h2 .num{color:var(--accent,var(--amber)); margin-right:8px; font-family:"IBM Plex Mono",monospace; font-size:16px;}
+  article.reading h3{
+    font-size:16.5px; font-weight:700; margin:22px 0 8px; color:var(--accent,var(--amber));
+  }
+  article.reading p{color:#c9d2d9; font-size:15px; line-height:1.72; margin:0 0 14px;}
+  article.reading ul{margin:0 0 16px; padding-left:0; list-style:none;}
+  article.reading ul li{
+    position:relative; padding-left:20px; margin-bottom:8px; color:#c9d2d9; font-size:14.6px; line-height:1.6;
+  }
+  article.reading ul li::before{
+    content:""; position:absolute; left:0; top:9px; width:7px; height:2px; background:var(--accent,var(--amber));
+  }
+  article.reading strong{color:var(--text);}
+  .callout{
+    border-left:3px solid var(--accent,var(--amber)); background:var(--panel);
+    padding:13px 16px; margin:18px 0; border-radius:0 6px 6px 0; font-size:14.2px; color:#dfe6ea; line-height:1.6;
+  }
+  .callout b{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent,var(--amber)); margin-bottom:4px; font-family:"IBM Plex Mono",monospace;}
+  .lawbox{
+    margin:20px 0; padding:16px 18px; border:1px dashed var(--line); border-radius:6px;
+    font-style:italic; color:var(--text); font-size:15px; background:var(--bg2);
+  }
+  .lawbox b{font-style:normal; display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:6px; font-family:"IBM Plex Mono",monospace;}
+  .toc{
+    display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 6px;
+  }
+  .toc a{
+    font-size:12.5px; padding:6px 11px; border:1px solid var(--line); border-radius:999px;
+    text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;
+  }
+  .toc a:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+
+  .footcta{
+    margin-top:48px; border-top:1px solid var(--line); padding-top:26px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .footcta .ft-txt{font-size:13.5px; color:var(--muted); max-width:44ch;}
+
+  footer.sitefoot{text-align:center; color:var(--muted); font-size:12px; margin-top:50px; padding-bottom:10px;}
+
+  @media (max-width:640px){
+    .topnav nav{gap:12px; font-size:12px;}
+    .master{padding:20px;}
+  }
+
+  /* --- shared topbar / crumbs (site-wide course switcher) --- */
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+
+<style>
+  .progress-row{display:flex; align-items:center; gap:10px; margin:24px 0 20px;}
+  .progress-track{flex:1; height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden;}
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--page-accent), var(--green)); width:0%; transition:width .25s;}
+  .progress-label{font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap; font-family:"IBM Plex Mono",monospace;}
+  .card{
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid var(--line); border-radius:14px; padding:26px 24px;
+    box-shadow: 0 20px 40px -25px rgba(0,0,0,.6);
+  }
+  .qmeta{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;}
+  .qtag{font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; font-weight:700; padding:4px 9px; border-radius:6px;}
+  .qnum{color:var(--muted); font-size:13px; font-family:"IBM Plex Mono",monospace;}
+  .prompt{font-size:18.5px; font-weight:600; line-height:1.4; margin-bottom:18px;}
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .opt{
+    text-align:left; padding:13px 15px; border-radius:10px; border:1px solid var(--line);
+    background:#161d24; color:var(--text); font-size:15px; cursor:pointer; transition:.12s;
+    display:flex; gap:10px; align-items:flex-start; width:100%;
+  }
+  .opt:hover:not([disabled]){border-color:var(--page-accent); background:#1a222b;}
+  .opt .k{
+    flex:0 0 auto; width:22px; height:22px; border-radius:6px; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--muted); font-weight:700;
+  }
+  .opt[disabled]{cursor:default;}
+  .opt.correct{border-color:var(--green); background:var(--green-dim);}
+  .opt.correct .k{border-color:var(--green); color:var(--green); background:#122a1a;}
+  .opt.wrong{border-color:var(--red); background:var(--red-dim);}
+  .opt.wrong .k{border-color:var(--red); color:var(--red); background:#2a1513;}
+  .feedback{margin-top:16px; padding:14px 16px; border-radius:10px; font-size:14.5px; line-height:1.5; display:none;}
+  .feedback.show{display:block;}
+  .feedback.ok{background:var(--green-dim); border:1px solid #2f6b47; color:#cdeed9;}
+  .feedback.bad{background:var(--red-dim); border:1px solid #7a3833; color:#f3d2ce;}
+  .feedback b{display:block; margin-bottom:3px; font-size:13px; text-transform:uppercase; letter-spacing:.06em;}
+  .controls{display:flex; justify-content:flex-end; margin-top:20px;}
+  button.next{
+    background:var(--page-accent); color:#12161b; border:none; padding:11px 22px;
+    border-radius:9px; font-weight:700; font-size:14.5px; cursor:pointer;
+  }
+  button.next:disabled{background:var(--panel-2); color:var(--muted); cursor:not-allowed;}
+  button.next:hover:not(:disabled){filter:brightness(1.08);}
+  .result{text-align:center; padding:20px 10px 10px;}
+  .result .big{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; font-size:56px; line-height:1;}
+  .result .of{color:var(--muted); font-size:15px; margin-top:6px;}
+  .review{margin-top:26px; text-align:left; display:flex; flex-direction:column; gap:10px;}
+  .review-item{border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-size:14px;}
+  .review-item.ok{border-left:3px solid var(--green);}
+  .review-item.bad{border-left:3px solid var(--red);}
+  .review-item .q{font-weight:600; margin-bottom:4px;}
+  .review-item .a{color:var(--muted);}
+  .restart{
+    margin-top:24px; background:none; border:1px solid var(--line); color:var(--text);
+    padding:10px 20px; border-radius:9px; cursor:pointer; font-size:14px; font-weight:600;
+  }
+  .restart:hover{border-color:var(--page-accent); color:var(--page-accent);}
+  .pool-note{margin-top:10px; font-size:13px; color:var(--page-accent); font-weight:600;
+    background:var(--page-dim); display:inline-block; padding:5px 12px; border-radius:8px;
+    font-family:"IBM Plex Mono",monospace;}
+</style>
+<style>:root{--page-accent:#a487d6; --page-dim:#2c2440;}
+  :root[data-theme="light"]{
+    --page-accent: #7d5cb8;
+  }</style>
+
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="../material.html"><span class="mark"></span>INDUSTRITEKNIK BAS</a>
+  <nav>
+    <a href="../material.html">Kursmaterial</a>
+    <a href="../quiz-alla.html">Storquiz (657)</a>
+  </nav>
+</div>
+
+<main class="wrap narrow">
+  <header class="hero">
+    <div class="eyebrow">MTL-03 · Quiz</div>
+    <h1>Mätteknik</h1>
+    <div class="sub">Öva på frågor från <a href="../material/matteknik.html" style="color:var(--page-accent); font-weight:600;">läsmaterialet om mätteknik</a>. Frågorna och svarsalternativen slumpas varje omgång.</div>
+    <div class="pool-note" id="poolNote"></div>
+  </header>
+
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 0</div>
+  </div>
+
+  <div class="card" id="card"></div>
+
+  <div class="footcta">
+    <div class="ft-txt">Svara i din egen takt — resultatet sparas inte och skickas ingenstans.</div>
+    <a class="btn btn-ghost" href="../material.html">&larr; Alla ämnen</a>
+  </div>
+</main>
+
+<script>
+const CAT_ID = "matteknik";
+const CAT_LABEL = "Mätteknik";
+const QUESTIONS = [
+    {q:"Vad är grundenheten för längd, och vilka mindre enheter används i praktiken i verkstaden?", opts:["Meter, med millimeter och mikrometer som praktiska enheter","Meter, med centimeter och decimeter","Tum, med fot och yard","Kilogram, med gram och milligram"], correct:0, fb:"Grundenheten för längd är meter (m), men i verkstaden används i praktiken millimeter och mikrometer."},
+    {q:"Hur stor är en mikrometer (µm) uttryckt i millimeter?", opts:["0,001 mm","0,01 mm","0,1 mm","1000 mm"], correct:0, fb:"En mikrometer är en tusendels millimeter, alltså 0,001 mm."},
+    {q:"Hur delas en grad in enligt materialet?", opts:["I 60 minuter, och en minut i 60 sekunder","I 100 minuter","I 10 delar","I 360 sekunder direkt"], correct:0, fb:"En grad (°) delas in i 60 minuter (′), och en minut delas i 60 sekunder (″)."},
+    {q:"Vad är ett mätobjekt?", opts:["Det föremål eller den detalj som ska mätas","Ett mätdon","En toleransklass","Ett mätprotokoll"], correct:0, fb:"Ett mätobjekt är det föremål eller den detalj som ska mätas."},
+    {q:"Vad är skillnaden mellan direkt och indirekt mätmetod?", opts:["Direkt avläses måttet direkt på mätdonet, indirekt överförs måttet till ett annat mätdon","Direkt kräver alltid dator, indirekt gör det inte","Indirekt är alltid noggrannare än direkt","Det finns ingen skillnad"], correct:0, fb:"Vid direkt mätmetod avläses måttet direkt på mätdonet, medan indirekt mätmetod först överför måttet till ett annat, avläsbart mätdon."},
+    {q:"Vad är tolkning som kontrollmetod?", opts:["Ett fast mätdon avgör om arbetsstycket är godkänt, för litet eller för stort","Att läsa av en digital display","Att jämföra mot en ritning visuellt","Att mäta med en mikrometer"], correct:0, fb:"Tolkning innebär att ett fast mätdon (en tolk) avgör om arbetsstycket är godkänt, har undermått eller övermått."},
+    {q:"Vad är mallning som kontrollmetod?", opts:["Att fastställa om arbetsstyckets form stämmer med mallens form","Att mäta gängors stigning","Att kalibrera ett mätdon","Att mäta ytjämnhet med nagel"], correct:0, fb:"Mallning innebär att man fastställer om arbetsstyckets form överensstämmer med mallens form."},
+    {q:"Vad är ett mätdons mätområde?", opts:["Det mätvärdesområde inom vilket mätdonet kan användas utan att tillåtet fel överskrids","Samma sak som skaldelen","Endast det största mätvärdet mätdonet klarar","Mätdonets pris i förhållande till noggrannhet"], correct:0, fb:"Mätområdet är det mätvärdesområde inom vilket mätdonet under normala förhållanden kan användas utan att största tillåtna fel överskrids."},
+    {q:"Vad är noggrannhet enligt materialet?", opts:["Hur väl ett uppmätt värde stämmer med det verkliga, sanna värdet","Hur snabbt man kan läsa av ett mätdon","Hur dyrt ett mätdon är","Hur stort mätområdet är"], correct:0, fb:"Noggrannhet beskriver hur väl ett uppmätt värde stämmer med det verkliga, sanna värdet."},
+    {q:"Varför lämpar sig tumstocken sämre för noggrann mätning i verkstaden?", opts:["Ledernas konstruktion gör att den slits med tiden och tappar noggrannhet","Den saknar skalstreck helt","Den är för lång för de flesta mätningar","Den kan bara mäta vinklar"], correct:0, fb:"Tumstockens leder slits med tiden, vilket försämrar noggrannheten och gör den olämplig för noggranna verkstadsmätningar."},
+    {q:"Vad används stålskalan till, förutom längdmätning?", opts:["Som linjal och för grovkontroll av rak- och planhet","Enbart som ritsverktyg","Enbart för mätning av gängor","Enbart för vinkelmätning"], correct:0, fb:"Stålskalan används för längdmätning och måttinställning, men fungerar även som linjal och för grovkontroll av rak- och planhet."},
+    {q:"Vilken extra funktion har märkmätaren jämfört med ett vanligt måttband?", opts:["En märkfunktion som gör det möjligt att föra över en mätsträcka utan att avläsa något mått","Den mäter alltid i tum","Den har högre noggrannhet än en stålskala","Den kan bara mäta diametrar"], correct:0, fb:"Märkmätarens märkfunktion gör det möjligt att föra över en mätsträcka till t.ex. ett arbetsstycke utan att man behöver avläsa ett mått."},
+    {q:"Vilken förstoring har en mätlupp normalt?", opts:["5–10 gånger","1–2 gånger","50–100 gånger","500 gånger"], correct:0, fb:"Mätluppen har en optik som ger en förstoring på 5–10 gånger."},
+    {q:"Med vilken noggrannhet läser det vanligaste skjutmåttet av med en nonieskala?", opts:["0,1 mm","1 mm","0,001 mm","1 cm"], correct:0, fb:"Det vanligaste skjutmåttet med nonieskala läser av med en noggrannhet på 0,1 mm."},
+    {q:"Hur fungerar en 1/10-nonie på ett skjutmått?", opts:["10 delstreck på nonien motsvarar 9 mm på huvudskalan, vilket ger 0,1 mm noggrannhet","10 delstreck på nonien motsvarar 10 cm på huvudskalan","Nonien mäter enbart vinklar","Nonien används bara på tumskalan"], correct:0, fb:"På en 1/10-nonie motsvarar 10 delstreck 9 mm på huvudskalan, vilket ger en avläsningsnoggrannhet på 0,1 mm."},
+    {q:"Varför bör en 1/50-nonie på ett skjutmått undvikas enligt materialet?", opts:["Den ger en skenbar noggrannhet som skjutmåttet i praktiken inte kan leva upp till","Den är förbjuden enligt standard","Den fungerar bara på digitala skjutmått","Den kan bara mäta invändiga mått"], correct:0, fb:"En 1/50-nonie ger en avläsningsnoggrannhet som skjutmåttets konstruktion i praktiken inte kan garantera, och bör därför undvikas."},
+    {q:"Vad kontrollerar man innan man börjar mäta med ett skjutmått?", opts:["Att skänklarna är helt ihopskjutna, visar noll och ligger parallellt","Att det är kalibrerat av tillverkaren samma dag","Att det är målat i rätt färg","Att det har digital display"], correct:0, fb:"Innan mätning bör man skjuta ihop mätskänklarna och kontrollera att skjutmåttet visar noll och att skänklarna är parallella."},
+    {q:"Vad används ett höjdskjutmått till?", opts:["Mät- och ritsoperationer på en planskiva","Att mäta kilspår i axlar","Att mäta invändiga hål","Att mäta gängors medeldiameter"], correct:0, fb:"Ett höjdskjutmått används vid mät- och ritsoperationer på en planskiva och har ofta en fininställningsskruv."},
+    {q:"Vad används ett kilspårsskjutmått till?", opts:["Att mäta kilspår i axlar","Att mäta ytjämnhet","Att mäta gängors stigning","Att mäta vinklar över 90°"], correct:0, fb:"Kilspårsskjutmått används för att mäta kilspår i axlar, för axeldiametrar mellan ca 5 och 200 mm."},
+    {q:"Ungefär vilken noggrannhet har en mikrometer för att mäta mått med små toleranser?", opts:["Ca 0,01 mm","Ca 1 mm","Ca 0,5 mm","Ca 0,0001 mm"], correct:0, fb:"Mikrometern används för mått med små toleranser, med en noggrannhet på ungefär 0,01 mm vid rätt skötsel."},
+    {q:"Hur avläser man hela och halva millimetrar på en mikrometer?", opts:["Hela millimetrar på den övre skalan på hylsan, halva på den undre, förskjutna skalor","Bägge på mättrumman","Enbart på indexhylsans nollinje","Enbart genom digital display"], correct:0, fb:"Hylsan har två skalor där den undre är förskjuten en halv millimeter mot den övre, så man läser hela mm på den övre och halva mm på den undre."},
+    {q:"Hur mycket förflyttar sig mätkolven på en mikrometer per varv av mättrumman?", opts:["0,5 mm","0,01 mm","1 mm","5 mm"], correct:0, fb:"Ett varv på mättrumman förflyttar den rörliga mätkolven 0,5 mm, och trumman är sedan graderad i 50 delar om 0,01 mm."},
+    {q:"Vad används en hålmikrometer till, och vad kan den avslöja?", opts:["Mätning av finbearbetade hål; kan avslöja formfel via trepunktsmätning men inte ovalitet","Mätning av utvändiga gängor; avslöjar alltid ovalitet","Mätning av ytjämnhet på plana ytor","Mätning av kuggtjocklek"], correct:0, fb:"Hålmikrometern är självcentrerande med tre mätklackar och kan via trepunktsmätning avslöja formfel, men inte om hålet är ovalt."},
+    {q:"Vad skiljer en djupmikrometers gradering från en vanlig utvändig mikrometer?", opts:["Graderingen på skänkelhylsa och mättrumma är omvänd","Den saknar mättrumma helt","Den mäter alltid i tum","Den har ingen friktionsskruv"], correct:0, fb:"På djupmikrometern är graderingen på skänkelhylsan och mättrumman omvänd jämfört med den utvändiga mikrometern."},
+    {q:"Hur mäter man med ett ställbart stickmått, och ungefär vilken noggrannhet klarar en van yrkesperson?", opts:["Man känner in måttet mot arbetsstycket och avläser sedan med en mikrometer, ca 0,02 mm","Man läser av måttet direkt på stickmåttets egen skala, ca 0,001 mm","Det används enbart för ytjämnhetsmätning","Det kräver alltid en dator för avläsning"], correct:0, fb:"Det ställbara stickmåttet mäter indirekt: man känner in måttet och läser sedan av det med en mikrometer, med en noggrannhet på ca 0,02 mm hos en van yrkesperson."},
+    {q:"Vad avgör måttet på en passbit?", opts:["Avståndet mellan två noggrant slipade, planparallella ytor","Bitens totala vikt","Bitens färgmärkning","Antalet passbitar i satsen"], correct:0, fb:"Passbitens måttvärde är avståndet mellan dess två härdade, slipade och läppade planparallella ytor."},
+    {q:"Vad håller ihop två hopfogade passbitar?", opts:["Adhesion (vidhäftning) mellan de mycket plana ytorna","Ett inbyggt magnetiskt fäste","Skruvar och muttrar","Ett klister som appliceras vid montering"], correct:0, fb:"Passbitar hålls samman genom adhesion (vidhäftning) mellan de noggrant slipade ytorna när de skjuts samman under lätt vridning."},
+    {q:"Vad bör man göra med passbitar efter användning?", opts:["Rengöra dem, fetta in dem och förvara dem åtskilda i sitt etui","Lämna dem hopfogade i ett fuktigt utrymme","Kasta dem efter en mätning","Endast skölja dem i vatten"], correct:0, fb:"Passbitar ska rengöras, fettas in och förvaras åtskilda och rena i sitt etui, eftersom fukt lätt ger rostbildning."},
+    {q:"Hur går man till väga för att hitta rätt bladmåttskombination i en springa?", opts:["Söker sig fram med allt mindre blad tills kombinationen precis passar, utan att tvinga in dem","Tvingar i ett enda stort blad för snabbare mätning","Böjer bladen så att de passar bättre","Mäter alltid med bara ett enda blad"], correct:0, fb:"Man söker sig fram till rätt kombination genom att prova allt mindre blad tills de precis går in, utan att tvinga in dem (då böjs eller stukas bladen)."},
+    {q:"Hur kontrollerar man en profil med en mall?", opts:["Genom jämförande synkontroll och att leta efter en ljusspalt mot en ljus bakgrund","Genom att mäta profilen med en mikrometer","Genom att väga mallen och mätobjektet","Genom att lyssna efter ett klickljud"], correct:0, fb:"Mallning sker genom jämförande synkontroll: man håller mallen mot mätobjektet och letar efter en ljusspalt mot en ljus bakgrund."},
+    {q:"Vad kan egglinjalen avslöja, och hur noggrant?", opts:["Rakhet och planhet, med noggrannhet ner till 0,001 mm via ljusspaltmetoden","Endast ytjämnhet, med noggrannhet 1 mm","Endast vinklar, med noggrannhet 1 grad","Endast gängors stigning"], correct:0, fb:"Egglinjalen mäter rakhet och planhet genom ljusspaltmetoden, med mycket hög noggrannhet ner till 0,001 mm."},
+    {q:"Vad innebär det att en yta är läppad, kopplat till egglinjalmätning?", opts:["Ytan är så väl bearbetad att den inte lämnar någon synlig ljusspalt mot egglinjalen","Ytan har medvetet gjorts ojämn","Ytan är alltid gängad","Ytan är målad för att synas bättre"], correct:0, fb:"En mycket väl bearbetad (läppad) yta lämnar ingen synlig ljusspalt mot egglinjalens mätkant."},
+    {q:"Vad kontrolleras med en cylindrisk toleranstolk (gå/stopp-tolk)?", opts:["Om ett hål ligger inom toleransen: GÅ-tolken ska gå in, STOPP-tolken ska inte göra det","Ytjämnheten på en yta","Vinkeln mellan två plan","Gängans stigning"], correct:0, fb:"Med en gå/stopp-tolk ska GÅ-sidan gå in i hålet och STOPP-sidan inte göra det, för att avgöra om hålet ligger inom toleransen."},
+    {q:"Varför ska man aldrig tolka ett varmt eller roterande mätobjekt?", opts:["Temperatur och rörelse ger felaktiga mätresultat och risk för skador","Det är endast en arbetsmiljöregel utan koppling till mätnoggrannhet","Tolkar tål inte beröring med metall","Det gör ingen skillnad för resultatet"], correct:0, fb:"Ett varmt mätobjekt har fel dimension jämfört med rumstemperatur, och roterande objekt ger både felaktig avläsning och skaderisk."},
+    {q:"Vad kan man avslöja med en flacktolk som en vanlig cylindrisk stopptolk inte lika lätt visar?", opts:["Om ett hål är ovalt","Gängans stigning","Ytjämnheten i ett hål","Materialets hårdhet"], correct:0, fb:"Flacktolkens plana mätyta gör att man lättare kan upptäcka om ett hål är ovalt, jämfört med en helt cylindrisk stopptolk."},
+    {q:"Hur är en haktolks GÅ- och STOPP-mått inställda?", opts:["GÅ-måttet på övre gränsmåttet (ska passera), STOPP-måttet på undre gränsmåttet (ska inte passera)","GÅ-måttet på undre gränsmåttet, STOPP-måttet på övre gränsmåttet","Båda måtten är alltid identiska","Måtten ställs in slumpmässigt för varje mätning"], correct:0, fb:"GÅ-måttet på en haktolk är inställt på övre gränsmåttet och ska passera arbetsstycket, medan STOPP-måttet är inställt på undre gränsmåttet och inte ska passera."},
+    {q:"Varför förvaras kontolk och konhylsa åtskilda?", opts:["För att undvika rostbildning där mätytorna annars skulle ligga an mot varandra","För att de har olika temperatur","För att lagen kräver separat förvaring av alla mätdon","För att de annars magnetiserar varandra"], correct:0, fb:"Om kontolkens och konhylsans mätytor ligger an mot varandra vid förvaring ökar risken för rostbildning, så de förvaras åtskilda."},
+    {q:"Hur kan man med färg eller blyerts upptäcka konicitets- eller formfel på en kona?", opts:["Genom att se var färgen nöts av eller blyertsstrecken blir suddiga efter en liten vridning av mätdonet mot mätobjektet","Genom att väga skillnaden i färgmängd","Genom att mäta färgens tjocklek med mikrometer","Genom att jämföra färgernas nyans"], correct:0, fb:"Man stryker på färg eller drar blyertsstreck, vrider mätdonet en bit mot mätobjektet och ser var ytkontakt uppstått genom nött färg eller suddiga streck."},
+    {q:"Vad används normaltolk och normalring till?", opts:["Att ställa in visande mätdon, t.ex. axel- och hålindikatorer, samt kontrollera hålmikrometrar","Att mäta gängors profilvinkel","Att mäta ytjämnhet direkt","Att svetsa ihop två detaljer"], correct:0, fb:"Normaltolk och normalring används för att ställa in visande mätdon som axel- och hålindikatorer, samt för att kontrollera hålmikrometrar."},
+    {q:"Varför blir noggrannheten hos normaltolk/normalring mycket hög i praktiken?", opts:["Inställning och kontrollmätning sker under samma förhållanden, vilket tar bort många felkällor","De är alltid dyrare än andra mätdon","De mäts alltid i ett vakuum","De används bara en gång och kasseras sedan"], correct:0, fb:"Eftersom inställning av mätdonet och den senare kontrollmätningen sker under samma förhållanden försvinner många potentiella mätfel."},
+    {q:"Vad kännetecknar visande mätdon som mätklockor och vippindikatorer?", opts:["De mäter indirekt genom att visa avvikelsen från ett redan inställt mått","De mäter alltid det absoluta måttet direkt","De kan bara användas för vinkelmätning","De kräver alltid en dator för avläsning"], correct:0, fb:"Visande mätdon mäter indirekt: de visar avvikelsen från ett mått som redan ställts in, t.ex. med en passbitskombination."},
+    {q:"Hur bör mätkraften verka vid mätning med en mätklocka?", opts:["I mätkolvens längdriktning, annars uppstår friktion som försämrar resultatet","Alltid vinkelrätt mot mätkolven","Det spelar ingen roll för resultatet","Endast i horisontalled"], correct:0, fb:"Mätkraften ska verka i mätkolvens längdriktning; kommer den från sidan uppstår friktion som försämrar mätresultatet."},
+    {q:"Vad händer om vippindikatorns mätspets är kraftigt snedställd mot mätytan?", opts:["Ett mätfel uppstår som ökar med snedställningens storlek","Mätdonet slutar fungera helt","Noggrannheten förbättras","Det påverkar bara vinkelmätning, inte längdmätning"], correct:0, fb:"Är vippindikatorns mätspets snedställd mot mätytan uppstår ett mätfel vars storlek beror på hur stor snedställningen är."},
+    {q:"Vad gör mikrokatorn i princip friktionsfri, till skillnad från mätklockan?", opts:["Mätkolven är lagrad i ett membran kopplat till ett torsionsband","Den saknar helt rörliga delar","Den använder magnetisk svävning","Den mäter enbart via ljus, utan mekanisk kontakt"], correct:0, fb:"Mikrokatorns mätkolv är lagrad i ett membran som är kopplat till ett vridet torsionsband, vilket gör mätningen praktiskt taget friktionsfri."},
+    {q:"Hur nollställs och används en hålindikator vid mätning?", opts:["Den centreras och nollställs mot en normalring, och man pendlar med den för att hitta vändläget","Den nollställs alltid mot en passbitskombination i luften","Den kräver ingen nollställning alls","Den mäts alltid mot en gängtolk"], correct:0, fb:"Hålindikatorn centreras i en normalring med fjäderbelastning, och man pendlar med den för att hitta det vändläge som ger rätt nollställning."},
+    {q:"Varför ska axelindikatorn hanteras särskilt varsamt?", opts:["Den är ett känsligt mätdon som inte tål stötar, då risk finns att det inställda måttet ändras","Den går sönder av vanlig rumstemperatur","Den kan bara användas en gång per dag","Den är gjord av ett mjukt material som lätt böjs"], correct:0, fb:"Axelindikatorn är ett känsligt mätdon; stötar riskerar att ändra det inställda måttet, så den ska hanteras varsamt."},
+    {q:"Vilket material används ofta för en planskiva som inte ger grader och är okänsligt för temperaturväxlingar?", opts:["Diabas","Gummi","Aluminium","Mässing"], correct:0, fb:"Diabas är en hård, spänningsfri natursten som inte ger grader och är okänslig för temperaturväxlingar, till skillnad från en gjutjärnsskiva."},
+    {q:"Hur fungerar ett pneumatiskt mätdon (luftmätare) i grova drag?", opts:["Ett konstant lufttryck delas i två munstycken, och skillnaden i mottryck mot mätobjektet ger ett utslag via ett bälgsystem","Det mäter genom att lyssna efter ljudvågor i hålet","Det använder enbart ett synligt indikatorljus","Det bygger på samma princip som en mikrometer"], correct:0, fb:"En precisionstryckregulator ger konstant tryck, som delas i två munstycken; skillnaden i mottryck mellan nollställningsventilen och mätmunstycket ger via bälgsystemet ett utslag på visaren."},
+    {q:"Vad kännetecknar ett systematiskt mätfel?", opts:["Det återkommer med samma värde och tecken vid upprepade mätningar under samma förhållanden","Det varierar helt slumpmässigt från mätning till mätning","Det uppstår bara vid mätning av gängor","Det kan aldrig korrigeras"], correct:0, fb:"Ett systematiskt fel är konstant till värde och tecken vid upprepade mätningar under samma förhållanden, t.ex. en felinställd mikrometer, och kan därför korrigeras."},
+    {q:"Vad är ett tillfälligt mätfel, och vad kan orsaka det?", opts:["Ett fel som varierar slumpmässigt, t.ex. på grund av temperatur, smuts, vibrationer eller trötthet","Ett fel som alltid är exakt 0,01 mm stort","Ett fel som bara uppstår vid gängmätning","Ett fel som enbart beror på mätdonets ålder"], correct:0, fb:"Tillfälliga fel varierar slumpmässigt och orsakas av yttre störningar som temperatur, smuts och vibrationer, eller personliga fel som trötthet och avläsningsfel."},
+    {q:"Vad är parallaxfel vid mätning?", opts:["Att man läser av skalan snett istället för rakt framifrån","Att mätdonet inte är kalibrerat","Att mätspetsen inte är vinkelrät mot ytan","Att mätdonet har fel enhet"], correct:0, fb:"Parallaxfel uppstår när man läser av en skala snett istället för rakt framifrån, vilket ger ett felaktigt värde."},
+    {q:"Vad är hävarmsfel vid mätning med vippindikator?", opts:["Ett fel som uppstår om mätspetsen inte är vinkelrät mot den yta som mäts","Ett fel som bara beror på mätdonets ålder","Ett fel i mätdonets elektronik","Ett fel som enbart uppstår vid gängmätning"], correct:0, fb:"Hävarmsfel uppstår vid mätning med vippindikator om mätspetsen inte är ungefär vinkelrät mot ytans normal."},
+    {q:"Vilken referenstemperatur används vid tekniska mätningar, och varför?", opts:["+20 °C, eftersom material utvidgas eller krymper med temperaturen","0 °C, eftersom mätdon fungerar bäst i kyla","100 °C, för att simulera bearbetningsförhållanden","Rumstemperatur definieras inte i mättekniken"], correct:0, fb:"+20 °C används som referenstemperatur eftersom metalliska material utvidgar sig vid uppvärmning och krymper vid avkylning, vilket annars ger mätfel."},
+    {q:"Varför kan ett utvändigt mått som mäts direkt efter skärande bearbetning visa fel värde efter avsvalning?", opts:["Arbetsstycket är ofta varmt vid mätningen och krymper när det svalnar","Mätdonet blir varmt och expanderar mer än arbetsstycket","Skärande bearbetning påverkar bara invändiga mått","Det finns aldrig någon risk för detta"], correct:0, fb:"Ett varmt arbetsstycke är större än vid rumstemperatur; mäts ett utvändigt mått direkt efter bearbetning kan det visa sig vara för litet sedan det svalnat."},
+    {q:"Hur bör mätdon förvaras mellan mätningar för att minska temperaturfel?", opts:["På ett kylplan eller ett mjukt, rent underlag, och hanteras så kort tid som möjligt","I fickan närmast kroppen för jämn temperatur","Alltid i direkt solljus","I samma låda som varma arbetsstycken"], correct:0, fb:"Mätdon bör förvaras på ett kylplan eller ett mjukt rent underlag mellan mätningarna, och hanteras kort tid för att undvika att handvärme påverkar temperaturen."},
+    {q:"Vad används kristallolja till vid mätdonsvård?", opts:["Att rengöra infettade mätdon, samtidigt som den lämnar kvar ett tunt skyddande fettskikt","Att smörja gängor permanent","Att färga ytjämnhetsmätare","Att kalibrera passbitar"], correct:0, fb:"Kristallolja används för att rengöra infettade mätdon, och lämnar samtidigt kvar ett tunt fettskikt som skyddar mätytan."},
+    {q:"Vad bör man göra med mätdon efter avslutad mätning, för att förhindra rostbildning?", opts:["Rengöra dem och smörja in dem med vatten- och syrefri vaselin","Lägga dem blöta i en låda","Tvätta dem i varmt vatten utan att torka","Förvara dem tillsammans med varma arbetsstycken"], correct:0, fb:"Efter mätning bör mätdon rengöras och smörjas in med vatten- och syrefri vaselin för att förhindra rostbildning från fukt och handsvett."},
+    {q:"Vad innebär en slitmån på en GÅ-tolk?", opts:["Ett litet måtttillägg utöver tillverkningstoleransen, så att en ny tolk kan vara något för stor men ändå korrekt när den slitits","Att tolken alltid är felaktig från början","Att tolken saknar tillverkningstolerans helt","Att tolken byts ut varje vecka oavsett skick"], correct:0, fb:"Slitmånen är ett tillägg utöver tillverkningstoleransen som gör att en ny GÅ-tolk kan vara något större, men ändå vara korrekt när den slitits ner mot sin slitgräns."},
+    {q:"Varför bör kontrollverksamheten vara oberoende av tillverkningen i ett företag?", opts:["För att kontrollen ska kunna bedrivas opartiskt och objektivt","För att det är billigare att organisera på det sättet","För att lagen kräver fysiskt avstånd mellan avdelningarna","För att operatörer aldrig ska behöva kontrollera något själva"], correct:0, fb:"Kontrollverksamheten bör vara oberoende av och organisatoriskt likställd med produktionen, för att kunna arbeta så opartiskt och objektivt som möjligt."},
+    {q:"Vad är syftet med förstabitskontroll?", opts:["Att avgöra om de första arbetsstyckena i en serie tillverkas rätt, innan hela serien körs","Att kontrollera enbart den sista detaljen i en serie","Att ersätta all annan kontroll i tillverkningen","Att mäta ytjämnhet på färdiga produkter"], correct:0, fb:"Förstabitskontrollen sker på de första arbetsstyckena i en tillverkning, för att tidigt upptäcka fel innan resten av serien körs."},
+    {q:"Vad är skillnaden mellan allkontroll och delkontroll?", opts:["Allkontroll kontrollerar alla detaljer i partiet, delkontroll bara ett mindre antal (t.ex. stickprov)","Allkontroll sker bara på gängor, delkontroll bara på ytjämnhet","Delkontroll är alltid noggrannare än allkontroll","Det finns ingen egentlig skillnad"], correct:0, fb:"Allkontroll innebär att alla detaljer i partiet kontrolleras, medan delkontroll bara omfattar ett mindre antal, t.ex. genom stickprov eller statistiskt urval."},
+    {q:"Vad bör ett bra mätprotokoll innehålla, förutom själva mätvärdena?", opts:["Ritnings- och detaljnummer, material, kontrollant, ort/datum, mätdon samt mättemperatur och luftfuktighet","Enbart mätdonets inköpspris","Enbart operatörens lunchtider","Enbart färgen på mätdonet"], correct:0, fb:"Ett bra mätprotokoll innehåller bland annat ritnings- och detaljnummer, material, kontrollant, ort och datum, mätdon, mättemperatur och luftfuktighet."},
+    {q:"Vilken arbetstemperatur strävar man efter i ett mätrum?", opts:["+20 °C, inom någon eller några graders marginal","0 °C","+37 °C, som kroppstemperatur","Ingen särskild temperatur behövs"], correct:0, fb:"Ett mätrum hålls normalt vid +20 °C, inom en liten marginal, för att undvika temperaturrelaterade mätfel."},
+    {q:"Varför måste mätdon kalibreras regelbundet?", opts:["De slits med tiden, vilket ger mätosäkerhet och risk för kvalitetsförsämring av produkterna","Kalibrering krävs bara en gång vid nyinköp","Kalibrering påverkar bara mätdonets utseende","Mätdon blir mer noggranna av sig själva över tid"], correct:0, fb:"Mätdon slits med tiden, vilket ger ökad mätosäkerhet; regelbunden kalibrering mot mätdon med högre noggrannhet motverkar detta."},
+    {q:"Vad markerar färgtejpen som sätts på ett mätdon efter kalibrering?", opts:["Nästa kalibreringstillfälle","Mätdonets tillverkningsland","Vem som senast använde mätdonet","Mätdonets försäkringsvärde"], correct:0, fb:"Färgtejpen anger, ofta med både färg och siffror, när nästa kalibreringstillfälle för mätdonet infaller."},
+    {q:"Vilken typ av vinkel är vanligast hos en fast anslagsvinkel?", opts:["90° (rät vinkel)","45°","30°","120°"], correct:0, fb:"Den vanligaste fasta anslagsvinkeln har 90°, en rät vinkel, mellan sina skänklar, även om andra vinklar som 30°, 45°, 60° och 120° också förekommer."},
+    {q:"Hur kontrolleras en fast vinkel med ljusspaltmetoden?", opts:["Genom att hålla vinkeln mot arbetsstycket och leta efter en ljusspalt mot en ljus bakgrund","Genom att väga vinkeln mot ett referensvärde","Genom att mäta vinkelns temperatur","Genom att lyssna efter ett klickljud vid rätt vinkel"], correct:0, fb:"Ljusspaltmetoden innebär att man håller vinkeln mot arbetsstycket och tittar efter en ljusspalt mot en ljus bakgrund; ingen synlig spalt tyder på korrekt vinkel."},
+    {q:"Hur många bågminuter motsvarar varje delstreck på nonien hos en universell vinkelmätare?", opts:["5 bågminuter","1 grad","30 bågminuter","1 bågsekund"], correct:0, fb:"På den universella vinkelmätaren med nonie motsvarar varje delstreck 5 bågminuter, vilket ger hög noggrannhet."},
+    {q:"Hur räknar man om en avläst vinkel större än 90° på en universell vinkelmätare?", opts:["Man subtraherar det avlästa värdet från 180°","Man dividerar det avlästa värdet med 2","Man adderar 90° till det avlästa värdet","Man multiplicerar det avlästa värdet med 2"], correct:0, fb:"Vid vinklar större än 90° avläser man skalan som vanligt och subtraherar sedan det avlästa värdet från 180° för att få den sökta vinkeln."},
+    {q:"Vad mäter ett vattenpass, och med vilken typisk känslighet i verkstadsbruk?", opts:["Små vinkelavvikelser, med en känslighet på ca 0,3 mm per meter mätlängd","Ytjämnhet, med känslighet 0,01 µm","Gängors stigning, med känslighet 0,1 mm","Temperatur, med känslighet 0,5 °C"], correct:0, fb:"Vattenpasset mäter små vinkelavvikelser via en vätskefylld libell, med en typisk verkstadskänslighet på 0,3 mm per meter mätlängd."},
+    {q:"Vilket samband används för att ställa in en vinkel med en sinuslinjal?", opts:["sin α = a/c, där a är passbitshöjden och c är centrumavståndet mellan cylindrarna","tan α = längd/bredd på linjalen","cos α = arbetsstyckets vikt/längd","Vinkeln avläses direkt på en inbyggd gradskala"], correct:0, fb:"Sinuslinjalen bygger på sambandet sin α = a/c, där a är höjden på passbitskombinationen och c är centrumavståndet mellan linjalens cylindrar (oftast 100 mm)."},
+    {q:"Varför bör lutningsvinkeln på en sinuslinjal inte överstiga 45°?", opts:["Metodens noggrannhet försämras vid större vinklar","Sinuslinjalen går sönder vid större vinklar","Det är förbjudet enligt standard oavsett noggrannhet","Passbitar kan inte användas alls över 45°"], correct:0, fb:"Sinuslinjalens mätnoggrannhet håller sig bäst upp till omkring 45° lutningsvinkel, och rekommendationen är att inte överskrida detta."},
+    {q:"Hur kan man mäta koner eller vinklar om man saknar ett direkt mätdon för ändamålet?", opts:["Med mätkulor eller mätrullar tillsammans med en mikrometer, och räkna fram värdet trigonometriskt","Genom att alltid använda ett vattenpass istället","Genom att gissa utifrån ritningen","Det går inte att mäta utan specialverktyg"], correct:0, fb:"Mätkulor eller mätrullar tillsammans med en mikrometer kan användas för att räkna fram koner och vinklar med hjälp av trigonometriska samband."},
+    {q:"Vad anger R_a-värdet vid ytjämnhetsmätning?", opts:["Den aritmetiska medelytavvikelsen, en internationell (ISO) standard för ytjämnhet","Materialets hårdhet","Gängans stigning","Vinkeln mellan två ytor"], correct:0, fb:"R_a-värdet anger den aritmetiska medelytavvikelsen och är den internationella (ISO) standardbeteckningen för ytjämnhet."},
+    {q:"Vad är R_max vid ytjämnhetsmätning?", opts:["Avståndet mellan topp- och bottenlinje på profilkurvan inom referenslängden","Samma sak som R_a-värdet","Ett mått på gängans profilvinkel","Den högsta tillåtna temperaturen vid mätning"], correct:0, fb:"R_max är avståndet mellan profilkurvans topp- och bottenlinje inom den valda referenslängden."},
+    {q:"Hur bestäms R_a-värdet oftast i praktiken idag?", opts:["Med elektroniska instrument som ger värdet direkt, snarare än genom manuell utritning av profilkurvan","Genom att väga ytans råhet","Genom att mäta med skjutmått","Genom att alltid räkna för hand utan mätdon"], correct:0, fb:"I praktiken bestäms R_a-värdet nästan alltid med elektroniska mätinstrument som visar värdet direkt."},
+    {q:"Vad används en ytjämnhetslikare till, och hur avläser man den?", opts:["Att jämföra ytjämnhet genom känsel (nagel) och synintryck mot kända referensytor","Att mäta ytjämnhet elektroniskt med hög precision","Att mäta gängors profilvinkel","Att mäta vinklar med nonieskala"], correct:0, fb:"Ytjämnhetslikaren har kända referensytor som man jämför mätobjektet mot genom att skrapa med nageln och göra en synbedömning."},
+    {q:"Vad kan en ytindikator mäta, och med vilken ungefärlig noggrannhet?", opts:["R_max direkt, med noggrannhet ner mot 1 µm","Endast temperatur, med noggrannhet 1 °C","Endast gängors stigning","Endast vinklar över 90°"], correct:0, fb:"Ytindikatorn mäter R_max direkt via en mätspets kopplad till ett mikrokatorsystem, med en noggrannhet ner mot 1 µm."},
+    {q:"Vad bygger MECRIN-instrumentet på för mätprincip?", opts:["Ytors friktionsegenskaper mot ett tunt stålband","Elektronisk avläsning av ett kugghjul","Trycket i en pneumatisk krets","Ljusspaltmetoden mot en egglinjal"], correct:0, fb:"MECRIN bygger på ytans friktionsegenskaper mot ett tunt stålband som förs över mätytan."},
+    {q:"Vilka mått räcker det oftast att mäta vid normal produktion av en utvändig gänga?", opts:["Ytterdiameter och medeldiameter, eftersom standardgängverktyg garanterar rätt stigning och profil","Endast stigningen","Endast profilvinkeln","Alla fem gängmått måste alltid mätas"], correct:0, fb:"Vid normal produktion räcker det oftast att mäta ytter- och medeldiameter på en utvändig gänga, eftersom standardiserade gängverktyg redan ger rätt stigning och profilform."},
+    {q:"Vad kontrollerar en GÅ-gängtolk samtidigt när den skruvas in i ett gängat hål?", opts:["Profilvinkel, stigning, ytter- och medeldiameter","Endast ytjämnheten i hålet","Endast hålets diameter, utan hänsyn till gängan","Endast hålets djup"], correct:0, fb:"När GÅ-gängtolken skruvas in kontrolleras samtidigt profilvinkel, stigning, ytterdiameter och medeldiameter."},
+    {q:"Varför ger en gänghaktolk med rullande mätrullar mycket liten förslitning?", opts:["Rullarna roterar under mätningen i stället för att glida mot gängan","Den används bara en gång per detalj","Den är gjord av ett extremt hårt material som aldrig nöts","Den saknar kontakt med gängan under mätning"], correct:0, fb:"Gänghaktolkens mätrullar roterar under mätningen, vilket minskar friktionen och gör att förslitningen blir mycket liten jämfört med glidande mätdon."},
+    {q:"Vad mäter en gängmikrometer, och hur skiljer den sig från en vanlig mikrometer?", opts:["Medeldiametern på en gänga, med utbytbara mätkolvar formade efter gängans profil","Endast gängans ytterdiameter, med samma mätkolvar som en vanlig mikrometer","Endast gängans stigning, utan mätkolvar alls","Den mäter inte gängor utan bara plana ytor"], correct:0, fb:"Gängmikrometern liknar en vanlig mikrometer men har utbytbara mätkolvar formade efter gängans profil, och mäter medeldiametern direkt."},
+    {q:"Vad används två- eller tretrådsmätning till vid gängkontroll?", opts:["Att med hög noggrannhet mäta en utvändig gängas medeldiameter och profilvinkel","Att mäta gängans totala längd","Att mäta gängans yttemperatur","Att kontrollera enbart innerdiametern på en invändig gänga"], correct:0, fb:"Trådmätning med noggranna mättrådar och en mikrometer används för att med hög noggrannhet fastställa en utvändig gängas medeldiameter och profilvinkel."},
+    {q:"Vad används en gängmall (gängräknare) till?", opts:["Att snabbt kontrollera gängans stigning enligt ljusspaltmetoden","Att mäta gängans medeldiameter exakt","Att kalibrera en gängmikrometer","Att mäta kuggtjocklek"], correct:0, fb:"Gängmallen, eller gängräknaren, används för att snabbt kontrollera gängans stigning enligt ljusspaltmetoden."},
+    {q:"Hur betecknas toleransklasser för Unified-gängor (tumgängor)?", opts:["1A–3A för utvändiga gängor och 1B–3B för invändiga gängor","Endast med siffrorna 1–10","Med samma beteckningar som metriska gängor (6H/6g)","Unified-gängor saknar toleransklasser helt"], correct:0, fb:"Unified-gängor betecknas med 1A–3A för utvändiga gängor och 1B–3B för invändiga gängor, där 3A/3B är finast och 1A/1B grövst."},
+    {q:"Vilka mätstorheter kontrolleras vid tillverkning av kugghjul?", opts:["Toppdiameter, delningsdiameter, grunddiameter och kuggtjocklek","Endast kuggens färg","Endast kugghjulets vikt","Endast axelavståndet mellan hjulen"], correct:0, fb:"Vid tillverkning av kugghjul kontrolleras bland annat toppdiameter, delningsdiameter, grunddiameter och kuggtjocklek — detta kallas delfelskontroll."},
+    {q:"Hur kontrolleras rundgången på ett kugghjulsämne innan kuggarna skärs?", opts:["Genom att montera ämnet mellan dubbar och avläsa radial- och axialkast med en vippindikator","Genom att väga ämnet på en digital våg","Genom att mäta ämnets temperatur","Genom att mäta ämnets ytjämnhet med en likare"], correct:0, fb:"Rundgången kontrolleras genom att montera kugghjulsämnet mellan dubbar och avläsa radial- och axialkast med en vippindikator."},
+    {q:"Hur genomförs en totalfelskontroll av ett färdigt kugghjul?", opts:["Genom att avrulla det mot ett noggrant tillverkat masterhjul, oftast med tvåflanksavrullning","Genom att räkna kuggarna för hand","Genom att jämföra det med ett annat hjul av samma vikt","Genom att mäta enbart en enda kugg"], correct:0, fb:"Totalfelskontrollen sker genom att kugghjulet avrullas mot ett masterhjul, vanligen med tvåflanksavrullning där hjulen pressas samman utan spel."},
+    {q:"Vad händer om kuggtjockleken på ett kugghjul är för stor respektive för liten vid ett bestämt axelavstånd?", opts:["För stor gör att hjulen inte går att montera, för liten ger för stort spel mellan kuggarna","Båda felen gör exakt samma sak","Kuggtjockleken påverkar aldrig monteringen","För liten gör att hjulen inte går att montera"], correct:0, fb:"Är kuggtjockleken för stor går hjulen inte att montera; är den för liten blir spelet mellan kuggarna för stort."},
+    {q:"Vad mäter ett kuggskjutmått, och hur räknar man ut mätvärdet för en annan modul än 1?", opts:["Kordans längd över kuggen; tabellvärden för modul 1 multipliceras med aktuell modul","Kuggens vikt direkt i gram","Kuggens hårdhet i en särskild skala","Antalet kuggar totalt på hjulet"], correct:0, fb:"Kuggskjutmåttet mäter kordans längd över kuggen vid ett bestämt djup, och tabellvärden för modul 1 multipliceras med den aktuella modulen för att få rätt mätvärde."},
+    {q:"Vad är fördelen med kuggviddsmätning med en kuggviddsmikrometer, jämfört med enstaka kuggmätning?", opts:["Man mäter över flera kuggar samtidigt, vilket ger en säkrare bild och kan följas löpande under fräsningen","Den kräver aldrig kalibrering","Den fungerar bara på färdiga, monterade kugghjul","Den mäter enbart kuggens färg"], correct:0, fb:"Kuggviddsmätning sker över flera kuggar samtidigt och kan följas löpande under fräsningen, vilket gör att fräsens ansättning kan justeras vid behov."},
+    {q:"Till vilken noggrannhet bör man normalt avrunda ett värde från ett digitalskjutmått, trots att displayen visar 0,01 mm?", opts:["0,1 mm (möjligen 0,05 mm)","0,001 mm","1 mm","1 cm"], correct:0, fb:"Även om displayen visar värden i 0,01 mm bör man i praktiken avrunda till 0,1 mm, möjligen 0,05 mm, eftersom den mekaniska noggrannheten sällan räcker till mer."},
+    {q:"Vad kan en digitalmikrometer med toleransmätning visa direkt vid mätning?", opts:["Om måttet ligger inom, över eller under de förinställda toleransgränserna","Endast arbetsstyckets vikt","Endast mätdonets batterinivå","Endast tid sedan senaste kalibrering"], correct:0, fb:"Med förinställda toleransgränser kan en digitalmikrometer direkt visa om ett uppmätt mått ligger inom, över eller under toleransen."},
+    {q:"Vilken ungefärlig noggrannhet kan en treaxlig koordinatmätmaskin med mätområdet 800×800×500 mm ha?", opts:["± 0,015 mm","± 5 mm","± 0,5 mm","± 0,0001 mm"], correct:0, fb:"En koordinatmätmaskin med mätområdet 800×800×500 mm har som exempel en vanlig noggrannhet på ± 0,015 mm."},
+    {q:"Vad gör en profilprojektor, och till vad lämpar den sig?", opts:["Projicerar en förstorad silhuett/spegelbild av objektet för mätning av dimensioner, profilform och vinklar","Den mäter enbart temperatur i verkstaden","Den kan bara användas för gängmätning","Den ersätter alltid en mikrometer"], correct:0, fb:"Profilprojektorn projicerar en förstorad silhuett eller spegelbild av mätobjektet på en bildskärm, och lämpar sig för mätning av dimensioner, profilform och vinklar."},
+    {q:"Vad kännetecknar ett verkstadsmikroskop som mätutrustning?", opts:["Universell mätutrustning för små mätobjekt, med koordinatbord och rundbord för vinkelmätning","Den mäter enbart stora gjutna detaljer","Den används enbart för att fotografera detaljer","Den kan bara mäta ytjämnhet"], correct:0, fb:"Verkstadsmikroskopet är en universell mätutrustning för mindre mätobjekt, med koordinatbord (mikrometrar) och ett rundbord med gradskala för vinkelmätning."},
+    {q:"Hur används signallampor (grön/gul/röd) ofta tillsammans med elektroniska längdmätningsinstrument?", opts:["De ger snabb visuell indikation om en detalj är godkänd vid kontroll av stora serier","De styr enbart belysningen i mätrummet","De visar enbart mätdonets batteristatus","De används bara vid gängmätning"], correct:0, fb:"Vid kontroll av stora serier kan signallampor kopplas in för att snabbt visa om en detalj är godkänd, utan att operatören måste läsa av ett exakt värde för varje detalj."}
+];
+
+const QUIZ_LENGTH = 30;
+let order = [];
+let idx = 0;
+let answered = false;
+let score = 0;
+let history = [];
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function shuffleOptions(item){
+  const pairs = item.opts.map((o, i) => ({ text: o, wasCorrect: i === item.correct }));
+  const shuffled = shuffle(pairs);
+  const newOpts = shuffled.map(p => p.text);
+  const newCorrect = shuffled.findIndex(p => p.wasCorrect);
+  return { ...item, opts: newOpts, correct: newCorrect };
+}
+function buildOrder(){
+  return shuffle(QUESTIONS).slice(0, Math.min(QUIZ_LENGTH, QUESTIONS.length)).map(shuffleOptions);
+}
+function updateProgress(){
+  const fill = document.getElementById('progressFill');
+  const label = document.getElementById('progressLabel');
+  const pct = order.length ? (idx/order.length)*100 : 0;
+  fill.style.width = pct + '%';
+  label.textContent = Math.min(idx+1, order.length) + ' / ' + order.length;
+}
+function startQuiz(){
+  order = buildOrder();
+  idx = 0; score = 0; history = [];
+  document.getElementById('poolNote').textContent = `Frågebank: ${QUESTIONS.length} frågor · ${Math.min(QUIZ_LENGTH, QUESTIONS.length)} slumpas ut denna omgång`;
+  renderQuestion();
+}
+function renderQuestion(){
+  answered = false;
+  updateProgress();
+  const card = document.getElementById('card');
+  if(idx >= order.length){ renderResult(); return; }
+  const item = order[idx];
+  const optHtml = item.opts.map((o,i) => {
+    const key = String.fromCharCode(65+i);
+    return `<button class="opt" data-i="${i}"><span class="k">${key}</span><span>${o}</span></button>`;
+  }).join('');
+  card.innerHTML = `
+    <div class="qmeta">
+      <span class="qtag" style="background:var(--page-dim); color:var(--page-accent);">${CAT_LABEL}</span>
+      <span class="qnum">Fråga ${idx+1} av ${order.length}</span>
+    </div>
+    <div class="prompt">${item.q}</div>
+    <div class="options">${optHtml}</div>
+    <div class="feedback" id="feedback"></div>
+    <div class="controls"><button class="next" id="nextBtn" disabled>Nästa</button></div>
+  `;
+  card.querySelectorAll('.opt').forEach(btn => {
+    btn.addEventListener('click', () => selectAnswer(parseInt(btn.dataset.i)));
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => { idx++; renderQuestion(); });
+}
+function selectAnswer(i){
+  if(answered) return;
+  answered = true;
+  const item = order[idx];
+  const correct = item.correct;
+  document.querySelectorAll('.opt').forEach((btn, bi) => {
+    btn.setAttribute('disabled','true');
+    if(bi === correct) btn.classList.add('correct');
+    if(bi === i && i !== correct) btn.classList.add('wrong');
+  });
+  const isCorrect = (i === correct);
+  if(isCorrect) score++;
+  history.push({q:item.q, correct:isCorrect, correctText:item.opts[correct]});
+  const fb = document.getElementById('feedback');
+  fb.classList.add('show', isCorrect ? 'ok' : 'bad');
+  fb.innerHTML = `<b>${isCorrect ? 'Rätt!' : 'Inte riktigt.'}</b>${item.fb}`;
+  document.getElementById('nextBtn').disabled = false;
+}
+function renderResult(){
+  const card = document.getElementById('card');
+  const pct = order.length ? Math.round((score/order.length)*100) : 0;
+  const reviewHtml = history.map(h => `
+    <div class="review-item ${h.correct ? 'ok' : 'bad'}">
+      <div class="q">${h.q}</div>
+      <div class="a">${h.correct ? 'Du svarade rätt.' : 'Rätt svar: ' + h.correctText}</div>
+    </div>`).join('');
+  card.innerHTML = `
+    <div class="result">
+      <div class="big" style="color:var(--page-accent);">${score} / ${order.length}</div>
+      <div class="of">${pct}% rätt</div>
+      <button class="restart" id="restartBtn">Kör igen (nya slumpade frågor)</button>
+      <div class="review">${reviewHtml}</div>
+    </div>`;
+  document.getElementById('restartBtn').addEventListener('click', startQuiz);
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressLabel').textContent = order.length + ' / ' + order.length;
+}
+startQuiz();
+</script>
+
+<script src="../../../assets/site.js"></script>
+</body>
+</html>

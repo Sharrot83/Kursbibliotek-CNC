@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNC-Grönt kort — Kursmaterial &amp; quiz</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+
+  /* --- top nav --- */
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{
+    width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto;
+  }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{
+    content:""; position:absolute; background:var(--amber);
+  }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  h1 .accent{color:var(--amber);}
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+
+  /* --- subject grid / title-block cards --- */
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px; margin-top:30px;}
+  .tblock{
+    border:1px solid var(--line); border-radius:4px; background:var(--panel);
+    position:relative; overflow:hidden; display:flex; flex-direction:column;
+    transition:.18s; text-decoration:none; color:var(--text);
+  }
+  .tblock::before{
+    content:""; position:absolute; top:8px; left:8px; width:9px; height:9px;
+    border-top:1.5px solid var(--accent,var(--amber)); border-left:1.5px solid var(--accent,var(--amber));
+    opacity:.9;
+  }
+  .tblock::after{
+    content:""; position:absolute; bottom:8px; right:8px; width:9px; height:9px;
+    border-bottom:1.5px solid var(--accent,var(--amber)); border-right:1.5px solid var(--accent,var(--amber));
+    opacity:.9;
+  }
+  .tblock:hover{border-color:var(--accent,var(--amber)); transform:translateY(-2px); box-shadow:0 16px 30px -18px rgba(0,0,0,.7);}
+  .tblock .tb-top{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 18px; border-bottom:1px solid var(--line);
+    font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; letter-spacing:.06em; color:var(--muted);
+  }
+  .tblock .tb-top .code{color:var(--accent,var(--amber)); font-weight:700;}
+  .tblock .tb-body{padding:16px 18px 6px; flex:1;}
+  .tblock h2{margin:0 0 8px; font-family:"Arial Narrow",Arial,sans-serif; font-size:21px; font-weight:800; letter-spacing:-.01em;}
+  .tblock p{margin:0; color:var(--muted); font-size:13.6px; line-height:1.55;}
+  .tblock .tb-bottom{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:13px 18px; margin-top:14px; border-top:1px solid var(--line);
+    font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; color:var(--muted);
+  }
+  .tblock .tb-bottom .qn{color:var(--accent,var(--amber)); font-weight:700;}
+  .tb-link{display:contents; text-decoration:none; color:inherit;}
+  .pillrow{display:flex; gap:8px; padding:0 18px 16px; position:relative; z-index:1;}
+  .pill{
+    flex:1; text-align:center; padding:9px 6px; border-radius:5px; border:1px solid var(--line);
+    font-size:12.5px; font-weight:700; text-decoration:none; color:var(--text); transition:.15s;
+    background:var(--panel-2);
+  }
+  .pill:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+  .pill.solid{background:var(--accent,var(--amber)); border-color:var(--accent,var(--amber)); color:#0f1115;}
+  .pill.solid:hover{filter:brightness(1.08); color:#0f1115;}
+
+  /* --- master card (combined quiz) --- */
+  .master{
+    margin-top:34px; border:1px solid var(--line); border-radius:6px;
+    background:linear-gradient(135deg, #1c232b, #171e25);
+    padding:26px 26px 22px; position:relative; overflow:hidden;
+  }
+  .master::before{
+    content:""; position:absolute; inset:0; opacity:.5; pointer-events:none;
+    background-image: repeating-linear-gradient(135deg, rgba(255,138,43,.05) 0 2px, transparent 2px 14px);
+  }
+  .master .mtitle{font-family:"Arial Narrow",Arial,sans-serif; font-weight:800; font-size:23px; margin:2px 0 6px;}
+  .master p{color:var(--muted); font-size:14px; max-width:56ch; line-height:1.6; margin:0 0 16px;}
+
+  /* --- soon card (future delkurser) --- */
+  .soon{
+    margin-top:16px; border:1px dashed var(--line); border-radius:4px; background:transparent;
+    padding:16px 18px; display:flex; align-items:center; gap:10px; color:var(--muted); font-size:13.5px;
+  }
+  .soon .dot{width:7px; height:7px; border-radius:50%; background:var(--muted); flex:0 0 auto;}
+
+  /* --- buttons --- */
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+
+  footer.sitefoot{text-align:center; color:var(--muted); font-size:12px; margin-top:50px; padding-bottom:10px;}
+
+  @media (max-width:640px){
+    .topnav nav{gap:12px; font-size:12px;}
+    .master{padding:20px;}
+  }
+
+  /* --- shared topbar / crumbs (site-wide course switcher) --- */
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+<style>:root{--page-accent:#ff8a2b;}
+  :root[data-theme="light"]{
+    --page-accent: #c96a12;
+  }</style>
+
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="material.html"><span class="mark"></span>CNC-GRÖNT KORT</a>
+  <nav>
+    <a href="material.html">Kursmaterial</a>
+    <a href="quiz-alla.html">Storquiz (156)</a>
+  </nav>
+</div>
+
+<main class="wrap">
+  <header class="hero">
+    <div class="eyebrow">CNC-Grönt kort · Utbildningsmaterial</div>
+    <h1>Välj <span class="accent">delkurs</span></h1>
+    <div class="sub">Grundutbildningen inför CNC-Grönt kort, uppdelad i fristående delkurser. Läs igenom materialet i lugn takt, testa sedan kunskaperna med ett quiz per delkurs. Fler delkurser tillkommer efter hand.</div>
+  </header>
+
+  <div class="grid">
+  <div class="tblock" style="--accent:#a487d6">
+    <a class="tb-link" href="material/verktyg.html">
+      <div class="tb-top"><span class="code">MTL-01</span><span>BLAD 1/3</span></div>
+      <div class="tb-body">
+        <h2>Verktyg — Svenska/Engelska</h2>
+        <p>Handverktyg, mätdon och skärande verktyg — vanliga svenska och engelska benämningar sida vid sida.</p>
+      </div>
+    </a>
+    <div class="pillrow">
+      <a class="pill" href="material/verktyg.html" aria-label="Läs material: Verktyg — Svenska/Engelska">Läs material</a>
+      <a class="pill solid" style="background:#a487d6; border-color:#a487d6;" href="quiz/verktyg.html" aria-label="Starta quiz: Verktyg — Svenska/Engelska">Starta quiz</a>
+    </div>
+    <div class="tb-bottom"><span>Quizbank</span><span class="qn">21 frågor</span></div>
+  </div>
+  <div class="tblock" style="--accent:#e0584f">
+    <a class="tb-link" href="material/materialkunskap.html">
+      <div class="tb-top"><span class="code">MTL-02</span><span>BLAD 2/3</span></div>
+      <div class="tb-body">
+        <h2>Materialkunskap</h2>
+        <p>Vad material är, från malm till metall, materialegenskaper, materialprovning, materialstandard samt stål och gjutjärn.</p>
+      </div>
+    </a>
+    <div class="pillrow">
+      <a class="pill" href="material/materialkunskap.html" aria-label="Läs material: Materialkunskap">Läs material</a>
+      <a class="pill solid" style="background:#e0584f; border-color:#e0584f;" href="quiz/materialkunskap.html" aria-label="Starta quiz: Materialkunskap">Starta quiz</a>
+    </div>
+    <div class="tb-bottom"><span>Quizbank</span><span class="qn">55 frågor</span></div>
+  </div>
+  <div class="tblock" style="--accent:#5b9bd5">
+    <a class="tb-link" href="material/cnc-programmering.html">
+      <div class="tb-top"><span class="code">MTL-03</span><span>BLAD 3/3</span></div>
+      <div class="tb-body">
+        <h2>CNC-programmering</h2>
+        <p>Styrsystem, koordinatsystem, programplanering och -struktur, G-koder, M-funktioner samt mått och sekvensblock.</p>
+      </div>
+    </a>
+    <div class="pillrow">
+      <a class="pill" href="material/cnc-programmering.html" aria-label="Läs material: CNC-programmering">Läs material</a>
+      <a class="pill solid" style="background:#5b9bd5; border-color:#5b9bd5;" href="quiz/cnc-programmering.html" aria-label="Starta quiz: CNC-programmering">Starta quiz</a>
+    </div>
+    <div class="pillrow">
+      <a class="pill" href="spel.html" aria-label="Spela sänka skepp-spelet (CNC-programmering)">Spel</a>
+      <a class="pill" href="rita.html" aria-label="Öppna G-kodsvisualiseraren (CNC-programmering)">Rita</a>
+    </div>
+    <div class="tb-bottom"><span>Quizbank</span><span class="qn">80 frågor</span></div>
+  </div>
+  </div>
+
+  <div class="soon"><span class="dot"></span> Fler delkurser är på gång och läggs till här efter hand.</div>
+
+  <div class="master">
+    <div class="eyebrow" style="color:var(--amber);">Storquiz · Alla delkurser</div>
+    <div class="mtitle">156 blandade frågor från samtliga delkurser</div>
+    <p>Vill du testa dig över hela CNC-Grönt kort på en gång? Storquizet blandar frågor från alla delkurser, med möjlighet att filtrera på en delkurs i taget.</p>
+    <a class="btn btn-amber" href="quiz-alla.html">Öppna storquiz &rarr;</a>
+  </div>
+</main>
+
+<script src="../../assets/site.js"></script>
+</body>
+</html>

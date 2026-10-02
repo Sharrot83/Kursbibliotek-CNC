@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Produktionsteknik — Läsmaterial | Industriteknik BAS</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+
+  /* --- top nav --- */
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{
+    width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto;
+  }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{
+    content:""; position:absolute; background:var(--amber);
+  }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+
+  /* --- dimension-line divider (signature element) --- */
+  .dim{
+    display:flex; align-items:center; gap:10px; margin:38px 0 26px; color:var(--muted);
+    font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace; font-size:11.5px;
+    letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+  }
+  .dim::before, .dim::after{ content:""; flex:1; height:1px; background:var(--line);
+    background-image: linear-gradient(90deg, var(--line) 0, var(--line) 100%);
+    position:relative;
+  }
+  .dim .tick{position:relative;}
+  .dim-line{flex:1; height:1px; background:var(--line); position:relative;}
+  .dim-line::before{content:"";position:absolute; left:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim-line::after{content:"";position:absolute; right:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim .label{padding:2px 4px; flex:0 0 auto;}
+
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  h1 .accent{color:var(--amber);}
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+
+  /* --- subject grid / title-block cards --- */
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px; margin-top:30px;}
+  .tblock{
+    border:1px solid var(--line); border-radius:4px; background:var(--panel);
+    position:relative; overflow:hidden; display:flex; flex-direction:column;
+    transition:.18s; text-decoration:none; color:var(--text);
+  }
+  .tblock::before{ /* corner registration marks */
+    content:""; position:absolute; top:8px; left:8px; width:9px; height:9px;
+    border-top:1.5px solid var(--accent,var(--amber)); border-left:1.5px solid var(--accent,var(--amber));
+    opacity:.9;
+  }
+  .tblock::after{
+    content:""; position:absolute; bottom:8px; right:8px; width:9px; height:9px;
+    border-bottom:1.5px solid var(--accent,var(--amber)); border-right:1.5px solid var(--accent,var(--amber));
+    opacity:.9;
+  }
+  .tblock:hover{border-color:var(--accent,var(--amber)); transform:translateY(-2px); box-shadow:0 16px 30px -18px rgba(0,0,0,.7);}
+  .tblock .tb-top{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 18px; border-bottom:1px solid var(--line);
+    font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; letter-spacing:.06em; color:var(--muted);
+  }
+  .tblock .tb-top .code{color:var(--accent,var(--amber)); font-weight:700;}
+  .tblock .tb-body{padding:16px 18px 6px; flex:1;}
+  .tblock h3{margin:0 0 8px; font-family:"Arial Narrow",Arial,sans-serif; font-size:21px; font-weight:800; letter-spacing:-.01em;}
+  .tblock p{margin:0; color:var(--muted); font-size:13.6px; line-height:1.55;}
+  .tblock .tb-bottom{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:13px 18px; margin-top:14px; border-top:1px solid var(--line);
+    font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; color:var(--muted);
+  }
+  .tblock .tb-bottom .qn{color:var(--accent,var(--amber)); font-weight:700;}
+  .pillrow{display:flex; gap:8px; padding:0 18px 16px;}
+  .pill{
+    flex:1; text-align:center; padding:9px 6px; border-radius:5px; border:1px solid var(--line);
+    font-size:12.5px; font-weight:700; text-decoration:none; color:var(--text); transition:.15s;
+    background:var(--panel-2);
+  }
+  .pill:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+  .pill.solid{background:var(--accent,var(--amber)); border-color:var(--accent,var(--amber)); color:#0f1115;}
+  .pill.solid:hover{filter:brightness(1.08); color:#0f1115;}
+
+  /* --- master card (combined quiz) --- */
+  .master{
+    margin-top:34px; border:1px solid var(--line); border-radius:6px;
+    background:linear-gradient(135deg, #1c232b, #171e25);
+    padding:26px 26px 22px; position:relative; overflow:hidden;
+  }
+  .master::before{
+    content:""; position:absolute; inset:0; opacity:.5; pointer-events:none;
+    background-image: repeating-linear-gradient(135deg, rgba(255,138,43,.05) 0 2px, transparent 2px 14px);
+  }
+  .master .mtitle{font-family:"Arial Narrow",Arial,sans-serif; font-weight:800; font-size:23px; margin:2px 0 6px;}
+  .master p{color:var(--muted); font-size:14px; max-width:56ch; line-height:1.6; margin:0 0 16px;}
+
+  /* --- buttons --- */
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+
+  /* --- reading material page --- */
+  article.reading h2{
+    font-family:"Arial Narrow",Arial,sans-serif; font-size:24px; font-weight:800; letter-spacing:-.005em;
+    margin:36px 0 12px; padding-top:4px; color:var(--text);
+  }
+  article.reading h2 .num{color:var(--accent,var(--amber)); margin-right:8px; font-family:"IBM Plex Mono",monospace; font-size:16px;}
+  article.reading h3{
+    font-size:16.5px; font-weight:700; margin:22px 0 8px; color:var(--accent,var(--amber));
+  }
+  article.reading p{color:#c9d2d9; font-size:15px; line-height:1.72; margin:0 0 14px;}
+  article.reading ul{margin:0 0 16px; padding-left:0; list-style:none;}
+  article.reading ul li{
+    position:relative; padding-left:20px; margin-bottom:8px; color:#c9d2d9; font-size:14.6px; line-height:1.6;
+  }
+  article.reading ul li::before{
+    content:""; position:absolute; left:0; top:9px; width:7px; height:2px; background:var(--accent,var(--amber));
+  }
+  article.reading strong{color:var(--text);}
+  .callout{
+    border-left:3px solid var(--accent,var(--amber)); background:var(--panel);
+    padding:13px 16px; margin:18px 0; border-radius:0 6px 6px 0; font-size:14.2px; color:#dfe6ea; line-height:1.6;
+  }
+  .callout b{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent,var(--amber)); margin-bottom:4px; font-family:"IBM Plex Mono",monospace;}
+  .lawbox{
+    margin:20px 0; padding:16px 18px; border:1px dashed var(--line); border-radius:6px;
+    font-style:italic; color:var(--text); font-size:15px; background:var(--bg2);
+  }
+  .lawbox b{font-style:normal; display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:6px; font-family:"IBM Plex Mono",monospace;}
+  .toc{
+    display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 6px;
+  }
+  .toc a{
+    font-size:12.5px; padding:6px 11px; border:1px solid var(--line); border-radius:999px;
+    text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;
+  }
+  .toc a:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+
+  .footcta{
+    margin-top:48px; border-top:1px solid var(--line); padding-top:26px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .footcta .ft-txt{font-size:13.5px; color:var(--muted); max-width:44ch;}
+
+  footer.sitefoot{text-align:center; color:var(--muted); font-size:12px; margin-top:50px; padding-bottom:10px;}
+
+  @media (max-width:640px){
+    .topnav nav{gap:12px; font-size:12px;}
+    .master{padding:20px;}
+  }
+
+  /* --- shared topbar / crumbs (site-wide course switcher) --- */
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+
+<style>
+  article.reading{max-width:720px;}
+</style>
+<style>:root{--page-accent:#ff8a2b; --page-dim:#6b4520; --accent:#ff8a2b;}
+  :root[data-theme="light"]{
+    --page-accent: #c96a12;
+  }</style>
+
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="../material.html"><span class="mark"></span>INDUSTRITEKNIK BAS</a>
+  <nav>
+    <a href="../material.html">Kursmaterial</a>
+    <a href="../quiz-alla.html">Storquiz (657)</a>
+  </nav>
+</div>
+
+<main class="wrap narrow">
+  <header class="hero">
+    <div class="eyebrow">MTL-04 · Läsmaterial</div>
+    <h1>Produktionsteknik &amp; 5S</h1>
+    <div class="sub">Produktionsformer, layouter, bearbetningsmetoder, automatisering, styrning, kvalitet, Lean-ekonomi — och 5S i praktiken.<br><span style="color:var(--muted); font-size:12.5px;">Källa: Produktionsteknik &amp; 5S — egen studieguide och utbildningshäfte</span></div>
+    <div class="toc"><a href="#grunder">Vad är produktionsteknik?</a><a href="#produktionsformer">Produktionsformer</a><a href="#layout">Fabrikslayouter</a><a href="#skarande">Skärande bearbetning</a><a href="#formning">Formning, gjutning, svetsning</a><a href="#automatisering">Automatisering</a><a href="#planering">Produktionsplanering</a><a href="#kvalitet">Kvalitet</a><a href="#lean">Lean produktion</a><a href="#ekonomi">Produktionsekonomi</a><a href="#arbetsmiljo">Arbetsmiljö och underhåll</a><a href="#5s">5S — Ordning och reda</a></div>
+  </header>
+  <div class="dim">TILL INNEHÅLLET</div>
+  <article class="reading">
+    <h2 id="grunder"><span class="num">01</span>Vad är produktionsteknik?</h2>
+<p>Produktionsteknik handlar om hur man på bästa sätt omvandlar råmaterial och insatsvaror till färdiga produkter — med rätt kvalitet, i rätt tid och till rätt kostnad. Ämnet spänner över allt från valet av tillverkningsmetod för en enskild detalj till hur en hel fabrik planeras och styrs.</p>
+<p>Man brukar dela upp produktionstekniken i tre delvis överlappande områden: <strong>tillverkningsteknik</strong> (de fysiska metoderna för att forma och bearbeta material), <strong>produktionssystem</strong> (hur maskiner, stationer och människor organiseras och samverkar) och <strong>produktionsstyrning</strong> (hur man planerar, prioriterar och följer upp produktionen).</p>
+<div class="callout"><b>Grundfråga</b>Hur uppnår vi rätt kvalitet, med rätt leveranssäkerhet, till lägsta möjliga kostnad — utan att äventyra säkerhet eller arbetsmiljö?</div>
+    <h2 id="produktionsformer"><span class="num">02</span>Produktionsformer</h2>
+<p>Valet av produktionsform styrs främst av volym och variation. Ju högre volym och lägre variation, desto mer lönar det sig att specialisera utrustningen för just den produkten.</p>
+<ul><li><strong>Styckproduktion</strong> — varje produkt tillverkas efter kundens specifika önskemål (t.ex. prototyper). Hög flexibilitet men hög styckkostnad.</li><li><strong>Serieproduktion</strong> — ett bestämt antal identiska produkter tillverkas i följd, ofta i batcher. Delas i småserie (kort, flexibel) och storserie (lång, mer automatiserad).</li><li><strong>Processproduktion</strong> — kontinuerlig produktion utan tydliga start-/stoppunkter (papper, stål, kemikalier). Hög effektivitet men mycket låg flexibilitet.</li></ul>
+<p><strong>Tumregel:</strong> ju högre volym och lägre variation, desto mer specialiserad och automatiserad kan utrustningen vara — men desto svårare blir det att ställa om för nya produkter.</p>
+    <h2 id="layout"><span class="num">03</span>Fabrikslayouter och materialflöde</h2>
+<p>Layouten — hur maskiner och arbetsstationer placeras i förhållande till varandra — påverkar direkt hur effektivt materialet flödar genom fabriken.</p>
+<ul><li><strong>Funktionell verkstad (processlayout)</strong> — maskiner av samma typ grupperas tillsammans. Passar styckproduktion och småserier, men ger långa transportsträckor och mycket produkter i arbete (PIA).</li><li><strong>Linjetillverkning (produktlayout)</strong> — maskinerna placeras i bearbetningsordning längs en linje. Hög effektivitet men kräver hög, stabil volym.</li><li><strong>Flödesgrupper (cellayout)</strong> — en mindre grupp maskiner av olika typ tillverkar en produktfamilj från början till slut. Kombinerar korta flöden med flexibilitet.</li></ul>
+<div class="callout"><b>Tumregel</b>Ju rakare och kortare materialflödet är, desto mindre tid går åt till transport och väntan — och desto kortare blir ledtiden från råmaterial till färdig produkt.</div>
+    <h2 id="skarande"><span class="num">04</span>Skärande bearbetning</h2>
+<p>Skärande bearbetning innebär att man tar bort material i form av spån för att forma detaljen till sin slutliga geometri.</p>
+<ul><li><strong>Svarvning</strong> — arbetsstycket roterar medan ett stillastående skärverktyg formar ytan. Passar runda, symmetriska detaljer.</li><li><strong>Fräsning</strong> — ett roterande verktyg med flera skär tar bort material. Mycket flexibelt — plana ytor, spår, konturer och komplexa 3D-former.</li><li><strong>Borrning</strong> — ett roterande verktyg skapar cylindriska hål.</li><li><strong>Slipning</strong> — ett nötande verktyg tar bort mycket tunna spånlager för hög ytjämnhet och exakta mått, ofta som ett sista efterarbete.</li></ul>
+<p>Det är just gränserna för vad skärande bearbetning klarar av (t.ex. inre hörnradier vid fräsning) som styr många av konstruktionsreglerna på en ritning.</p>
+    <h2 id="formning"><span class="num">05</span>Formning, gjutning och svetsning</h2>
+<p><strong>Formning</strong> (deformerande bearbetning) omformar material plastiskt till en ny geometri, ofta utan materialspill — t.ex. smide, valsning och pressning/stansning av plåt.</p>
+<p><strong>Gjutning</strong> — smält material hälls i en form och stelnar till önskad geometri. Passar komplexa former och höga volymer, eftersom samma form kan återanvändas många gånger.</p>
+<p><strong>Svetsning</strong> — delar sammanfogas permanent genom lokal uppvärmning, ofta med tillsatsmaterial. Vanliga metoder: MIG/MAG, TIG och punktsvetsning.</p>
+    <h2 id="automatisering"><span class="num">06</span>Automatisering: NC, CNC och robotar</h2>
+<ul><li><strong>NC (Numerical Control)</strong> — maskinens rörelser styrs av numeriska instruktioner istället för manuell styrning.</li><li><strong>CNC (Computer Numerical Control)</strong> — en dator styr NC-instruktionerna, vilket gör det möjligt att spara, redigera och återanvända bearbetningsprogram.</li><li><strong>Industrirobotar</strong> — programmerbara, flerledade armar för repetitiva uppgifter som svetsning, montering, målning eller materialhantering.</li></ul>
+<p>Automatisering lönar sig särskilt vid höga volymer, samt i miljöer som är farliga, monotona eller kräver precision utöver vad en människa konsekvent kan upprätthålla.</p>
+    <h2 id="planering"><span class="num">07</span>Produktionsplanering och styrning</h2>
+<p>Produktionsplanering handlar om att avgöra vad som ska tillverkas, när och i vilken ordning, så att kundorder levereras i tid utan att binda upp onödigt mycket kapital i lager.</p>
+<ul><li><strong>Ledtid</strong> — tiden från att en order startar till att den är klar.</li><li><strong>PIA</strong> — halvfärdiga produkter som väntar mellan bearbetningssteg; binder kapital och gömmer problem.</li><li><strong>Kapacitet</strong> — den mängd en resurs maximalt kan producera under en given tid.</li><li><strong>Flaskhals</strong> — resursen med lägst kapacitet; avgör flödets maximala genomströmning.</li></ul>
+<p><strong>Push kontra pull:</strong> i push-system planeras produktionen utifrån en prognos. I pull-system (t.ex. kanban) startar nästa steg först när det faktiskt efterfrågas — vilket naturligt begränsar hur mycket PIA som byggs upp.</p>
+    <h2 id="kvalitet"><span class="num">08</span>Kvalitet i produktionen</h2>
+<ul><li><strong>Kvalitetskontroll</strong> — att mäta och kontrollera detaljer mot ritningens toleranser.</li><li><strong>Statistisk processtyrning (SPC)</strong> — processen övervakas löpande med stickprov, så att avvikelser upptäcks innan de producerar stora mängder kasserat gods.</li><li><strong>Nollfelsfilosofi</strong> — kvalitet byggs in i själva processen (t.ex. poka-yoke) istället för att bara sortera bort fel i efterhand.</li></ul>
+    <h2 id="lean"><span class="num">09</span>Lean produktion</h2>
+<p>Lean produktion, ursprungligen utvecklad av Toyota, syftar till att maximera kundvärde samtidigt som slöseri (muda) elimineras.</p>
+<h3>De vanligaste slöserierna</h3>
+<ul><li>Överproduktion</li><li>Väntan</li><li>Onödiga transporter</li><li>Överarbete</li><li>Lager</li><li>Onödiga rörelser</li><li>Defekter</li></ul>
+<div class="callout"><b>Koppling till 5S</b>5S (Sortera, Systematisera, Städa, Standardisera, Skapa vana) är ett av de mest grundläggande Lean-verktygen — det angriper direkt slöserier som väntan och onödiga rörelser, och lägger grunden för att andra Lean-verktyg ska fungera. Se avsnittet om 5S nedan.</div>
+    <h2 id="ekonomi"><span class="num">10</span>Produktionsekonomi i korthet</h2>
+<ul><li><strong>Styckkostnad</strong> — den totala kostnaden för att tillverka en enhet, inklusive material, arbete, maskintid och en andel av de fasta kostnaderna.</li><li><strong>Fasta och rörliga kostnader</strong> — fasta kostnader (t.ex. maskininvestering) förändras inte med volymen; rörliga kostnader (t.ex. material) ökar proportionellt.</li><li><strong>Break-even</strong> — den volym där intäkterna precis täcker kostnaderna.</li><li><strong>Kapitalbindning</strong> — pengar "låsta" i t.ex. lager, PIA eller maskiner. Kortare ledtider och mindre lager frigör kapital.</li></ul>
+    <h2 id="arbetsmiljo"><span class="num">11</span>Arbetsmiljö och underhåll i produktionen</h2>
+<p>Produktionsmiljöer innebär ofta risker kopplade till maskiner, tunga lyft, buller och repetitiva rörelser. Ett systematiskt arbetsmiljöarbete — regelbundna riskbedömningar, skyddsronder och tydliga rutiner — är en förutsättning för att kunna bedriva produktion säkert över tid.</p>
+<h3>Underhåll</h3>
+<ul><li><strong>Avhjälpande underhåll</strong> — reparation efter att ett fel redan uppstått, oplanerat och ofta kostsamt.</li><li><strong>Förebyggande underhåll</strong> — planerade insatser (smörjning, byte av slitdelar) innan felet hinner uppstå.</li><li><strong>Tillståndsbaserat underhåll</strong> — underhåll baserat på mätningar av maskinens faktiska skick (t.ex. vibrationer eller temperatur).</li></ul>
+<p>Produktionsteknik knyter ihop tillverkningsmetod, layout, styrning, kvalitet och ekonomi till en helhet. Ingen del kan optimeras helt isolerat.</p>
+
+    <h2 id="5s"><span class="num">12</span>5S — Ordning och reda</h2>
+<p>Arbetsmetoden 5S har sitt ursprung i Japan. Begreppet härstammar från fem japanska ord som alla börjar med bokstaven S, och är ett av de mest grundläggande Lean-verktygen.</p>
+
+    <h3 id="s1">S1 — Sortera</h3>
+<p>Fundera på vad som verkligen behövs för att sköta det dagliga arbetet. Vi har ofta svårt att göra oss av med saker som "är bra att ha" — första steget är att rensa bort det som inte är nödvändigt. Saker som används varje dag ska vara kvar; de som används ibland placeras lättillgängligt men utanför arbetsstationen.</p>
+<p><strong>Hur:</strong> skapa en yta utanför arbetsplatsen, flytta alla saker dit och sortera i högar med tre färger — <strong>grön</strong> (nödvändigt), <strong>gul</strong> (osäkert), <strong>röd</strong> (onödigt). Gå igenom det gulmarkerade en gång till tills allt hamnat i grönt eller rött. Markera och åtgärda utrustning som är defekt, olämplig eller medför säkerhetsrisker.</p>
+<p><strong>Varför:</strong> att slippa leta efter material och verktyg sparar tid och pengar, ger effektivare ytor och minskar skaderiskerna.</p>
+<div class="callout"><b>Tips</b>Fotografera arbetsplatsen innan ni sätter i gång, så att ni kan visa hur det såg ut före och efter.</div>
+
+    <h3 id="s2">S2 — Systematisera</h3>
+<p>När allting är sorterat är det dags att skapa en struktur vid arbetsstationen. Föremålen som ska vara kvar måste få en egen plats, tydligt märkt, så att det snabbt syns om något saknas.</p>
+<p><strong>Hur:</strong> ordna saker efter hur ofta de används (det mest använda ska vara lättast att nå), märk utrustningen tydligt, rengör innan ni lägger tillbaka, ha en permanent plats för allt grönmarkerat, märk arbetsstationer, gångar, buffertar och lagerplatser, och bedöm identifierade riskfaktorer med en riskbedömning. En skuggtavla med etiketter är ett vanligt sätt att skapa överblick på verktyg.</p>
+<p><strong>Varför:</strong> sparar tid, underlättar städning och rengöring, och ger bättre ergonomi genom genomtänkt placering.</p>
+
+    <h3 id="s3">S3 — Städa och rengör</h3>
+<p>Allt vid arbetsplatsen — utrustning, verktyg, arbetsmaterial, dokument — ska hållas i bästa möjliga skick och alltid vara färdigt att användas. Arbetslaget måste enas om en gemensam "städnivå".</p>
+<p>Poängen med att rengöringen utförs av dem som arbetar med utrustningen är att fel och avvikelser upptäcks tidigt, vilket minskar både antalet fel i produktionen och materialförlusterna. Använd en färgad lapp för att markera det som inte fungerar, och skriv ner fel och brister i en handlingsplan direkt när de upptäcks.</p>
+
+    <h3 id="s4">S4 — Standardisera</h3>
+<p>Nu gäller det att behålla ordningen och få städning och löpande underhåll att fungera. När alla är överens om hur arbetsplatsen ska fungera har arbetslaget hittat en standard som ska gälla tills vidare — visa gärna hur normalläget ser ut med en skiss eller ett foto i anslutning till platsen eller maskinen.</p>
+<p><strong>Hur:</strong> fördela ansvarsområden, beskriv när/var/hur något ska göras, ta fram standarder per arbetsområde, använd checklistor och fotografier, och tänk igenom att standarden skapar förutsättningar för en säker arbetsplats.</p>
+<p><strong>Varför:</strong> alla måste veta vad som förväntas av dem och vad som ska göras för att behålla en välorganiserad arbetsplats — och alla måste våga ifrågasätta dagens arbetssätt för att standarden ska kunna bli bättre.</p>
+
+    <h3 id="s5">S5 — Skapa vana</h3>
+<p>Alla i arbetslaget måste vara med när det är dags att skapa vana. Fortsätt städa dagligen, men för att komma vidare behövs ständiga förbättringar — t.ex. genom att avsätta bestämd tid varje vecka för laget att städa och diskutera förbättringar.</p>
+<p><strong>Hur:</strong> följ överenskomna regler och standarder, avsätt tid regelbundet, ha ansvariga som uppdaterar rutiner, håll hårt på standarden men var öppen för förbättringar, och genomför regelbundna revisioner som avdelningschefen granskar tillsammans med arbetslaget.</p>
+<div class="callout"><b>Viktigt</b>För att inte falla in i gamla mönster är det viktigt att ledningen och cheferna verkligen prioriterar 5S — det måste vara ett ledningsbeslut och drivas aktivt.</div>
+<p>Delar av det systematiska arbetsmiljöarbetet tangerar 5S och är bra att ha i åtanke: undersök arbetsplatsens förhållanden regelbundet, identifiera områden som behöver riskbedömas, ta fram handlingsplaner, genomför skyddsronder, och åtgärda brister omedelbart.</p>
+  </article>
+
+  <div class="footcta">
+    <div class="ft-txt">Läs igenom materialet, testa sedan dina kunskaper i quizet för Produktionsteknik.</div>
+    <a class="btn btn-amber" href="../quiz/produktion.html">Starta quiz &rarr;</a>
+  </div>
+</main>
+
+<script src="../../../assets/site.js"></script>
+</body>
+</html>

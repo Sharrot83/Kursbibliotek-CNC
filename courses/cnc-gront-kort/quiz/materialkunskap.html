@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Materialkunskap — Quiz | CNC-Grönt kort</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{ width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto; }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{ content:""; position:absolute; background:var(--amber); }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+  .footcta{
+    margin-top:48px; border-top:1px solid var(--line); padding-top:26px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .footcta .ft-txt{font-size:13.5px; color:var(--muted); max-width:44ch;}
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+
+<style>
+  .progress-row{display:flex; align-items:center; gap:10px; margin:24px 0 20px;}
+  .progress-track{flex:1; height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden;}
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--page-accent), var(--green)); width:0%; transition:width .25s;}
+  .progress-label{font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap; font-family:"IBM Plex Mono",monospace;}
+  .card{
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid var(--line); border-radius:14px; padding:26px 24px;
+    box-shadow: 0 20px 40px -25px rgba(0,0,0,.6);
+  }
+  .qmeta{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;}
+  .qtag{font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; font-weight:700; padding:4px 9px; border-radius:6px;}
+  .qnum{color:var(--muted); font-size:13px; font-family:"IBM Plex Mono",monospace;}
+  .prompt{font-size:18.5px; font-weight:600; line-height:1.4; margin-bottom:18px;}
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .opt{
+    text-align:left; padding:13px 15px; border-radius:10px; border:1px solid var(--line);
+    background:#161d24; color:var(--text); font-size:15px; cursor:pointer; transition:.12s;
+    display:flex; gap:10px; align-items:flex-start; width:100%;
+  }
+  .opt:hover:not([disabled]){border-color:var(--page-accent); background:#1a222b;}
+  .opt .k{
+    flex:0 0 auto; width:22px; height:22px; border-radius:6px; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--muted); font-weight:700;
+  }
+  .opt[disabled]{cursor:default;}
+  .opt.correct{border-color:var(--green); background:var(--green-dim);}
+  .opt.correct .k{border-color:var(--green); color:var(--green); background:#122a1a;}
+  .opt.wrong{border-color:var(--red); background:var(--red-dim);}
+  .opt.wrong .k{border-color:var(--red); color:var(--red); background:#2a1513;}
+  .feedback{margin-top:16px; padding:14px 16px; border-radius:10px; font-size:14.5px; line-height:1.5; display:none;}
+  .feedback.show{display:block;}
+  .feedback.ok{background:var(--green-dim); border:1px solid #2f6b47; color:#cdeed9;}
+  .feedback.bad{background:var(--red-dim); border:1px solid #7a3833; color:#f3d2ce;}
+  .feedback b{display:block; margin-bottom:3px; font-size:13px; text-transform:uppercase; letter-spacing:.06em;}
+  .controls{display:flex; justify-content:flex-end; margin-top:20px;}
+  button.next{
+    background:var(--page-accent); color:#12161b; border:none; padding:11px 22px;
+    border-radius:9px; font-weight:700; font-size:14.5px; cursor:pointer;
+  }
+  button.next:disabled{background:var(--panel-2); color:var(--muted); cursor:not-allowed;}
+  button.next:hover:not(:disabled){filter:brightness(1.08);}
+  .result{text-align:center; padding:20px 10px 10px;}
+  .result .big{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; font-size:56px; line-height:1;}
+  .result .of{color:var(--muted); font-size:15px; margin-top:6px;}
+  .review{margin-top:26px; text-align:left; display:flex; flex-direction:column; gap:10px;}
+  .review-item{border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-size:14px;}
+  .review-item.ok{border-left:3px solid var(--green);}
+  .review-item.bad{border-left:3px solid var(--red);}
+  .review-item .q{font-weight:600; margin-bottom:4px;}
+  .review-item .a{color:var(--muted);}
+  .restart{
+    margin-top:24px; background:none; border:1px solid var(--line); color:var(--text);
+    padding:10px 20px; border-radius:9px; cursor:pointer; font-size:14px; font-weight:600;
+  }
+  .restart:hover{border-color:var(--page-accent); color:var(--page-accent);}
+  .pool-note{margin-top:10px; font-size:13px; color:var(--page-accent); font-weight:600;
+    background:var(--page-dim); display:inline-block; padding:5px 12px; border-radius:8px;
+    font-family:"IBM Plex Mono",monospace;}
+</style>
+<style>:root{--page-accent:#e0584f; --page-dim:#3d2320;}
+  :root[data-theme="light"]{
+    --page-accent: #c2453c;
+  }</style>
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="../material.html"><span class="mark"></span>CNC-GRÖNT KORT</a>
+  <nav>
+    <a href="../material.html">Delkurser</a>
+    <a href="../quiz-alla.html">Storquiz</a>
+  </nav>
+</div>
+
+<main class="wrap narrow">
+  <header class="hero">
+    <div class="eyebrow">MTL-02 · Quiz</div>
+    <h1>Materialkunskap</h1>
+    <div class="sub">Öva på frågor från <a href="../material/materialkunskap.html" style="color:var(--page-accent); font-weight:600;">läsmaterialet om materialkunskap</a>. Frågorna och svarsalternativen slumpas varje omgång.</div>
+    <div class="pool-note" id="poolNote"></div>
+  </header>
+
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 0</div>
+  </div>
+
+  <div class="card" id="card"></div>
+
+  <div class="footcta">
+    <div class="ft-txt">Svara i din egen takt — resultatet sparas inte och skickas ingenstans.</div>
+    <a class="btn btn-ghost" href="../material.html">&larr; Alla delkurser</a>
+  </div>
+</main>
+
+<script>
+const CAT_ID = "materialkunskap";
+const CAT_LABEL = "Materialkunskap";
+const QUESTIONS = [
+{q:"Vad kallas de material en produkts detaljer är tillverkade av?", opts:["Konstruktionsmaterial", "Slaggprodukter", "Gråberg", "Halvledare"], correct:0, fb:"Delar i en produkt tillverkas av så kallade konstruktionsmaterial, valda utifrån funktion och ekonomi."},
+    {q:"Vilka två huvudfaktorer styr valet av material till en produkt?", opts:["Funktion och ekonomi", "Färg och doft", "Vikt och doft", "Ålder och form"], correct:0, fb:"Material väljs med tanke på funktion (vad produkten ska användas till) och ekonomi (kostnad för tillverkning och personal)."},
+    {q:"Vad kan hända vid ett felaktigt materialval?", opts:["Materialet överbelastas och går sönder", "Produkten blir alltid billigare", "Inget särskilt, materialval saknar betydelse", "Produkten blir automatiskt starkare"], correct:0, fb:"Ett felaktigt materialval kan leda till att materialet överbelastas och går sönder."},
+    {q:"Vad menas med att 'sätta rätt material på rätt plats'?", opts:["Att välja den bästa kombinationen av olika material eftersom inget material har alla önskvärda egenskaper samtidigt", "Att alltid använda samma material i hela produkten", "Att bara tänka på priset, aldrig på funktionen", "Att aldrig kombinera flera material i samma produkt"], correct:0, fb:"Eftersom inget enskilt material har alla önskvärda egenskaper samtidigt får man välja den bästa kombinationen och sätta rätt material på rätt plats."},
+    {q:"Vilket är INTE en av de önskvärda egenskaperna som nämns för material i en produkt?", opts:["Starka och lätta", "Lämpliga att bearbeta och sammanfoga", "Så dyra som möjligt att köpa in", "Lätta att återanvända vid skrotning"], correct:2, fb:"Ett material bör vara billigt att använda (lågt inköpspris och låg bearbetningskostnad) — inte så dyrt som möjligt."},
+    {q:"Ett typiskt exempel som nämns på en produkt med många olika material är:", opts:["En bil", "En sten", "Ett glas vatten", "Ett träd"], correct:0, fb:"En bil innehåller bland annat aluminium, gummi, plast, stål och tunnplåt, alla valda med tanke på funktion och hållbarhet."},
+    {q:"Vart går den största delen av världens energiförbrukning enligt materialet?", opts:["Till utvinning och förädling av material", "Till belysning i hemmen", "Till matlagning", "Till tillverkning av kläder"], correct:0, fb:"Den största delen av den energi som förbrukas i världen går åt till utvinning och förädling av material."},
+    {q:"Ungefär hur stor andel av energin krävs för att smälta om aluminiumskrot jämfört med att nyframställa aluminium ur bauxit?", opts:["Cirka 5 %", "Cirka 50 %", "Cirka 95 %", "Exakt lika mycket"], correct:0, fb:"Att smälta om aluminiumskrot kräver bara ungefär 5 % av energin som går åt vid nyframställning ur bauxit, vilket gör återvinning mycket energieffektivt."},
+{q:"Vad kallas mineraler som innehåller utvinningsbara metaller?", opts:["Malmer", "Halvledare", "Legeringar", "Isolatorer"], correct:0, fb:"Mineraler som innehåller utvinningsbara metaller kallas malmer."},
+    {q:"Vad kallas det värdelösa material som måste avskiljas från metallen i malmen?", opts:["Gråberg", "Anlöpning", "Martensit", "Perlit"], correct:0, fb:"Metaller förekommer aldrig rena i naturen utan är blandade med gråberg som måste tas bort."},
+    {q:"Vilka två malmer nämns som de viktigaste i Sverige, och vilken metall ger de?", opts:["Svartmalm och blodstensmalm — järn", "Bauxit och kopparkis — aluminium", "Blyglans och guldmalm — bly", "Zinkmalm och nickelmalm — zink"], correct:0, fb:"De viktigaste malmerna i Sverige är svartmalm och blodstensmalm, som ger järn."},
+    {q:"I vilken anläggning befrias järnmalmen från syre så att endast järn (råstål) finns kvar?", opts:["En masugn", "Ett kylskåp", "En pendelhejare", "En dragprovningsmaskin"], correct:0, fb:"I ett järnverk befrias malmen från syre i en masugn, så att endast järn (råstål) finns kvar."},
+    {q:"Vilka egenskaper kännetecknar metaller (jämfört med icke-metaller)?", opts:["Leder elektricitet bra och är glansiga/reflekterar ljus bra", "Leder elektricitet dåligt och är matta", "Är alltid flytande vid rumstemperatur", "Kan aldrig kombineras med andra grundämnen"], correct:0, fb:"Metaller leder elektricitet bra och är glansiga med god ljusreflektion — nästan alla är dessutom fasta vid rumstemperatur (utom kvicksilver)."},
+    {q:"Vad kallas grundämnen som har egenskaper mitt emellan metaller och icke-metaller, t.ex. arsenik och germanium?", opts:["Halvmetaller eller halvledare", "Legeringar", "Malmer", "Tungmetaller"], correct:0, fb:"Grundämnen med egenskaper mitt emellan metaller och icke-metaller kallas halvmetaller eller halvledare."},
+    {q:"Vad är en legering?", opts:["En blandning av en metall med ett eller flera andra grundämnen", "Ett rent grundämne utan tillsatser", "Ett annat namn för gråberg", "En typ av oförstörande provning"], correct:0, fb:"En legering är en blandning av en metall med ett eller flera andra grundämnen, t.ex. stål (järn + kol) eller mässing (koppar + zink)."},
+    {q:"Vilken kromhalt krävs ungefär för att stål ska bli rostfritt?", opts:["Minst 12 %", "Minst 1 %", "Minst 50 %", "Krom påverkar inte rostfrihet"], correct:0, fb:"Minst 12 % krom som legeringsämne gör stålet rostfritt."},
+{q:"Hur beräknas ett materials densitet?", opts:["Vikt dividerat med volym", "Volym dividerat med vikt", "Vikt multiplicerat med temperatur", "Smältpunkt dividerat med hårdhet"], correct:0, fb:"Densitet beräknas som vikt dividerat med volym, uttryckt i t.ex. kg/dm³."},
+    {q:"Vilken gräns skiljer normalt lättmetaller från tungmetaller?", opts:["Lättmetaller under 4,5 kg/dm³, tungmetaller från 6,7 kg/dm³", "Lättmetaller över 10 kg/dm³", "Det finns ingen sådan gräns", "Gränsen sätts av smältpunkten, inte densiteten"], correct:0, fb:"Lättmetaller har densitet under 4,5 kg/dm³, medan tungmetaller har densitet från 6,7 kg/dm³ och uppåt."},
+    {q:"Vad kallas temperaturen då ett material övergår från fast till flytande form?", opts:["Smältpunkt", "Densitet", "Slagseghet", "Korrosionsgräns"], correct:0, fb:"Smältpunkten är temperaturen då materialet smälter och övergår från fast till flytande form."},
+    {q:"Varför är kunskap om värmeutvidgning viktig vid t.ex. svarvning?", opts:["Materialet expanderar när det värms av bearbetningen, vilket kan ge fel mått vid mätning innan det svalnat", "Värmeutvidgning påverkar aldrig mätresultat", "Det gäller bara vid extremt låga temperaturer", "Endast plaster påverkas av värmeutvidgning"], correct:0, fb:"Materialet blir varmt och expanderar under bearbetning, vilket kan ge missvisande mått om man mäter innan det hunnit svalna."},
+    {q:"Vilken metall nämns ha bäst värmeledningsförmåga och därför används i värmeväxlare och kylare?", opts:["Koppar", "Bly", "Plast", "Trä"], correct:0, fb:"Koppar har bäst värmeledningsförmåga bland de vanliga metallerna och används därför i värmeväxlare och kylare."},
+    {q:"Varför används plast ofta som elektrisk isolator?", opts:["Plast är en dålig elektrisk ledare", "Plast leder el bättre än koppar", "Plast har högst densitet av alla material", "Plast smälter aldrig"], correct:0, fb:"Plaster är oftast dåliga elektriska ledare och används därför som isolatorer runt t.ex. elkablar."},
+    {q:"Vad kallas materialets förmåga att motstå angrepp från t.ex. syror och saltvatten?", opts:["Korrosionsmotstånd", "Slitstyrka", "Densitet", "Smältintervall"], correct:0, fb:"Korrosionsmotstånd är materialets förmåga att motstå miljöpåverkan som syror, alkalier och saltvatten."},
+    {q:"Vad beskriver begreppet slitstyrka?", opts:["Materialets motstånd mot nötning när ytor gnids mot varandra", "Materialets förmåga att leda värme", "Materialets vikt per volymenhet", "Materialets färg efter bearbetning"], correct:0, fb:"Slitstyrka beskriver hur väl materialytan står emot nötning, till exempel när grus ligger på ett lastbilsflak."},
+{q:"Vilka tre värden får man vanligen fram ur en dragprovning?", opts:["Sträckgräns, brottgräns och brottförlängning", "Densitet, smältpunkt och hårdhet", "Färg, doft och ljud", "Kolhalt, kromhalt och nickelhalt"], correct:0, fb:"Dragprovning ger sträckgräns, brottgräns och brottförlängning — grundläggande hållfasthetsbegrepp."},
+    {q:"Vad kallas den belastning materialet tål utan att få en bestående formförändring?", opts:["Sträckgräns", "Brottgräns", "Brottförlängning", "Utmattningsgräns"], correct:0, fb:"Sträckgränsen är den belastning materialet tål utan kvarstående formförändring — provbiten återgår till sin ursprungliga form efteråt."},
+    {q:"Vad mäter en slagprovning?", opts:["Materialets slagseghet, dvs. förmåga att stå emot slag utan att brista", "Materialets densitet", "Materialets färgkod", "Materialets smältpunkt"], correct:0, fb:"Slagprovning mäter slagsegheten — materialets förmåga att motstå slag utan att brista."},
+    {q:"Vad avslöjar en utmattningsprovning?", opts:["Hur materialet klarar upprepad, växlande belastning över tid", "Materialets täthet", "Materialets ytfärg", "Materialets elektriska ledningsförmåga"], correct:0, fb:"Utmattningsprovning visar hur materialet klarar upprepad växlande belastning, även vid belastningar under brottgränsen."},
+    {q:"Vad studeras vid mikroskopering av ett material?", opts:["Kornstorlek, utskiljningar och mikrosprickor", "Materialets pris", "Materialets ljudnivå", "Materialets doft"], correct:0, fb:"Vid mikroskopering studeras materialets struktur — kornstorlek, utskiljningar och mikrosprickor — i kraftig förstoring."},
+    {q:"Vilka metoder nämns för hårdhetsprovning?", opts:["Brinell-, Rockwell- och Vickersprovning", "Radiografi, ultraljud och magnetpulver", "Dragprovning och slagprovning", "Penetrantprovning och mikroskopering"], correct:0, fb:"De vanligaste hårdhetsprovningsmetoderna är Brinell-, Rockwell- och Vickersprovning."},
+    {q:"Vad kännetecknar oförstörande provningsmetoder?", opts:["Detaljen förblir hel och kan användas efter provningen", "Provstaven förstörs alltid", "De kan bara användas på plast", "De kräver alltid att materialet smälts"], correct:0, fb:"Oförstörande provning låter detaljen förbli hel — man letar efter dolda fel utan att förstöra materialet."},
+    {q:"Hur upptäcks sprickor vid magnetpulverprovning?", opts:["Sprickor stör magnetfältet och drar till sig järnpulver, vilket syns som mörka ränder", "Sprickor lyser upp i mörker", "Sprickor ändrar materialets färg permanent", "Sprickor gör att materialet blir magnetiskt kallt"], correct:0, fb:"Vid magnetpulverprovning stör sprickor magnetfältet och drar till sig järnpulver, vilket gör sprickorna synliga som mörka ränder."},
+{q:"Vad är huvudsyftet med standardisering enligt materialet?", opts:["Att skapa regler för att lösa återkommande, gemensamma tekniska och ekonomiska problem", "Att göra alla produkter likadana i utseende", "Att öka priset på material", "Att minska antalet leverantörer till exakt en"], correct:0, fb:"Standardisering skapar regler för att lösa återkommande tekniska och ekonomiska problem, t.ex. genom att definiera begrepp och säkerställa utbytbarhet."},
+    {q:"Vilken standardbeteckning används för internationell standard?", opts:["ISO", "EN", "SS", "DIN"], correct:0, fb:"ISO (International Organization for Standardization) är beteckningen för internationell standard."},
+    {q:"Vilken organisation utför standardiseringsarbetet för europeisk standard (EN)?", opts:["CEN i Bryssel", "SIS i Sverige", "FN", "Arbetsmiljöverket"], correct:0, fb:"CEN i Bryssel utför standardiseringsarbetet i Europa och består av de nationella standardiseringsorganen inom EU/EFTA-länderna."},
+    {q:"Vilken organisation ansvarar för svensk metallstandard (SS)?", opts:["SIS, Swedish Standards Institute", "CEN", "ISO centralt", "Arbetsmiljöverket"], correct:0, fb:"SIS (Swedish Standards Institute) utarbetar och fastställer svensk metallstandard, samt bevakar arbetet inom CEN och ISO för Sveriges räkning."},
+    {q:"Vad betyder beteckningen S235JR ungefär, enligt stålbeteckningssystemet EN 10027 grupp 1?", opts:["Ett allmänt konstruktionsstål med minsta sträckgräns 235 MPa", "Ett rostfritt stål med 23,5 % krom", "Ett gjutjärn med 235 % kolhalt", "Ett verktygsstål härdat vid 235 grader"], correct:0, fb:"S anger allmänt konstruktionsstål och talet 235 anger minsta sträckgräns i MPa (N/mm²)."},
+    {q:"Vad grundas beteckningarna i grupp 2 av stålstandarden på?", opts:["Stålets kemiska sammansättning", "Enbart färgen på stålet", "Endast tillverkningsdatumet", "Endast leverantörens namn"], correct:0, fb:"Grupp 2-beteckningar (t.ex. C35E) grundas på stålets kemiska sammansättning, till skillnad från grupp 1 som grundas på användningsområde och hållfasthet."},
+    {q:"Vilken beteckning används i Europastandarden för rostfria stål?", opts:["1.4xxx", "S2xx", "C3xE", "G P24x"], correct:0, fb:"Rostfria stål har i Europastandarden beteckningen 1.4xxx, där x representerar en siffra."},
+    {q:"Varför är färgmärkning av material viktig i en verkstad?", opts:["Den underlättar för operatörer att välja rätt materialkvalitet och undvika sammanblandning", "Den avgör materialets pris automatiskt", "Den ersätter behovet av ritningar helt", "Den har enbart en dekorativ funktion"], correct:0, fb:"Färgmärkning gör det lättare att snabbt identifiera rätt materialkvalitet och undvika att t.ex. blanda samman olika stålsorter."},
+{q:"Vilket grundämne, förutom järn, är det vanligaste och viktigaste legeringsämnet i stål?", opts:["Kol", "Syre", "Kväve", "Väte"], correct:0, fb:"Kol är det vanligaste och viktigaste legeringsämnet i stål, oftast i halter under 2 %."},
+    {q:"Vilka tre huvudgrupper delas stål ofta in i efter användningsområde?", opts:["Konstruktionsstål, verktygsstål och rostfria stål", "Gråjärn, segjärn och vitjärn", "Hårdmetall, snabbstål och pulverstål", "Malm, gråberg och legering"], correct:0, fb:"Stål delas efter användningsområde in i konstruktionsstål, verktygsstål och rostfria stål."},
+    {q:"Vilken egenskap är särskilt viktig hos konstruktionsstål?", opts:["God svetsbarhet, tack vare relativt låg kolhalt", "Extremt hög kolhalt för maximal hårdhet", "Total avsaknad av kol", "Endast hög densitet, inget annat"], correct:0, fb:"Konstruktionsstål har relativt låg kolhalt, vilket ger god svetsbarhet — viktigt för bärande konstruktioner."},
+    {q:"Vad är syftet med härdning av stål?", opts:["Att öka hårdheten väsentligt genom snabb avkylning från hög temperatur", "Att göra stålet mjukare", "Att sänka stålets smältpunkt permanent", "Att ta bort allt kol ur stålet"], correct:0, fb:"Härdning innebär snabb avkylning (t.ex. i vatten, olja eller gas) från hög temperatur, vilket ger en hård men spröd struktur."},
+    {q:"Vad görs alltid efter en härdning, för att minska sprödheten?", opts:["Anlöpning", "Ytterligare härdning", "Smältning", "Malmbrytning"], correct:0, fb:"Efter härdning anlöps stålet — det värms upp till en lägre temperatur för att minska sprödheten och öka segheten."},
+    {q:"Vad används glödgning till?", opts:["Att göra stålet mjukt eller återställa strukturen efter bearbetning", "Att göra stålet hårdare än efter härdning", "Att öka stålets kolhalt permanent", "Att smälta ner stål till flytande form för gjutning"], correct:0, fb:"Glödgning används för att göra stålet mjukt eller återställa den inre strukturen efter felaktig bearbetning eller värmebehandling."},
+    {q:"Vilket gjutjärn är vanligast och har god dämpningsförmåga mot vibrationer?", opts:["Gråjärn", "Segjärn", "Aducerjärn", "Vitjärn"], correct:0, fb:"Gråjärn är det vanligaste gjutjärnet och har god dämpningsförmåga mot vibrationer och buller."},
+    {q:"Vad kännetecknar hårdmetall respektive snabbstål (HSS)?", opts:["Hårdmetall är metallkarbider bundna med kobolt/nickel, snabbstål behåller sin hårdhet upp till 600 °C — båda används i skärverktyg", "De är två namn för exakt samma material", "Hårdmetall används enbart i fordonsdäck", "Snabbstål kan aldrig användas till fräsar eller borrar"], correct:0, fb:"Hårdmetall består av metallkarbider bundna med kobolt eller nickel, medan snabbstål (HSS) behåller sin hårdhet vid höga temperaturer — båda är material som används i skärande verktyg, inte egna materialgrupper."},
+    {q:"I beteckningen EN AW-6082 [AlSiMgMn] T6, vad betyder bokstaven W?", opts:["Plastiskt bearbetad (Wrought)", "Gjuten (Wet cast)", "Svetsad (Welded)", "Vägd (Weighed)"], correct:0, fb:"W står för Wrought, det vill säga plastiskt bearbetad — till skillnad från gjutna produkter."},
+    {q:"Vad anger tillståndsbeteckningen T6 i en aluminiumbeteckning?", opts:["Att materialet är lösningsglödgat och konstgjort åldrat", "Att materialet är gjutet i sex delar", "Att materialet innehåller 6 % titan", "Att materialet är sexkantigt i tvärsnitt"], correct:0, fb:"T6 är en tillståndsbeteckning enligt EN 515 som visar att materialet lösningsglödgats och därefter konstgjort åldrats för att uppnå sina slutliga egenskaper."},
+    {q:"Vilken bokstav inleder alla kopparlegeringars EN-beteckning (t.ex. CW024A)?", opts:["C", "K", "Cu", "A"], correct:0, fb:"Bokstaven C står först och anger kopparlegering; W som följer visar att materialet är plastiskt bearbetat."},
+    {q:"Vad står förkortningen GJL för i en gjutjärnsbeteckning som EN-GJL-250?", opts:["Grått gjutjärn med lamellgrafit", "Glödgat järn, legerat", "Gjutet, järnfritt, lätt", "Gjutstål med lågt kolinnehåll"], correct:0, fb:"GJL står för gjutjärn med lamellgrafit (gråjärn); talet 250 anger lägsta brottgräns i MPa."},
+    {q:"Ungefär vilken smältpunkt har rent järn?", opts:["Cirka 1 538 °C", "Cirka 660 °C", "Cirka 232 °C", "Cirka 3 400 °C"], correct:0, fb:"Rent järn smälter vid cirka 1 538 °C, vilket är betydligt högre än t.ex. aluminium (658 °C) eller koppar (1 083 °C)."},
+    {q:"Varför smälter legerat stål oftast vid en lägre temperatur än rent järn?", opts:["Legeringsämnen som kol sänker smältpunkten och ger ett smältintervall", "Legerat stål innehåller inget järn alls", "Det är faktiskt tvärtom — legerat stål smälter alltid vid högre temperatur", "Smältpunkten påverkas aldrig av legeringsämnen"], correct:0, fb:"Legeringsämnen som kol sänker smältpunkten jämfört med rent järn, och legeringar smälter ofta över ett temperaturintervall i stället för vid en exakt punkt."},
+    {q:"Varför följer plaster inte samma EN-beteckningssystem (prefix, bokstav, lagringsnummer, tillståndsbeteckning) som metaller?", opts:["Plaster är inte metallegeringar och betecknas i stället med korta bokstavskoder enligt ISO 1043", "Plaster saknar helt standardiserade beteckningar", "Plaster använder exakt samma EN-nummersystem som aluminium", "Plaster betecknas alltid med romerska siffror"], correct:0, fb:"Plaster är inte metallegeringar, så de följer ett annat system (ISO 1043) med korta bokstavsförkortningar som PE, PA eller POM i stället för EN:s legeringsnummer."}
+];
+
+const QUIZ_LENGTH = 30;
+let order = [];
+let idx = 0;
+let answered = false;
+let score = 0;
+let history = [];
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function shuffleOptions(item){
+  const pairs = item.opts.map((o, i) => ({ text: o, wasCorrect: i === item.correct }));
+  const shuffled = shuffle(pairs);
+  const newOpts = shuffled.map(p => p.text);
+  const newCorrect = shuffled.findIndex(p => p.wasCorrect);
+  return { ...item, opts: newOpts, correct: newCorrect };
+}
+function buildOrder(){
+  return shuffle(QUESTIONS).slice(0, Math.min(QUIZ_LENGTH, QUESTIONS.length)).map(shuffleOptions);
+}
+function updateProgress(){
+  const fill = document.getElementById('progressFill');
+  const label = document.getElementById('progressLabel');
+  const pct = order.length ? (idx/order.length)*100 : 0;
+  fill.style.width = pct + '%';
+  label.textContent = Math.min(idx+1, order.length) + ' / ' + order.length;
+}
+function startQuiz(){
+  order = buildOrder();
+  idx = 0; score = 0; history = [];
+  document.getElementById('poolNote').textContent = `Frågebank: ${QUESTIONS.length} frågor · ${Math.min(QUIZ_LENGTH, QUESTIONS.length)} slumpas ut denna omgång`;
+  renderQuestion();
+}
+function renderQuestion(){
+  answered = false;
+  updateProgress();
+  const card = document.getElementById('card');
+  if(idx >= order.length){ renderResult(); return; }
+  const item = order[idx];
+  const optHtml = item.opts.map((o,i) => {
+    const key = String.fromCharCode(65+i);
+    return `<button class="opt" data-i="${i}"><span class="k">${key}</span><span>${o}</span></button>`;
+  }).join('');
+  card.innerHTML = `
+    <div class="qmeta">
+      <span class="qtag" style="background:var(--page-dim); color:var(--page-accent);">${CAT_LABEL}</span>
+      <span class="qnum">Fråga ${idx+1} av ${order.length}</span>
+    </div>
+    <div class="prompt">${item.q}</div>
+    <div class="options">${optHtml}</div>
+    <div class="feedback" id="feedback"></div>
+    <div class="controls"><button class="next" id="nextBtn" disabled>Nästa</button></div>
+  `;
+  card.querySelectorAll('.opt').forEach(btn => {
+    btn.addEventListener('click', () => selectAnswer(parseInt(btn.dataset.i)));
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => { idx++; renderQuestion(); });
+}
+function selectAnswer(i){
+  if(answered) return;
+  answered = true;
+  const item = order[idx];
+  const correct = item.correct;
+  document.querySelectorAll('.opt').forEach((btn, bi) => {
+    btn.setAttribute('disabled','true');
+    if(bi === correct) btn.classList.add('correct');
+    if(bi === i && i !== correct) btn.classList.add('wrong');
+  });
+  const isCorrect = (i === correct);
+  if(isCorrect) score++;
+  history.push({q:item.q, correct:isCorrect, correctText:item.opts[correct]});
+  const fb = document.getElementById('feedback');
+  fb.classList.add('show', isCorrect ? 'ok' : 'bad');
+  fb.innerHTML = `<b>${isCorrect ? 'Rätt!' : 'Inte riktigt.'}</b>${item.fb}`;
+  document.getElementById('nextBtn').disabled = false;
+}
+function renderResult(){
+  const card = document.getElementById('card');
+  const pct = order.length ? Math.round((score/order.length)*100) : 0;
+  const reviewHtml = history.map(h => `
+    <div class="review-item ${h.correct ? 'ok' : 'bad'}">
+      <div class="q">${h.q}</div>
+      <div class="a">${h.correct ? 'Du svarade rätt.' : 'Rätt svar: ' + h.correctText}</div>
+    </div>`).join('');
+  card.innerHTML = `
+    <div class="result">
+      <div class="big" style="color:var(--page-accent);">${score} / ${order.length}</div>
+      <div class="of">${pct}% rätt</div>
+      <button class="restart" id="restartBtn">Kör igen (nya slumpade frågor)</button>
+      <div class="review">${reviewHtml}</div>
+    </div>`;
+  document.getElementById('restartBtn').addEventListener('click', startQuiz);
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressLabel').textContent = order.length + ' / ' + order.length;
+}
+startQuiz();
+
+</script>
+
+<script src="../../../assets/site.js"></script>
+</body>
+</html>
