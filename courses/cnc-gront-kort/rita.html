@@ -44,12 +44,24 @@
   header p { margin:0; color:var(--muted); font-size:13px; }
   .header-actions { display:flex; gap:8px; align-items:center; }
 
+  .header-center {
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;
+  }
+  .transport-btn {
+    background:var(--panel2); border:1px solid var(--border); color:var(--text);
+    border-radius:7px; padding:7px 13px; font-size:13px; font-weight:600; cursor:pointer;
+    font-family:inherit;
+  }
+  .transport-btn:hover { border-color:var(--accent); }
+  #playBtn.transport-btn { border-color:var(--ok); color:var(--ok); }
+  #pauseBtn.transport-btn { border-color:#e0a62f; color:#e0a62f; }
+  #stopBtn.transport-btn { border-color:var(--danger); color:var(--danger); }
   .warn-indicator {
     display:flex;
-    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
     background:var(--panel2); border:1px solid var(--border); color:var(--muted);
-    border-radius:8px; width:38px; height:38px; font-size:18px; cursor:pointer;
-    align-items:center; justify-content:center; line-height:1;
+    border-radius:8px; width:34px; height:34px; font-size:16px; cursor:pointer;
+    align-items:center; justify-content:center; line-height:1; position:relative;
   }
   .warn-indicator.ok { border-color:var(--ok); color:var(--ok); }
   .warn-indicator.warn { border-color:var(--danger); color:var(--danger); }
@@ -369,16 +381,21 @@
 </style>
 </head>
 <body>
-<a href="material.html" style="display:block;padding:10px 22px;background:#12171d;border-bottom:1px solid var(--border);color:var(--muted);text-decoration:none;font-size:13px;">&larr; Tillbaka till CNC-Grönt kort</a>
 <header>
   <div>
     <h1>G-kodsvisualiserare</h1>
     <p>XY-visualisering för G0/G1/G2/G3 · G20/G21 · G90/G91 · I/J- och R-bågar</p>
   </div>
-  <button id="warnIndicator" class="warn-indicator ok" title="Inga parser-varningar">✓</button>
-  <div class="warn-popup" id="warnPopup">
-    <h3>Parser-varningar</h3>
-    <ul id="warnList"></ul>
+  <div class="header-center">
+    <button id="playBtn" class="transport-btn" title="Spela — startar från reglagets position">▶ Spela</button>
+    <button id="pauseBtn" class="transport-btn" title="Pausa — fortsätt sedan med Spela">❚❚ Paus</button>
+    <button id="stopBtn" class="transport-btn" title="Stoppa — återgår till början">■ Stoppa</button>
+    <button id="singleBlockBtn" class="transport-btn" title="Kör exakt ett rörelsesegment och pausa — tryck igen för nästa">⏭ Singel block</button>
+    <button id="warnIndicator" class="warn-indicator ok" title="Inga parser-varningar">✓</button>
+    <div class="warn-popup" id="warnPopup">
+      <h3>Parser-varningar</h3>
+      <ul id="warnList"></ul>
+    </div>
   </div>
   <div class="header-actions">
     <button id="openFileBtnTop">Öppna fil</button>
@@ -414,8 +431,6 @@
     <div class="buttons" style="margin-top:10px;">
       <button class="primary" id="drawBtn">▶ Rita G-kod</button>
       <button id="fitBtn">Anpassa vy</button>
-      <button id="playBtn">Spela</button>
-      <button id="stopBtn">Stoppa</button>
       <button id="liveBtn" title="Rita automatiskt medan du skriver, utan att trycka på Rita G-kod">Live-ritning: Av</button>
       <button id="cncFrasBtn" title="3D-materialborttagning — visar ämnet skuret i verkligheten">CNC-Fräs: Av</button>
       <button id="cncFrasSizeBtn" class="small" title="Ställ in ämnesstorlek för CNC-Fräs">⚙ Ämnesstorlek</button>
@@ -1226,6 +1241,8 @@ let stockLastPos = null;
 let stockExteriorClipped = false;
 let pausedPlaybackTime = null;
 let lastHandledStopId = null;
+let currentSimTime = 0;
+let lastHandledBlockBoundarySeg = null;
 let dragging = false, lastMouse = null;
 let lastParsed = null;
 
@@ -2923,6 +2940,7 @@ function firstStopCrossed(fromTime,toTime) {
 function drawFromText(fit=true) {
   try {
     cancelAnimationFrame(animReq);
+    animReq=null;
     const parsed=parseGcode(ta.value);
     lastParsed = parsed;
     paths=parsed.paths;
@@ -2967,13 +2985,15 @@ ta.addEventListener('input', () => {
   liveDrawTimer = setTimeout(() => drawFromText(false), 350);
 });
 
-function playFrom(startTime=0) {
+function playFrom(startTime=0, singleStep=false) {
   cancelAnimationFrame(animReq);
   if (!playModel || !paths.length) return;
   let simTime=Math.max(0,Math.min(playModel.totalTime,startTime));
+  currentSimTime=simTime;
   let last=performance.now();
   pausedPlaybackTime=null;
   const startPos=positionAtTime(playModel,simTime);
+  let blockStartSeg = startPos ? startPos.segIndex : 0;
   if (stockMode && startPos) {
     const d=playModel.segStart[startPos.segIndex]+paths[startPos.segIndex]._len*startPos.t;
     resweepStock(d);
@@ -2988,39 +3008,74 @@ function playFrom(startTime=0) {
     setActiveToolDisplay(paths[pos.segIndex].T);
     render(pos,false);
   }
+  function finishPlayback() {
+    animReq=null;
+    animationIndex=null;
+    pausedPlaybackTime=null;
+    scrubSlider.value=paths.length;
+    scrubLabel.textContent=paths.length+' / '+paths.length;
+    setPlayingLine(paths[paths.length-1].line);
+    setActiveToolDisplay(paths[paths.length-1].T);
+    if (stockMode) resweepStock(playModel.total);
+    render();
+    statusEl.textContent='Uppspelning klar.';
+  }
   function step(now) {
     const dt=Math.min(0.1,(now-last)/1000);
     last=now;
     const speed=parseFloat(speedSlider.value)||1;
-    const nextTime=Math.min(playModel.totalTime,simTime+dt*speed);
+    let nextTime=Math.min(playModel.totalTime,simTime+dt*speed);
+
+    // Single block: run exactly one block (segment) per Spela press, then
+    // pause at its end, mirroring a real machine's single-block mode.
+    if (singleStep) {
+      const blockEndTime = (blockStartSeg+1<playModel.segStartTime.length) ? playModel.segStartTime[blockStartSeg+1] : playModel.totalTime;
+      if (nextTime>=blockEndTime-1e-9) {
+        simTime=blockEndTime;
+        currentSimTime=simTime;
+        updateAt(positionAtTime(playModel,simTime));
+        if (simTime<playModel.totalTime-1e-9) {
+          animReq=null;
+          pausedPlaybackTime=Math.min(playModel.totalTime,simTime+1e-6);
+          statusEl.textContent='Singel block: segment '+(blockStartSeg+1)+'/'+paths.length+' klart. Tryck Singel block igen för nästa, eller Spela för att fortsätta normalt.';
+        } else {
+          finishPlayback();
+        }
+        return;
+      }
+    }
+
     const stop=firstStopCrossed(simTime,nextTime);
     if (stop) {
       simTime=stop.time;
+      currentSimTime=simTime;
       const pos=positionAtTime(playModel,simTime);
       updateAt(pos);
+      animReq=null;
       pausedPlaybackTime=Math.min(playModel.totalTime,simTime+1e-6);
       lastHandledStopId=stop.id;
       statusEl.textContent=stop.code+' programstopp på rad '+stop.line+'. Tryck Spela för att fortsätta.';
       return;
     }
     simTime=nextTime;
+    currentSimTime=simTime;
     updateAt(positionAtTime(playModel,simTime));
     if (simTime<playModel.totalTime-1e-9) {
       animReq=requestAnimationFrame(step);
     } else {
-      animationIndex=null;
-      pausedPlaybackTime=null;
-      scrubSlider.value=paths.length;
-      scrubLabel.textContent=paths.length+' / '+paths.length;
-      setPlayingLine(paths[paths.length-1].line);
-      setActiveToolDisplay(paths[paths.length-1].T);
-      if (stockMode) resweepStock(playModel.total);
-      render();
-      statusEl.textContent='Uppspelning klar.';
+      finishPlayback();
     }
   }
   animReq=requestAnimationFrame(step);
 }
+
+document.getElementById('singleBlockBtn').addEventListener('click', () => {
+  if (!paths.length || !playModel) return;
+  if (pausedPlaybackTime!=null) { playFrom(pausedPlaybackTime, true); return; }
+  const v=parseInt(scrubSlider.value,10)||0;
+  const startTime=v>=paths.length?0:(playModel.segStartTime[v]||0);
+  playFrom(startTime, true);
+});
 
 document.getElementById('playBtn').addEventListener('click',()=>{
   if (!paths.length || !playModel) return;
@@ -3030,11 +3085,22 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   playFrom(startTime);
 });
 
+document.getElementById('pauseBtn').addEventListener('click',()=>{
+  if (!paths.length || !playModel) return;
+  if (animReq==null) return; // nothing is actually running
+  cancelAnimationFrame(animReq);
+  animReq=null;
+  pausedPlaybackTime=Math.min(playModel.totalTime, currentSimTime);
+  statusEl.textContent='Pausad vid rörelsesegment '+(parseInt(scrubSlider.value,10)||0)+'/'+paths.length+'. Tryck Spela för att fortsätta.';
+});
+
 document.getElementById('stopBtn').addEventListener('click',()=>{
   cancelAnimationFrame(animReq);
+  animReq=null;
   animationIndex=null;
   pausedPlaybackTime=null;
   lastHandledStopId=null;
+  currentSimTime=0;
   scrubSlider.value=0;
   scrubLabel.textContent='0 / '+paths.length;
   setPlayingLine(null);
@@ -3046,6 +3112,7 @@ document.getElementById('stopBtn').addEventListener('click',()=>{
 
 scrubSlider.addEventListener('input', ()=>{
   cancelAnimationFrame(animReq);
+  animReq=null;
   pausedPlaybackTime=null;
   lastHandledStopId=null;
   const v=parseInt(scrubSlider.value,10);
