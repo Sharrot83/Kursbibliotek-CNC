@@ -1,0 +1,3289 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>G-kodsvisualiserare</title>
+<style>
+  :root {
+    --bg:#101318;
+    --panel:#181d24;
+    --panel2:#202732;
+    --text:#eef3f8;
+    --muted:#9aa7b5;
+    --accent:#4da3ff;
+    --rapid:#ff9b42;
+    --line:#57d38c;
+    --arc:#4da3ff;
+    --center:#e2b36b;
+    --grid:#2d3744;
+    --border:#303a47;
+    --danger:#e0714f;
+    --ok:#57d38c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  header {
+    position:relative;
+    padding:14px 22px;
+    border-bottom:1px solid var(--border);
+    background:#12171d;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  header h1 { margin:0 0 4px; font-size:21px; display:flex; align-items:baseline; gap:8px; }
+  header h1 .v-badge { font-size:12px; font-weight:600; color:var(--muted); background:var(--panel2); border:1px solid var(--border); border-radius:5px; padding:1px 6px; }
+  header p { margin:0; color:var(--muted); font-size:13px; }
+  .header-actions { display:flex; gap:8px; align-items:center; }
+
+  .header-center {
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;
+  }
+  .transport-btn {
+    background:var(--panel2); border:1px solid var(--border); color:var(--text);
+    border-radius:7px; padding:7px 13px; font-size:13px; font-weight:600; cursor:pointer;
+    font-family:inherit;
+  }
+  .transport-btn:hover { border-color:var(--accent); }
+  #playBtn.transport-btn { border-color:var(--ok); color:var(--ok); }
+  #pauseBtn.transport-btn { border-color:#e0a62f; color:#e0a62f; }
+  #stopBtn.transport-btn { border-color:var(--danger); color:var(--danger); }
+  .warn-indicator {
+    display:flex;
+    background:var(--panel2); border:1px solid var(--border); color:var(--muted);
+    border-radius:8px; width:34px; height:34px; font-size:16px; cursor:pointer;
+    align-items:center; justify-content:center; line-height:1; position:relative;
+  }
+  .warn-indicator.ok { border-color:var(--ok); color:var(--ok); }
+  .warn-indicator.warn { border-color:var(--danger); color:var(--danger); }
+  .warn-indicator.warn:hover { background:#2a1a1a; }
+  .warn-indicator.ok:hover { background:#163322; }
+  .warn-popup {
+    display:none;
+    position:absolute; left:50%; top:calc(100% + 8px); transform:translateX(-50%);
+    background:var(--panel); border:1px solid var(--danger); border-radius:8px;
+    padding:12px 16px; max-width:min(520px, 86vw); max-height:260px; overflow-y:auto;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4); z-index:50; text-align:left;
+  }
+  .warn-popup.open { display:block; }
+  .warn-popup h3 { margin:0 0 8px; font-size:13px; color:var(--danger); }
+  .warn-popup ul { margin:0; padding-left:18px; }
+  .warn-popup li { font-size:12.5px; color:var(--text); margin-bottom:6px; line-height:1.4; }
+
+  .app {
+    display:grid;
+    grid-template-columns: minmax(300px, 430px) 1fr;
+    min-height:calc(100vh - 66px);
+  }
+  .left {
+    padding:16px;
+    border-right:1px solid var(--border);
+    background:var(--panel);
+    overflow-y:auto;
+  }
+  .right {
+    position:relative;
+    min-width:0;
+    background:#0c1015;
+  }
+  .code-editor {
+    width:100%;
+    height:38vh;
+    min-height:220px;
+    display:flex;
+    background:#0d1116;
+    border:1px solid var(--border);
+    border-radius:8px;
+    overflow:hidden;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:13px;
+    line-height:1.45;
+  }
+  .line-numbers {
+    width:34px; padding:12px 7px; text-align:right; user-select:none;
+    color:#667381; background:#11161d; border-right:1px solid var(--border);
+    overflow:hidden; white-space:pre;
+  }
+  .code-wrap { flex:1; position:relative; min-width:0; }
+  .code-highlight, .code-input {
+    position:absolute; inset:0; margin:0; padding:12px;
+    border:0; white-space:pre; overflow:auto;
+    font:inherit; line-height:inherit; tab-size:4;
+  }
+  .code-highlight { pointer-events:none; color:#dfe9f2; }
+  .code-input { resize:none; background:transparent; color:transparent; caret-color:#fff; outline:none; }
+  .line-highlight {
+    position:absolute; left:0; right:0; top:0; height:18px;
+    background:rgba(77,163,255,.16);
+    box-shadow:inset 3px 0 0 var(--accent);
+    pointer-events:none; display:none; z-index:1;
+  }
+  .tok-g { color:#f0c36a; font-weight:700; }
+  .tok-axis { color:#63b8e8; font-weight:700; }
+  .tok-num { color:#f2f2f2; }
+  .tok-feed { color:#8fd18a; font-weight:700; }
+  .tok-comment { color:#8995a1; font-style:italic; }
+  .tok-other { color:#c39ad9; font-weight:700; }
+
+  .buttons {
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    align-items:center;
+    margin:0 0 10px;
+  }
+  button {
+    border:1px solid var(--border);
+    background:var(--panel2);
+    color:var(--text);
+    border-radius:7px;
+    padding:8px 12px;
+    cursor:pointer;
+    font-weight:600;
+    font-size:13px;
+  }
+  button:hover { filter:brightness(1.15); }
+  button.primary { background:#1d65a8; border-color:#297bc4; }
+  button.active { background:#1d7a4a; border-color:#2fa464; color:#fff; }
+  button.ghost {
+    background:transparent; border:none; color:var(--muted);
+    padding:8px 6px; font-weight:600;
+  }
+  button.ghost:hover { color:var(--text); filter:none; }
+  button.danger-text { background:transparent; border:none; color:var(--danger); padding:8px 6px; font-weight:600; }
+  button.danger-text:hover { filter:none; color:#ef8562; }
+  button.small { padding:6px 10px; font-size:12.5px; }
+
+  .example-wrap { position:relative; }
+  .example-menu {
+    display:none;
+    position:absolute;
+    top:100%; left:0;
+    margin-top:4px;
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    min-width:200px;
+    z-index:20;
+    overflow:hidden;
+    box-shadow:0 8px 24px rgba(0,0,0,.4);
+  }
+  .example-menu.open { display:block; }
+  .example-menu button {
+    display:block; width:100%; text-align:left; border:none; border-radius:0;
+    background:transparent; padding:9px 12px; font-weight:500; font-size:13px;
+  }
+  .example-menu button:hover { background:#283140; }
+
+  .stats {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:4px;
+  }
+  .card {
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px;
+  }
+  .label { color:var(--muted); font-size:12px; }
+  .value { font-size:16px; margin-top:2px; }
+
+  .info-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:9px 2px;
+    border-bottom:1px solid var(--border);
+    font-size:13px;
+  }
+  .info-row .label { font-size:13px; }
+  .info-row .value { font-size:13px; margin-top:0; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+
+  .info-row-split {
+    display:flex;
+    gap:14px;
+    padding:9px 2px;
+    border-bottom:1px solid var(--border);
+  }
+  .info-half { flex:1; min-width:0; }
+  .info-half .label { font-size:12px; color:var(--muted); }
+  .info-half .value {
+    font-size:12.5px; margin-top:2px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .info-half .value.editable {
+    cursor:pointer;
+    border-bottom:1px dashed var(--muted);
+    display:inline-block;
+  }
+  .info-half .value.editable:hover { color:var(--accent); border-bottom-color:var(--accent); }
+  .home-edit {
+    display:none;
+    gap:4px;
+    margin-top:4px;
+  }
+  .home-edit.open { display:flex; }
+  .home-edit input {
+    width:0; flex:1; min-width:0;
+    background:var(--panel2); border:1px solid var(--border); border-radius:5px;
+    color:var(--text); padding:4px 5px; font-size:12px; font-family:inherit;
+  }
+
+  .legend {
+    display:flex;
+    gap:14px;
+    margin-top:12px;
+    color:var(--muted);
+    font-size:12.5px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .swatch {
+    width:20px;
+    height:3px;
+    display:inline-block;
+    vertical-align:middle;
+    margin-right:5px;
+    border-radius:2px;
+  }
+  .swatch.rapid { background:var(--rapid); }
+  .swatch.line { background:var(--line); }
+  .swatch.arc { background:var(--arc); }
+  .swatch.comp {
+    background:repeating-linear-gradient(90deg, rgba(255,255,255,.75) 0 3px, transparent 3px 6px);
+  }
+
+  .toggles {
+    display:flex;
+    gap:14px;
+    margin-top:8px;
+    color:var(--muted);
+    font-size:12.5px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .toggles label { display:flex; align-items:center; gap:6px; cursor:pointer; }
+  .toggles input[type=checkbox] { accent-color:var(--accent); width:14px; height:14px; cursor:pointer; }
+
+  .slider-row {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:12px;
+    font-size:12.5px;
+    color:var(--muted);
+  }
+  .slider-row .slider-title { min-width:62px; }
+  .slider-row input[type=range] { flex:1; accent-color:var(--accent); }
+  .slider-row .slider-value { min-width:52px; text-align:right; color:var(--text); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+
+  .status {
+    min-height:18px;
+    color:var(--muted);
+    font-size:13px;
+    margin-top:10px;
+    white-space:pre-wrap;
+  }
+
+  #canvas {
+    width:100%;
+    height:100%;
+    min-height:650px;
+    display:block;
+  }
+  .overlay {
+    position:absolute;
+    top:12px;
+    right:12px;
+    background:rgba(16,19,24,.88);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 10px;
+    color:var(--muted);
+    font-size:12px;
+    pointer-events:none;
+  }
+  .coord-readout {
+    position:absolute;
+    left:12px;
+    bottom:12px;
+    background:rgba(16,19,24,.88);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:7px 12px;
+    color:var(--text);
+    font-size:12.5px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    pointer-events:none;
+  }
+  input[type=file] { display:none; }
+
+  .modal-overlay {
+    display:none;
+    position:fixed; inset:0; background:rgba(0,0,0,.6);
+    z-index:100; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-overlay.open { display:flex; }
+  .modal {
+    background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    width:100%; max-width:560px; max-height:86vh; overflow-y:auto;
+    padding:18px 20px 20px;
+  }
+  .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .modal-head h2 { margin:0; font-size:18px; }
+  .modal h3 { font-size:14px; margin:16px 0 8px; color:var(--muted); }
+  .modal .hint { color:var(--muted); font-size:12px; margin-top:10px; line-height:1.5; }
+  .tool-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .tool-table th {
+    text-align:left; color:var(--muted); font-weight:600; font-size:11.5px;
+    padding:4px 6px; border-bottom:1px solid var(--border);
+  }
+  .tool-table td { padding:4px 6px; border-bottom:1px solid var(--border); }
+  .tool-table input {
+    width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:5px;
+    color:var(--text); padding:5px 7px; font-size:13px; font-family:inherit;
+  }
+  .tool-table input[type=number]::-webkit-outer-spin-button,
+  .tool-table input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  .tool-table input[type=number] { -moz-appearance:textfield; }
+  .tool-table .row-del {
+    background:transparent; border:none; color:var(--danger); padding:4px 6px; font-weight:700; cursor:pointer;
+  }
+  .tool-table .row-del:hover { color:#ef8562; }
+  #skardataOverlay .modal { max-width:900px; }
+  .sk-tabs { display:flex; gap:6px; margin-top:14px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .sk-tab { background:none; border:none; color:var(--muted); font-size:13.5px; font-weight:700; padding:8px 14px; cursor:pointer; border-bottom:3px solid transparent; font-family:inherit; }
+  .sk-tab.active { color:var(--text); border-bottom-color:var(--amber,#ff8a2b); }
+  .sk-panel { display:none; }
+  .sk-panel.active { display:block; }
+  .sk-tablewrap { overflow-x:auto; margin-top:8px; border:1px solid var(--border); border-radius:8px; }
+  .sk-tablewrap table.tool-table { white-space:nowrap; width:auto; min-width:100%; }
+  .sk-tablewrap table.tool-table th, .sk-tablewrap table.tool-table td { text-align:center; padding:5px 9px; }
+  .sk-tablewrap table.tool-table th:first-child, .sk-tablewrap table.tool-table td:first-child { text-align:left; }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns:1fr; }
+    .left { border-right:none; border-bottom:1px solid var(--border); }
+    canvas { min-height:520px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>G-kodsvisualiserare</h1>
+    <p>XY-visualisering för G0/G1/G2/G3 · G20/G21 · G90/G91 · I/J- och R-bågar</p>
+  </div>
+  <div class="header-center">
+    <button id="playBtn" class="transport-btn" title="Spela — startar från reglagets position">▶ Spela</button>
+    <button id="pauseBtn" class="transport-btn" title="Pausa — fortsätt sedan med Spela">❚❚ Paus</button>
+    <button id="stopBtn" class="transport-btn" title="Stoppa — återgår till början">■ Stoppa</button>
+    <button id="singleBlockBtn" class="transport-btn" title="Kör exakt ett rörelsesegment och pausa — tryck igen för nästa">⏭ Singel block</button>
+    <button id="warnIndicator" class="warn-indicator ok" title="Inga parser-varningar">✓</button>
+    <div class="warn-popup" id="warnPopup">
+      <h3>Parser-varningar</h3>
+      <ul id="warnList"></ul>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button id="openFileBtnTop">Öppna fil</button>
+    <button id="saveGcodeBtnTop">Spara G-kod</button>
+    <button class="primary" id="drawBtnTop">Rita</button>
+  </div>
+</header>
+
+<div class="app">
+  <section class="left">
+    <div class="buttons">
+      <button id="openBtn">Öppna</button>
+      <button id="saveBtn">Spara</button>
+      <button class="danger-text" id="clearBtn">Rensa</button>
+      <div class="example-wrap">
+        <button class="ghost" id="exampleBtn">Exempelprogram ▾</button>
+        <div class="example-menu" id="exampleMenu"></div>
+      </div>
+      <button class="ghost" id="toolLibraryBtn">Verktygslåda</button>
+      <button class="ghost" id="cheatsheetBtn">Lathund G/M</button>
+      <button class="ghost" id="skardataBtn">Lathund Skärdata</button>
+    </div>
+
+    <div class="code-editor">
+      <div class="line-numbers" id="lineNumbers"></div>
+      <div class="code-wrap">
+        <div class="line-highlight" id="lineHighlight"></div>
+        <pre class="code-highlight" id="codeHighlight" aria-hidden="true"></pre>
+        <textarea class="code-input" id="gcode" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <div class="buttons" style="margin-top:10px;">
+      <button class="primary" id="drawBtn">▶ Rita G-kod</button>
+      <button id="fitBtn">Anpassa vy</button>
+      <button id="liveBtn" title="Rita automatiskt medan du skriver, utan att trycka på Rita G-kod">Live-ritning: Av</button>
+      <button id="cncFrasBtn" title="3D-materialborttagning — visar ämnet skuret i verkligheten">CNC-Fräs: Av</button>
+      <button id="cncFrasSizeBtn" class="small" title="Ställ in ämnesstorlek för CNC-Fräs">⚙ Ämnesstorlek</button>
+    </div>
+
+    <div class="stats">
+      <div class="card"><div class="label">Rörelsesegment</div><div class="value" id="segments">0</div></div>
+      <div class="card"><div class="label">Total XY-längd</div><div class="value" id="length">0.00 mm</div></div>
+      <div class="card"><div class="label">Bredd X</div><div class="value" id="width">0.00 mm</div></div>
+      <div class="card"><div class="label">Höjd Y</div><div class="value" id="height">0.00 mm</div></div>
+    </div>
+
+    <div class="info-row-split">
+      <div class="info-half">
+        <div class="label">Hemposition</div>
+        <div class="value editable" id="homepos" title="Klicka för att ändra">X 0.00 · Y 0.00 · Z 0.00</div>
+        <div class="home-edit" id="homePosEdit">
+          <input type="number" step="0.01" id="homeEditX" title="X">
+          <input type="number" step="0.01" id="homeEditY" title="Y">
+          <input type="number" step="0.01" id="homeEditZ" title="Z">
+        </div>
+      </div>
+      <div class="info-half">
+        <div class="label">Slutposition</div>
+        <div class="value" id="endpos">X 0.00 · Y 0.00 · Z 0.00</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <span class="label">Aktivt verktyg</span>
+      <span class="value" id="activetool">–</span>
+    </div>
+    <div class="info-row" style="border-bottom:none;">
+      <span class="label">Aktivt läge efter programmet</span>
+      <span class="value" id="activemode">G21 · G90 · G0 · G54 · G40 · G49</span>
+    </div>
+
+    <div class="legend">
+      <span><i class="swatch rapid"></i>G0 snabbförflyttning</span>
+      <span><i class="swatch line"></i>G1 linjär rörelse</span>
+      <span><i class="swatch arc"></i>G2/G3 cirkelbåge</span>
+      <span><i class="swatch comp"></i>G40/41/42 in-/utkörning</span>
+    </div>
+
+    <div class="toggles">
+      <label><input type="checkbox" id="toggleCenters" checked="">Teoretisk mittpunkt G2/G3</label>
+      <label><input type="checkbox" id="toggleGM">G/M kod</label>
+      <label><input type="checkbox" id="toggleAxis">X/Y/Z/I/J/R</label>
+      <label><input type="checkbox" id="toggleFST">F/S/T/H/D</label>
+      <label><input type="checkbox" id="toggle3D">3D-läge (Z-höjd)</label>
+      <label><input type="checkbox" id="toggleOptionalStop">M1 valfritt stopp</label>
+    </div>
+
+    <div class="slider-row">
+      <input type="range" id="scrubSlider" min="0" max="0" value="0" step="1">
+      <span class="slider-value" id="scrubLabel">0 / 0</span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-title">Uppspelning</span>
+      <input type="range" id="speedSlider" min="0.2" max="4" value="1" step="0.1">
+      <span class="slider-value" id="speedLabel">1.0×</span>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <input type="file" id="fileInput" accept=".nc,.gcode,.tap,.txt,.cnc,.ngc">
+  </section>
+
+  <section class="right">
+    <canvas id="canvas"></canvas>
+    <div id="webglHost" style="position:absolute; inset:0; display:none;"></div>
+    <div class="overlay" id="overlayHint">Hjul = zoom · Dra = panorera · Dubbelklick = anpassa vy</div>
+    <div class="coord-readout" id="coordReadout">X 0.0 · Y 0.0</div>
+  </section>
+</div>
+
+<div class="modal-overlay" id="toolModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Verktygslåda</h2>
+      <button class="ghost" id="closeToolModal">✕</button>
+    </div>
+    <h3>Verktyg (T · Ø D · Längd H)</h3>
+    <table class="tool-table">
+      <thead><tr><th style="width:52px;">T</th><th>Namn</th><th style="width:80px;">Ø D (mm)</th><th style="width:90px;">Längd H (mm)</th><th style="width:28px;"></th></tr></thead>
+      <tbody id="toolTableBody"></tbody>
+    </table>
+    <button class="small" id="addToolBtn" style="margin-top:8px;">+ Lägg till verktyg</button>
+
+    <h3>Arbetskoordinater (G54–G59)</h3>
+    <table class="tool-table">
+      <thead><tr><th style="width:50px;">WCS</th><th>X (mm)</th><th>Y (mm)</th><th>Z (mm)</th></tr></thead>
+      <tbody id="wcsTableBody"></tbody>
+    </table>
+
+    <h3>Hem-position (G28/G30)</h3>
+    <table class="tool-table">
+      <thead><tr><th style="width:50px;">Hem</th><th>X (mm)</th><th>Y (mm)</th><th>Z (mm)</th></tr></thead>
+      <tbody id="homeTableBody"></tbody>
+    </table>
+
+    <p class="hint">T väljer verktyg (aktiveras med M6). H (längdoffset, G43) och D (radieoffset, G41/G42) hämtas automatiskt från samma verktygsnummer om de inte anges separat i G-koden. D förskjuter den ritade banan i sidled med verktygsradien (som på riktigt). H valideras och visas men flyttar inte den ritade Z-positionen — visualiseraren visar djupet relativt arbetsstycket, precis det längdoffset är till för att garantera oavsett verktyg. Hem-positionen är maskinens referenspunkt och gäller oavsett aktiv nollpunkt (WCS) — dit går G28/G30. Ämnesstorlek för CNC-Fräs-vyn ställs in via CNC-Fräs-knappen. Värden sparas i webbläsaren.</p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="cheatsheetOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Lathund G/M-koder</h2>
+      <button class="ghost" id="closeCheatsheet">✕</button>
+    </div>
+
+    <h3>G-funktioner</h3>
+    <table class="tool-table">
+      <thead><tr><th style="width:60px;">Kod</th><th>Betydelse</th></tr></thead>
+      <tbody>
+        <tr><td>G0</td><td>Snabbförflyttning (ilgång, skär inte material)</td></tr>
+        <tr><td>G1</td><td>Linjär interpolation (rät linje i skärhastighet, F)</td></tr>
+        <tr><td>G2</td><td>Cirkulär interpolation medurs (I/J/K eller R)</td></tr>
+        <tr><td>G3</td><td>Cirkulär interpolation moturs (I/J/K eller R)</td></tr>
+        <tr><td>G4</td><td>Uppehåll/paus (dwell), t.ex. G4 P500 = 0,5 s</td></tr>
+        <tr><td>G17</td><td>Planval XY (standard)</td></tr>
+        <tr><td>G18</td><td>Planval XZ</td></tr>
+        <tr><td>G19</td><td>Planval YZ</td></tr>
+        <tr><td>G20</td><td>Mått i tum (inch)</td></tr>
+        <tr><td>G21</td><td>Mått i millimeter (standard)</td></tr>
+        <tr><td>G28</td><td>Referenspunktsåtergång (ev. via mellanpunkt)</td></tr>
+        <tr><td>G30</td><td>Referenspunktsåtergång, sekundär punkt</td></tr>
+        <tr><td>G40</td><td>Radiekompensering av</td></tr>
+        <tr><td>G41</td><td>Radiekompensering vänster om banan</td></tr>
+        <tr><td>G42</td><td>Radiekompensering höger om banan</td></tr>
+        <tr><td>G43</td><td>Verktygslängdkompensering på (H-nummer)</td></tr>
+        <tr><td>G49</td><td>Verktygslängdkompensering av</td></tr>
+        <tr><td>G53</td><td>Maskinkoordinatsystem (engångsrörelse, ignorerar nollpunkt)</td></tr>
+        <tr><td>G54–G59</td><td>Nollpunktsförskjutning (arbetskoordinatsystem 1–6)</td></tr>
+        <tr><td>G80</td><td>Avbryt fast cykel (borrcykel)</td></tr>
+        <tr><td>G81–G89</td><td>Fasta borr-/gängcykler</td></tr>
+        <tr><td>G90</td><td>Absoluta mått</td></tr>
+        <tr><td>G91</td><td>Inkrementella mått (kedjemått)</td></tr>
+        <tr><td>G92</td><td>Sätt positionsregister (flytta nollpunkten till aktuell punkt)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>M-funktioner</h3>
+    <table class="tool-table">
+      <thead><tr><th style="width:60px;">Kod</th><th>Betydelse</th></tr></thead>
+      <tbody>
+        <tr><td>M0</td><td>Programstopp (ovillkorligt)</td></tr>
+        <tr><td>M1</td><td>Valfritt programstopp (kräver aktiverat läge)</td></tr>
+        <tr><td>M2</td><td>Programslut</td></tr>
+        <tr><td>M3</td><td>Spindel medurs (CW)</td></tr>
+        <tr><td>M4</td><td>Spindel moturs (CCW)</td></tr>
+        <tr><td>M5</td><td>Spindelstopp</td></tr>
+        <tr><td>M6</td><td>Verktygsbyte (laddar senast valda T)</td></tr>
+        <tr><td>M7</td><td>Kylmedel (dimma) på</td></tr>
+        <tr><td>M8</td><td>Kylmedel på</td></tr>
+        <tr><td>M9</td><td>Kylmedel av</td></tr>
+        <tr><td>M30</td><td>Programslut, återgång till programstart</td></tr>
+        <tr><td>M98</td><td>Anropa subprogram</td></tr>
+        <tr><td>M99</td><td>Återgå från subprogram</td></tr>
+      </tbody>
+    </table>
+
+    <p class="hint">Lathunden visar vanliga koders betydelse. Visualiseraren stödjer geometriskt G0–G4, G17–G21, G28/G30, G40–G43/G49, G54–G59, G90–G92 samt M6 (verktygsbyte) — övriga M-koder visas men påverkar inte ritningen.</p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="skardataOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Lathund — Skärdata</h2>
+      <button class="ghost" id="closeSkardata">✕</button>
+    </div>
+
+    <div class="sk-tabs">
+      <button class="sk-tab active" data-sktab="fras">Fräsning</button>
+      <button class="sk-tab" data-sktab="svarv">Svarvning</button>
+      <button class="sk-tab" data-sktab="borr">Borrning</button>
+    </div>
+
+    <!-- ===== FRÄSNING ===== -->
+    <div class="sk-panel active" id="sk-panel-fras">
+      <h3>Skärhastighet (Vc)</h3>
+      <p style="font-family:ui-monospace,monospace; font-size:17px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; display:inline-block;">Vc = (n × π × d) / 1000</p>
+      <p class="hint">Vc = skärhastighet (m/min) · n = varvtal (varv/min) · π = 3,14 · d = diameter (mm) på verktyg/arbetsstycke</p>
+
+      <h3>Varvtal (n)</h3>
+      <p style="font-family:ui-monospace,monospace; font-size:17px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; display:inline-block;">n = (Vc × 1000) / (π × d)</p>
+
+      <h3>Bordsmatning (Vf)</h3>
+      <p style="font-family:ui-monospace,monospace; font-size:17px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; display:inline-block;">Vf = fz × Zn × n</p>
+      <p class="hint">Vf = bordsmatning (mm/min) · fz = matning per skär/tand (mm/tand) · Zn = antal skär/tänder · n = varvtal (varv/min)</p>
+
+      <h3>Skärhastigheter Vc och matningar/tand fz — Fräsning, snabbstål</h3>
+      <div class="sk-tablewrap">
+        <table class="tool-table">
+          <thead>
+            <tr><th>Materialgrupp</th><th>Ändplan Vc obel.</th><th>Ändplan Vc bel.</th><th>Slitsfräs Vc</th><th>Skivfräs Vc</th><th>Pinnfräs Vc obel.</th><th>Pinnfräs Vc bel.</th><th>fz Ø6–8</th><th>fz (8)–16 · (16)–50</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1, 4</td><td>40</td><td>80</td><td>45</td><td>35</td><td>40</td><td>80</td><td>0,03/0,01</td><td>0,07/0,02 · 0,12/0,04</td></tr>
+            <tr><td>2, 3, 5, 8</td><td>35</td><td>70</td><td>40</td><td>30</td><td>35</td><td>70</td><td>0,03/0,01</td><td>0,07/0,02 · 0,12/0,04</td></tr>
+            <tr><td>6, 7, 9, 10, 11, 12</td><td>30</td><td>60</td><td>35</td><td>25</td><td>30</td><td>60</td><td>0,03/0,01</td><td>0,07/0,02 · 0,12/0,04</td></tr>
+            <tr><td>16</td><td>23</td><td>36</td><td>26</td><td>20</td><td>23</td><td>36</td><td>0,03/0,01</td><td>0,07/0,02 · 0,12/0,04</td></tr>
+            <tr><td>13, 15, 17</td><td>19</td><td>30</td><td>22</td><td>16</td><td>19</td><td>30</td><td>0,03/0,01</td><td>0,07/0,02 · 0,12/0,04</td></tr>
+            <tr><td>18</td><td>23</td><td>37</td><td>26</td><td>20</td><td>23</td><td>37</td><td>0,03/0,01</td><td>0,07/0,02 · 0,12/0,04</td></tr>
+            <tr><td>19</td><td>40</td><td>65</td><td>45</td><td>35</td><td>40</td><td>65</td><td>0,03/0,01</td><td>0,07/0,02 · 0,12/0,04</td></tr>
+            <tr><td>20, 21, 22</td><td>125</td><td>200</td><td>140</td><td>105</td><td>125</td><td>200</td><td>0,05/0,01</td><td>0,11/0,04 · 0,16/0,06</td></tr>
+            <tr><td>23</td><td>300</td><td>600</td><td>340</td><td>255</td><td>300</td><td>600</td><td>0,05/0,01</td><td>0,11/0,04 · 0,16/0,06</td></tr>
+            <tr><td>24</td><td>90</td><td>180</td><td>100</td><td>75</td><td>90</td><td>180</td><td>0,05/0,01</td><td>0,11/0,04 · 0,16/0,06</td></tr>
+            <tr><td>25</td><td>125</td><td>300</td><td>140</td><td>105</td><td>125</td><td>300</td><td>0,05/0,01</td><td>0,11/0,04 · 0,16/0,06</td></tr>
+            <tr><td>26</td><td>125</td><td>130</td><td>140</td><td>105</td><td>125</td><td>130</td><td>0,05/0,01</td><td>0,11/0,04 · 0,16/0,06</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="hint">Vc i m/min. fz (mm/tand, radiellt/axiellt) för Ändplan/Slits/Skivfräs: grupp 1–19: 0,1/0,04/0,05, grupp 20–26: 0,2/0,08/0,1. Pinnfräs-fz ovan är radiell/axiell per diameterintervall.</p>
+
+      <h3>Miniräknare</h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; margin-top:8px;">
+        <div><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:3px;">Skärhastighet Vc (m/min)</label><input type="number" id="sk-vc" value="40" step="1" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 9px; font-family:ui-monospace,monospace;"></div>
+        <div><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:3px;">Verktygsdiameter d (mm)</label><input type="number" id="sk-d" value="10" step="0.1" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 9px; font-family:ui-monospace,monospace;"></div>
+        <div><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:3px;">Matning/skär fz (mm/tand)</label><input type="number" id="sk-fz" value="0.07" step="0.01" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 9px; font-family:ui-monospace,monospace;"></div>
+        <div><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:3px;">Antal skär/tänder Zn</label><input type="number" id="sk-zn" value="4" step="1" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 9px; font-family:ui-monospace,monospace;"></div>
+      </div>
+      <div style="display:flex; gap:14px; margin-top:14px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:160px; background:var(--panel2); border:1px solid var(--ok); border-radius:8px; padding:12px 14px;">
+          <div style="font-size:12px; color:var(--muted);">Varvtal (n)</div>
+          <div id="sk-out-n" style="font-size:20px; font-weight:800; color:var(--ok); font-family:ui-monospace,monospace;">1&nbsp;273 varv/min</div>
+        </div>
+        <div style="flex:1; min-width:160px; background:var(--panel2); border:1px solid var(--ok); border-radius:8px; padding:12px 14px;">
+          <div style="font-size:12px; color:var(--muted);">Bordsmatning (Vf)</div>
+          <div id="sk-out-vf" style="font-size:20px; font-weight:800; color:var(--ok); font-family:ui-monospace,monospace;">357 mm/min</div>
+        </div>
+      </div>
+      <p class="hint">Förvalda värden (Vc 40, fz 0,07) är riktvärden för materialgrupp 1,4 (olegerat/lågolegerat stål), pinnfräs i snabbstål, obelagd, ø8–16 mm. Justera efter verktyg/material — stäm alltid av mot maskinens eller verktygstillverkarens egna rekommendationer.</p>
+    </div>
+
+    <!-- ===== SVARVNING ===== -->
+    <div class="sk-panel" id="sk-panel-svarv">
+      <h3>Skärhastighet (Vc)</h3>
+      <p style="font-family:ui-monospace,monospace; font-size:17px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; display:inline-block;">Vc = (n × π × D) / 1000</p>
+      <p class="hint">D = arbetsstyckets diameter (mm) — vid svarvning är det detaljens diameter, inte verktygets.</p>
+
+      <h3>Varvtal (n)</h3>
+      <p style="font-family:ui-monospace,monospace; font-size:17px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; display:inline-block;">n = (Vc × 1000) / (π × D)</p>
+      <p class="hint">D minskar när du svarvar av material — höj varvtalet för att hålla samma Vc, om inte maskinen har konstant skärhastighet (CSS) inställd.</p>
+
+      <h3>Matningshastighet (Vf)</h3>
+      <p style="font-family:ui-monospace,monospace; font-size:17px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; display:inline-block;">Vf = f × n</p>
+      <p class="hint">f = matning (mm/varv) · n = varvtal (varv/min)</p>
+
+      <h3>Skärhastigheter Vc — Svarvning, snabbstål</h3>
+      <div class="sk-tablewrap">
+        <table class="tool-table">
+          <thead>
+            <tr><th>Materialgrupp</th><th>Fin utan skärv.</th><th>Fin med skärv.</th><th>Grov utan skärv.</th><th>Grov med skärv.</th><th>Avstickn. utan</th><th>Avstickn. med</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>45</td><td>65</td><td>40</td><td>55</td><td>25</td><td>38</td></tr>
+            <tr><td>2, 3</td><td>30</td><td>45</td><td>28</td><td>40</td><td>20</td><td>28</td></tr>
+            <tr><td>4</td><td>45</td><td>65</td><td>40</td><td>55</td><td>25</td><td>38</td></tr>
+            <tr><td>5</td><td>40</td><td>55</td><td>30</td><td>45</td><td>20</td><td>30</td></tr>
+            <tr><td>6, 7, 8</td><td>30</td><td>45</td><td>28</td><td>40</td><td>20</td><td>28</td></tr>
+            <tr><td>9</td><td>28</td><td>40</td><td>25</td><td>35</td><td>18</td><td>25</td></tr>
+            <tr><td>10, 11, 12</td><td>20</td><td>30</td><td>18</td><td>25</td><td>13</td><td>18</td></tr>
+            <tr><td>13</td><td>15</td><td>20</td><td>10</td><td>15</td><td>7</td><td>10</td></tr>
+            <tr><td>15, 16, 17</td><td>18</td><td>25</td><td>15</td><td>20</td><td>10</td><td>15</td></tr>
+            <tr><td>18, 19</td><td>45</td><td>–</td><td>40</td><td>–</td><td>28</td><td>–</td></tr>
+            <tr><td>20</td><td>50</td><td>70</td><td>40</td><td>60</td><td>28</td><td>40</td></tr>
+            <tr><td>21, 22</td><td>90</td><td>115</td><td>70</td><td>100</td><td>50</td><td>70</td></tr>
+            <tr><td>23, 24</td><td>170</td><td>240</td><td>150</td><td>210</td><td>100</td><td>150</td></tr>
+            <tr><td>25, 26</td><td>150</td><td>–</td><td>125</td><td>–</td><td>125</td><td>–</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="hint">Vc i m/min. Fin/Grov = längd- och plansvarvning. Råd för avstickning: centrumhöjd ±0,1mm · matning 0,05–0,1 mm/varv · lägre matning i början/slutet av ingreppet · rikligt med skärvätska · använd uppfångare.</p>
+
+      <h3>Miniräknare</h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; margin-top:8px;">
+        <div><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:3px;">Skärhastighet Vc (m/min)</label><input type="number" id="sv-vc" value="30" step="1" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 9px; font-family:ui-monospace,monospace;"></div>
+        <div><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:3px;">Arbetsstyckets diameter D (mm)</label><input type="number" id="sv-d" value="30" step="0.5" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 9px; font-family:ui-monospace,monospace;"></div>
+        <div><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:3px;">Matning f (mm/varv)</label><input type="number" id="sv-f" value="0.2" step="0.01" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 9px; font-family:ui-monospace,monospace;"></div>
+      </div>
+      <div style="display:flex; gap:14px; margin-top:14px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:160px; background:var(--panel2); border:1px solid var(--ok); border-radius:8px; padding:12px 14px;">
+          <div style="font-size:12px; color:var(--muted);">Varvtal (n)</div>
+          <div id="sv-out-n" style="font-size:20px; font-weight:800; color:var(--ok); font-family:ui-monospace,monospace;">318 varv/min</div>
+        </div>
+        <div style="flex:1; min-width:160px; background:var(--panel2); border:1px solid var(--ok); border-radius:8px; padding:12px 14px;">
+          <div style="font-size:12px; color:var(--muted);">Matningshastighet (Vf)</div>
+          <div id="sv-out-vf" style="font-size:20px; font-weight:800; color:var(--ok); font-family:ui-monospace,monospace;">64 mm/min</div>
+        </div>
+      </div>
+      <p class="hint">Förvalda värden (Vc 30) är riktvärden för materialgrupp 2,3, finbearbetning utan skärvätska.</p>
+    </div>
+
+    <!-- ===== BORRNING ===== -->
+    <div class="sk-panel" id="sk-panel-borr">
+      <h3>Skärhastighet (Vc)</h3>
+      <p style="font-family:ui-monospace,monospace; font-size:17px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; display:inline-block;">Vc = (n × π × d) / 1000</p>
+      <p class="hint">d = borrdiameter (mm)</p>
+
+      <h3>Varvtal (n)</h3>
+      <p style="font-family:ui-monospace,monospace; font-size:17px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; display:inline-block;">n = (Vc × 1000) / (π × d)</p>
+
+      <h3>Matningshastighet (Vf)</h3>
+      <p style="font-family:ui-monospace,monospace; font-size:17px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; display:inline-block;">Vf = fn × n</p>
+      <p class="hint">fn = matning (mm/varv) · n = varvtal (varv/min)</p>
+
+      <h3>Skärhastigheter Vc och matning fn — Borrning, snabbstål</h3>
+      <div class="sk-tablewrap">
+        <table class="tool-table">
+          <thead>
+            <tr><th>Materialgrupp</th><th>Vc utan, obel.</th><th>Vc utan, bel.</th><th>Vc med, obel.</th><th>Vc med, bel.</th><th>fn −6</th><th>fn (6)–10</th><th>fn (10)–15</th><th>fn (15)–25</th><th>fn (25)–40</th><th>fn (40)–</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>25</td><td>32</td><td>35</td><td>45</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><td>2, 3</td><td>20</td><td>28</td><td>30</td><td>40</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><td>4</td><td>25</td><td>32</td><td>35</td><td>45</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><td>5</td><td>20</td><td>28</td><td>30</td><td>40</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><td>6, 7</td><td>14</td><td>20</td><td>20</td><td>27</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><td>8</td><td>20</td><td>28</td><td>30</td><td>40</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><td>9, 10, 11, 12</td><td>14</td><td>20</td><td>20</td><td>27</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><td>13</td><td>7</td><td>10</td><td>10</td><td>14</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><td>15, 17</td><td>7</td><td>10</td><td>10</td><td>14</td><td>0,08</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td></tr>
+            <tr><td>16</td><td>10</td><td>14</td><td>15</td><td>20</td><td>0,08</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td></tr>
+            <tr><td>18</td><td>18</td><td>23</td><td>25</td><td>32</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><td>19</td><td>14</td><td>20</td><td>20</td><td>27</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><td>20</td><td>28</td><td>40</td><td>40</td><td>55</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><td>21, 22</td><td>20</td><td>28</td><td>30</td><td>40</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><td>23, 24</td><td>50</td><td>67</td><td>70</td><td>95</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+            <tr><td>25, 26</td><td>23</td><td>32</td><td>32</td><td>45</td><td>0,1</td><td>0,12</td><td>0,15</td><td>0,2</td><td>0,25</td><td>0,3</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="hint">Vc i m/min. fn beror på borrdiameter Dc — läs av rätt kolumn. Grupp 15–17 och 16 har lägre matningsvärden.</p>
+
+      <h3>Miniräknare</h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; margin-top:8px;">
+        <div><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:3px;">Skärhastighet Vc (m/min)</label><input type="number" id="bo-vc" value="25" step="1" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 9px; font-family:ui-monospace,monospace;"></div>
+        <div><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:3px;">Borrdiameter d (mm)</label><input type="number" id="bo-d" value="8" step="0.1" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 9px; font-family:ui-monospace,monospace;"></div>
+        <div><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:3px;">Matning fn (mm/varv)</label><input type="number" id="bo-fn" value="0.15" step="0.01" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 9px; font-family:ui-monospace,monospace;"></div>
+      </div>
+      <div style="display:flex; gap:14px; margin-top:14px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:160px; background:var(--panel2); border:1px solid var(--ok); border-radius:8px; padding:12px 14px;">
+          <div style="font-size:12px; color:var(--muted);">Varvtal (n)</div>
+          <div id="bo-out-n" style="font-size:20px; font-weight:800; color:var(--ok); font-family:ui-monospace,monospace;">995 varv/min</div>
+        </div>
+        <div style="flex:1; min-width:160px; background:var(--panel2); border:1px solid var(--ok); border-radius:8px; padding:12px 14px;">
+          <div style="font-size:12px; color:var(--muted);">Matningshastighet (Vf)</div>
+          <div id="bo-out-vf" style="font-size:20px; font-weight:800; color:var(--ok); font-family:ui-monospace,monospace;">149 mm/min</div>
+        </div>
+      </div>
+      <p class="hint">Förvalda värden (Vc 25, fn 0,15) är riktvärden för materialgrupp 1,4, snabbstålsborr, obelagd, utan skärvätska, Ø(10)–15.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="cncFrasOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>CNC-Fräs — ämnesstorlek</h2>
+      <button class="ghost" id="closeCncFras">✕</button>
+    </div>
+
+    <h3>Ämnesform</h3>
+    <div style="display:flex; gap:16px; margin-bottom:10px;">
+      <label style="display:flex; align-items:center; gap:6px; font-size:13px;"><input type="radio" name="cncStockShape" id="cncShapeSquare" value="square"> Fyrkant</label>
+      <label style="display:flex; align-items:center; gap:6px; font-size:13px;"><input type="radio" name="cncStockShape" id="cncShapeCylinder" value="cylinder"> Cylinder</label>
+    </div>
+
+    <div id="cncSquareFields">
+      <h3>Ämnesstorlek</h3>
+      <table class="tool-table">
+        <thead><tr><th>X (bredd)</th><th>Y (djup)</th><th>Z (tjocklek)</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><input type="number" step="1" id="cncStockWidth"></td>
+            <td><input type="number" step="1" id="cncStockDepth"></td>
+            <td><input type="number" step="1" id="cncStockThickness"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="cncCylinderFields" style="display:none;">
+      <h3>Ämnesstorlek</h3>
+      <table class="tool-table">
+        <thead><tr><th>Diameter</th><th>Höjd (Z)</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><input type="number" step="1" id="cncStockDiameter"></td>
+            <td><input type="number" step="1" id="cncStockCylHeight"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <label style="display:flex; align-items:center; gap:6px; margin-top:8px; font-size:13px; color:var(--muted);">
+      <input type="checkbox" id="cncStockAuto"> Automatisk storlek (efter banans utbredning + marginal)
+    </label>
+
+    <h3 style="margin-top:18px;">Var ligger origo (X0, Y0)?</h3>
+    <select id="cncStockQuadrant" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:8px 10px; font-size:13px; font-family:inherit;">
+      <option value="center-path">Centrerad över banan (standard)</option>
+      <option value="center-origin">Centrerad på origo (X0, Y0)</option>
+      <option value="q1">Origo nere till vänster — material åt +X, +Y</option>
+      <option value="q2">Origo nere till höger — material åt −X, +Y</option>
+      <option value="q3">Origo uppe till höger — material åt −X, −Y</option>
+      <option value="q4">Origo uppe till vänster — material åt +X, −Y</option>
+    </select>
+
+    <svg id="cncQuadrantPreview" viewBox="0 0 160 110" style="width:100%; max-width:220px; height:auto; margin-top:12px; display:block;">
+      <rect x="10" y="10" width="140" height="90" rx="4" fill="var(--panel2)" stroke="var(--border)" stroke-width="1.5"></rect>
+      <circle id="cncQuadrantDot" cx="80" cy="55" r="5" fill="var(--amber)"></circle>
+      <text id="cncQuadrantLabel" x="80" y="55" font-size="9" fill="var(--muted)" text-anchor="middle" dy="16">X0,Y0</text>
+    </svg>
+
+    <p class="hint">Ämnet får ovankant vid Z0. Kvadrant-valet styr bara var origo hamnar när "Automatisk storlek" är avstängd. Värden sparas i webbläsaren och delas med Verktygslådan.</p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+let USE_3D = (typeof THREE !== 'undefined' && typeof THREE.OrbitControls === 'function');
+const GRID_SIZE = 400, GRID_DIV = 40, GRID_CELL = GRID_SIZE/GRID_DIV; // 10 units per cell
+let webgl = null;
+
+function ensureWebGL() {
+  if (webgl || !USE_3D) return webgl;
+  const host = document.getElementById('webglHost');
+  let renderer;
+  const canvasEl = document.createElement('canvas');
+  const gl2 = canvasEl.getContext('webgl2', { antialias: true });
+  if (gl2) {
+    renderer = new THREE.WebGLRenderer({ canvas: canvasEl, context: gl2, antialias: true });
+  } else {
+    renderer = new THREE.WebGLRenderer({ antialias: true }); // browser lacks WebGL2 — Three.js falls back to WebGL1 automatically
+  }
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+  host.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0c1015);
+
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 10000);
+  camera.position.set(90, 100, 130);
+
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.screenSpacePanning = true;
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+  const dir1 = new THREE.DirectionalLight(0xffffff, 0.75);
+  dir1.position.set(1, 1.4, 0.8);
+  scene.add(dir1);
+  const dir2 = new THREE.DirectionalLight(0xaee0ff, 0.25);
+  dir2.position.set(-1, 0.6, -0.6);
+  scene.add(dir2);
+
+  const gridHelper = new THREE.GridHelper(GRID_SIZE, GRID_DIV, 0x2d3744, 0x1c232b);
+  scene.add(gridHelper);
+
+  const toolMarker = new THREE.Mesh(
+    new THREE.CylinderGeometry(3, 3, 20, 24),
+    new THREE.MeshStandardMaterial({ color: 0xffb020, metalness:0.3, roughness:0.4, emissive:0x442800 })
+  );
+  toolMarker.visible = false;
+  scene.add(toolMarker);
+
+  webgl = { renderer, scene, camera, controls, mesh:null, toolMarker, host, gridHelper, running:false };
+
+  const raycaster = new THREE.Raycaster();
+  const mouseNDC = new THREE.Vector2();
+  renderer.domElement.addEventListener('mousemove', (e) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouseNDC.x = ((e.clientX-rect.left)/rect.width)*2-1;
+    mouseNDC.y = -((e.clientY-rect.top)/rect.height)*2+1;
+    raycaster.setFromCamera(mouseNDC, camera);
+    const dir = raycaster.ray.direction, origin = raycaster.ray.origin;
+    if (Math.abs(dir.y) < 1e-9) return;
+    const t = -origin.y/dir.y; // intersect the Z=0 ground plane (world Y=0)
+    if (t <= 0) return;
+    const wx = origin.x + dir.x*t, wz = origin.z + dir.z*t;
+    coordReadout.textContent = 'X '+wx.toFixed(1)+' · Y '+(-wz).toFixed(1);
+  });
+
+  function animate() {
+    if (!webgl.running) return;
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  webgl.animate = animate;
+  return webgl;
+}
+
+function resizeWebGL() {
+  if (!webgl) return;
+  const rect = webgl.host.getBoundingClientRect();
+  webgl.renderer.setSize(rect.width, rect.height);
+  webgl.camera.aspect = rect.width/rect.height;
+  webgl.camera.updateProjectionMatrix();
+}
+
+// Builds the stock as flat-shaded "voxel columns": every cell gets its own
+// top tile at its own height (no corner-averaging, no shared vertices), and
+// a vertical wall quad is added at every internal edge where the neighbour's
+// height differs, plus at the true outer boundary down to the stock's
+// bottom. WebGL's own depth buffer resolves what's in front of what, so —
+// unlike the old 2D canvas painter's-algorithm version — there is no draw
+// order to get wrong and no edge-detection threshold to mistune.
+let pathGroup = null;
+// Draws the G-code path as colored 3D lines (same colors as the 2D legend:
+// orange dashed = G0, green = G1, blue = G2/G3, white dashed = G40/41/42
+// lead-in/out) using the same WebGL scene/camera as CNC-Fräs, so the plain
+// 3D mode also gets free mouse rotation instead of the old fixed isometric
+// angle.
+function rebuildPathMesh() {
+  const w = ensureWebGL();
+  if (!w) return;
+  if (pathGroup) {
+    w.scene.remove(pathGroup);
+    pathGroup.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+  }
+  pathGroup = new THREE.Group();
+  for (const seg of paths) {
+    const pts = seg.pts;
+    if (!pts || pts.length < 2) continue;
+    const positions = [];
+    for (const p of pts) positions.push(p.x, p.z||0, -p.y);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    let color, dashed = false, dashSize=3, gapSize=2.5;
+    if (seg.invalidGeometry || seg.compInvalid) { color=0xe0714f; dashed=true; dashSize=1.2; gapSize=1.2; }
+    else if (seg.type===0) { color=0xff9b42; dashed=true; }
+    else if (seg.compTransition) { color=0xffffff; dashed=true; dashSize=1.5; gapSize=1.5; }
+    else if (seg.type===1) { color=0x57d38c; }
+    else { color=0x4da3ff; }
+    const mat = dashed
+      ? new THREE.LineDashedMaterial({ color, dashSize, gapSize })
+      : new THREE.LineBasicMaterial({ color });
+    const line = new THREE.Line(geo, mat);
+    if (dashed) line.computeLineDistances();
+    pathGroup.add(line);
+  }
+  w.scene.add(pathGroup);
+}
+
+function removePathMesh() {
+  if (webgl && pathGroup) {
+    webgl.scene.remove(pathGroup);
+    pathGroup.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+    pathGroup = null;
+  }
+}
+
+function removeStockMesh() {
+  if (!webgl) return;
+  if (webgl.chunkMeshes) {
+    for (const mesh of webgl.chunkMeshes.values()) { webgl.scene.remove(mesh); mesh.geometry.dispose(); }
+    webgl.chunkMeshes = null;
+  }
+  if (webgl.bottomMesh) {
+    webgl.scene.remove(webgl.bottomMesh);
+    webgl.bottomMesh.geometry.dispose();
+    webgl.bottomMesh.material.dispose();
+    webgl.bottomMesh = null;
+  }
+  webgl.chunkGridRef = null;
+  webgl.stockMaterial = null;
+}
+
+function rebuildStockMesh() {
+  const w = ensureWebGL();
+  if (!w || !stockGrid) return;
+  const g = stockGrid;
+
+  w.gridHelper.position.y = g.bottom - Math.max(2, (g.top-g.bottom)*0.05);
+
+  if (!w.chunkMeshes || w.chunkGridRef !== g) {
+    if (w.chunkMeshes) for (const mesh of w.chunkMeshes.values()) { w.scene.remove(mesh); mesh.geometry.dispose(); }
+    if (w.bottomMesh) { w.scene.remove(w.bottomMesh); w.bottomMesh.geometry.dispose(); w.bottomMesh.material.dispose(); w.bottomMesh = null; }
+    w.chunkMeshes = new Map();
+    w.chunkGridRef = g;
+    w.stockMaterial = new THREE.MeshStandardMaterial({ color: 0xaab8cc, metalness:0.1, roughness:0.8, flatShading:false, side: THREE.DoubleSide });
+  }
+
+  if (!w.bottomMesh) {
+    let bp, bidx;
+    if (g.shape === 'cylinder') {
+      const segs = 64;
+      const pts = [g.cx, g.bottom, -g.cy]; // center
+      const bi = [];
+      for (let k=0;k<=segs;k++) {
+        const a = k/segs*Math.PI*2;
+        pts.push(g.cx+Math.cos(a)*g.radius, g.bottom, -(g.cy+Math.sin(a)*g.radius));
+      }
+      for (let k=1;k<=segs;k++) bi.push(0,k,k+1);
+      bp = new Float32Array(pts);
+      bidx = new Uint32Array(bi);
+    } else {
+      bp = new Float32Array([
+        g.minX,g.bottom,-g.minY,  g.minX,g.bottom,-g.maxY,  g.maxX,g.bottom,-g.maxY,  g.maxX,g.bottom,-g.minY
+      ]);
+      bidx = new Uint32Array([0,1,2, 0,2,3]);
+    }
+    const bgeo = new THREE.BufferGeometry();
+    bgeo.setAttribute('position', new THREE.BufferAttribute(bp,3));
+    bgeo.setIndex(new THREE.BufferAttribute(bidx,1));
+    bgeo.computeVertexNormals();
+    w.bottomMesh = new THREE.Mesh(bgeo, w.stockMaterial);
+    w.scene.add(w.bottomMesh);
+  }
+
+  for (const key of g.dirtyChunks) {
+    const ci = key % g.chunkNX, cj = Math.floor(key/g.chunkNX);
+    rebuildChunk(w, g, ci, cj);
+  }
+  g.dirtyChunks.clear();
+}
+
+// Rebuilds ONE chunk's geometry from scratch and swaps it into the scene —
+// every cell always draws its own top face, plus a wall wherever its
+// right/front neighbour (read from the GLOBAL heights array, so cross-chunk
+// boundaries stay correct even though each chunk is a separate mesh) has a
+// different height. Untouched chunks elsewhere are never revisited, which
+// is what keeps a single tool movement cheap regardless of total grid size.
+function rebuildChunk(w, g, ci, cj) {
+  const key = cj*g.chunkNX+ci;
+  const old = w.chunkMeshes.get(key);
+  if (old) { w.scene.remove(old); old.geometry.dispose(); }
+
+  const res = g.res;
+  const i0 = ci*CHUNK_SIZE, i1 = Math.min(res, i0+CHUNK_SIZE);
+  const j0 = cj*CHUNK_SIZE, j1 = Math.min(res, j0+CHUNK_SIZE);
+
+  let posBuf = new Float32Array(1024);
+  let posLen = 0;
+  let normBuf = new Float32Array(1024);
+  let normLen = 0;
+  let idxBuf = new Uint32Array(1024);
+  let idxLen = 0;
+  let vertCount = 0;
+  function growPos(extra) { if (posLen+extra>posBuf.length) { const nb=new Float32Array(Math.max(posBuf.length*2,posLen+extra)); nb.set(posBuf.subarray(0,posLen)); posBuf=nb; } }
+  function growNorm(extra) { if (normLen+extra>normBuf.length) { const nb=new Float32Array(Math.max(normBuf.length*2,normLen+extra)); nb.set(normBuf.subarray(0,normLen)); normBuf=nb; } }
+  function growIdx(extra) { if (idxLen+extra>idxBuf.length) { const nb=new Uint32Array(Math.max(idxBuf.length*2,idxLen+extra)); nb.set(idxBuf.subarray(0,idxLen)); idxBuf=nb; } }
+  // Every vertex gets an EXPLICIT, hand-assigned normal for its quad's
+  // known flat direction (up for tops, outward-axis for walls) instead of
+  // one computed per tiny face. With computed-per-face normals, a curve
+  // approximated by many thin facets shows every facet boundary as a
+  // visible seam — most noticeable on walls angled away from the light,
+  // where small normal differences cause large brightness swings. Giving
+  // every vertex of a given face type the SAME constant normal makes
+  // adjoining facets shade identically, so the seams disappear even
+  // though the underlying geometry is still faceted.
+  function quad(x0,y0,z0, x1,y1,z1, x2,y2,z2, x3,y3,z3, nx,ny,nz) {
+    growPos(12);
+    posBuf[posLen++]=x0; posBuf[posLen++]=y0; posBuf[posLen++]=z0;
+    posBuf[posLen++]=x1; posBuf[posLen++]=y1; posBuf[posLen++]=z1;
+    posBuf[posLen++]=x2; posBuf[posLen++]=y2; posBuf[posLen++]=z2;
+    posBuf[posLen++]=x3; posBuf[posLen++]=y3; posBuf[posLen++]=z3;
+    growNorm(12);
+    for (let k=0;k<4;k++) { normBuf[normLen++]=nx; normBuf[normLen++]=ny; normBuf[normLen++]=nz; }
+    growIdx(6);
+    const base = vertCount;
+    idxBuf[idxLen++]=base; idxBuf[idxLen++]=base+1; idxBuf[idxLen++]=base+2;
+    idxBuf[idxLen++]=base; idxBuf[idxLen++]=base+2; idxBuf[idxLen++]=base+3;
+    vertCount += 4;
+  }
+
+  // For square stock this is exactly "is (i,j) within the grid" — same as
+  // the old i<0/i>=res checks. For cylinder stock it ALSO requires the
+  // cell to fall within the circular footprint, so the same wall logic
+  // below naturally produces a round outer boundary instead of a square
+  // one, with no separate code path needed.
+  function cellInside(i, j) {
+    if (i<0 || i>=res || j<0 || j>=res) return false;
+    if (g.shape !== 'cylinder') return true;
+    const cx = g.minX+(i+0.5)*g.cellW, cy = g.minY+(j+0.5)*g.cellH;
+    const dx=cx-g.cx, dy=cy-g.cy;
+    return (dx*dx+dy*dy) <= g.radius*g.radius;
+  }
+
+  for (let j=j0;j<j1;j++) {
+    for (let i=i0;i<i1;i++) {
+      if (!cellInside(i,j)) continue;
+      const idx = j*res+i;
+      const h = g.heights[idx];
+      const x0=g.minX+i*g.cellW, x1=x0+g.cellW;
+      const y0=g.minY+j*g.cellH, y1=y0+g.cellH;
+
+      quad(x0,h,y0, x1,h,y0, x1,h,y1, x0,h,y1, 0,1,0);
+
+      const rightH = cellInside(i+1,j) ? g.heights[idx+1] : g.bottom;
+      const frontH = cellInside(i,j+1) ? g.heights[idx+res] : g.bottom;
+      if (Math.abs(h-rightH) > 0.01) {
+        const lo = Math.min(h,rightH), hi = Math.max(h,rightH);
+        quad(x1,hi,y0, x1,hi,y1, x1,lo,y1, x1,lo,y0, 1,0,0);
+      }
+      if (Math.abs(h-frontH) > 0.01) {
+        const lo = Math.min(h,frontH), hi = Math.max(h,frontH);
+        quad(x0,hi,y1, x1,hi,y1, x1,lo,y1, x0,lo,y1, 0,0,1);
+      }
+      if (!cellInside(i-1,j) && Math.abs(h-g.bottom) > 0.01) {
+        quad(x0,h,y1, x0,h,y0, x0,g.bottom,y0, x0,g.bottom,y1, -1,0,0);
+      }
+      if (!cellInside(i,j-1) && Math.abs(h-g.bottom) > 0.01) {
+        quad(x1,h,y0, x0,h,y0, x0,g.bottom,y0, x1,g.bottom,y0, 0,0,-1);
+      }
+    }
+  }
+
+  for (let k=2; k<posLen; k+=3) posBuf[k] = -posBuf[k];
+  for (let k=2; k<normLen; k+=3) normBuf[k] = -normBuf[k]; // mirror Z-facing normals to match the position flip
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(posBuf.subarray(0,posLen),3));
+  geo.setAttribute('normal', new THREE.BufferAttribute(normBuf.subarray(0,normLen),3));
+  geo.setIndex(new THREE.BufferAttribute(idxBuf.subarray(0,idxLen), 1));
+  const mesh = new THREE.Mesh(geo, w.stockMaterial);
+  w.scene.add(mesh);
+  w.chunkMeshes.set(key, mesh);
+}
+
+function updateWebGLToolMarker(playPos) {
+  if (!webgl) return;
+  if (!playPos) { webgl.toolMarker.visible = false; return; }
+  const p = playPos.centerPoint || playPos.point;
+  const seg = paths[Math.min(playPos.segIndex, paths.length-1)];
+  const tool = seg ? toolByNumber(seg.T) : null;
+  const radius = tool ? tool.d/2 : DEFAULT_STAMP_RADIUS;
+  const g = stockGrid;
+  const height = g ? Math.max(15, (g.top-g.bottom)*2) : 30;
+  if (webgl.toolMarker.geometry) webgl.toolMarker.geometry.dispose();
+  webgl.toolMarker.geometry = new THREE.CylinderGeometry(radius, radius, height, 24);
+  // cylinder is centered on its own origin — lift it so its BOTTOM tip sits at the actual cutting point
+  webgl.toolMarker.position.set(p.x, (p.z||0) + height/2, -p.y);
+  webgl.toolMarker.visible = true;
+}
+
+function showWebGL(show) {
+  const host = document.getElementById('webglHost');
+  const flat = document.getElementById('canvas');
+  const hint = document.getElementById('overlayHint');
+  if (show) {
+    ensureWebGL();
+    host.style.display = 'block';
+    flat.style.display = 'none';
+    hint.textContent = 'Vänster/dra = rotera · Scroll = zoom · Höger/dra = panorera';
+    resizeWebGL();
+    const wasRunning = webgl.running;
+    webgl.running = true;
+    if (!wasRunning) webgl.animate();
+  } else {
+    host.style.display = 'none';
+    flat.style.display = '';
+    hint.textContent = 'Hjul = zoom · Dra = panorera · Dubbelklick = anpassa vy';
+    if (webgl) webgl.running = false;
+  }
+}
+window.addEventListener('resize', () => { if (stockMode || mode3D) resizeWebGL(); });
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const ta = document.getElementById('gcode');
+const statusEl = document.getElementById('status');
+const warnIndicator = document.getElementById('warnIndicator');
+const warnPopup = document.getElementById('warnPopup');
+const warnList = document.getElementById('warnList');
+warnIndicator.addEventListener('click', (e) => {
+  e.stopPropagation();
+  warnPopup.classList.toggle('open');
+});
+document.addEventListener('click', (e) => {
+  if (warnPopup.classList.contains('open') && !warnPopup.contains(e.target) && e.target!==warnIndicator) {
+    warnPopup.classList.remove('open');
+  }
+});
+const scrubSlider = document.getElementById('scrubSlider');
+const scrubLabel = document.getElementById('scrubLabel');
+const speedSlider = document.getElementById('speedSlider');
+const speedLabel = document.getElementById('speedLabel');
+const toggleCenters = document.getElementById('toggleCenters');
+const toggleGM = document.getElementById('toggleGM');
+const toggleAxis = document.getElementById('toggleAxis');
+const toggleFST = document.getElementById('toggleFST');
+const toggle3D = document.getElementById('toggle3D');
+const toggleOptionalStop = document.getElementById('toggleOptionalStop');
+const coordReadout = document.getElementById('coordReadout');
+const fileInput = document.getElementById('fileInput');
+const codeHighlightEl = document.getElementById('codeHighlight');
+const lineNumbersEl = document.getElementById('lineNumbers');
+
+let paths = [];
+let bounds = {minX:0,maxX:100,minY:0,maxY:100,minZ:0,maxZ:0};
+let view = {scale:5, offsetX:80, offsetY:80};
+let animationIndex = null;
+let animReq = null;
+let playModel = null;
+let mode3D = false;
+let stockMode = false;
+let stockGrid = null;
+let outerClipMode = false; // auto-detection can't tell a pocket cut from a part-separation cut from G-code alone — guessing wrong hid correctly-cut material, so this stays off by default
+let stockLoopInfo = undefined;
+let stockStampedUpToSeg = -1;
+let stockLastPos = null;
+let stockExteriorClipped = false;
+let pausedPlaybackTime = null;
+let lastHandledStopId = null;
+let currentSimTime = 0;
+let lastHandledBlockBoundarySeg = null;
+let dragging = false, lastMouse = null;
+let lastParsed = null;
+
+const DEFAULT_TOOLS = [
+  {t:1, name:'Pinnfräs Ø6', d:6, h:50},
+  {t:2, name:'Pinnfräs Ø10', d:10, h:55},
+  {t:3, name:'Pinnfräs Ø15 (HM)', d:15, h:45},
+  {t:4, name:'Centrumborr Ø3', d:3, h:40},
+  {t:5, name:'Borr Ø5', d:5, h:60},
+  {t:6, name:'Borr Ø1', d:1, h:34},
+  {t:7, name:'Borr Ø2', d:2, h:49},
+  {t:8, name:'Borr Ø3', d:3, h:61},
+  {t:9, name:'Borr Ø4', d:4, h:75},
+  {t:10, name:'Borr Ø6', d:6, h:93},
+  {t:11, name:'Borr Ø7', d:7, h:109},
+  {t:12, name:'Borr Ø8', d:8, h:117},
+  {t:13, name:'Borr Ø9', d:9, h:125},
+  {t:14, name:'Borr Ø10', d:10, h:133},
+  {t:15, name:'Borr Ø11', d:11, h:142},
+  {t:16, name:'Borr Ø12', d:12, h:151}
+];
+const DEFAULT_WCS = [0,0,0,0,0,0].map(()=>({x:0,y:0,z:0}));
+
+function loadJSON(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : JSON.parse(JSON.stringify(fallback));
+  } catch(e) { return JSON.parse(JSON.stringify(fallback)); }
+}
+function saveJSON(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch(e) {}
+}
+
+let toolTable = loadJSON('gkodviz_tools_v1', DEFAULT_TOOLS);
+let wcsTable = loadJSON('gkodviz_wcs_v1', DEFAULT_WCS);
+let homePosition = loadJSON('gkodviz_home_v1', {x:0, y:0, z:0});
+let stockSize = loadJSON('gkodviz_stocksize_v1', {auto:true, width:100, depth:100, thickness:20, quadrant:'center-path', shape:'square', diameter:60, cylHeight:20});
+
+function toolByNumber(n) {
+  if (n==null || !Number.isFinite(Number(n))) return null;
+  return toolTable.find(t => Number(t.t)===Number(n)) || null;
+}
+
+function renderToolTable() {
+  const body = document.getElementById('toolTableBody');
+  body.innerHTML = '';
+  toolTable.forEach((tool, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><input type="number" value="'+tool.t+'" data-field="t" data-idx="'+idx+'"></td>'+
+      '<td><input type="text" value="'+escapeHtml(tool.name||'')+'" data-field="name" data-idx="'+idx+'"></td>'+
+      '<td><input type="number" step="0.1" value="'+tool.d+'" data-field="d" data-idx="'+idx+'"></td>'+
+      '<td><input type="number" step="0.1" value="'+tool.h+'" data-field="h" data-idx="'+idx+'"></td>'+
+      '<td><button class="row-del" data-idx="'+idx+'" title="Ta bort">✕</button></td>';
+    body.appendChild(tr);
+  });
+  body.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const idx = parseInt(inp.dataset.idx,10);
+      const field = inp.dataset.field;
+      toolTable[idx][field] = (field==='name') ? inp.value : (parseFloat(inp.value)||0);
+      saveJSON('gkodviz_tools_v1', toolTable);
+      drawFromText(false);
+    });
+  });
+  body.querySelectorAll('.row-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      toolTable.splice(parseInt(btn.dataset.idx,10),1);
+      saveJSON('gkodviz_tools_v1', toolTable);
+      renderToolTable();
+      drawFromText(false);
+    });
+  });
+}
+function renderWcsTable() {
+  const body = document.getElementById('wcsTableBody');
+  body.innerHTML = '';
+  const labels=['G54','G55','G56','G57','G58','G59'];
+  wcsTable.forEach((w, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>'+labels[idx]+'</td>'+
+      '<td><input type="number" step="0.01" value="'+w.x+'" data-axis="x" data-idx="'+idx+'"></td>'+
+      '<td><input type="number" step="0.01" value="'+w.y+'" data-axis="y" data-idx="'+idx+'"></td>'+
+      '<td><input type="number" step="0.01" value="'+w.z+'" data-axis="z" data-idx="'+idx+'"></td>';
+    body.appendChild(tr);
+  });
+  body.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const idx = parseInt(inp.dataset.idx,10), axis = inp.dataset.axis;
+      wcsTable[idx][axis] = parseFloat(inp.value)||0;
+      saveJSON('gkodviz_wcs_v1', wcsTable);
+      drawFromText(false);
+    });
+  });
+}
+function renderHomeTable() {
+  const body = document.getElementById('homeTableBody');
+  body.innerHTML =
+    '<tr><td>G28/30</td>'+
+    '<td><input type="number" step="0.01" value="'+homePosition.x+'" data-axis="x"></td>'+
+    '<td><input type="number" step="0.01" value="'+homePosition.y+'" data-axis="y"></td>'+
+    '<td><input type="number" step="0.01" value="'+homePosition.z+'" data-axis="z"></td></tr>';
+  body.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      homePosition[inp.dataset.axis] = parseFloat(inp.value)||0;
+      saveJSON('gkodviz_home_v1', homePosition);
+      updateHomeDisplay();
+      drawFromText(false);
+    });
+  });
+}
+function updateHomeDisplay() {
+  document.getElementById('homepos').textContent =
+    'X '+homePosition.x.toFixed(2)+' · Y '+homePosition.y.toFixed(2)+' · Z '+homePosition.z.toFixed(2);
+}
+updateHomeDisplay();
+
+function renderCncFrasSizeForm() {
+  const wEl=document.getElementById('cncStockWidth'), dEl=document.getElementById('cncStockDepth'),
+        zEl=document.getElementById('cncStockThickness'),
+        diamEl=document.getElementById('cncStockDiameter'), cylHEl=document.getElementById('cncStockCylHeight'),
+        aEl=document.getElementById('cncStockAuto'),
+        qEl=document.getElementById('cncStockQuadrant'),
+        dotEl=document.getElementById('cncQuadrantDot'),
+        labelEl=document.getElementById('cncQuadrantLabel'),
+        shapeSquareEl=document.getElementById('cncShapeSquare'),
+        shapeCylEl=document.getElementById('cncShapeCylinder'),
+        squareFields=document.getElementById('cncSquareFields'),
+        cylFields=document.getElementById('cncCylinderFields');
+
+  const shape = stockSize.shape || 'square';
+  shapeSquareEl.checked = (shape === 'square');
+  shapeCylEl.checked = (shape === 'cylinder');
+  squareFields.style.display = (shape === 'square') ? '' : 'none';
+  cylFields.style.display = (shape === 'cylinder') ? '' : 'none';
+
+  wEl.value = stockSize.width; dEl.value = stockSize.depth; zEl.value = stockSize.thickness;
+  diamEl.value = stockSize.diameter || 60; cylHEl.value = stockSize.cylHeight || stockSize.thickness || 20;
+  aEl.checked = stockSize.auto;
+  qEl.value = stockSize.quadrant || 'center-path';
+  [wEl,dEl,zEl,diamEl,cylHEl,qEl].forEach(el => el.disabled = stockSize.auto);
+  // rect spans x:[10,150] y:[10,100] in the preview's own coordinate system (SVG Y grows downward)
+  const DOT_POS = {
+    'center-path':   {x:80, y:55, dy:16},
+    'center-origin': {x:80, y:55, dy:16},
+    'q1': {x:10,  y:100, dy:-10}, // origin bottom-left, material toward +X/+Y (up-right)
+    'q2': {x:150, y:100, dy:-10}, // origin bottom-right, material toward -X/+Y (up-left)
+    'q3': {x:150, y:10,  dy:16},  // origin top-right, material toward -X/-Y (down-left)
+    'q4': {x:10,  y:10,  dy:16},  // origin top-left, material toward +X/-Y (down-right)
+  };
+  function updatePreview() {
+    const pos = DOT_POS[qEl.value] || DOT_POS['center-path'];
+    dotEl.setAttribute('cx', pos.x); dotEl.setAttribute('cy', pos.y);
+    labelEl.setAttribute('x', pos.x); labelEl.setAttribute('y', pos.y); labelEl.setAttribute('dy', pos.dy);
+  }
+  updatePreview();
+  function commit() {
+    stockSize.width = parseFloat(wEl.value)||100;
+    stockSize.depth = parseFloat(dEl.value)||100;
+    stockSize.thickness = Math.max(1, parseFloat(zEl.value)||20);
+    stockSize.diameter = Math.max(1, parseFloat(diamEl.value)||60);
+    stockSize.cylHeight = Math.max(1, parseFloat(cylHEl.value)||20);
+    stockSize.quadrant = qEl.value;
+    saveJSON('gkodviz_stocksize_v1', stockSize);
+    updatePreview();
+    if (stockMode) { buildStockGrid(); resweepStock(playModel ? playModel.total : 0); render(); }
+  }
+  [wEl,dEl,zEl,diamEl,cylHEl,qEl].forEach(el => el.addEventListener('input', commit));
+  aEl.addEventListener('change', () => {
+    stockSize.auto = aEl.checked;
+    [wEl,dEl,zEl,diamEl,cylHEl,qEl].forEach(el => el.disabled = stockSize.auto);
+    saveJSON('gkodviz_stocksize_v1', stockSize);
+    if (stockMode) { buildStockGrid(); resweepStock(playModel ? playModel.total : 0); render(); }
+  });
+  [shapeSquareEl, shapeCylEl].forEach(el => el.addEventListener('change', () => {
+    stockSize.shape = shapeCylEl.checked ? 'cylinder' : 'square';
+    squareFields.style.display = (stockSize.shape === 'square') ? '' : 'none';
+    cylFields.style.display = (stockSize.shape === 'cylinder') ? '' : 'none';
+    saveJSON('gkodviz_stocksize_v1', stockSize);
+    if (stockMode) { buildStockGrid(); resweepStock(playModel ? playModel.total : 0); render(); }
+  }));
+}
+
+const homePosText = document.getElementById('homepos');
+const homePosEdit = document.getElementById('homePosEdit');
+const homeEditX = document.getElementById('homeEditX');
+const homeEditY = document.getElementById('homeEditY');
+const homeEditZ = document.getElementById('homeEditZ');
+
+function openHomeEdit() {
+  homeEditX.value = homePosition.x;
+  homeEditY.value = homePosition.y;
+  homeEditZ.value = homePosition.z;
+  homePosText.style.display = 'none';
+  homePosEdit.classList.add('open');
+  homeEditX.focus();
+  homeEditX.select();
+}
+function closeHomeEdit() {
+  homePosEdit.classList.remove('open');
+  homePosText.style.display = '';
+}
+homePosText.addEventListener('click', openHomeEdit);
+[homeEditX, homeEditY, homeEditZ].forEach(inp => {
+  inp.addEventListener('input', () => {
+    homePosition.x = parseFloat(homeEditX.value)||0;
+    homePosition.y = parseFloat(homeEditY.value)||0;
+    homePosition.z = parseFloat(homeEditZ.value)||0;
+    saveJSON('gkodviz_home_v1', homePosition);
+    updateHomeDisplay();
+    drawFromText(false);
+  });
+  inp.addEventListener('keydown', (e) => {
+    if (e.key==='Enter') closeHomeEdit();
+  });
+});
+document.addEventListener('click', (e) => {
+  if (homePosEdit.classList.contains('open') && !homePosEdit.contains(e.target) && e.target!==homePosText) {
+    closeHomeEdit();
+  }
+});
+document.getElementById('addToolBtn').addEventListener('click', () => {
+  const nextT = toolTable.length ? Math.max(...toolTable.map(t=>Number(t.t)))+1 : 1;
+  toolTable.push({t:nextT, name:'Nytt verktyg', d:6, h:50});
+  saveJSON('gkodviz_tools_v1', toolTable);
+  renderToolTable();
+});
+document.getElementById('toolLibraryBtn').addEventListener('click', () => {
+  renderToolTable();
+  renderWcsTable();
+  renderHomeTable();
+  document.getElementById('toolModalOverlay').classList.add('open');
+});
+document.getElementById('closeToolModal').addEventListener('click', () => {
+  document.getElementById('toolModalOverlay').classList.remove('open');
+});
+document.getElementById('toolModalOverlay').addEventListener('click', (e) => {
+  if (e.target.id==='toolModalOverlay') document.getElementById('toolModalOverlay').classList.remove('open');
+});
+
+document.getElementById('cheatsheetBtn').addEventListener('click', () => {
+  document.getElementById('cheatsheetOverlay').classList.add('open');
+});
+document.getElementById('closeCheatsheet').addEventListener('click', () => {
+  document.getElementById('cheatsheetOverlay').classList.remove('open');
+});
+document.getElementById('cheatsheetOverlay').addEventListener('click', (e) => {
+  if (e.target.id==='cheatsheetOverlay') document.getElementById('cheatsheetOverlay').classList.remove('open');
+});
+
+document.getElementById('skardataBtn').addEventListener('click', () => {
+  document.getElementById('skardataOverlay').classList.add('open');
+});
+document.getElementById('closeSkardata').addEventListener('click', () => {
+  document.getElementById('skardataOverlay').classList.remove('open');
+});
+document.getElementById('skardataOverlay').addEventListener('click', (e) => {
+  if (e.target.id==='skardataOverlay') document.getElementById('skardataOverlay').classList.remove('open');
+});
+document.querySelectorAll('.sk-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sk-tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.sk-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('sk-panel-'+btn.dataset.sktab).classList.add('active');
+  });
+});
+(function(){
+  const vcEl=document.getElementById('sk-vc'), dEl=document.getElementById('sk-d'),
+        fzEl=document.getElementById('sk-fz'), znEl=document.getElementById('sk-zn'),
+        nOut=document.getElementById('sk-out-n'), vfOut=document.getElementById('sk-out-vf');
+  function calcSkardata() {
+    const vc=parseFloat(vcEl.value), d=parseFloat(dEl.value), fz=parseFloat(fzEl.value), zn=parseFloat(znEl.value);
+    if (!(vc>0) || !(d>0)) { nOut.textContent='— varv/min'; vfOut.textContent='— mm/min'; return; }
+    const n=(vc*1000)/(Math.PI*d);
+    nOut.textContent = Math.round(n).toLocaleString('sv-SE')+' varv/min';
+    if (fz>0 && zn>0) vfOut.textContent = Math.round(fz*zn*n).toLocaleString('sv-SE')+' mm/min';
+    else vfOut.textContent = '— mm/min';
+  }
+  [vcEl,dEl,fzEl,znEl].forEach(el=>el.addEventListener('input', calcSkardata));
+  calcSkardata();
+})();
+(function(){
+  const vcEl=document.getElementById('sv-vc'), dEl=document.getElementById('sv-d'),
+        fEl=document.getElementById('sv-f'),
+        nOut=document.getElementById('sv-out-n'), vfOut=document.getElementById('sv-out-vf');
+  function calcSvarv() {
+    const vc=parseFloat(vcEl.value), d=parseFloat(dEl.value), f=parseFloat(fEl.value);
+    if (!(vc>0) || !(d>0)) { nOut.textContent='— varv/min'; vfOut.textContent='— mm/min'; return; }
+    const n=(vc*1000)/(Math.PI*d);
+    nOut.textContent = Math.round(n).toLocaleString('sv-SE')+' varv/min';
+    if (f>0) vfOut.textContent = Math.round(f*n).toLocaleString('sv-SE')+' mm/min';
+    else vfOut.textContent = '— mm/min';
+  }
+  [vcEl,dEl,fEl].forEach(el=>el.addEventListener('input', calcSvarv));
+  calcSvarv();
+})();
+(function(){
+  const vcEl=document.getElementById('bo-vc'), dEl=document.getElementById('bo-d'),
+        fnEl=document.getElementById('bo-fn'),
+        nOut=document.getElementById('bo-out-n'), vfOut=document.getElementById('bo-out-vf');
+  function calcBorr() {
+    const vc=parseFloat(vcEl.value), d=parseFloat(dEl.value), fn=parseFloat(fnEl.value);
+    if (!(vc>0) || !(d>0)) { nOut.textContent='— varv/min'; vfOut.textContent='— mm/min'; return; }
+    const n=(vc*1000)/(Math.PI*d);
+    nOut.textContent = Math.round(n).toLocaleString('sv-SE')+' varv/min';
+    if (fn>0) vfOut.textContent = Math.round(fn*n).toLocaleString('sv-SE')+' mm/min';
+    else vfOut.textContent = '— mm/min';
+  }
+  [vcEl,dEl,fnEl].forEach(el=>el.addEventListener('input', calcBorr));
+  calcBorr();
+})();
+
+const EXAMPLES = {
+  'Femhörning med bågar': `N1 G90 G0 X20 Y-20
+N2 G1 X40 Y-20
+N3 G3 X80 Y-60 I40 J0
+N4 G1 X80 Y-80
+N5 G3 X60 Y-100 I0 J-20
+N6 G1 X20 Y-100
+N7 G1 X-10 Y-60
+N8 G1 X-10 Y-50
+N9 G2 X20 Y-20 I30 J0`,
+  'Rektangel med hål': `G21
+G90
+G0 X0 Y0
+G1 X40 Y0 F500
+G1 X40 Y30
+G1 X0 Y30
+G1 X0 Y0
+G0 X10 Y10
+G2 X30 Y10 I10 J0
+G0 X0 Y0`,
+  'Cirkel (R-format)': `G21
+G90
+G0 X30 Y0
+G1 X30 Y0 F400
+G3 X-30 Y0 R30
+G3 X30 Y0 R30
+G0 X0 Y0`,
+  'Verktygsbyte + offset (T/H/D)': `G21
+G90
+T1 M6
+G43 H1
+G0 X0 Y0 Z5
+G1 Z-2 F200
+G41 D1
+G1 X40 Y0
+G1 X40 Y30
+G1 X0 Y30
+G1 X0 Y0
+G40
+G0 Z5
+G49
+T2 M6
+G54
+G0 X50 Y50
+M30`,
+  'Exempel på radiekompensering': `O6705
+G90 G80 G40 G0
+G91 G28 Z0
+T3 M6
+G90
+G54 X-30 Y30 S800 F640 M3
+G43 Z2 H3
+G1 Z-2
+G1 G41 X-10 Y0 D3
+G1 X84 Y0
+G1 X84 Y-14
+G2 X70 Y-28 R14
+G1 X14 Y-28
+G1 X0 Y-14
+G1 X0 Y30
+G1 G40 X-30 Y30
+G91 G28 Z0
+M30`,
+  'Åttkantsplatta med fasningar': `O7001
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T1 M6
+G90
+G54 X-20 Y5 S1200 F300 M3
+G43 Z5 H1
+G1 Z-6 F150
+G41 X0 Y5 D1
+G1 X60 Y5 F300
+G1 X65 Y-5
+G1 X65 Y-25
+G1 X60 Y-35
+G1 X0 Y-35
+G1 X-5 Y-30
+G1 X-5 Y0
+G1 X0 Y5
+G40 X-20 Y5
+G0 Z5
+G91 G28 Z0
+M30`
+};
+
+function resizeCanvas() {
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.round(rect.width*dpr));
+  canvas.height = Math.max(1, Math.round(rect.height*dpr));
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  render();
+}
+window.addEventListener('resize', resizeCanvas);
+
+function stripComments(line, warnings=null, lineNo=null) {
+  let out = '', depth = 0;
+  for (let i=0; i<line.length; i++) {
+    const ch = line[i];
+    if (ch === ';' && depth === 0) break;
+    if (ch === '(') { depth++; continue; }
+    if (ch === ')') {
+      if (depth === 0) {
+        if (warnings && lineNo!=null) warnings.push('Rad '+lineNo+': oväntad ")" i kommentar.');
+      } else depth--;
+      continue;
+    }
+    if (depth === 0) out += ch;
+  }
+  if (depth > 0 && warnings && lineNo!=null) warnings.push('Rad '+lineNo+': parenteskommentar saknar avslutande ")".');
+  return out.trim().toUpperCase();
+}
+
+function tokenize(line) {
+  const out = [];
+  const consumed = new Uint8Array(line.length);
+  const re = /([A-Z])\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+))/g;
+  let m;
+  while ((m = re.exec(line)) !== null) {
+    out.push({letter:m[1], value:parseFloat(m[2]), index:m.index, raw:m[0]});
+    for (let i=m.index; i<re.lastIndex; i++) consumed[i]=1;
+  }
+  let junk='';
+  for (let i=0;i<line.length;i++) {
+    if (consumed[i]) continue;
+    const ch=line[i];
+    if (/\s/.test(ch) || ch==='%' || ch==='/') continue;
+    junk += ch;
+  }
+  return {tokens:out, junk};
+}
+
+const PLANE_DEF = {
+  17:{u:'x', v:'y', w:'z', offU:'I', offV:'J'},
+  // The ordered axis pairs follow the right-hand rule: Z×X=+Y and Y×Z=+X.
+  18:{u:'z', v:'x', w:'y', offU:'K', offV:'I'},
+  19:{u:'y', v:'z', w:'x', offU:'J', offV:'K'}
+};
+
+function arcPoints3D(start, end, cw, plane, words, warnings, lineNo) {
+  const def = PLANE_DEF[plane] || PLANE_DEF[17];
+  const su=start[def.u], sv=start[def.v], eu=end[def.u], ev=end[def.v];
+  const hasU = Number.isFinite(words[def.offU]);
+  const hasV = Number.isFinite(words[def.offV]);
+  const hasCenter = hasU || hasV;
+  const hasR = Number.isFinite(words.R);
+  if (!hasCenter && !hasR) {
+    warnings.push('Rad '+lineNo+': G'+(cw?2:3)+' saknar '+def.offU+'/'+def.offV+'/R; bågen kan inte bestämmas.');
+    return {valid:false, reason:'missing'};
+  }
+  if (hasCenter && hasR) warnings.push('Rad '+lineNo+': både centrumoffset och R anges för samma båge; centrumoffset används.');
+
+  let cu, cv, radius;
+  if (hasCenter) {
+    cu = su + (hasU ? words[def.offU] : 0);
+    cv = sv + (hasV ? words[def.offV] : 0);
+    const r0 = Math.hypot(su-cu, sv-cv);
+    const r1 = Math.hypot(eu-cu, ev-cv);
+    if (!(r0 > 1e-9)) {
+      warnings.push('Rad '+lineNo+': bågens centrum sammanfaller med startpunkten; geometrin är ogiltig.');
+      return {valid:false, reason:'zero-radius'};
+    }
+    const tol = Math.max(0.01, r0*0.001);
+    if (Math.abs(r0-r1) > tol) {
+      warnings.push('Rad '+lineNo+': start- och slutradie skiljer '+Math.abs(r0-r1).toFixed(3)+' mm; bågen markeras som ogiltig.');
+      return {valid:false, reason:'radius-mismatch'};
+    }
+    radius = (r0+r1)/2;
+  } else {
+    const dx=eu-su, dy=ev-sv;
+    const d=Math.hypot(dx,dy);
+    const r=Math.abs(words.R);
+    if (!(r > 1e-9)) {
+      warnings.push('Rad '+lineNo+': R måste vara större än 0.');
+      return {valid:false, reason:'zero-r'};
+    }
+    if (d < 1e-9) {
+      warnings.push('Rad '+lineNo+': helcirkel med R är tvetydig; använd '+def.offU+'/'+def.offV+' för helcirkel.');
+      return {valid:false, reason:'r-full-circle'};
+    }
+    if (d > 2*r + 1e-9) {
+      warnings.push('Rad '+lineNo+': R'+words.R+' är för liten för ändpunkterna (kord '+d.toFixed(3)+' mm).');
+      return {valid:false, reason:'r-too-small'};
+    }
+    const h=Math.sqrt(Math.max(0, r*r-(d*d)/4));
+    const mu=(su+eu)/2, mv=(sv+ev)/2;
+    const pu=-dy/d, pv=dx/d;
+    const sign=(words.R<0)?-1:1;
+    const side=(cw?-1:1)*sign;
+    cu=mu+pu*h*side;
+    cv=mv+pv*h*side;
+    radius=r;
+  }
+
+  const a0=Math.atan2(sv-cv, su-cu);
+  const a1=Math.atan2(ev-cv, eu-cu);
+  let delta;
+  if (cw) {
+    delta=a0-a1;
+    if (delta<=1e-12) delta+=Math.PI*2;
+    delta=-delta;
+  } else {
+    delta=a1-a0;
+    if (delta<=1e-12) delta+=Math.PI*2;
+  }
+  const steps=Math.max(8, Math.ceil(Math.abs(delta)/(Math.PI/48)));
+  const pts=[];
+  for (let i=0;i<=steps;i++) {
+    const t=i/steps, a=a0+delta*t;
+    const p={x:start.x,y:start.y,z:start.z};
+    p[def.u]=cu+Math.cos(a)*radius;
+    p[def.v]=cv+Math.sin(a)*radius;
+    p[def.w]=start[def.w]+(end[def.w]-start[def.w])*t;
+    pts.push(p);
+  }
+  // Avoid microscopic accumulated discontinuities between consecutive blocks.
+  pts[0]={...start};
+  pts[pts.length-1]={...end};
+  const center={x:start.x,y:start.y,z:start.z};
+  center[def.u]=cu; center[def.v]=cv; center[def.w]=start[def.w];
+  return {valid:true, pts, center, radius};
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function highlightLine(line) {
+  let out='', i=0;
+  while(i<line.length){
+    if(line[i]===';') { out += '<span class="tok-comment">'+escapeHtml(line.slice(i))+'</span>'; break; }
+    if(line[i]==='('){ const j=line.indexOf(')',i); const end=j>=0?j+1:line.length; out+='<span class="tok-comment">'+escapeHtml(line.slice(i,end))+'</span>'; i=end; continue; }
+    const m=line.slice(i).match(/^([A-Za-z])([+-]?(?:\d+(?:\.\d*)?|\.\d+))/);
+    if(m){
+      const letter=m[1].toUpperCase(), val=m[2];
+      let cls='tok-other';
+      if(letter==='G' || letter==='M') cls='tok-g';
+      else if(['X','Y','Z','A','B','C','I','J','K','R'].includes(letter)) cls='tok-axis';
+      else if(['F','S','T','D','H','L','P','Q'].includes(letter)) cls='tok-feed';
+      else if(letter==='N') cls='tok-comment';
+      out+='<span class="'+cls+'">'+escapeHtml(letter+val)+'</span>'; i+=m[0].length; continue;
+    }
+    out+=escapeHtml(line[i]); i++;
+  }
+  return out;
+}
+function updateCodeView() {
+  const lines=ta.value.split(/\r?\n/);
+  lineNumbersEl.textContent = lines.map((_,i)=>String(i+1)).join('\n');
+  codeHighlightEl.innerHTML = lines.map(highlightLine).join('\n')+'\n';
+  repositionLineHighlight();
+}
+
+const lineHighlightEl = document.getElementById('lineHighlight');
+let currentPlayingLine = null;
+
+function lineMetrics() {
+  const cs = getComputedStyle(ta);
+  return { lh: parseFloat(cs.lineHeight)||18.85, padTop: parseFloat(cs.paddingTop)||12 };
+}
+function repositionLineHighlight() {
+  if (currentPlayingLine==null) { lineHighlightEl.style.display='none'; return; }
+  const {lh, padTop} = lineMetrics();
+  const baseTop = padTop + (currentPlayingLine-1)*lh;
+  lineHighlightEl.style.display='block';
+  lineHighlightEl.style.height = lh+'px';
+  lineHighlightEl.style.transform = 'translateY('+(baseTop-ta.scrollTop)+'px)';
+}
+function setPlayingLine(lineNo) {
+  currentPlayingLine = lineNo;
+  if (lineNo!=null) {
+    const {lh, padTop} = lineMetrics();
+    const baseTop = padTop + (lineNo-1)*lh;
+    const wrapH = ta.clientHeight;
+    if (baseTop < ta.scrollTop || baseTop+lh > ta.scrollTop+wrapH) {
+      ta.scrollTop = Math.max(0, baseTop - wrapH/2 + lh/2);
+      codeHighlightEl.scrollTop = ta.scrollTop;
+      lineNumbersEl.scrollTop = ta.scrollTop;
+    }
+  }
+  repositionLineHighlight();
+}
+ta.addEventListener('input', updateCodeView);
+ta.addEventListener('scroll',()=>{
+  codeHighlightEl.scrollTop=ta.scrollTop; codeHighlightEl.scrollLeft=ta.scrollLeft;
+  lineNumbersEl.scrollTop=ta.scrollTop;
+  repositionLineHighlight();
+});
+updateCodeView();
+
+const SILENT_G = new Set([61,64,68,69]); // recognized modal functions without visual effect
+const CANNED_CYCLES = new Set([73,74,76,81,82,83,84,85,86,87,88,89]);
+const KNOWN_G = new Set([0,1,2,3,4,17,18,19,20,21,28,30,40,41,42,43,49,53,54,55,56,57,58,59,80,90,91,92,92.1]);
+const SUPPORTED_WORDS = new Set(['N','O','G','M','X','Y','Z','I','J','K','R','F','S','T','D','H','L','P','Q']);
+
+function samePoint3(a,b,tol=1e-6) {
+  return Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z) <= tol;
+}
+function normalized2(du,dv) {
+  const len=Math.hypot(du,dv);
+  return len>1e-12 ? {u:du/len,v:dv/len} : null;
+}
+function compOffsetVector(prev, cur, next, def, side, radius) {
+  let tin=null, tout=null;
+  if (prev) tin=normalized2(cur[def.u]-prev[def.u], cur[def.v]-prev[def.v]);
+  if (next) tout=normalized2(next[def.u]-cur[def.u], next[def.v]-cur[def.v]);
+  if (!tin && !tout) return {u:0,v:0};
+  if (!tin) tin=tout;
+  if (!tout) tout=tin;
+  const n1={u:-tin.v*side,v:tin.u*side};
+  const n2={u:-tout.v*side,v:tout.u*side};
+  const m=normalized2(n1.u+n2.u,n1.v+n2.v);
+  if (!m) return {u:n2.u*radius,v:n2.v*radius};
+  const den=m.u*n2.u+m.v*n2.v;
+  if (Math.abs(den)<1e-4) return {u:n2.u*radius,v:n2.v*radius};
+  const scale=radius/den;
+  // Limit pathological miters at almost-reversing corners.
+  if (Math.abs(scale)>radius*8) return {u:n2.u*radius,v:n2.v*radius};
+  return {u:m.u*scale,v:m.v*scale};
+}
+
+function applyCutterCompensation(segments, warnings) {
+  for (let si=0; si<segments.length; si++) {
+    const seg=segments[si];
+    seg.centerPts=seg.pts.map(p=>({...p}));
+    if (!seg.cutterCompMode || !(seg.cutterCompRadius>0) || seg.invalidGeometry || seg.pts.length<2) continue;
+    const side=seg.cutterCompMode===41 ? 1 : -1;
+    const def=PLANE_DEF[seg.plane] || PLANE_DEF[17];
+    if ((seg.type===2 || seg.type===3) && Number.isFinite(seg.arcRadius)) {
+      const centerRadius=seg.arcRadius + (seg.type===2 ? side : -side)*seg.cutterCompRadius;
+      if (!(centerRadius>1e-6)) {
+        warnings.push('Rad '+seg.line+': verktygsradien är för stor för den kompenserade bågen (interferens). Radiekompenseringen visas inte för detta segment.');
+        seg.compInvalid=true;
+        continue;
+      }
+    }
+    const prevSeg=segments[si-1], nextSeg=segments[si+1];
+    const compatible = other => other && other.cutterCompMode===seg.cutterCompMode &&
+      Math.abs((other.cutterCompRadius||0)-seg.cutterCompRadius)<1e-9 && other.plane===seg.plane && !other.invalidGeometry;
+    // A compensated contour that closes on itself (e.g. a full-perimeter
+    // groove starting and ending at the same point) has its first and last
+    // points coincide. Those two points are computed independently — one
+    // has no real "prev" (the segment before the run isn't compensated the
+    // same way), the other no real "next" — so without this, each end
+    // falls back to reusing its own single known direction instead of the
+    // true corner formed by wrapping around the loop, and the two ends
+    // land at slightly different offsets instead of the same spot,
+    // showing up as a small kink right at the seam.
+    // Entry/exit transition segments use a BLENDED offset (factor 0→1 or
+    // 1→0, see below) rather than the full compensation amount, so their
+    // endpoints never coincide with the loop's own ends even when the
+    // underlying contour is closed — only the fully-compensated core of
+    // the run (no compTransitionKind) can be checked for closure.
+    const coreCompatible = other => compatible(other) && !other.compTransitionKind;
+    // Find the fully-compensated "core" of THIS chain (skipping past any
+    // entry/exit transition segments on either side) to test for closure
+    // and to source the wrap-around neighbours from.
+    let coreStart=si, coreEnd=si;
+    if (seg.compTransitionKind==='entry') { coreStart=si+1; coreEnd=si+1; }
+    else if (seg.compTransitionKind==='exit') { coreStart=si-1; coreEnd=si-1; }
+    while (coreStart>0 && coreCompatible(segments[coreStart-1])) coreStart--;
+    while (coreEnd<segments.length-1 && coreCompatible(segments[coreEnd+1])) coreEnd++;
+    const coreFirstSeg=segments[coreStart], coreLastSeg=coreCompatible(segments[coreEnd]) ? segments[coreEnd] : null;
+    const isClosedLoop = coreFirstSeg && coreLastSeg && coreEnd>=coreStart &&
+      coreCompatible(coreFirstSeg) &&
+      samePoint3(coreFirstSeg.pts[0], coreLastSeg.pts[coreLastSeg.pts.length-1], 1e-3);
+    // The seam's own nominal point — every point in the chain (entry's
+    // last, loop's own first/last, exit's first) that lands exactly here
+    // needs the SAME wrap-around prev/next, not just the core loop's two
+    // boundary segments, or the entry/exit ramps blend toward a different
+    // target than the loop they're joining and the kink just moves there.
+    const seamPoint = isClosedLoop ? coreFirstSeg.pts[0] : null;
+    for (let i=0;i<seg.pts.length;i++) {
+      const p=seg.pts[i];
+      let prev=i>0 ? seg.pts[i-1] : null;
+      let next=i<seg.pts.length-1 ? seg.pts[i+1] : null;
+      if (!prev && compatible(prevSeg)) {
+        const q=prevSeg.pts;
+        if (q.length>=2 && samePoint3(q[q.length-1],p,1e-4)) prev=q[q.length-2];
+      }
+      if (!next && compatible(nextSeg)) {
+        const q=nextSeg.pts;
+        if (q.length>=2 && samePoint3(q[0],p,1e-4)) next=q[1];
+      }
+      if (seamPoint && samePoint3(p, seamPoint, 1e-3)) {
+        const qp=coreLastSeg.pts, qn=coreFirstSeg.pts;
+        if (qp.length>=2) prev=qp[qp.length-2];
+        if (qn.length>=2) next=qn[1];
+      }
+      const off=compOffsetVector(prev,p,next,def,side,seg.cutterCompRadius);
+      let factor=1;
+      const frac=seg.pts.length>1 ? i/(seg.pts.length-1) : 1;
+      if (seg.compTransitionKind==='entry') factor=frac;
+      else if (seg.compTransitionKind==='exit') factor=1-frac;
+      const cp={...p};
+      cp[def.u]+=off.u*factor;
+      cp[def.v]+=off.v*factor;
+      seg.centerPts[i]=cp;
+    }
+  }
+}
+
+function parseGcode(text) {
+  const result=[];
+  const warnings=[];
+  // `pos` is always machine/effective position. Program coordinates are derived
+  // from it and the active WCS/G92 offsets, avoiding stale coordinates after
+  // G53, WCS changes and G92/G92.1.
+  let pos={x:0,y:0,z:0};
+  let absolute=true;
+  let units=1;
+  let motion=0;
+  let plane=17;
+  let curF=null, curFeedMmPerMin=null, curS=null;
+  let currentTool=null, activeTool=null;
+  let lengthCompActive=false, lengthCompH=null;
+  let cutterCompMode=0, cutterCompD=null, cutterCompRadius=0;
+  let currentWCS=1;
+  let g92Offset={x:0,y:0,z:0};
+  let cannedCycleActive=null;
+  let pendingDwellSec=0;
+  let pendingStopBefore=null;
+  let totalLength=0;
+  let minX=0,maxX=0,minY=0,maxY=0,minZ=0,maxZ=0;
+  let firstPoint=true;
+  let endedBy=null;
+
+  function wcsOf(n) {
+    const w=(wcsTable && wcsTable[n-1]) ? wcsTable[n-1] : {x:0,y:0,z:0};
+    return {x:Number(w.x)||0,y:Number(w.y)||0,z:Number(w.z)||0};
+  }
+  function programFromMachine(machine=pos) {
+    const w=wcsOf(currentWCS);
+    return {x:machine.x-w.x-g92Offset.x,y:machine.y-w.y-g92Offset.y,z:machine.z-w.z-g92Offset.z};
+  }
+  function machineFromProgram(program) {
+    const w=wcsOf(currentWCS);
+    return {x:program.x+w.x+g92Offset.x,y:program.y+w.y+g92Offset.y,z:program.z+w.z+g92Offset.z};
+  }
+  function normalTarget(words) {
+    const cur=programFromMachine();
+    const target={...cur};
+    for (const axis of ['X','Y','Z']) if (Number.isFinite(words[axis])) {
+      const key=axis.toLowerCase(), v=words[axis]*units;
+      target[key]=absolute ? v : target[key]+v;
+    }
+    return machineFromProgram(target);
+  }
+  function g53Target(words) {
+    const target={...pos};
+    for (const axis of ['X','Y','Z']) if (Number.isFinite(words[axis])) {
+      const key=axis.toLowerCase(), v=words[axis]*units;
+      target[key]=absolute ? v : target[key]+v;
+    }
+    return target;
+  }
+  function buildAndPush(type,startEff,targetEff,opts) {
+    let pts, center=null, arcRadius=null, invalidGeometry=false;
+    if (type===2 || type===3) {
+      const arc=arcPoints3D(startEff,targetEff,type===2,opts.plane,opts.arcWords,warnings,opts.lineNo);
+      if (arc.valid) { pts=arc.pts; center=arc.center; arcRadius=arc.radius; }
+      else { pts=[{...startEff},{...targetEff}]; invalidGeometry=true; }
+    } else {
+      pts=[{...startEff},{...targetEff}];
+    }
+    for (let i=1;i<pts.length;i++) totalLength+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y);
+    pts.forEach(p=>{
+      if (firstPoint) { minX=maxX=p.x; minY=maxY=p.y; minZ=maxZ=p.z; firstPoint=false; }
+      minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x);
+      minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y);
+      minZ=Math.min(minZ,p.z); maxZ=Math.max(maxZ,p.z);
+    });
+    const seg={
+      type,pts,centerPts:pts.map(p=>({...p})),center,arcRadius,invalidGeometry,
+      line:opts.lineNo,raw:opts.raw,gCodes:opts.gCodes||[],mCodes:opts.mCodes||[],w:opts.w||{},
+      F:curF,feedMmPerMin:curFeedMmPerMin,S:curS,
+      T:activeTool!=null?activeTool:currentTool,
+      H:lengthCompActive?(lengthCompH!=null?lengthCompH:activeTool):null,
+      D:opts.compMode?(opts.compD!=null?opts.compD:activeTool):null,
+      wcs:currentWCS,plane:opts.plane,cutterCompMode:opts.compMode||0,
+      cutterCompRadius:opts.compRadius||0,compTransitionKind:opts.compTransitionKind||null,
+      compTransition:!!opts.compTransitionKind,
+      preDwellSec:pendingDwellSec,preStop:pendingStopBefore,stopAfter:null
+    };
+    pendingDwellSec=0; pendingStopBefore=null;
+    result.push(seg);
+    return seg;
+  }
+
+  const lines=text.split(/\r?\n/);
+  for (let lineNo=0; lineNo<lines.length; lineNo++) {
+    const raw=lines[lineNo];
+    const line=stripComments(raw,warnings,lineNo+1);
+    if (!line) continue;
+    const parsedTokens=tokenize(line);
+    const tokens=parsedTokens.tokens;
+    if (parsedTokens.junk) warnings.push('Rad '+(lineNo+1)+': kunde inte tolka "'+parsedTokens.junk+'"; tecknen ignoreras.');
+    if (!tokens.length) continue;
+
+    const w={};
+    const gCodes=[],mCodes=[];
+    const seen={};
+    for (const t of tokens) {
+      if (!SUPPORTED_WORDS.has(t.letter)) warnings.push('Rad '+(lineNo+1)+': adress '+t.letter+' stöds inte och ignoreras.');
+      if (t.letter==='G') { gCodes.push(t.value); continue; }
+      if (t.letter==='M') { mCodes.push(t.value); continue; }
+      if (t.letter==='N' || t.letter==='O') { w[t.letter]=t.value; continue; }
+      if (Object.prototype.hasOwnProperty.call(w,t.letter)) {
+        warnings.push('Rad '+(lineNo+1)+': '+t.letter+' anges flera gånger; sista värdet används.');
+      }
+      w[t.letter]=t.value;
+      seen[t.letter]=true;
+    }
+
+    const compBefore={mode:cutterCompMode,D:cutterCompD,radius:cutterCompRadius};
+    let compCommand=null, doReferenceReturn=false, doG92=false, doG92Cancel=false, g53Line=false;
+    let lineHasDwell=false, cycleCommand=null;
+    for (const g of gCodes) {
+      if (g===20) units=25.4;
+      else if (g===21) units=1;
+      else if (g===90) absolute=true;
+      else if (g===91) absolute=false;
+      else if ([0,1,2,3].includes(g)) motion=g;
+      else if (g===4) lineHasDwell=true;
+      else if (g===17 || g===18 || g===19) plane=g;
+      else if (g===40 || g===41 || g===42) compCommand=g;
+      else if (g===43) lengthCompActive=true;
+      else if (g===49) { lengthCompActive=false; lengthCompH=null; }
+      else if (g===53) g53Line=true;
+      else if (g>=54 && g<=59) currentWCS=g-53;
+      else if (g===92) doG92=true;
+      else if (Math.abs(g-92.1)<1e-9) doG92Cancel=true;
+      else if (g===28 || g===30) doReferenceReturn=true;
+      else if (g===80) { cannedCycleActive=null; cycleCommand=80; }
+      else if (CANNED_CYCLES.has(g)) { cannedCycleActive=g; cycleCommand=g; }
+      else if (SILENT_G.has(g)) { /* recognized but no visual effect */ }
+      else if (!KNOWN_G.has(g)) warnings.push('Rad '+(lineNo+1)+': okänd/ej stödd G-kod G'+g+' — ignoreras.');
+    }
+
+    if (Number.isFinite(w.F)) { curF=w.F; curFeedMmPerMin=w.F*units; }
+    if (Number.isFinite(w.S)) curS=w.S;
+    if (Number.isFinite(w.T)) currentTool=w.T;
+    if (Number.isFinite(w.H)) lengthCompH=w.H;
+    if (Number.isFinite(w.D)) cutterCompD=w.D;
+    for (const m of mCodes) if (m===6) {
+      activeTool=currentTool;
+      if (activeTool!=null && !toolByNumber(activeTool)) warnings.push('Rad '+(lineNo+1)+': verktyg T'+activeTool+' finns inte i verktygslådan.');
+    }
+    const stopCode=mCodes.includes(0)?'M0':(mCodes.includes(1)?'M1':null);
+    const endCode=mCodes.includes(30)?'M30':(mCodes.includes(2)?'M2':null);
+
+    if (lengthCompActive) {
+      const hNum=lengthCompH!=null?lengthCompH:activeTool;
+      if (hNum!=null && !toolByNumber(hNum)) warnings.push('Rad '+(lineNo+1)+': längdoffset H'+hNum+' hittas inte i verktygslådan.');
+    }
+    if (compCommand===40) { cutterCompMode=0; cutterCompRadius=0; cutterCompD=null; }
+    else if (compCommand===41 || compCommand===42) cutterCompMode=compCommand;
+    if (cutterCompMode) {
+      const dNum=cutterCompD!=null?cutterCompD:activeTool;
+      const tool=toolByNumber(dNum);
+      cutterCompRadius=tool?tool.d/2:0;
+      if (!tool && dNum!=null) warnings.push('Rad '+(lineNo+1)+': radieoffset D'+dNum+' hittas inte i verktygslådan.');
+    }
+
+    if (doG92Cancel) g92Offset={x:0,y:0,z:0};
+    if (doG92) {
+      const wc=wcsOf(currentWCS);
+      for (const axis of ['X','Y','Z']) if (Number.isFinite(w[axis])) {
+        const key=axis.toLowerCase();
+        g92Offset[key]=pos[key]-wc[key]-w[axis]*units;
+      }
+    }
+    if (doG92 || doG92Cancel) {
+      if (['X','Y','Z'].some(k=>Number.isFinite(w[k])) && !doG92) warnings.push('Rad '+(lineNo+1)+': koordinater på G92.1-rad används inte som rörelse.');
+      if (stopCode) pendingStopBefore=stopCode;
+      if (endCode) { endedBy={code:endCode,line:lineNo+1}; break; }
+      continue;
+    }
+
+    if (lineHasDwell) {
+      if (Number.isFinite(w.P) && w.P>=0) pendingDwellSec += w.P/1000;
+      else warnings.push('Rad '+(lineNo+1)+': G4 saknar giltigt P-värde; ingen paus läggs till.');
+      if (stopCode) pendingStopBefore=stopCode;
+      if (endCode) { endedBy={code:endCode,line:lineNo+1}; break; }
+      continue;
+    }
+
+    if (cycleCommand && cycleCommand!==80) {
+      warnings.push('Rad '+(lineNo+1)+': borrcykel G'+cycleCommand+' stöds inte geometriskt; cykeln ignoreras tills G80.');
+      if (stopCode) pendingStopBefore=stopCode;
+      if (endCode) { endedBy={code:endCode,line:lineNo+1}; break; }
+      continue;
+    }
+    if (cannedCycleActive) {
+      if (['X','Y','Z','R','Q','P'].some(k=>Number.isFinite(w[k]))) warnings.push('Rad '+(lineNo+1)+': koordinatrad under aktiv G'+cannedCycleActive+'-cykel visas inte; använd G80 för att avsluta cykeln.');
+      if (stopCode) pendingStopBefore=stopCode;
+      if (endCode) { endedBy={code:endCode,line:lineNo+1}; break; }
+      continue;
+    }
+
+    const hasAxisMove=['X','Y','Z'].some(k=>Number.isFinite(w[k]));
+    const hasArcDefinition=(motion===2 || motion===3) && ['I','J','K','R'].some(k=>Number.isFinite(w[k]));
+    const hasMove=hasAxisMove || hasArcDefinition;
+    let segCompMode=cutterCompMode, segCompRadius=cutterCompRadius, segCompD=cutterCompD, compTransitionKind=null;
+    if (compCommand===40 && compBefore.mode) {
+      segCompMode=compBefore.mode; segCompRadius=compBefore.radius; segCompD=compBefore.D; compTransitionKind='exit';
+    } else if ((compCommand===41 || compCommand===42) && !compBefore.mode) {
+      segCompMode=cutterCompMode; segCompRadius=cutterCompRadius; segCompD=cutterCompD; compTransitionKind='entry';
+    } else if ((compCommand===41 || compCommand===42) && compBefore.mode && compBefore.mode!==cutterCompMode) {
+      warnings.push('Rad '+(lineNo+1)+': direkt byte G'+compBefore.mode+'→G'+cutterCompMode+' stöds inte exakt; lägg helst G40 mellan lägena.');
+    }
+
+    let builtThisLine=null;
+    if (doReferenceReturn) {
+      if (hasMove) {
+        const mid=normalTarget(w);
+        builtThisLine=buildAndPush(0,pos,mid,{lineNo:lineNo+1,raw,gCodes,mCodes,w,plane,compMode:0,compRadius:0,compD:null,compTransitionKind:null,arcWords:{}});
+        pos=mid;
+      }
+      const home={x:Number(homePosition.x)||0,y:Number(homePosition.y)||0,z:Number(homePosition.z)||0};
+      builtThisLine=buildAndPush(0,pos,home,{lineNo:lineNo+1,raw,gCodes,mCodes,w,plane,compMode:0,compRadius:0,compD:null,compTransitionKind:null,arcWords:{}});
+      pos=home;
+    } else if (hasMove) {
+      let target=g53Line?g53Target(w):normalTarget(w);
+      let typeForLine=motion;
+      if (g53Line && (motion===2 || motion===3)) {
+        warnings.push('Rad '+(lineNo+1)+': G53 med G2/G3 stöds inte; blocket visas som linjär maskinrörelse.');
+        typeForLine=1;
+      }
+      const arcWords={};
+      for (const k of ['I','J','K','R']) if (Number.isFinite(w[k])) arcWords[k]=w[k]*units;
+      builtThisLine=buildAndPush(typeForLine,pos,target,{lineNo:lineNo+1,raw,gCodes,mCodes,w,plane,compMode:segCompMode,compRadius:segCompRadius,compD:segCompD,compTransitionKind,arcWords});
+      pos=target;
+    }
+
+    if (stopCode) {
+      if (builtThisLine) builtThisLine.stopAfter=stopCode;
+      else pendingStopBefore=stopCode;
+    }
+    if (endCode) { endedBy={code:endCode,line:lineNo+1}; break; }
+  }
+
+  applyCutterCompensation(result,warnings);
+  return {
+    paths:result,
+    bounds:{minX,maxX,minY,maxY,minZ,maxZ},
+    totalLength,
+    endPos:pos,
+    trailingDwellSec:pendingDwellSec,
+    pendingStopBefore,
+    endedBy,
+    finalMode:{units,absolute,motion,plane,wcs:currentWCS,activeTool,cutterCompMode,cutterCompD,lengthCompActive,lengthCompH},
+    warnings
+  };
+}
+
+const ISO_COS = Math.cos(Math.PI/6);
+const ISO_SIN = Math.sin(Math.PI/6);
+
+function isoProject(p, scale, offsetX, offsetY) {
+  return {
+    x: (p.x - p.y) * ISO_COS * scale + offsetX,
+    y: (p.x + p.y) * ISO_SIN * scale - (p.z||0) * scale + offsetY
+  };
+}
+
+function fitView() {
+  const rect=canvas.getBoundingClientRect();
+  const pad=50;
+
+  const rawW=bounds.maxX-bounds.minX;
+  const rawH=bounds.maxY-bounds.minY;
+  const rawD=(bounds.maxZ||0)-(bounds.minZ||0);
+
+  // No program (or a program that never leaves a single point): don't zoom
+  // into a tiny area around that point — just center a sensible default view.
+  if (!(rawW>1e-6) && !(rawH>1e-6) && !(rawD>1e-6)) {
+    view.scale=5;
+    const cx=(bounds.minX+bounds.maxX)/2, cy=(bounds.minY+bounds.maxY)/2, cz=((bounds.minZ||0)+(bounds.maxZ||0))/2;
+    if (mode3D) {
+      const p = isoProject({x:cx,y:cy,z:cz}, view.scale, 0, 0);
+      view.offsetX = rect.width/2 - p.x;
+      view.offsetY = rect.height/2 - p.y;
+    } else {
+      view.offsetX=rect.width/2 - cx*view.scale;
+      view.offsetY=rect.height/2 + cy*view.scale;
+    }
+    render();
+    return;
+  }
+
+  if (mode3D) {
+    const zLo = bounds.minZ||0, zHi = bounds.maxZ||0;
+    const corners = [];
+    [bounds.minX,bounds.maxX].forEach(x=>[bounds.minY,bounds.maxY].forEach(y=>[zLo,zHi].forEach(z=>corners.push({x,y,z}))));
+    const proj = corners.map(c=>isoProject(c,1,0,0));
+    const minPX=Math.min(...proj.map(p=>p.x)), maxPX=Math.max(...proj.map(p=>p.x));
+    const minPY=Math.min(...proj.map(p=>p.y)), maxPY=Math.max(...proj.map(p=>p.y));
+    const w=Math.max(1e-6,maxPX-minPX), h=Math.max(1e-6,maxPY-minPY);
+    let scale=Math.min((rect.width-pad*2)/w,(rect.height-pad*2)/h);
+    view.scale=Math.max(0.01,Math.min(10000,scale));
+    view.offsetX = rect.width/2 - (minPX+maxPX)/2*view.scale;
+    view.offsetY = rect.height/2 - (minPY+maxPY)/2*view.scale;
+    render();
+    return;
+  }
+
+  const w=Math.max(1,rawW);
+  const h=Math.max(1,rawH);
+  view.scale=Math.min((rect.width-pad*2)/w,(rect.height-pad*2)/h);
+  view.scale=Math.max(0.01,Math.min(10000,view.scale));
+  view.offsetX=pad-bounds.minX*view.scale;
+  view.offsetY=pad+bounds.maxY*view.scale;
+  render();
+}
+
+function screen(p) {
+  return {
+    x:p.x*view.scale+view.offsetX,
+    y:-p.y*view.scale+view.offsetY
+  };
+}
+function world(sx, sy) {
+  return {
+    x:(sx-view.offsetX)/view.scale,
+    y:(view.offsetY-sy)/view.scale
+  };
+}
+function project(p) {
+  return (mode3D || stockMode) ? isoProject(p, view.scale, view.offsetX, view.offsetY) : screen(p);
+}
+function worldFromScreen(sx, sy) {
+  if (!(mode3D || stockMode)) return world(sx, sy);
+  const ux=(sx-view.offsetX)/view.scale;
+  const uy=(sy-view.offsetY)/view.scale;
+  const wx=(ux/ISO_COS + uy/ISO_SIN)/2;
+  const wy=(uy/ISO_SIN - ux/ISO_COS)/2;
+  return {x:wx, y:wy};
+}
+
+
+const STOCK_RES = 800; // finer steps on diagonal/curved cuts — verified to still update in single-digit ms per frame
+const CHUNK_SIZE = 24; // cells per chunk side
+const DEFAULT_STAMP_RADIUS = 3;
+
+function buildStockGrid() {
+  stockLoopInfo = undefined;
+  stockExteriorClipped = false;
+  if (!paths.length) { stockGrid = null; return; }
+  const isCyl = stockSize.shape === 'cylinder';
+  let minX, maxX, minY, maxY;
+  if (stockSize.auto) {
+    const margin = Math.max(5, (bounds.maxX-bounds.minX)*0.08, (bounds.maxY-bounds.minY)*0.08);
+    if (isCyl) {
+      const cx=(bounds.minX+bounds.maxX)/2, cy=(bounds.minY+bounds.maxY)/2;
+      const r = Math.max(bounds.maxX-bounds.minX, bounds.maxY-bounds.minY)/2 + margin;
+      minX=cx-r; maxX=cx+r; minY=cy-r; maxY=cy+r;
+    } else {
+      minX = bounds.minX-margin; maxX = bounds.maxX+margin;
+      minY = bounds.minY-margin; maxY = bounds.maxY+margin;
+    }
+  } else {
+    const w = isCyl ? stockSize.diameter : stockSize.width;
+    const d = isCyl ? stockSize.diameter : stockSize.depth;
+    const q = stockSize.quadrant || 'center-path';
+    if (q === 'center-path') {
+      const cx = (bounds.minX+bounds.maxX)/2, cy = (bounds.minY+bounds.maxY)/2;
+      minX = cx-w/2; maxX = cx+w/2; minY = cy-d/2; maxY = cy+d/2;
+    } else if (q === 'center-origin') {
+      minX = -w/2; maxX = w/2; minY = -d/2; maxY = d/2;
+    } else if (q === 'q1') { minX = 0; maxX = w; minY = 0; maxY = d; }       // +X, +Y
+    else if (q === 'q2') { minX = -w; maxX = 0; minY = 0; maxY = d; }        // -X, +Y
+    else if (q === 'q3') { minX = -w; maxX = 0; minY = -d; maxY = 0; }       // -X, -Y
+    else if (q === 'q4') { minX = 0; maxX = w; minY = -d; maxY = 0; }        // +X, -Y
+    else { minX = -w/2; maxX = w/2; minY = -d/2; maxY = d/2; }
+  }
+  const res = STOCK_RES;
+  const top = 0, bottom = isCyl ? -(stockSize.cylHeight||20) : -(stockSize.thickness||20);
+  const chunkNX = Math.ceil(res/CHUNK_SIZE), chunkNY = Math.ceil(res/CHUNK_SIZE);
+  const dirtyChunks = new Set();
+  for (let cj=0; cj<chunkNY; cj++) for (let ci=0; ci<chunkNX; ci++) dirtyChunks.add(cj*chunkNX+ci);
+  stockGrid = {
+    minX, maxX, minY, maxY, res,
+    cellW: (maxX-minX)/res, cellH: (maxY-minY)/res,
+    top, bottom,
+    heights: new Float32Array(res*res).fill(top),
+    chunkNX, chunkNY, dirtyChunks,
+    shape: isCyl ? 'cylinder' : 'square',
+    cx: (minX+maxX)/2, cy: (minY+maxY)/2,
+    radius: isCyl ? (maxX-minX)/2 : null
+  };
+}
+
+function stockHeightAt(g, x, y) {
+  let i = Math.floor((x-g.minX)/g.cellW);
+  let j = Math.floor((y-g.minY)/g.cellH);
+  i = Math.max(0, Math.min(g.res-1, i));
+  j = Math.max(0, Math.min(g.res-1, j));
+  return g.heights[j*g.res+i];
+}
+
+function markChunkDirty(g, i, j) {
+  const ci = Math.floor(i/CHUNK_SIZE), cj = Math.floor(j/CHUNK_SIZE);
+  for (let dj=-1; dj<=1; dj++) {
+    for (let di=-1; di<=1; di++) {
+      const nci=ci+di, ncj=cj+dj;
+      if (nci<0 || nci>=g.chunkNX || ncj<0 || ncj>=g.chunkNY) continue;
+      g.dirtyChunks.add(ncj*g.chunkNX+nci);
+    }
+  }
+}
+
+function stampTool(g, x, y, radius, z) {
+  const i0 = Math.max(0, Math.floor((x-radius-g.minX)/g.cellW));
+  const i1 = Math.min(g.res-1, Math.ceil((x+radius-g.minX)/g.cellW));
+  const j0 = Math.max(0, Math.floor((y-radius-g.minY)/g.cellH));
+  const j1 = Math.min(g.res-1, Math.ceil((y+radius-g.minY)/g.cellH));
+  const r2 = radius*radius;
+  for (let j=j0; j<=j1; j++) {
+    const cy = g.minY+(j+0.5)*g.cellH;
+    for (let i=i0; i<=i1; i++) {
+      const cx = g.minX+(i+0.5)*g.cellW;
+      const dx=cx-x, dy=cy-y;
+      if (dx*dx+dy*dy <= r2) {
+        const idx = j*g.res+i;
+        if (z < g.heights[idx]) {
+          g.heights[idx] = Math.max(z, g.bottom);
+          markChunkDirty(g, i, j);
+        }
+      }
+    }
+  }
+}
+
+function toolRadiusFor(seg) {
+  const tool = toolByNumber(seg.T);
+  return tool ? tool.d/2 : DEFAULT_STAMP_RADIUS;
+}
+
+// Precomputes ONE fixed list of sample points (with cumulative arc-length)
+// per segment, cached on the segment itself. Both full and partial stamping
+// always draw a PREFIX of this exact same list — never re-sampled from
+// scratch — so calling this many times as an animation progresses produces
+// byte-for-byte the same result as a single one-shot call. Before this fix,
+// each partial call rebuilt its own sub-sampling from the segment's start,
+// so repeated calls during live playback landed on slightly different
+// points each time, and the union of all those tiny offsets carved a hair
+// wider than a single clean pass — leaving a thin ridge of "extra" material
+// once a one-shot resweep replaced the live accumulation.
+function getSegmentSamples(seg) {
+  if (seg._stampSamples) return seg._stampSamples;
+  const src = seg.centerPts || seg.pts;
+  const radius = toolRadiusFor(seg);
+  // Capped at 0.8mm regardless of tool radius: the underlying grid
+  // resolution is FIXED, so a bigger tool must not get sparser sampling —
+  // with the old radius*0.6 formula, a 6mm tool sampled at 1.8mm spacing,
+  // leaving a visible "waist" between stamps on the swept boundary that a
+  // small tool (which happened to already fall under 0.8mm) never showed.
+  const step = Math.max(0.5, Math.min(radius*0.6, 0.8));
+  const samples = [{x:src[0].x, y:src[0].y, z:src[0].z||0, cum:0}];
+  let cum = 0;
+  for (let k=0; k<src.length-1; k++) {
+    const a = src[k], b = src[k+1];
+    const segLen = Math.hypot(b.x-a.x, b.y-a.y, (b.z||0)-(a.z||0));
+    if (segLen <= 1e-9) continue;
+    const n = Math.max(1, Math.ceil(segLen/step));
+    for (let s=1; s<=n; s++) {
+      const t = s/n;
+      cum += segLen/n;
+      samples.push({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, z:(a.z||0)+((b.z||0)-(a.z||0))*t, cum});
+    }
+  }
+  seg._stampSamples = samples;
+  return samples;
+}
+
+function stampSegmentFully(g, seg) {
+  // Only true rapids (G0) and canned-cycle placeholders remove nothing.
+  // G41/G42/G40 lead-in/out moves are drawn dashed in the 2D line view (to
+  // flag them as "approach/retreat, not the nominal contour"), but if the
+  // program is written to travel through material at cutting depth during
+  // those moves, the tool physically DOES remove material along the way —
+  // excluding them here created a disconnected "island" at the plunge
+  // point instead of a mark connected to the rest of the cut, which is
+  // what actually happens on a real machine.
+  if (seg.type===0 || seg.skipMotion || seg.invalidGeometry) return;
+  const radius = toolRadiusFor(seg);
+  for (const p of getSegmentSamples(seg)) stampTool(g, p.x, p.y, radius, p.z);
+}
+
+function stampSegmentPartial(g, seg, t) {
+  if (seg.type===0 || seg.skipMotion || seg.invalidGeometry) return;
+  const samples = getSegmentSamples(seg);
+  const total = samples[samples.length-1].cum;
+  const targetLen = total*t;
+  const radius = toolRadiusFor(seg);
+  for (const p of samples) {
+    if (p.cum > targetLen+1e-9) break;
+    stampTool(g, p.x, p.y, radius, p.z);
+  }
+}
+
+function stampUpTo(pos) {
+  if (!stockGrid || !pos) return;
+  const startSeg = stockStampedUpToSeg+1;
+  for (let k=startSeg; k<pos.segIndex; k++) stampSegmentFully(stockGrid, paths[k]);
+  if (pos.segIndex < paths.length) stampSegmentPartial(stockGrid, paths[pos.segIndex], pos.t);
+  stockStampedUpToSeg = pos.segIndex-1;
+  if (!stockExteriorClipped) clipExteriorIfLoopComplete(pos);
+}
+
+function pointInPolygon(x, y, poly) {
+  let inside = false;
+  for (let i=0, j=poly.length-1; i<poly.length; j=i++) {
+    const xi=poly[i].x, yi=poly[i].y, xj=poly[j].x, yj=poly[j].y;
+    const intersect = ((yi>y)!==(yj>y)) && (x < (xj-xi)*(y-yi)/(yj-yi)+xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+function computeStockLoopInfo() {
+  // Find the longest contiguous run of cutting segments, ALL under active
+  // cutter compensation (G41/G42), whose start point equals its own end
+  // point — a closed, radius-compensated outer profile (G41 entry ... G40
+  // exit). Requiring compensation avoids false-triggering on an ordinary
+  // pocket outline traced with no compensation, which is not necessarily
+  // an outer-profile separation cut.
+  let bestStart=-1, bestEnd=-1, bestLen=0;
+  for (let i=0; i<paths.length; i++) {
+    if (paths[i].type===0 || !paths[i].cutterCompMode) continue;
+    for (let j=i; j<paths.length; j++) {
+      if (paths[j].type===0 || !paths[j].cutterCompMode) break;
+      const startP = paths[i].pts[0], endP = paths[j].pts[paths[j].pts.length-1];
+      const d = Math.hypot(endP.x-startP.x, endP.y-startP.y);
+      if (d < 0.05 && j>i) {
+        const len = j-i;
+        if (len > bestLen) { bestLen=len; bestStart=i; bestEnd=j; }
+      }
+    }
+  }
+  if (bestStart<0) return null;
+  const polygon = [];
+  let cutDepth = 0;
+  for (let k=bestStart; k<=bestEnd; k++) {
+    const src = paths[k].pts;
+    for (let p=0; p<src.length-1; p++) {
+      polygon.push({x:src[p].x, y:src[p].y});
+      if ((src[p].z||0) < cutDepth) cutDepth = src[p].z;
+    }
+    const last = src[src.length-1];
+    if ((last.z||0) < cutDepth) cutDepth = last.z;
+  }
+  return { startSegIndex: bestStart, endSegIndex: bestEnd, polygon, cutDepth };
+}
+
+function isLoopComplete(pos) {
+  if (stockLoopInfo === undefined) stockLoopInfo = computeStockLoopInfo();
+  if (!stockLoopInfo) return false;
+  return pos.segIndex > stockLoopInfo.endSegIndex ||
+    (pos.segIndex === stockLoopInfo.endSegIndex && pos.t >= 0.999);
+}
+
+function clipExteriorIfLoopComplete(pos) {
+  if (stockExteriorClipped || !outerClipMode || !stockGrid || !pos) return;
+  if (!isLoopComplete(pos)) return;
+  const g = stockGrid, poly = stockLoopInfo.polygon;
+  const clipZ = Math.max(g.bottom, stockLoopInfo.cutDepth);
+  let changed = false;
+  for (let j=0;j<g.res;j++) {
+    const y = g.minY + (j+0.5)*g.cellH;
+    for (let i=0;i<g.res;i++) {
+      const x = g.minX + (i+0.5)*g.cellW;
+      if (!pointInPolygon(x, y, poly)) {
+        const idx = j*g.res+i;
+        if (g.heights[idx] > clipZ) { g.heights[idx] = clipZ; changed = true; }
+      }
+    }
+  }
+  if (changed) {
+    for (let cj=0; cj<g.chunkNY; cj++) for (let ci=0; ci<g.chunkNX; ci++) g.dirtyChunks.add(cj*g.chunkNX+ci);
+  }
+  stockExteriorClipped = true;
+}
+
+function resweepStock(toDist) {
+  if (!stockGrid || !playModel) return;
+  stockGrid.heights.fill(stockGrid.top);
+  for (let cj=0; cj<stockGrid.chunkNY; cj++) for (let ci=0; ci<stockGrid.chunkNX; ci++) stockGrid.dirtyChunks.add(cj*stockGrid.chunkNX+ci);
+  stockStampedUpToSeg = -1;
+  stockExteriorClipped = false;
+  if (!paths.length) { stockLastPos = null; return; }
+  const pos = positionAtDistance(playModel, toDist);
+  stampUpTo(pos);
+  stockLastPos = pos;
+}
+
+function drawGrid() {
+  const rect=canvas.getBoundingClientRect();
+  ctx.clearRect(0,0,rect.width,rect.height);
+  ctx.fillStyle='#0c1015';
+  ctx.fillRect(0,0,rect.width,rect.height);
+
+  let spacing = 10;
+  while (spacing*view.scale < 35) spacing*=2;
+  while (spacing*view.scale > 100) spacing/=2;
+
+  const worldLeft=(0-view.offsetX)/view.scale;
+  const worldRight=(rect.width-view.offsetX)/view.scale;
+  const worldTop=(view.offsetY-0)/view.scale;
+  const worldBottom=(view.offsetY-rect.height)/view.scale;
+
+  ctx.lineWidth=1;
+  ctx.strokeStyle='#202a35';
+  ctx.fillStyle='#778492';
+  ctx.font='11px system-ui';
+
+  const xStart=Math.floor(worldLeft/spacing)*spacing;
+  for(let x=xStart;x<=worldRight;x+=spacing){
+    const sx=screen({x,y:0}).x;
+    ctx.beginPath(); ctx.moveTo(sx,0); ctx.lineTo(sx,rect.height); ctx.stroke();
+    ctx.fillText(x.toFixed(0),sx+3,14);
+  }
+  const yStart=Math.floor(worldBottom/spacing)*spacing;
+  for(let y=yStart;y<=worldTop;y+=spacing){
+    const sy=screen({x:0,y}).y;
+    ctx.beginPath(); ctx.moveTo(0,sy); ctx.lineTo(rect.width,sy); ctx.stroke();
+    ctx.fillText(y.toFixed(0),4,sy-3);
+  }
+
+  const o=screen({x:0,y:0});
+  ctx.lineWidth=1.5;
+  ctx.strokeStyle='#566574';
+  ctx.beginPath(); ctx.moveTo(0,o.y); ctx.lineTo(rect.width,o.y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(o.x,0); ctx.lineTo(o.x,rect.height); ctx.stroke();
+}
+
+function drawGridIso() {
+  const rect=canvas.getBoundingClientRect();
+  ctx.clearRect(0,0,rect.width,rect.height);
+  ctx.fillStyle='#0c1015';
+  ctx.fillRect(0,0,rect.width,rect.height);
+
+  let spacing = 10;
+  while (spacing*view.scale < 35) spacing*=2;
+  while (spacing*view.scale > 100) spacing/=2;
+
+  const range = Math.min(2000, Math.max(200, (rect.width+rect.height)/view.scale));
+  const steps = Math.min(60, Math.ceil(range/spacing));
+
+  ctx.lineWidth=1;
+  ctx.strokeStyle='#202a35';
+  for (let i=-steps;i<=steps;i++) {
+    const x=i*spacing;
+    const p0=project({x,y:-range,z:0}), p1=project({x,y:range,z:0});
+    ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y); ctx.stroke();
+  }
+  for (let i=-steps;i<=steps;i++) {
+    const y=i*spacing;
+    const p0=project({x:-range,y,z:0}), p1=project({x:range,y,z:0});
+    ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y); ctx.stroke();
+  }
+
+  ctx.lineWidth=1.5;
+  ctx.strokeStyle='#566574';
+  let p0=project({x:-range,y:0,z:0}), p1=project({x:range,y:0,z:0});
+  ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y); ctx.stroke();
+  p0=project({x:0,y:-range,z:0}); p1=project({x:0,y:range,z:0});
+  ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y); ctx.stroke();
+
+  const zTop = Math.max(20, (bounds.maxZ||0)*1.3, -(bounds.minZ||0)*1.3);
+  const z0=project({x:0,y:0,z:0}), z1=project({x:0,y:0,z:zTop});
+  ctx.strokeStyle='#9aa7b5';
+  ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(z0.x,z0.y); ctx.lineTo(z1.x,z1.y); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#9aa7b5';
+  ctx.font='11px system-ui';
+  ctx.fillText('Z', z1.x+4, z1.y);
+  ctx.fillText('0,0', z0.x+4, z0.y+12);
+}
+
+function fmt(n) {
+  const r = Math.round(n*100)/100;
+  return (Object.is(r,-0) ? 0 : r).toString();
+}
+
+function drawCrosshair(p, r, color) {
+  ctx.strokeStyle=color; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(p.x-r,p.y); ctx.lineTo(p.x+r,p.y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(p.x,p.y-r); ctx.lineTo(p.x,p.y+r); ctx.stroke();
+}
+
+function midpointOf(pts) {
+  return pts[Math.floor((pts.length-1)/2)];
+}
+
+function drawToolMarkerRaw(p, T) {
+  const tool = toolByNumber(T);
+  if (tool && Number.isFinite(tool.d)) {
+    const r = Math.max(1, (tool.d/2) * view.scale);
+    if (r > 3) {
+      ctx.beginPath();
+      ctx.fillStyle = 'rgba(255,255,255,0.16)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+      ctx.lineWidth = 1;
+      ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+}
+
+function render(playPos, forceStockRebuild=true) {
+  if (stockMode) {
+    if (USE_3D) {
+      rebuildStockMesh(); // only actually-dirty chunks get rebuilt — cheap even every frame
+      updateWebGLToolMarker(playPos);
+    }
+    return;
+  }
+  if (mode3D && USE_3D) {
+    rebuildPathMesh();
+    updateWebGLToolMarker(playPos);
+    return;
+  }
+  if (mode3D) drawGridIso(); else drawGrid();
+  const showCenters = toggleCenters.checked;
+  const showGM = toggleGM.checked;
+  const showAxis = toggleAxis.checked;
+  const showFST = toggleFST.checked;
+
+  const fullLimit = playPos ? playPos.segIndex : (animationIndex==null ? paths.length : Math.min(paths.length, animationIndex));
+
+  for(let i=0;i<fullLimit;i++){
+    const seg=paths[i];
+    if(seg.pts.length<2) continue;
+    ctx.beginPath();
+    const p0=project(seg.pts[0]);
+    ctx.moveTo(p0.x,p0.y);
+    for(let j=1;j<seg.pts.length;j++){
+      const p=project(seg.pts[j]);
+      ctx.lineTo(p.x,p.y);
+    }
+    let color = '#57d38c';
+    let dashed = false;
+    if (seg.invalidGeometry || seg.compInvalid) { color='#e0714f'; dashed=true; }
+    else if (seg.type===0) { color='#ff9b42'; dashed=true; }
+    else if (seg.compTransition) { color='rgba(255,255,255,0.7)'; dashed=true; }
+    else if (seg.type===1) color='#57d38c';
+    else color='#4da3ff';
+    ctx.lineWidth = (seg.type===0 || seg.compTransition || seg.invalidGeometry || seg.compInvalid) ? 1.6 : 2.4;
+    ctx.strokeStyle = color;
+    if (dashed) ctx.setLineDash((seg.invalidGeometry || seg.compInvalid) ? [2,3] : (seg.compTransition ? [3,3] : [6,5]));
+    else ctx.setLineDash([]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    if (showCenters && seg.plane===17 && (seg.type===2 || seg.type===3) && seg.center && !seg.invalidGeometry) {
+      const c = project(seg.center);
+      const s0 = project(seg.pts[0]);
+      ctx.strokeStyle='#c9a35c';
+      ctx.lineWidth=1;
+      ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.moveTo(c.x,c.y); ctx.lineTo(s0.x,s0.y); ctx.stroke();
+      ctx.setLineDash([]);
+      drawCrosshair(c, 5, '#e2b36b');
+      ctx.fillStyle='#e2b36b';
+      ctx.font='11px ui-monospace,monospace';
+      ctx.fillText('C '+fmt(seg.center.x)+', '+fmt(seg.center.y), c.x+9, c.y-7);
+    }
+
+    if (showGM) {
+      const mp = project(midpointOf(seg.pts));
+      const label = seg.gCodes.map(g=>'G'+g).concat(seg.mCodes.map(m=>'M'+m)).join(' ') || ('G'+seg.type);
+      ctx.fillStyle='#f0c36a';
+      ctx.font='11px ui-monospace,monospace';
+      ctx.fillText(label, mp.x+6, mp.y-14);
+    }
+    if (showAxis) {
+      const mp = project(midpointOf(seg.pts));
+      const parts=[];
+      ['X','Y','Z','I','J','K','R'].forEach(k=>{ if(Number.isFinite(seg.w[k])) parts.push(k+seg.w[k]); });
+      if (parts.length) {
+        ctx.fillStyle='#63b8e8';
+        ctx.font='11px ui-monospace,monospace';
+        ctx.fillText(parts.join(' '), mp.x+6, mp.y);
+      }
+    }
+    if (showFST) {
+      const mp = project(midpointOf(seg.pts));
+      const parts=[];
+      if (Number.isFinite(seg.F)) parts.push('F'+seg.F);
+      if (Number.isFinite(seg.S)) parts.push('S'+seg.S);
+      if (seg.T!=null) parts.push('T'+seg.T);
+      if (seg.H!=null) parts.push('H'+seg.H);
+      if (seg.D!=null) parts.push('D'+seg.D);
+      if (parts.length) {
+        ctx.fillStyle='#8fd18a';
+        ctx.font='11px ui-monospace,monospace';
+        ctx.fillText(parts.join(' '), mp.x+6, mp.y+14);
+      }
+    }
+  }
+
+  if (playPos) {
+    // Draw the current (in-progress) segment only up to where the tool has
+    // actually travelled, so the growing line shows material actually being
+    // removed (the programmed/nominal contour — this is where the cutting
+    // edge is, even under cutter comp).
+    const seg = paths[playPos.segIndex];
+    if (seg) {
+      const partial = seg.pts.slice(0, playPos.pointIndex+1).concat([playPos.point]);
+      if (partial.length>=2) {
+        let color = (seg.invalidGeometry || seg.compInvalid) ? '#e0714f' : (seg.type===0 ? '#ff9b42' : (seg.compTransition ? 'rgba(255,255,255,0.7)' : (seg.type===1 ? '#57d38c' : '#4da3ff')));
+        ctx.beginPath();
+        const p0=project(partial[0]); ctx.moveTo(p0.x,p0.y);
+        for (let j=1;j<partial.length;j++){ const p=project(partial[j]); ctx.lineTo(p.x,p.y); }
+        ctx.lineWidth = (seg.type===0 || seg.compTransition || seg.invalidGeometry || seg.compInvalid) ? 1.6 : 2.4;
+        ctx.strokeStyle = color;
+        if (seg.invalidGeometry || seg.compInvalid) ctx.setLineDash([2,3]);
+        else if (seg.type===0) ctx.setLineDash([6,5]);
+        else if (seg.compTransition) ctx.setLineDash([3,3]);
+        else ctx.setLineDash([]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+    // The marker (tool center + diameter circle) travels along the offset
+    // center path, so the circle's edge rides along the green cutting line.
+    const p = project(playPos.centerPoint || playPos.point);
+    drawToolMarkerRaw(p, seg ? seg.T : null);
+  } else if (fullLimit>0) {
+    const seg=paths[Math.min(fullLimit-1,paths.length-1)];
+    const last=seg.centerPts[seg.centerPts.length-1];
+    const p=project(last);
+    drawToolMarkerRaw(p, seg.T);
+  }
+}
+
+function toolDisplayText(T) {
+  if (T==null) return '–';
+  const tool = toolByNumber(T);
+  return 'T'+T + (tool ? ' – '+tool.name+' (Ø'+tool.d+' mm)' : ' (saknas i verktygslådan)');
+}
+function setActiveToolDisplay(T) {
+  document.getElementById('activetool').textContent = toolDisplayText(T);
+}
+
+function updateStats(parsed) {
+  document.getElementById('segments').textContent=parsed.paths.length;
+  document.getElementById('length').textContent=parsed.totalLength.toFixed(2)+' mm';
+  document.getElementById('width').textContent=(parsed.bounds.maxX-parsed.bounds.minX).toFixed(2)+' mm';
+  document.getElementById('height').textContent=(parsed.bounds.maxY-parsed.bounds.minY).toFixed(2)+' mm';
+  document.getElementById('endpos').textContent =
+    'X '+parsed.endPos.x.toFixed(2)+' · Y '+parsed.endPos.y.toFixed(2)+' · Z '+parsed.endPos.z.toFixed(2);
+
+  const m = parsed.finalMode;
+  const wcsLabel = 'G'+(53+m.wcs);
+  const compLabel = m.cutterCompMode ? ('G'+m.cutterCompMode+(m.cutterCompD!=null?' D'+m.cutterCompD:'')) : 'G40';
+  const lenLabel = m.lengthCompActive ? ('G43'+(m.lengthCompH!=null?' H'+m.lengthCompH:'')) : 'G49';
+  document.getElementById('activemode').textContent =
+    (m.units===25.4?'G20':'G21')+' · '+(m.absolute?'G90':'G91')+' · G'+m.motion+' · '+wcsLabel+' · '+compLabel+' · '+lenLabel;
+
+  setActiveToolDisplay(m.activeTool);
+
+  if (parsed.warnings.length) {
+    warnIndicator.classList.add('warn');
+    warnIndicator.classList.remove('ok');
+    warnIndicator.textContent = '⚠';
+    warnIndicator.title = parsed.warnings.length+' parser-varning(ar) — klicka för detaljer';
+    warnList.innerHTML = '';
+    parsed.warnings.forEach(w => {
+      const li = document.createElement('li');
+      li.textContent = w;
+      warnList.appendChild(li);
+    });
+  } else {
+    warnIndicator.classList.add('ok');
+    warnIndicator.classList.remove('warn');
+    warnIndicator.textContent = '✓';
+    warnIndicator.title = 'Inga parser-varningar';
+    warnPopup.classList.remove('open');
+    warnList.innerHTML = '';
+  }
+}
+
+const RAPID_MM_PER_MIN = 6000;
+const DEFAULT_FEED_MM_PER_MIN = 600;
+
+function buildPlayModel() {
+  let cumDist=0, cumTime=0;
+  const segStart=[], segStartTime=[], segMoveStartTime=[], segEndTime=[], stops=[];
+  paths.forEach((seg,idx)=>{
+    segStart.push(cumDist);
+    const cums=[0];
+    for (let i=1;i<seg.pts.length;i++) {
+      cums.push(cums[i-1]+Math.hypot(
+        seg.pts[i].x-seg.pts[i-1].x,
+        seg.pts[i].y-seg.pts[i-1].y,
+        (seg.pts[i].z||0)-(seg.pts[i-1].z||0)
+      ));
+    }
+    seg._cum=cums;
+    seg._len=cums[cums.length-1]||0;
+    segStartTime.push(cumTime);
+    if (seg.preStop) stops.push({id:'pre-'+idx,time:cumTime,code:seg.preStop,line:seg.line});
+    cumTime += Math.max(0,seg.preDwellSec||0);
+    segMoveStartTime.push(cumTime);
+    const feed=seg.type===0 ? RAPID_MM_PER_MIN : ((seg.feedMmPerMin>0)?seg.feedMmPerMin:DEFAULT_FEED_MM_PER_MIN);
+    const moveSec=seg._len>1e-9 ? seg._len/feed*60 : 0;
+    cumTime += moveSec;
+    segEndTime.push(cumTime);
+    if (seg.stopAfter) stops.push({id:'post-'+idx,time:cumTime,code:seg.stopAfter,line:seg.line});
+    cumDist += seg._len;
+  });
+  cumTime += Math.max(0,(lastParsed && lastParsed.trailingDwellSec)||0);
+  if (lastParsed && lastParsed.pendingStopBefore) stops.push({id:'final-stop',time:cumTime,code:lastParsed.pendingStopBefore,line:lastParsed.endedBy?lastParsed.endedBy.line:null});
+  return {segStart,total:cumDist,segStartTime,segMoveStartTime,segEndTime,totalTime:cumTime,stops};
+}
+
+function positionOnSegment(segIndex, fraction) {
+  segIndex=Math.max(0,Math.min(paths.length-1,segIndex));
+  const seg=paths[segIndex];
+  fraction=Math.max(0,Math.min(1,fraction));
+  if (!seg || !seg.pts.length) return null;
+  if (seg._len<=1e-12 || seg.pts.length===1) {
+    const p=seg.pts[0], c=seg.centerPts[0]||p;
+    return {segIndex,pointIndex:0,t:fraction,point:{...p},centerPoint:{...c}};
+  }
+  const target=seg._len*fraction, cums=seg._cum;
+  let j=0;
+  while (j<cums.length-2 && cums[j+1]<target) j++;
+  const span=(cums[j+1]-cums[j])||1;
+  const local=Math.min(1,Math.max(0,(target-cums[j])/span));
+  const p0=seg.pts[j],p1=seg.pts[j+1],c0=seg.centerPts[j]||p0,c1=seg.centerPts[j+1]||p1;
+  const point={x:p0.x+(p1.x-p0.x)*local,y:p0.y+(p1.y-p0.y)*local,z:(p0.z||0)+((p1.z||0)-(p0.z||0))*local};
+  const centerPoint={x:c0.x+(c1.x-c0.x)*local,y:c0.y+(c1.y-c0.y)*local,z:(c0.z||0)+((c1.z||0)-(c0.z||0))*local};
+  return {segIndex,pointIndex:j,t:fraction,point,centerPoint};
+}
+
+function positionAtDistance(model, dist) {
+  if (!paths.length) return null;
+  dist=Math.max(0,Math.min(model.total,dist));
+  let segIndex=paths.length-1;
+  for (let i=0;i<paths.length;i++) {
+    const end=model.segStart[i]+paths[i]._len;
+    if (dist<=end+1e-9) { segIndex=i; break; }
+  }
+  const len=paths[segIndex]._len;
+  const fraction=len>1e-12?(dist-model.segStart[segIndex])/len:1;
+  return positionOnSegment(segIndex,fraction);
+}
+
+function positionAtTime(model,time) {
+  if (!paths.length) return null;
+  time=Math.max(0,Math.min(model.totalTime,time));
+  let idx=paths.length-1;
+  for (let i=0;i<paths.length;i++) {
+    if (time<=model.segEndTime[i]+1e-9) { idx=i; break; }
+  }
+  if (time<=model.segMoveStartTime[idx]+1e-9) return positionOnSegment(idx,0);
+  const dur=model.segEndTime[idx]-model.segMoveStartTime[idx];
+  return positionOnSegment(idx,dur>1e-12?(time-model.segMoveStartTime[idx])/dur:1);
+}
+
+function firstStopCrossed(fromTime,toTime) {
+  if (!playModel) return null;
+  for (const stop of playModel.stops) {
+    if (stop.code==='M1' && !toggleOptionalStop.checked) continue;
+    if (stop.id===lastHandledStopId) continue;
+    if (stop.time>=fromTime-1e-9 && stop.time<=toTime+1e-7) return stop;
+  }
+  return null;
+}
+
+function drawFromText(fit=true) {
+  try {
+    cancelAnimationFrame(animReq);
+    animReq=null;
+    const parsed=parseGcode(ta.value);
+    lastParsed = parsed;
+    paths=parsed.paths;
+    bounds=parsed.bounds;
+    animationIndex=null;
+    pausedPlaybackTime=null;
+    lastHandledStopId=null;
+    playModel = buildPlayModel();
+    buildStockGrid();
+    if (stockMode) resweepStock(0); // fresh code load = unplayed state, matching the scrubber reset below
+    updateStats(parsed);
+    statusEl.textContent = paths.length
+      ? `Klar. ${paths.length} rörelsesegment hittades.`+(parsed.endedBy ? ` Programmet avslutades av ${parsed.endedBy.code} på rad ${parsed.endedBy.line}.` : '')
+      : (ta.value.trim() ? 'Ingen stödd rörelse hittades.' : '');
+    scrubSlider.max = paths.length;
+    scrubSlider.value = 0;
+    scrubLabel.textContent = '0 / '+paths.length;
+    setPlayingLine(null);
+    if(fit) fitView(); else render();
+  } catch(err) {
+    statusEl.textContent='Fel: '+err.message;
+  }
+}
+
+document.getElementById('drawBtn').addEventListener('click',()=>drawFromText(false));
+document.getElementById('drawBtnTop').addEventListener('click',()=>drawFromText(false));
+document.getElementById('fitBtn').addEventListener('click',fitView);
+canvas.addEventListener('dblclick', fitView);
+
+let liveMode = false;
+let liveDrawTimer = null;
+const liveBtn = document.getElementById('liveBtn');
+liveBtn.addEventListener('click', () => {
+  liveMode = !liveMode;
+  liveBtn.classList.toggle('active', liveMode);
+  liveBtn.textContent = liveMode ? 'Live-ritning: På' : 'Live-ritning: Av';
+  if (liveMode) drawFromText(false);
+});
+ta.addEventListener('input', () => {
+  if (!liveMode) return;
+  clearTimeout(liveDrawTimer);
+  liveDrawTimer = setTimeout(() => drawFromText(false), 350);
+});
+
+function playFrom(startTime=0, singleStep=false) {
+  cancelAnimationFrame(animReq);
+  if (!playModel || !paths.length) return;
+  let simTime=Math.max(0,Math.min(playModel.totalTime,startTime));
+  currentSimTime=simTime;
+  let last=performance.now();
+  pausedPlaybackTime=null;
+  const startPos=positionAtTime(playModel,simTime);
+  let blockStartSeg = startPos ? startPos.segIndex : 0;
+  if (stockMode && startPos) {
+    const d=playModel.segStart[startPos.segIndex]+paths[startPos.segIndex]._len*startPos.t;
+    resweepStock(d);
+  }
+  function updateAt(pos) {
+    if (!pos) return;
+    if (stockMode) { stampUpTo(pos); stockLastPos=pos; }
+    const shownSeg=Math.min(paths.length,pos.segIndex+(pos.t>=0.999?1:0));
+    scrubSlider.value=shownSeg;
+    scrubLabel.textContent=shownSeg+' / '+paths.length;
+    setPlayingLine(paths[pos.segIndex].line);
+    setActiveToolDisplay(paths[pos.segIndex].T);
+    render(pos,false);
+  }
+  function finishPlayback() {
+    animReq=null;
+    animationIndex=null;
+    pausedPlaybackTime=null;
+    scrubSlider.value=paths.length;
+    scrubLabel.textContent=paths.length+' / '+paths.length;
+    setPlayingLine(paths[paths.length-1].line);
+    setActiveToolDisplay(paths[paths.length-1].T);
+    if (stockMode) resweepStock(playModel.total);
+    render();
+    statusEl.textContent='Uppspelning klar.';
+  }
+  function step(now) {
+    const dt=Math.min(0.1,(now-last)/1000);
+    last=now;
+    const speed=parseFloat(speedSlider.value)||1;
+    let nextTime=Math.min(playModel.totalTime,simTime+dt*speed);
+
+    // Single block: run exactly one block (segment) per Spela press, then
+    // pause at its end, mirroring a real machine's single-block mode.
+    if (singleStep) {
+      const blockEndTime = (blockStartSeg+1<playModel.segStartTime.length) ? playModel.segStartTime[blockStartSeg+1] : playModel.totalTime;
+      if (nextTime>=blockEndTime-1e-9) {
+        simTime=blockEndTime;
+        currentSimTime=simTime;
+        updateAt(positionAtTime(playModel,simTime));
+        if (simTime<playModel.totalTime-1e-9) {
+          animReq=null;
+          pausedPlaybackTime=Math.min(playModel.totalTime,simTime+1e-6);
+          statusEl.textContent='Singel block: segment '+(blockStartSeg+1)+'/'+paths.length+' klart. Tryck Singel block igen för nästa, eller Spela för att fortsätta normalt.';
+        } else {
+          finishPlayback();
+        }
+        return;
+      }
+    }
+
+    const stop=firstStopCrossed(simTime,nextTime);
+    if (stop) {
+      simTime=stop.time;
+      currentSimTime=simTime;
+      const pos=positionAtTime(playModel,simTime);
+      updateAt(pos);
+      animReq=null;
+      pausedPlaybackTime=Math.min(playModel.totalTime,simTime+1e-6);
+      lastHandledStopId=stop.id;
+      statusEl.textContent=stop.code+' programstopp på rad '+stop.line+'. Tryck Spela för att fortsätta.';
+      return;
+    }
+    simTime=nextTime;
+    currentSimTime=simTime;
+    updateAt(positionAtTime(playModel,simTime));
+    if (simTime<playModel.totalTime-1e-9) {
+      animReq=requestAnimationFrame(step);
+    } else {
+      finishPlayback();
+    }
+  }
+  animReq=requestAnimationFrame(step);
+}
+
+document.getElementById('singleBlockBtn').addEventListener('click', () => {
+  if (!paths.length || !playModel) return;
+  if (pausedPlaybackTime!=null) { playFrom(pausedPlaybackTime, true); return; }
+  const v=parseInt(scrubSlider.value,10)||0;
+  const startTime=v>=paths.length?0:(playModel.segStartTime[v]||0);
+  playFrom(startTime, true);
+});
+
+document.getElementById('playBtn').addEventListener('click',()=>{
+  if (!paths.length || !playModel) return;
+  if (pausedPlaybackTime!=null) { playFrom(pausedPlaybackTime); return; }
+  const v=parseInt(scrubSlider.value,10)||0;
+  const startTime=v>=paths.length?0:(playModel.segStartTime[v]||0);
+  playFrom(startTime);
+});
+
+document.getElementById('pauseBtn').addEventListener('click',()=>{
+  if (!paths.length || !playModel) return;
+  if (animReq==null) return; // nothing is actually running
+  cancelAnimationFrame(animReq);
+  animReq=null;
+  pausedPlaybackTime=Math.min(playModel.totalTime, currentSimTime);
+  statusEl.textContent='Pausad vid rörelsesegment '+(parseInt(scrubSlider.value,10)||0)+'/'+paths.length+'. Tryck Spela för att fortsätta.';
+});
+
+document.getElementById('stopBtn').addEventListener('click',()=>{
+  cancelAnimationFrame(animReq);
+  animReq=null;
+  animationIndex=null;
+  pausedPlaybackTime=null;
+  lastHandledStopId=null;
+  currentSimTime=0;
+  scrubSlider.value=0;
+  scrubLabel.textContent='0 / '+paths.length;
+  setPlayingLine(null);
+  setActiveToolDisplay(lastParsed ? lastParsed.finalMode.activeTool : null);
+  if (stockMode) resweepStock(0);
+  render();
+  statusEl.textContent=paths.length?'Uppspelning stoppad.':'';
+});
+
+scrubSlider.addEventListener('input', ()=>{
+  cancelAnimationFrame(animReq);
+  animReq=null;
+  pausedPlaybackTime=null;
+  lastHandledStopId=null;
+  const v=parseInt(scrubSlider.value,10);
+  animationIndex=(v>=paths.length)?null:v;
+  scrubLabel.textContent=v+' / '+paths.length;
+  if (v>0 && v<=paths.length) {
+    setPlayingLine(paths[v-1].line);
+    setActiveToolDisplay(paths[v-1].T);
+  } else {
+    setPlayingLine(null);
+    setActiveToolDisplay(lastParsed ? lastParsed.finalMode.activeTool : null);
+  }
+  let scrubPos=null;
+  if (playModel && paths.length) {
+    const targetDist=(v>=paths.length)?playModel.total:(playModel.segStart[v]||0);
+    if (stockMode) resweepStock(targetDist);
+    scrubPos=positionAtDistance(playModel,targetDist);
+  }
+  render(scrubPos);
+});
+
+toggleOptionalStop.addEventListener('change',()=>{ lastHandledStopId=null; });
+
+speedSlider.addEventListener('input', ()=>{
+  speedLabel.textContent = parseFloat(speedSlider.value).toFixed(1)+'×';
+});
+
+[toggleCenters, toggleGM, toggleAxis, toggleFST].forEach(t=>t.addEventListener('change', ()=>render()));
+function updateWebGLVisibility() {
+  showWebGL(stockMode || mode3D);
+}
+toggle3D.addEventListener('change', ()=>{
+  mode3D = toggle3D.checked;
+  if (mode3D && !USE_3D) {
+    statusEl.textContent = '3D-biblioteket kunde inte laddas (nätverksproblem?). 3D-läge kräver internetanslutning första gången — ladda om sidan och försök igen.';
+    mode3D = false;
+    toggle3D.checked = false;
+    return;
+  }
+  if (!mode3D && !stockMode) removePathMesh();
+  updateWebGLVisibility();
+  fitView();
+});
+const cncFrasBtn = document.getElementById('cncFrasBtn');
+cncFrasBtn.addEventListener('click', ()=>{
+  stockMode = !stockMode;
+  if (stockMode && !USE_3D) {
+    statusEl.textContent = '3D-biblioteket kunde inte laddas (nätverksproblem?). CNC-Fräs kräver internetanslutning första gången — ladda om sidan och försök igen.';
+    stockMode = false;
+    return;
+  }
+  cncFrasBtn.classList.toggle('active', stockMode);
+  cncFrasBtn.textContent = stockMode ? 'CNC-Fräs: På' : 'CNC-Fräs: Av';
+  updateWebGLVisibility();
+  if (stockMode) {
+    removePathMesh();
+    if (!stockGrid) buildStockGrid();
+    const v = parseInt(scrubSlider.value,10) || 0;
+    const targetDist = playModel ? ((v>=paths.length) ? playModel.total : playModel.segStart[v]) : 0;
+    resweepStock(targetDist);
+    rebuildStockMesh();
+    if (playModel && paths.length) updateWebGLToolMarker(positionAtDistance(playModel, targetDist));
+  } else if (mode3D) {
+    removeStockMesh();
+    rebuildPathMesh();
+  } else {
+    removeStockMesh();
+    fitView();
+  }
+});
+document.getElementById('cncFrasSizeBtn').addEventListener('click', () => {
+  renderCncFrasSizeForm();
+  document.getElementById('cncFrasOverlay').classList.add('open');
+});
+document.getElementById('closeCncFras').addEventListener('click', () => {
+  document.getElementById('cncFrasOverlay').classList.remove('open');
+});
+document.getElementById('cncFrasOverlay').addEventListener('click', (e) => {
+  if (e.target.id==='cncFrasOverlay') document.getElementById('cncFrasOverlay').classList.remove('open');
+});
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  const before = worldFromScreen(mx, my);
+
+  const factor=e.deltaY<0?1.12:0.89;
+  view.scale=Math.max(0.01,Math.min(10000,view.scale*factor));
+
+  const after = mode3D ? isoProject({x:before.x,y:before.y,z:0}, view.scale, view.offsetX, view.offsetY) : screen(before);
+  view.offsetX += mx - after.x;
+  view.offsetY += my - after.y;
+  render();
+},{passive:false});
+
+canvas.addEventListener('mousedown',e=>{
+  dragging=true;
+  lastMouse={x:e.clientX,y:e.clientY};
+});
+window.addEventListener('mouseup',()=>dragging=false);
+window.addEventListener('mousemove',e=>{
+  const rect=canvas.getBoundingClientRect();
+  if (e.clientX>=rect.left && e.clientX<=rect.right && e.clientY>=rect.top && e.clientY<=rect.bottom) {
+    const wp = worldFromScreen(e.clientX-rect.left, e.clientY-rect.top);
+    coordReadout.textContent = 'X '+wp.x.toFixed(1)+' · Y '+wp.y.toFixed(1);
+  }
+  if(!dragging) return;
+  view.offsetX += e.clientX-lastMouse.x;
+  view.offsetY += e.clientY-lastMouse.y;
+  lastMouse={x:e.clientX,y:e.clientY};
+  render();
+});
+
+// --- File open / save ---
+function loadTextIntoEditor(text) {
+  ta.value = text;
+  updateCodeView();
+  drawFromText(true);
+}
+document.getElementById('openBtn').addEventListener('click', ()=>fileInput.click());
+document.getElementById('openFileBtnTop').addEventListener('click', ()=>fileInput.click());
+fileInput.addEventListener('change', ()=>{
+  const file = fileInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => loadTextIntoEditor(String(reader.result));
+  reader.readAsText(file);
+  fileInput.value='';
+});
+
+function saveGcode() {
+  const blob = new Blob([ta.value], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'program.nc';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+document.getElementById('saveBtn').addEventListener('click', saveGcode);
+document.getElementById('saveGcodeBtnTop').addEventListener('click', saveGcode);
+
+document.getElementById('clearBtn').addEventListener('click', ()=>{
+  ta.value='';
+  updateCodeView();
+  drawFromText(false);
+});
+
+// --- Example programs dropdown ---
+const exampleBtn = document.getElementById('exampleBtn');
+const exampleMenu = document.getElementById('exampleMenu');
+Object.keys(EXAMPLES).forEach(name=>{
+  const b = document.createElement('button');
+  b.textContent = name;
+  b.addEventListener('click', ()=>{
+    loadTextIntoEditor(EXAMPLES[name]);
+    exampleMenu.classList.remove('open');
+  });
+  exampleMenu.appendChild(b);
+});
+exampleBtn.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  exampleMenu.classList.toggle('open');
+});
+document.addEventListener('click', ()=>exampleMenu.classList.remove('open'));
+
+resizeCanvas();
+drawFromText(true);
+</script>
+
+
+</body></html>
