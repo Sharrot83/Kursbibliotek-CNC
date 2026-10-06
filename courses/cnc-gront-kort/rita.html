@@ -30,6 +30,7 @@
   }
   header {
     position:relative;
+    z-index:200; /* keep the header (and the warning dropdown inside it) above the drawing area below */
     padding:14px 22px;
     border-bottom:1px solid var(--border);
     background:#12171d;
@@ -46,6 +47,7 @@
 
   .header-center {
     position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    z-index:200; /* the transform makes this its own layer, so it needs its own z-index to sit above the workspace */
     display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;
   }
   .transport-btn {
@@ -335,7 +337,7 @@
   .modal-overlay {
     display:none;
     position:fixed; inset:0; background:rgba(0,0,0,.6);
-    z-index:100; align-items:center; justify-content:center; padding:20px;
+    z-index:300; align-items:center; justify-content:center; padding:20px;
   }
   .modal-overlay.open { display:flex; }
   .modal {
@@ -433,7 +435,6 @@
     <div class="buttons" style="margin-top:10px;">
       <button class="primary" id="drawBtn">▶ Rita G-kod</button>
       <button id="fitBtn">Anpassa vy</button>
-      <button id="liveBtn" title="Rita automatiskt medan du skriver, utan att trycka på Rita G-kod">Live-ritning: Av</button>
       <button id="cncFrasBtn" title="3D-materialborttagning — visar ämnet skuret i verkligheten">CNC-Fräs: Av</button>
       <button id="cncFrasSizeBtn" class="small" title="Ställ in ämnesstorlek för CNC-Fräs">⚙ Ämnesstorlek</button>
     </div>
@@ -595,7 +596,33 @@
       </tbody>
     </table>
 
-    <p class="hint">Lathunden visar vanliga koders betydelse. Visualiseraren stödjer geometriskt G0–G4, G17–G21, G28/G30, G40–G43/G49, G54–G59, G90–G92 samt M6 (verktygsbyte) — övriga M-koder visas men påverkar inte ritningen.</p>
+    <h3>Specialfunktioner (bara i visualiseraren)</h3>
+    <table class="tool-table">
+      <thead><tr><th style="width:90px;">Kod</th><th>Betydelse</th></tr></thead>
+      <tbody>
+        <tr><td>V X90</td><td>Vält biten 90° åt X+. Toppen tippar åt höger och biten ligger kvar på samma plats, så sidan som satt åt X− blir den nya översidan att bearbeta (får Z0).</td></tr>
+        <tr><td>V X-90</td><td>Vält biten 90° åt X− (motsatt håll mot V X90).</td></tr>
+        <tr><td>V X180</td><td>Vänd biten ett halvt varv runt X-riktningen, så att motsatta sidan kommer upp. V X180 och V X-180 ger samma resultat.</td></tr>
+        <tr><td>V Y90</td><td>Vält biten 90° åt Y+. Toppen tippar bakåt och den främre sidan (Y−) blir ny översida. V Y-90, V Y180 fungerar som för X.</td></tr>
+      </tbody>
+    </table>
+    <p class="hint" style="margin-top:8px;"><b>V är ingen riktig maskinkod</b> – den finns bara i den här visualiseraren för att visa hur en bit bearbetas från flera sidor (t.ex. en tärning). En riktig maskin skulle ge larm på raden, så ta bort V-raderna innan programmet körs i maskinen. Reglerna:</p>
+    <ul class="hint" style="margin:4px 0 8px 18px;padding:0;">
+      <li>Skriv axel (X eller Y) och vinkel i grader direkt efter V, t.ex. <code>V X90</code> eller <code>V Y-90</code>. Vinkeln ska vara en multipel av 90° (andra vinklar avrundas med varning).</li>
+      <li>Varje V räknas från hur biten ligger just nu, så flera V-rader efter varandra fortsätter vältningen.</li>
+      <li>Hål och fickor som redan gjorts finns kvar på sina sidor och syns när du vänder tillbaka eller tittar i 3D.</li>
+      <li>Fungerar i CNC-Fräs-läget med fyrkantsämne (cylinderämne ignorerar V).</li>
+    </ul>
+    <pre style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:12px;overflow-x:auto;margin:0 0 8px;">G0 X0 Y0      (hål 1 på toppen)
+G1 Z-6 F200
+G0 Z5
+V X90         (vält - nu bearbetas den andra sidan)
+G0 X-10 Y-10  (hål på den sidan)
+G1 Z-6 F200
+G0 Z5
+V X-90        (vält tillbaka)</pre>
+
+    <p class="hint">Lathunden visar vanliga koders betydelse. Visualiseraren stödjer geometriskt G0–G4, G17–G21, G28/G30, G40–G43/G49, G54–G59, G90–G92 samt M6 (verktygsbyte) — övriga M-koder visas men påverkar inte ritningen. Dessutom finns den egna specialkoden V (vältning av ämnet, se ovan).</p>
   </div>
 </div>
 
@@ -993,6 +1020,7 @@ function removePathMesh() {
 
 function removeStockMesh() {
   if (!webgl) return;
+  disposeBoxMeshes(webgl);
   if (webgl.chunkMeshes) {
     for (const mesh of webgl.chunkMeshes.values()) { webgl.scene.remove(mesh); mesh.geometry.dispose(); }
     webgl.chunkMeshes = null;
@@ -1010,6 +1038,8 @@ function removeStockMesh() {
 function rebuildStockMesh() {
   const w = ensureWebGL();
   if (!w || !stockGrid) return;
+  if (stockBox) { rebuildBoxMeshes(w); return; }
+  if (w.boxRef) disposeBoxMeshes(w);
   const g = stockGrid;
 
   w.gridHelper.position.y = g.bottom - Math.max(2, (g.top-g.bottom)*0.05);
@@ -1064,8 +1094,10 @@ function rebuildStockMesh() {
 // is what keeps a single tool movement cheap regardless of total grid size.
 function rebuildChunk(w, g, ci, cj) {
   const key = cj*g.chunkNX+ci;
-  const old = w.chunkMeshes.get(key);
-  if (old) { w.scene.remove(old); old.geometry.dispose(); }
+  const meshes = g._meshes || w.chunkMeshes;   // box faces keep their own mesh map + group
+  const parent = g._group || w.scene;
+  const old = meshes.get(key);
+  if (old) { parent.remove(old); old.geometry.dispose(); }
 
   const res = g.res;
   const i0 = ci*CHUNK_SIZE, i1 = Math.min(res, i0+CHUNK_SIZE);
@@ -1128,8 +1160,10 @@ function rebuildChunk(w, g, ci, cj) {
 
       quad(x0,h,y0, x1,h,y0, x1,h,y1, x0,h,y1, 0,1,0);
 
-      const rightH = cellInside(i+1,j) ? g.heights[idx+1] : g.bottom;
-      const frontH = cellInside(i,j+1) ? g.heights[idx+res] : g.bottom;
+      // A box face has no perimeter skirt: its edge is shared with the
+      // neighbouring face, so the surface simply ends there.
+      const rightH = cellInside(i+1,j) ? g.heights[idx+1] : (g.boxFace ? h : g.bottom);
+      const frontH = cellInside(i,j+1) ? g.heights[idx+res] : (g.boxFace ? h : g.bottom);
       if (Math.abs(h-rightH) > 0.01) {
         const lo = Math.min(h,rightH), hi = Math.max(h,rightH);
         quad(x1,hi,y0, x1,hi,y1, x1,lo,y1, x1,lo,y0, 1,0,0);
@@ -1138,10 +1172,10 @@ function rebuildChunk(w, g, ci, cj) {
         const lo = Math.min(h,frontH), hi = Math.max(h,frontH);
         quad(x0,hi,y1, x1,hi,y1, x1,lo,y1, x0,lo,y1, 0,0,1);
       }
-      if (!cellInside(i-1,j) && Math.abs(h-g.bottom) > 0.01) {
+      if (!g.boxFace && !cellInside(i-1,j) && Math.abs(h-g.bottom) > 0.01) {
         quad(x0,h,y1, x0,h,y0, x0,g.bottom,y0, x0,g.bottom,y1, -1,0,0);
       }
-      if (!cellInside(i,j-1) && Math.abs(h-g.bottom) > 0.01) {
+      if (!g.boxFace && !cellInside(i,j-1) && Math.abs(h-g.bottom) > 0.01) {
         quad(x1,h,y0, x0,h,y0, x0,g.bottom,y0, x1,g.bottom,y0, 0,0,-1);
       }
     }
@@ -1155,8 +1189,105 @@ function rebuildChunk(w, g, ci, cj) {
   geo.setAttribute('normal', new THREE.BufferAttribute(normBuf.subarray(0,normLen),3));
   geo.setIndex(new THREE.BufferAttribute(idxBuf.subarray(0,idxLen), 1));
   const mesh = new THREE.Mesh(geo, w.stockMaterial);
-  w.scene.add(mesh);
-  w.chunkMeshes.set(key, mesh);
+  parent.add(mesh);
+  meshes.set(key, mesh);
+}
+
+// ---- Box mode rendering: six face grids, each in its own mesh group ----
+function chunkIsFlat(g, ci, cj) {
+  const res=g.res;
+  const i0=ci*CHUNK_SIZE, i1=Math.min(res,i0+CHUNK_SIZE);
+  const j0=cj*CHUNK_SIZE, j1=Math.min(res,j0+CHUNK_SIZE);
+  const t=g.top;
+  for (let j=j0;j<j1;j++) for (let i=i0;i<i1;i++) if (Math.abs(g.heights[j*res+i]-t)>1e-6) return false;
+  // walls are drawn by a cell toward its right/front neighbour, so those
+  // neighbours (just outside this chunk) must be flat too
+  if (i1<res) for (let j=j0;j<j1;j++) if (Math.abs(g.heights[j*res+i1]-t)>1e-6) return false;
+  if (j1<res) for (let i=i0;i<i1;i++) if (Math.abs(g.heights[j1*res+i]-t)>1e-6) return false;
+  return true;
+}
+// All untouched chunks of a face share ONE mesh (one quad each) instead of
+// a mesh per chunk, so an uncut face costs a single draw call.
+function rebuildFlatMesh(w, g) {
+  if (g._flatMesh) { g._group.remove(g._flatMesh); g._flatMesh.geometry.dispose(); g._flatMesh=null; }
+  const n=g._flatSet.size;
+  if (!n) return;
+  const pos=new Float32Array(n*12), nor=new Float32Array(n*12), idx=new Uint32Array(n*6);
+  let q=0;
+  for (const key of g._flatSet) {
+    const ci=key%g.chunkNX, cj=Math.floor(key/g.chunkNX);
+    const i0=ci*CHUNK_SIZE, i1=Math.min(g.res,i0+CHUNK_SIZE);
+    const j0=cj*CHUNK_SIZE, j1=Math.min(g.res,j0+CHUNK_SIZE);
+    const x0=g.minX+i0*g.cellW, x1=g.minX+i1*g.cellW;
+    const y0=g.minY+j0*g.cellH, y1=g.minY+j1*g.cellH;
+    const h=g.top;
+    const o=q*12;
+    pos.set([x0,h,-y0, x1,h,-y0, x1,h,-y1, x0,h,-y1], o);
+    for (let k=0;k<4;k++){ nor[o+k*3]=0; nor[o+k*3+1]=1; nor[o+k*3+2]=0; }
+    const b=q*4;
+    idx.set([b,b+1,b+2,b,b+2,b+3], q*6);
+    q++;
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('normal', new THREE.BufferAttribute(nor,3));
+  geo.setIndex(new THREE.BufferAttribute(idx,1));
+  g._flatMesh=new THREE.Mesh(geo, w.stockMaterial);
+  g._group.add(g._flatMesh);
+}
+function disposeBoxMeshes(w) {
+  if (!w || !w.boxRef) return;
+  for (const f of BOX_FACES) {
+    const g=w.boxRef.faces[f.key];
+    if (!g || !g._group) continue;
+    for (const m of g._meshes.values()) { g._group.remove(m); m.geometry.dispose(); }
+    if (g._flatMesh) { g._group.remove(g._flatMesh); g._flatMesh.geometry.dispose(); }
+    w.scene.remove(g._group);
+    g._group=null; g._meshes=null; g._flatMesh=null; g._flatSet=null;
+  }
+  w.boxRef=null;
+}
+function rebuildBoxMeshes(w) {
+  const box=stockBox;
+  if (w.boxRef !== box) {
+    disposeBoxMeshes(w);
+    // clear any single-grid meshes left over from non-tilt programs
+    if (w.chunkMeshes) { for (const m of w.chunkMeshes.values()) { w.scene.remove(m); m.geometry.dispose(); } w.chunkMeshes=null; }
+    if (w.bottomMesh) { w.scene.remove(w.bottomMesh); w.bottomMesh.geometry.dispose(); w.bottomMesh.material.dispose(); w.bottomMesh=null; }
+    w.chunkGridRef=null;
+    if (!w.stockMaterial) w.stockMaterial = new THREE.MeshStandardMaterial({ color: 0xaab8cc, metalness:0.1, roughness:0.8, flatShading:false, side: THREE.DoubleSide });
+    w.boxRef=box;
+    for (const f of BOX_FACES) {
+      const g=box.faces[f.key];
+      g._group=new THREE.Group();
+      g._group.matrixAutoUpdate=false;
+      g._meshes=new Map();
+      g._flatSet=new Set();
+      g._flatMesh=null;
+      w.scene.add(g._group);
+    }
+  }
+  const actDepth=box.dims[box.active.a];
+  w.gridHelper.position.y = -actDepth - Math.max(2, actDepth*0.05);
+  for (const f of BOX_FACES) {
+    const g=box.faces[f.key];
+    g._group.matrix.fromArray(boxFaceSceneMatrix(box, f));
+    g._group.matrixWorldNeedsUpdate=true;
+    let flatChanged=false;
+    for (const key of g.dirtyChunks) {
+      const ci=key%g.chunkNX, cj=Math.floor(key/g.chunkNX);
+      if (chunkIsFlat(g,ci,cj)) {
+        const oldM=g._meshes.get(key);
+        if (oldM) { g._group.remove(oldM); oldM.geometry.dispose(); g._meshes.delete(key); }
+        if (!g._flatSet.has(key)) { g._flatSet.add(key); flatChanged=true; }
+      } else {
+        if (g._flatSet.has(key)) { g._flatSet.delete(key); flatChanged=true; }
+        rebuildChunk(w, g, ci, cj);
+      }
+    }
+    g.dirtyChunks.clear();
+    if (flatChanged) rebuildFlatMesh(w, g);
+  }
 }
 
 function updateWebGLToolMarker(playPos) {
@@ -2054,6 +2185,27 @@ function parseGcode(text) {
     const raw=lines[lineNo];
     const line=stripComments(raw,warnings,lineNo+1);
     if (!line) continue;
+
+    // Custom "V" command — tips the whole stock block 90°/180°/270° around
+    // the X or Y axis, e.g. "V X90" or "V Y-90". Doesn't fit the normal
+    // letter+number tokenizer (there's no number directly after "V"), so
+    // it's recognized here before standard G-code processing.
+    const vMatch = line.match(/^\s*V\s+([XY])\s*(-?\d+(?:\.\d+)?)\s*$/i);
+    if (vMatch) {
+      const axis = vMatch[1].toUpperCase();
+      const angleDeg = parseFloat(vMatch[2]);
+      if (Math.abs(Math.round(angleDeg/90)*90 - angleDeg) > 1e-6) {
+        warnings.push('Rad '+(lineNo+1)+': V-kommandot stöder bara multiplar av 90° just nu; '+angleDeg+'° avrundas till närmaste 90°.');
+      }
+      result.push({type:'tilt', axis, angleDeg, line:lineNo+1, T:activeTool!=null?activeTool:currentTool, pts:[{x:pos.x,y:pos.y,z:pos.z}], _len:0});
+      continue;
+    }
+
+    if (/^\s*V(\s|\d|$)/i.test(line)) {
+      warnings.push('Rad '+(lineNo+1)+': V-kommandot ska skrivas som t.ex. "V X90" eller "V Y-90" (axel X eller Y + vinkel i multiplar av 90°).');
+      continue;
+    }
+
     const parsedTokens=tokenize(line);
     const tokens=parsedTokens.tokens;
     if (parsedTokens.junk) warnings.push('Rad '+(lineNo+1)+': kunde inte tolka "'+parsedTokens.junk+'"; tecknen ignoreras.');
@@ -2308,6 +2460,7 @@ const DEFAULT_STAMP_RADIUS = 3;
 function buildStockGrid() {
   stockLoopInfo = undefined;
   stockExteriorClipped = false;
+  stockBox = null;
   if (!paths.length) { stockGrid = null; return; }
   const isCyl = stockSize.shape === 'cylinder';
   let minX, maxX, minY, maxY;
@@ -2351,6 +2504,123 @@ function buildStockGrid() {
     cx: (minX+maxX)/2, cy: (minY+maxY)/2,
     radius: isCyl ? (maxX-minX)/2 : null
   };
+  // A program containing V (tilt) commands needs the six-face box model.
+  // Round (cylinder) stock isn't supported for tilting, so it keeps the
+  // ordinary single grid and simply ignores the tilts.
+  if (!isCyl && paths.some(p=>p.type==='tilt')) {
+    stockBox = createStockBox((minX+maxX)/2, (minY+maxY)/2, maxX-minX, maxY-minY, -bottom);
+    stockGrid = stockBox.faces[stockBox.active.key];
+  }
+}
+
+// ===== V command: the stock is a BOX with six independent face heightmaps =====
+//
+// A single heightmap can only describe ONE surface, so tipping the block
+// over and trying to re-derive a new heightmap from the old one loses
+// every cut that ends up on a side wall. Instead the box keeps one
+// heightmap PER FACE (in the box's own fixed coordinates) and a V command
+// only changes how the box is currently oriented — no height data is ever
+// moved, resampled or recomputed, so nothing can be lost, and tipping
+// forward and back is exactly reversible.
+//
+// Orientation is a 3x3 matrix whose entries are only -1/0/1 (every
+// rotation is a multiple of 90°), so composing rotations is exact integer
+// arithmetic. machine = R * box + (cx, cy, -halfActive): the box centre
+// stays where it was in X/Y, and whichever face is currently "up" sits at
+// machine Z = 0 (the operator re-zeroes on the newly exposed face).
+const BOX_RES = 600;
+const BOX_FACES = [
+  {key:'+z', a:2, s: 1, ua:0, va:1},
+  {key:'-z', a:2, s:-1, ua:0, va:1},
+  {key:'+x', a:0, s: 1, ua:1, va:2},
+  {key:'-x', a:0, s:-1, ua:1, va:2},
+  {key:'+y', a:1, s: 1, ua:0, va:2},
+  {key:'-y', a:1, s:-1, ua:0, va:2}
+];
+let stockBox = null;
+
+function matMul3(A,B) {
+  const C=[[0,0,0],[0,0,0],[0,0,0]];
+  for (let i=0;i<3;i++) for (let j=0;j<3;j++) { let s=0; for (let k=0;k<3;k++) s+=A[i][k]*B[k][j]; C[i][j]=s; }
+  return C;
+}
+// "V X90": tips the block toward +X (rotation about the machine Y axis,
+// right-hand rule) — the old top ends up facing +X and the former -X side
+// comes up to be worked on. "V Y90": tips toward +Y (rotation about X).
+const BOX_STEP_X = [[0,0,1],[0,1,0],[-1,0,0]];
+const BOX_STEP_Y = [[1,0,0],[0,0,1],[0,-1,0]];
+function boxActiveFaceFromR(R) {
+  const row = R[2];
+  for (const f of BOX_FACES) if (row[f.a]===f.s) return f;
+  return BOX_FACES[0];
+}
+function makeFaceGrid(f, dims) {
+  const dimU=dims[f.ua], dimV=dims[f.va], depth=dims[f.a];
+  const res=BOX_RES, chunkNX=Math.ceil(res/CHUNK_SIZE), chunkNY=chunkNX;
+  const dirty=new Set();
+  for (let cj=0;cj<chunkNY;cj++) for (let ci=0;ci<chunkNX;ci++) dirty.add(cj*chunkNX+ci);
+  return {
+    minX:-dimU/2, maxX:dimU/2, minY:-dimV/2, maxY:dimV/2, res,
+    cellW:dimU/res, cellH:dimV/res, top:0, bottom:-depth,
+    heights:new Float32Array(res*res), // zeros = uncut surface
+    chunkNX, chunkNY, dirtyChunks:dirty,
+    shape:'square', cx:0, cy:0, radius:null, boxFace:true, faceKey:f.key
+  };
+}
+function createStockBox(cx, cy, W, D, T) {
+  const dims=[W,D,T];
+  const faces={};
+  for (const f of BOX_FACES) faces[f.key]=makeFaceGrid(f,dims);
+  const R=[[1,0,0],[0,1,0],[0,0,1]];
+  return {faces, dims, R, cx, cy, active:BOX_FACES[0]};
+}
+function applyBoxTilt(axis, angleDeg) {
+  if (!stockBox) return;
+  const steps=(((Math.round(angleDeg/90)%4)+4)%4);
+  const step = axis==='X' ? BOX_STEP_X : BOX_STEP_Y;
+  for (let s=0;s<steps;s++) stockBox.R = matMul3(step, stockBox.R);
+  stockBox.active = boxActiveFaceFromR(stockBox.R);
+  stockGrid = stockBox.faces[stockBox.active.key];
+}
+// machine (x,y,z) -> {grid, u, v} on the face currently facing up.
+function stockBoxMachineToFace(x,y,z) {
+  const b=stockBox, R=b.R, f=b.active, half=b.dims[f.a]/2;
+  const px=x-b.cx, py=y-b.cy, pz=z+half;
+  const bv=[
+    R[0][0]*px+R[1][0]*py+R[2][0]*pz,
+    R[0][1]*px+R[1][1]*py+R[2][1]*pz,
+    R[0][2]*px+R[1][2]*py+R[2][2]*pz
+  ];
+  return {grid:b.faces[f.key], u:bv[f.ua], v:bv[f.va]};
+}
+// Stamps one tool position, routing to the right face when in box mode.
+function stampAt(g, x, y, radius, z) {
+  if (!stockBox) { stampTool(g, x, y, radius, z); return; }
+  const m=stockBoxMachineToFace(x,y,z);
+  stampTool(m.grid, m.u, m.v, radius, z);
+}
+// Maps a face's local scene coordinates (X=u, Y=height, Z=-v — the same
+// layout the chunk mesher produces) to machine scene coordinates
+// (X=mx, Y=mz, Z=-my) for the CURRENT orientation. Returned as a
+// column-major 4x4 array.
+function boxFaceSceneMatrix(box, f) {
+  const R=box.R, halfActive=box.dims[box.active.a]/2, halfF=box.dims[f.a]/2;
+  function fn(X,Y,Z) {
+    const u=X, v=-Z, z=Y;
+    const b=[0,0,0];
+    b[f.ua]=u; b[f.va]=v; b[f.a]=f.s*(z+halfF);
+    const mx=R[0][0]*b[0]+R[0][1]*b[1]+R[0][2]*b[2]+box.cx;
+    const my=R[1][0]*b[0]+R[1][1]*b[1]+R[1][2]*b[2]+box.cy;
+    const mz=R[2][0]*b[0]+R[2][1]*b[1]+R[2][2]*b[2]-halfActive;
+    return [mx, mz, -my];
+  }
+  const O=fn(0,0,0), ex=fn(1,0,0), ey=fn(0,1,0), ez=fn(0,0,1);
+  return [
+    ex[0]-O[0], ex[1]-O[1], ex[2]-O[2], 0,
+    ey[0]-O[0], ey[1]-O[1], ey[2]-O[2], 0,
+    ez[0]-O[0], ez[1]-O[1], ez[2]-O[2], 0,
+    O[0], O[1], O[2], 1
+  ];
 }
 
 function stockHeightAt(g, x, y) {
@@ -2445,28 +2715,34 @@ function stampSegmentFully(g, seg) {
   // excluding them here created a disconnected "island" at the plunge
   // point instead of a mark connected to the rest of the cut, which is
   // what actually happens on a real machine.
-  if (seg.type===0 || seg.skipMotion || seg.invalidGeometry) return;
+  if (seg.type===0 || seg.type==='tilt' || seg.skipMotion || seg.invalidGeometry) return;
   const radius = toolRadiusFor(seg);
-  for (const p of getSegmentSamples(seg)) stampTool(g, p.x, p.y, radius, p.z);
+  for (const p of getSegmentSamples(seg)) stampAt(g, p.x, p.y, radius, p.z);
 }
 
 function stampSegmentPartial(g, seg, t) {
-  if (seg.type===0 || seg.skipMotion || seg.invalidGeometry) return;
+  if (seg.type===0 || seg.type==='tilt' || seg.skipMotion || seg.invalidGeometry) return;
   const samples = getSegmentSamples(seg);
   const total = samples[samples.length-1].cum;
   const targetLen = total*t;
   const radius = toolRadiusFor(seg);
   for (const p of samples) {
     if (p.cum > targetLen+1e-9) break;
-    stampTool(g, p.x, p.y, radius, p.z);
+    stampAt(g, p.x, p.y, radius, p.z);
   }
 }
 
 function stampUpTo(pos) {
   if (!stockGrid || !pos) return;
   const startSeg = stockStampedUpToSeg+1;
-  for (let k=startSeg; k<pos.segIndex; k++) stampSegmentFully(stockGrid, paths[k]);
-  if (pos.segIndex < paths.length) stampSegmentPartial(stockGrid, paths[pos.segIndex], pos.t);
+  for (let k=startSeg; k<pos.segIndex; k++) {
+    if (paths[k].type==='tilt') { applyBoxTilt(paths[k].axis, paths[k].angleDeg); continue; }
+    stampSegmentFully(stockGrid, paths[k]);
+  }
+  if (pos.segIndex < paths.length) {
+    if (paths[pos.segIndex].type==='tilt') applyBoxTilt(paths[pos.segIndex].axis, paths[pos.segIndex].angleDeg);
+    else stampSegmentPartial(stockGrid, paths[pos.segIndex], pos.t);
+  }
   stockStampedUpToSeg = pos.segIndex-1;
   if (!stockExteriorClipped) clipExteriorIfLoopComplete(pos);
 }
@@ -2547,8 +2823,13 @@ function clipExteriorIfLoopComplete(pos) {
 
 function resweepStock(toDist) {
   if (!stockGrid || !playModel) return;
-  stockGrid.heights.fill(stockGrid.top);
-  for (let cj=0; cj<stockGrid.chunkNY; cj++) for (let ci=0; ci<stockGrid.chunkNX; ci++) stockGrid.dirtyChunks.add(cj*stockGrid.chunkNX+ci);
+  // Rebuild from scratch rather than just clearing heights: a V-tilt
+  // earlier in the program changes the grid's own bounds/dimensions, so a
+  // resweep (e.g. from dragging the scrub slider) must start over from
+  // the TRUE original stock shape and re-apply every tilt it passes,
+  // not just re-clear whatever shape happened to be left over.
+  buildStockGrid();
+  if (!stockGrid) return;
   stockStampedUpToSeg = -1;
   stockExteriorClipped = false;
   if (!paths.length) { stockLastPos = null; return; }
@@ -2912,6 +3193,16 @@ function positionAtDistance(model, dist) {
     const end=model.segStart[i]+paths[i]._len;
     if (dist<=end+1e-9) { segIndex=i; break; }
   }
+  // A zero-length segment (a V-tilt) has no partial state — it's either
+  // fully applied or not reached at all. Whether the match above landed
+  // on a zero-length segment itself, or on an ordinary segment that is
+  // immediately FOLLOWED by one or more zero-length segments sharing the
+  // same cumulative position (very common: a tilt right after the last
+  // cut, or several tilts in a row), advance through all of them once
+  // that shared position has actually been reached — otherwise later
+  // tilts silently never get applied.
+  while (segIndex<paths.length-1 && paths[segIndex+1]._len<1e-9 &&
+         dist>=model.segStart[segIndex+1]-1e-9) segIndex++;
   const len=paths[segIndex]._len;
   const fraction=len>1e-12?(dist-model.segStart[segIndex])/len:1;
   return positionOnSegment(segIndex,fraction);
@@ -2947,6 +3238,9 @@ function drawFromText(fit=true) {
     lastParsed = parsed;
     paths=parsed.paths;
     bounds=parsed.bounds;
+    if (stockSize.shape==='cylinder' && paths.some(p=>p.type==='tilt')) {
+      parsed.warnings.push('V-kommandot (vältning av ämnet) stöds bara för fyrkantsämne — med cylinderämne ignoreras V-raderna i CNC-Fräs-simuleringen.');
+    }
     animationIndex=null;
     pausedPlaybackTime=null;
     lastHandledStopId=null;
@@ -2972,17 +3266,9 @@ document.getElementById('drawBtnTop').addEventListener('click',()=>drawFromText(
 document.getElementById('fitBtn').addEventListener('click',fitView);
 canvas.addEventListener('dblclick', fitView);
 
-let liveMode = false;
+// Live drawing is always on: the drawing refreshes shortly after typing stops.
 let liveDrawTimer = null;
-const liveBtn = document.getElementById('liveBtn');
-liveBtn.addEventListener('click', () => {
-  liveMode = !liveMode;
-  liveBtn.classList.toggle('active', liveMode);
-  liveBtn.textContent = liveMode ? 'Live-ritning: På' : 'Live-ritning: Av';
-  if (liveMode) drawFromText(false);
-});
 ta.addEventListener('input', () => {
-  if (!liveMode) return;
   clearTimeout(liveDrawTimer);
   liveDrawTimer = setTimeout(() => drawFromText(false), 350);
 });
@@ -3248,7 +3534,38 @@ window.addEventListener('mousemove',e=>{
 });
 
 // --- File open / save ---
+function utf8ToBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary);
+}
+function base64ToUtf8(str) {
+  const binary = atob(str);
+  const bytes = new Uint8Array(binary.length);
+  for (let i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+// A saved file can carry the tool table it was made with, tucked into one
+// G-code comment line at the top — real controllers/parsers just see an
+// ordinary comment and ignore it, but re-opening the file here restores
+// the matching Verktygslåda automatically instead of leaving whatever
+// tool table happened to be loaded before.
+const TOOLTABLE_MARKER = /^\(GKODVIZ:TOOLS:([A-Za-z0-9+/=]+)\)\r?\n?/;
 function loadTextIntoEditor(text) {
+  const m = text.match(TOOLTABLE_MARKER);
+  if (m) {
+    try {
+      const loadedTools = JSON.parse(base64ToUtf8(m[1]));
+      if (Array.isArray(loadedTools) && loadedTools.length) {
+        toolTable = loadedTools;
+        saveJSON('gkodviz_tools_v1', toolTable);
+        renderToolTable();
+      }
+    } catch(e) { /* malformed tool-table block — ignore it, still load the code */ }
+    text = text.slice(m[0].length);
+  }
   ta.value = text;
   updateCodeView();
   drawFromText(true);
@@ -3265,7 +3582,12 @@ fileInput.addEventListener('change', ()=>{
 });
 
 function saveGcode() {
-  const blob = new Blob([ta.value], {type:'text/plain'});
+  let text = ta.value;
+  try {
+    const encoded = utf8ToBase64(JSON.stringify(toolTable));
+    text = '(GKODVIZ:TOOLS:'+encoded+')\n' + text;
+  } catch(e) { /* if encoding ever fails, still save the plain code rather than nothing */ }
+  const blob = new Blob([text], {type:'text/plain'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
