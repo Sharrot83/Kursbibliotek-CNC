@@ -600,12 +600,32 @@
         <tr><td>G53</td><td>Maskinkoordinatsystem (engångsrörelse, ignorerar nollpunkt)</td></tr>
         <tr><td>G54–G59</td><td>Nollpunktsförskjutning (arbetskoordinatsystem 1–6)</td></tr>
         <tr><td>G80</td><td>Avbryt fast cykel (borrcykel)</td></tr>
-        <tr><td>G81–G89</td><td>Fasta borr-/gängcykler</td></tr>
+        <tr><td>G73</td><td>Snabbborrning (spånbrytning): borrar Q mm i taget och backar 1 mm emellan</td></tr>
+        <tr><td>G74</td><td>Vänstergängning: matas ner och ut med samma matning (P = paus i botten)</td></tr>
+        <tr><td>G81</td><td>Enkel borrning: snabbt till R-planet, matning ner till Z, snabbt upp</td></tr>
+        <tr><td>G82</td><td>Som G81 men med paus (P, i millisekunder) i hålets botten</td></tr>
+        <tr><td>G83</td><td>Djuphålsborrning: borrar Q mm i taget och backar helt till R-planet emellan</td></tr>
+        <tr><td>G84</td><td>Högergängning: matas ner och ut med samma matning (P = paus i botten)</td></tr>
+        <tr><td>G98</td><td>Efter varje hål tillbaka till startnivån (gäller om inget annat anges)</td></tr>
+        <tr><td>G99</td><td>Efter varje hål bara tillbaka till R-planet</td></tr>
         <tr><td>G90</td><td>Absoluta mått</td></tr>
         <tr><td>G91</td><td>Inkrementella mått (kedjemått)</td></tr>
         <tr><td>G92</td><td>Sätt positionsregister (flytta nollpunkten till aktuell punkt)</td></tr>
       </tbody>
     </table>
+    <p class="hint" style="margin-top:8px;"><b>Så skriver du en borrcykel</b> (G73, G74, G81, G82, G83, G84):</p>
+    <ul class="hint" style="margin:4px 0 8px 18px;padding:0;">
+      <li><code>Z</code> = håldjup, <code>R</code> = returplan (dit går verktyget snabbt innan matningen börjar), <code>Q</code> = stegdjup (G73/G83), <code>P</code> = paus i millisekunder, <code>F</code> = matning.</li>
+      <li>Fler hål: skriv bara nya <code>X</code>/<code>Y</code> på följande rader. Z, R, Q, P och F ligger kvar tills <code>G80</code> avslutar cykeln. G0–G3 avbryter den också.</li>
+      <li>Med G91 räknas R från startnivån och Z från R-planet, och <code>L</code> upprepar hålet med X/Y som steg.</li>
+      <li>Cykeln ritas som vanliga rörelser, så hålen syns i 2D (cirkel), 3D och CNC-Fräs-simuleringen. Hålet blir lika brett som verktyget i verktygslådan; borrspetsen ritas inte. G83 backar upp 1 mm över förra nivån vid nästa steg.</li>
+      <li>Cykler stöds i planet G17. G76 och G85–G89 stöds inte ännu och ger en varning.</li>
+    </ul>
+    <pre style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:12px;overflow-x:auto;margin:0 0 8px;">G90 G98
+G83 X10 Y10 Z-12 R2 Q3 F100   (hål 1, stegborrning)
+X30                            (hål 2, samma data)
+Y30                            (hål 3)
+G80                            (avsluta cykeln)</pre>
 
     <h3>M-funktioner</h3>
     <table class="tool-table">
@@ -653,7 +673,7 @@ G1 Z-6 F200
 G0 Z5
 V X-90        (vält tillbaka)</pre>
 
-    <p class="hint">Lathunden visar vanliga koders betydelse. Visualiseraren stödjer geometriskt G0–G4, G17–G21, G28/G30, G40–G43/G49, G54–G59, G90–G92 samt M6 (verktygsbyte) — övriga M-koder visas men påverkar inte ritningen. Dessutom finns den egna specialkoden V (vältning av ämnet, se ovan).</p>
+    <p class="hint">Lathunden visar vanliga koders betydelse. Visualiseraren stödjer geometriskt G0–G4, G17–G21, G28/G30, G40–G43/G49, G54–G59, G73/G74/G81–G84 (borrcykler) med G80/G98/G99, G90–G92 samt M6 (verktygsbyte) — övriga M-koder visas men påverkar inte ritningen. Dessutom finns den egna specialkoden V (vältning av ämnet, se ovan).</p>
   </div>
 </div>
 
@@ -2154,6 +2174,9 @@ updateCodeView();
 
 const SILENT_G = new Set([61,64,68,69]); // recognized modal functions without visual effect
 const CANNED_CYCLES = new Set([73,74,76,81,82,83,84,85,86,87,88,89]);
+// Cycles that are expanded into real moves (the rest only produce a warning).
+const CYCLES_SUPPORTED = new Set([73,74,81,82,83,84]);
+const CYCLE_CLEARANCE = 1; // mm: G83 re-entry clearance above the last peck, and G73 chip-break retract
 const KNOWN_G = new Set([0,1,2,3,4,17,18,19,20,21,28,30,40,41,42,43,49,53,54,55,56,57,58,59,80,90,91,92,92.1]);
 const SUPPORTED_WORDS = new Set(['N','O','G','M','X','Y','Z','I','J','K','R','F','S','T','D','H','L','P','Q']);
 
@@ -2291,6 +2314,9 @@ function parseGcode(text) {
   let currentWCS=1;
   let g92Offset={x:0,y:0,z:0};
   let cannedCycleActive=null;
+  let cycleParams={};          // modal data of the active canned cycle (Z, R, Q in mm, P in ms) — kept until G80
+  let cycleInitialZ=0;         // program Z where the cycle was commanded ("initial level", G98 returns here)
+  let retractInitial=true;     // G98 (default) = back to initial level, G99 = back to the R plane
   let pendingDwellSec=0;
   let pendingStopBefore=null;
   let totalLength=0;
@@ -2360,6 +2386,86 @@ function parseGcode(text) {
     return seg;
   }
 
+
+  // Expands one canned-cycle block (G73/G74/G81/G82/G83/G84) into ordinary
+  // rapid/feed moves, so holes show up in the 2D view, the 3D path view and
+  // the CNC-Fräs simulation exactly like hand-written drilling moves.
+  // Returns {built} (the last segment created, or null).
+  function runCannedCycle(g, w, lineNo, raw, gCodes, mCodes, onCycleLine) {
+    const L1=lineNo+1;
+    if (onCycleLine) cycleInitialZ=programFromMachine().z;
+    for (const k of ['Z','R','Q']) if (Number.isFinite(w[k])) cycleParams[k]=w[k]*units;
+    if (Number.isFinite(w.P)) cycleParams.P=w.P; // dwell, milliseconds (same convention as G4 P)
+    const hasXY=Number.isFinite(w.X)||Number.isFinite(w.Y);
+    // A block drills when it gives a hole position — or names the cycle together with Z/R (drill where the tool stands)
+    if (!(hasXY || (onCycleLine && (Number.isFinite(w.Z)||Number.isFinite(w.R))))) return {built:null};
+    let reps=Number.isFinite(w.L) ? Math.floor(w.L) : 1;
+    if (reps<=0) return {built:null};          // L0: store the data only
+    if (absolute) reps=1;                      // repeat count only makes sense with incremental hole steps
+    if (plane!==17) { warnings.push('Rad '+L1+': borrcykel G'+g+' stöds bara i planet G17 (XY); raden ignoreras.'); return {built:null}; }
+    const R=cycleParams.R, Zb=cycleParams.Z, Q=cycleParams.Q, Pms=cycleParams.P;
+    if (!Number.isFinite(R) || !Number.isFinite(Zb)) {
+      warnings.push('Rad '+L1+': borrcykel G'+g+' saknar '+(!Number.isFinite(Zb)?'Z (håldjup)':'R (returplan)')+'; inget hål borras.');
+      return {built:null};
+    }
+    const opts={lineNo:L1,raw,gCodes,mCodes,w,plane,compMode:0,compRadius:0,compD:null,compTransitionKind:null,arcWords:{}};
+    let built=null;
+    const go=(type,px,py,pz)=>{
+      const tgt=machineFromProgram({x:px,y:py,z:pz});
+      if (Math.hypot(tgt.x-pos.x,tgt.y-pos.y,tgt.z-pos.z)<1e-9) return null;
+      const sg=buildAndPush(type,pos,tgt,opts);
+      sg.cycle=g; pos=tgt; built=sg;
+      return sg;
+    };
+    const cur0=programFromMachine();
+    let x=cur0.x, y=cur0.y;
+    for (let rep=0; rep<reps; rep++) {
+      if (absolute) { if (Number.isFinite(w.X)) x=w.X*units; if (Number.isFinite(w.Y)) y=w.Y*units; }
+      else { if (Number.isFinite(w.X)) x+=w.X*units; if (Number.isFinite(w.Y)) y+=w.Y*units; }
+      const zNow=programFromMachine().z;
+      const rz = absolute ? R : cycleInitialZ+R;     // incremental: R is measured from the initial level
+      const bottom = absolute ? Zb : rz+Zb;          // incremental: Z is measured from the R plane
+      if (!(bottom < rz-1e-9)) {
+        warnings.push('Rad '+L1+': borrcykel G'+g+': hålbotten (Z) ligger inte under returplanet (R); inget hål borras.');
+        return {built};
+      }
+      go(0,x,y,zNow);       // rapid to the hole position
+      go(0,x,y,rz);         // rapid down to the R plane
+      let marked=false;
+      const feed=(z)=>{ const sg=go(1,x,y,z); if (sg && !marked) { sg.cycleHole=true; marked=true; } return sg; };
+      const dwell=()=>{ if (Number.isFinite(Pms) && Pms>0) pendingDwellSec+=Pms/1000; };
+      if (g===81) { feed(bottom); }
+      else if (g===82) { feed(bottom); dwell(); }
+      else if (g===83 || g===73) {
+        if (!(Q>0)) {
+          warnings.push('Rad '+L1+': G'+g+' saknar giltigt Q (stegdjup); borrar hela hålet i ett steg.');
+          feed(bottom);
+        } else {
+          let k=1, prev=rz;
+          for (;;) {
+            const depth=Math.max(bottom, rz-k*Q);
+            const last=depth<=bottom+1e-9;
+            if (g===83) {                                      // full retract to R between pecks
+              if (k>1) go(0,x,y,Math.min(rz,prev+CYCLE_CLEARANCE));
+              feed(depth);
+              if (!last) go(0,x,y,rz);
+            } else {                                           // G73: short chip-break retract
+              feed(depth);
+              if (!last) go(0,x,y,Math.min(rz,depth+CYCLE_CLEARANCE));
+            }
+            if (last) break;
+            prev=depth; k++;
+          }
+        }
+      }
+      else if (g===84 || g===74) { feed(bottom); dwell(); go(1,x,y,rz); }   // tapping: feed in, feed out at the same feed
+      const retractZ = retractInitial ? Math.max(cycleInitialZ,rz) : rz;
+      if (g===84 || g===74) { if (retractInitial) go(0,x,y,retractZ); }     // already back at R
+      else go(0,x,y,retractZ);
+    }
+    return {built};
+  }
+
   const lines=text.split(/\r?\n/);
   for (let lineNo=0; lineNo<lines.length; lineNo++) {
     const raw=lines[lineNo];
@@ -2414,7 +2520,7 @@ function parseGcode(text) {
       else if (g===21) units=1;
       else if (g===90) absolute=true;
       else if (g===91) absolute=false;
-      else if ([0,1,2,3].includes(g)) motion=g;
+      else if ([0,1,2,3].includes(g)) { motion=g; cannedCycleActive=null; cycleParams={}; } // G0–G3 cancel an active cycle
       else if (g===4) lineHasDwell=true;
       else if (g===17 || g===18 || g===19) plane=g;
       else if (g===40 || g===41 || g===42) compCommand=g;
@@ -2425,7 +2531,9 @@ function parseGcode(text) {
       else if (g===92) doG92=true;
       else if (Math.abs(g-92.1)<1e-9) doG92Cancel=true;
       else if (g===28 || g===30) doReferenceReturn=true;
-      else if (g===80) { cannedCycleActive=null; cycleCommand=80; }
+      else if (g===80) { cannedCycleActive=null; cycleParams={}; cycleCommand=80; }
+      else if (g===98) retractInitial=true;
+      else if (g===99) retractInitial=false;
       else if (CANNED_CYCLES.has(g)) { cannedCycleActive=g; cycleCommand=g; }
       else if (SILENT_G.has(g)) { /* recognized but no visual effect */ }
       else if (!KNOWN_G.has(g)) warnings.push('Rad '+(lineNo+1)+': okänd/ej stödd G-kod G'+g+' — ignoreras.');
@@ -2479,15 +2587,15 @@ function parseGcode(text) {
       continue;
     }
 
-    if (cycleCommand && cycleCommand!==80) {
-      warnings.push('Rad '+(lineNo+1)+': borrcykel G'+cycleCommand+' stöds inte geometriskt; cykeln ignoreras tills G80.');
-      if (stopCode) pendingStopBefore=stopCode;
-      if (endCode) { endedBy={code:endCode,line:lineNo+1}; break; }
-      continue;
-    }
-    if (cannedCycleActive) {
-      if (['X','Y','Z','R','Q','P'].some(k=>Number.isFinite(w[k]))) warnings.push('Rad '+(lineNo+1)+': koordinatrad under aktiv G'+cannedCycleActive+'-cykel visas inte; använd G80 för att avsluta cykeln.');
-      if (stopCode) pendingStopBefore=stopCode;
+    if (cannedCycleActive && cycleCommand!==80) {
+      if (CYCLES_SUPPORTED.has(cannedCycleActive)) {
+        const r=runCannedCycle(cannedCycleActive,w,lineNo,raw,gCodes,mCodes,cycleCommand!==null);
+        if (stopCode) { if (r.built) r.built.stopAfter=stopCode; else pendingStopBefore=stopCode; }
+      } else {
+        if (cycleCommand!==null) warnings.push('Rad '+(lineNo+1)+': borrcykel G'+cycleCommand+' stöds inte geometriskt; cykeln ignoreras tills G80.');
+        else if (['X','Y','Z','R','Q','P'].some(k=>Number.isFinite(w[k]))) warnings.push('Rad '+(lineNo+1)+': koordinatrad under aktiv G'+cannedCycleActive+'-cykel visas inte; använd G80 för att avsluta cykeln.');
+        if (stopCode) pendingStopBefore=stopCode;
+      }
       if (endCode) { endedBy={code:endCode,line:lineNo+1}; break; }
       continue;
     }
@@ -3109,6 +3217,15 @@ function fmt(n) {
   return (Object.is(r,-0) ? 0 : r).toString();
 }
 
+// Drilled holes (from G81–G84 cycles) are straight Z moves, which have no
+// length in the XY drawing — mark each one with a circle the size of the tool.
+function drawHoleMarker(seg) {
+  const c=project(seg.pts[0]);
+  const flat=!(mode3D || stockMode);
+  const r=flat ? Math.max(3, toolRadiusFor(seg)*view.scale) : 3;
+  ctx.setLineDash([]);
+  drawCrosshair(c, r, '#57d38c');
+}
 function drawCrosshair(p, r, color) {
   ctx.strokeStyle=color; ctx.lineWidth=1.4;
   ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.stroke();
@@ -3182,6 +3299,8 @@ function render(playPos, forceStockRebuild=true) {
     else ctx.setLineDash([]);
     ctx.stroke();
     ctx.setLineDash([]);
+
+    if (seg.cycleHole) drawHoleMarker(seg);
 
     if (showCenters && seg.plane===17 && (seg.type===2 || seg.type===3) && seg.center && !seg.invalidGeometry) {
       const c = project(seg.center);
