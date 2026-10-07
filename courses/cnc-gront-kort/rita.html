@@ -2057,10 +2057,18 @@ function applyCutterCompensation(segments, warnings) {
     const def=PLANE_DEF[seg.plane] || PLANE_DEF[17];
     if ((seg.type===2 || seg.type===3) && Number.isFinite(seg.arcRadius)) {
       const centerRadius=seg.arcRadius + (seg.type===2 ? side : -side)*seg.cutterCompRadius;
-      if (!(centerRadius>1e-6)) {
-        warnings.push('Rad '+seg.line+': verktygsradien är för stor för den kompenserade bågen (interferens). Radiekompenseringen visas inte för detta segment.');
+      if (centerRadius < -1e-6) {
+        // tool radius larger than the inside arc: the tool physically cannot fit
+        warnings.push('Rad '+seg.line+': verktygsradien ('+seg.cutterCompRadius+' mm) är större än bågens radie ('+seg.arcRadius+' mm) – verktyget får inte plats i hörnet (interferens). Radiekompenseringen visas inte för detta segment.');
         seg.compInvalid=true;
         continue;
+      }
+      if (centerRadius <= 1e-6) {
+        // tool radius exactly equal to the inside arc radius: the tool fits, touching the
+        // whole arc, and its centre just pivots on the arc centre. Geometrically valid (the
+        // school rule "tool diameter at most 2 x the radius" allows it) but right at the
+        // limit, and many controls raise a cutter-compensation alarm there.
+        warnings.push('Rad '+seg.line+': verktygsradien är exakt lika stor som bågradien ('+seg.arcRadius+' mm) – gränsfall. Hörnet går att fräsa (verktygets mittpunkt stannar i bågens centrum), men många styrsystem larmar här. Ta helst ett något mindre verktyg.');
       }
     }
     const prevSeg=segments[si-1], nextSeg=segments[si+1];
