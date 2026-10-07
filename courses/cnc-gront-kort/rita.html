@@ -386,6 +386,10 @@
   .tool-cat-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
   .tool-cat-head strong { font-size:13px; }
   .tool-cat-desc { color:var(--muted); font-size:12px; margin-top:2px; line-height:1.4; font-weight:400; }
+  .tool-reset-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:8px 0 4px; }
+  .tool-reset-row .hint { margin:0; }
+  button.tool-reset { border-color:var(--danger); color:var(--danger); }
+  button.tool-reset.confirm { background:var(--danger); color:#fff; }
   .tool-table tr.tool-empty td { color:var(--muted); font-size:12px; font-style:italic; }
   #skardataOverlay .modal { max-width:900px; }
   .sk-tabs { display:flex; gap:6px; margin-top:14px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
@@ -544,6 +548,10 @@
       <tbody id="toolTableBody"></tbody>
     </table>
     <p class="hint">Verktygen är sorterade efter typ. Typen är till för överblicken – i simuleringen ritas alla verktyg som en rak cylinder med diametern D.</p>
+    <div class="tool-reset-row">
+      <button class="small tool-reset" id="resetToolsBtn" title="Ersätter hela verktygslistan med standardverktygen">↺ Återställ standardverktyg</button>
+      <span class="hint" id="resetToolsHint">Har du ändrat eller tagit bort fel? Den här knappen ger tillbaka standardlistan.</span>
+    </div>
 
     <h3>Arbetskoordinater (G54–G59)</h3>
     <table class="tool-table">
@@ -1583,6 +1591,42 @@ function renderToolTable() {
     });
   });
 }
+// "Oops" button: replaces the whole tool list with the built-in defaults.
+// Two clicks are needed (the first arms it for a few seconds) so it can't
+// be hit by accident, and it doesn't rely on a browser pop-up dialog.
+function resetToolsToDefaults() {
+  toolTable = normalizeTools(JSON.parse(JSON.stringify(DEFAULT_TOOLS)));
+  saveJSON('gkodviz_tools_v1', toolTable);
+  renderToolTable();
+  drawFromText(false); // tool diameters feed the drawing and the simulation
+}
+(function setupToolReset() {
+  const btn = document.getElementById('resetToolsBtn');
+  const hint = document.getElementById('resetToolsHint');
+  if (!btn) return;
+  let armed = false, timer = null;
+  const idleHint = hint.textContent;
+  function disarm() {
+    armed = false; clearTimeout(timer);
+    btn.classList.remove('confirm');
+    btn.textContent = '↺ Återställ standardverktyg';
+    hint.textContent = idleHint;
+  }
+  btn.addEventListener('click', () => {
+    if (!armed) {
+      armed = true;
+      btn.classList.add('confirm');
+      btn.textContent = 'Klicka igen för att bekräfta';
+      hint.textContent = 'Alla dina egna ändringar i verktygslistan försvinner och standardlistan sätts tillbaka.';
+      timer = setTimeout(disarm, 6000);
+      return;
+    }
+    disarm();
+    resetToolsToDefaults();
+    hint.textContent = 'Klart – standardverktygen är tillbaka.';
+    timer = setTimeout(() => { hint.textContent = idleHint; }, 4000);
+  });
+})();
 function renderWcsTable() {
   const body = document.getElementById('wcsTableBody');
   body.innerHTML = '';
