@@ -378,6 +378,15 @@
     background:transparent; border:none; color:var(--danger); padding:4px 6px; font-weight:700; cursor:pointer;
   }
   .tool-table .row-del:hover { color:#ef8562; }
+  .tool-table select {
+    width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:5px;
+    color:var(--text); padding:5px 4px; font-size:12px; font-family:inherit;
+  }
+  .tool-table tr.tool-cat td { background:var(--panel2); padding:9px 10px; border-bottom:1px solid var(--border); border-top:8px solid var(--panel); }
+  .tool-cat-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .tool-cat-head strong { font-size:13px; }
+  .tool-cat-desc { color:var(--muted); font-size:12px; margin-top:2px; line-height:1.4; font-weight:400; }
+  .tool-table tr.tool-empty td { color:var(--muted); font-size:12px; font-style:italic; }
   #skardataOverlay .modal { max-width:900px; }
   .sk-tabs { display:flex; gap:6px; margin-top:14px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
   .sk-tab { background:none; border:none; color:var(--muted); font-size:13.5px; font-weight:700; padding:8px 14px; cursor:pointer; border-bottom:3px solid transparent; font-family:inherit; }
@@ -531,10 +540,10 @@
     </div>
     <h3>Verktyg (T · Ø D · Längd H)</h3>
     <table class="tool-table">
-      <thead><tr><th style="width:52px;">T</th><th>Namn</th><th style="width:80px;">Ø D (mm)</th><th style="width:90px;">Längd H (mm)</th><th style="width:28px;"></th></tr></thead>
+      <thead><tr><th style="width:52px;">T</th><th>Namn</th><th style="width:96px;">Typ</th><th style="width:76px;">Ø D (mm)</th><th style="width:84px;">Längd H (mm)</th><th style="width:28px;"></th></tr></thead>
       <tbody id="toolTableBody"></tbody>
     </table>
-    <button class="small" id="addToolBtn" style="margin-top:8px;">+ Lägg till verktyg</button>
+    <p class="hint">Verktygen är sorterade efter typ. Typen är till för överblicken – i simuleringen ritas alla verktyg som en rak cylinder med diametern D.</p>
 
     <h3>Arbetskoordinater (G54–G59)</h3>
     <table class="tool-table">
@@ -1421,24 +1430,69 @@ let lastHandledBlockBoundarySeg = null;
 let dragging = false, lastMouse = null;
 let lastParsed = null;
 
-const DEFAULT_TOOLS = [
-  {t:1, name:'Pinnfräs Ø6', d:6, h:50},
-  {t:2, name:'Pinnfräs Ø10', d:10, h:55},
-  {t:3, name:'Pinnfräs Ø15 (HM)', d:15, h:45},
-  {t:4, name:'Centrumborr Ø3', d:3, h:40},
-  {t:5, name:'Borr Ø5', d:5, h:60},
-  {t:6, name:'Borr Ø1', d:1, h:34},
-  {t:7, name:'Borr Ø2', d:2, h:49},
-  {t:8, name:'Borr Ø3', d:3, h:61},
-  {t:9, name:'Borr Ø4', d:4, h:75},
-  {t:10, name:'Borr Ø6', d:6, h:93},
-  {t:11, name:'Borr Ø7', d:7, h:109},
-  {t:12, name:'Borr Ø8', d:8, h:117},
-  {t:13, name:'Borr Ø9', d:9, h:125},
-  {t:14, name:'Borr Ø10', d:10, h:133},
-  {t:15, name:'Borr Ø11', d:11, h:142},
-  {t:16, name:'Borr Ø12', d:12, h:151}
+// Tool categories shown in the Verktygslåda. `add` is what a freshly added
+// tool in that category starts out as.
+const TOOL_CATEGORIES = [
+  {key:'endmill', short:'Pinnfräs', title:'Pinnfräsar (End Mills)',
+   desc:'Används för konturfräsning, spårfräsning och 3D-formning med både sid- och ändegg.',
+   add:{name:'Ny pinnfräs', d:10, h:55}},
+  {key:'drill', short:'Borr', title:'Borr (Drills)',
+   desc:'Används för att göra hål i olika dimensioner innan gängning eller uppborrning.',
+   add:{name:'Nytt borr', d:6, h:60}},
+  {key:'face', short:'Planfräs', title:'Planfräsar (Face Mills)',
+   desc:'Används för att snabbt ta bort mycket material på plana ytor och ge en fin ytfinish.',
+   add:{name:'Ny planfräs', d:50, h:40}},
+  {key:'tap', short:'Gänga', title:'Gängtappar och gängfräsar (Taps & Thread Mills)',
+   desc:'Används för att skära invändiga eller utvändiga gängor i hål.',
+   add:{name:'Ny gängtapp M6', d:6, h:50}},
+  {key:'spot', short:'Körnare', title:'Körnare / Centrerborr (Spot Drills)',
+   desc:'Används för att göra ett litet styrhål så att vanliga borr inte vandrar iväg.',
+   add:{name:'Ny körnare', d:6, h:45}},
+  {key:'profile', short:'Profil', title:'Radie- och profilfräsar',
+   desc:'Används för specialanpassade kanter, hörnradier eller fasning (avfasningsverktyg). Hit hör till exempel fasfräs, radiefräs och hörnfräs.',
+   add:{name:'Ny profilfräs', d:12, h:50}}
 ];
+const DEFAULT_TOOLS = [
+  {t:1, name:'Pinnfräs Ø6', d:6, h:50, type:'endmill'},
+  {t:2, name:'Pinnfräs Ø10', d:10, h:55, type:'endmill'},
+  {t:3, name:'Pinnfräs Ø15 (HM)', d:15, h:45, type:'endmill'},
+  {t:4, name:'Centrumborr Ø3', d:3, h:40, type:'spot'},
+  {t:5, name:'Borr Ø5', d:5, h:60, type:'drill'},
+  {t:6, name:'Borr Ø1', d:1, h:34, type:'drill'},
+  {t:7, name:'Borr Ø2', d:2, h:49, type:'drill'},
+  {t:8, name:'Borr Ø3', d:3, h:61, type:'drill'},
+  {t:9, name:'Borr Ø4', d:4, h:75, type:'drill'},
+  {t:10, name:'Borr Ø6', d:6, h:93, type:'drill'},
+  {t:11, name:'Borr Ø7', d:7, h:109, type:'drill'},
+  {t:12, name:'Borr Ø8', d:8, h:117, type:'drill'},
+  {t:13, name:'Borr Ø9', d:9, h:125, type:'drill'},
+  {t:14, name:'Borr Ø10', d:10, h:133, type:'drill'},
+  {t:15, name:'Borr Ø11', d:11, h:142, type:'drill'},
+  {t:16, name:'Borr Ø12', d:12, h:151, type:'drill'},
+  {t:17, name:'Planfräs Ø50 (HM)', d:50, h:45, type:'face'},
+  {t:18, name:'Gängtapp M6', d:6, h:50, type:'tap'},
+  {t:19, name:'Gängfräs M10 (Ø8)', d:8, h:40, type:'tap'},
+  {t:20, name:'Fasfräs 45° Ø12', d:12, h:50, type:'profile'},
+  {t:21, name:'Radiefräs R2 Ø10', d:10, h:50, type:'profile'}
+];
+// Tools saved before types existed (browser storage or an opened .nc file)
+// get a type guessed from their name, so nothing lands in the wrong place.
+function guessToolType(tool) {
+  const n = String(tool.name||'').toLowerCase();
+  if (/centr|körn|spot/.test(n)) return 'spot';
+  if (/gäng|tapp|thread/.test(n)) return 'tap';
+  if (/borr|drill/.test(n)) return 'drill';
+  if (/plan/.test(n)) return 'face';
+  if (/fas|chamfer|radie|profil|hörn/.test(n)) return 'profile';
+  return 'endmill';
+}
+function normalizeTools(list) {
+  if (!Array.isArray(list)) return list;
+  list.forEach(t => {
+    if (!TOOL_CATEGORIES.some(c => c.key === t.type)) t.type = guessToolType(t);
+  });
+  return list;
+}
 const DEFAULT_WCS = [0,0,0,0,0,0].map(()=>({x:0,y:0,z:0}));
 
 function loadJSON(key, fallback) {
@@ -1451,7 +1505,7 @@ function saveJSON(key, value) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch(e) {}
 }
 
-let toolTable = loadJSON('gkodviz_tools_v1', DEFAULT_TOOLS);
+let toolTable = normalizeTools(loadJSON('gkodviz_tools_v1', DEFAULT_TOOLS));
 let wcsTable = loadJSON('gkodviz_wcs_v1', DEFAULT_WCS);
 let homePosition = loadJSON('gkodviz_home_v1', {x:0, y:0, z:0});
 let stockSize = loadJSON('gkodviz_stocksize_v1', {auto:true, width:100, depth:100, thickness:20, quadrant:'center-path', shape:'square', diameter:60, cylHeight:20});
@@ -1464,15 +1518,36 @@ function toolByNumber(n) {
 function renderToolTable() {
   const body = document.getElementById('toolTableBody');
   body.innerHTML = '';
-  toolTable.forEach((tool, idx) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML =
-      '<td><input type="number" value="'+tool.t+'" data-field="t" data-idx="'+idx+'"></td>'+
-      '<td><input type="text" value="'+escapeHtml(tool.name||'')+'" data-field="name" data-idx="'+idx+'"></td>'+
-      '<td><input type="number" step="0.1" value="'+tool.d+'" data-field="d" data-idx="'+idx+'"></td>'+
-      '<td><input type="number" step="0.1" value="'+tool.h+'" data-field="h" data-idx="'+idx+'"></td>'+
-      '<td><button class="row-del" data-idx="'+idx+'" title="Ta bort">✕</button></td>';
-    body.appendChild(tr);
+  TOOL_CATEGORIES.forEach(cat => {
+    const head = document.createElement('tr');
+    head.className = 'tool-cat';
+    head.innerHTML =
+      '<td colspan="6"><div class="tool-cat-head"><div><strong>'+escapeHtml(cat.title)+'</strong>'+
+      '<div class="tool-cat-desc">'+escapeHtml(cat.desc)+'</div></div>'+
+      '<button class="small tool-add" data-cat="'+cat.key+'">+ Lägg till</button></div></td>';
+    body.appendChild(head);
+    const list = toolTable.map((tool, idx) => ({tool, idx}))
+      .filter(o => o.tool.type === cat.key)
+      .sort((a, b) => Number(a.tool.t) - Number(b.tool.t));
+    if (!list.length) {
+      const empty = document.createElement('tr');
+      empty.className = 'tool-empty';
+      empty.innerHTML = '<td colspan="6">Inga verktyg i den här kategorin än.</td>';
+      body.appendChild(empty);
+    }
+    list.forEach(({tool, idx}) => {
+      const tr = document.createElement('tr');
+      const opts = TOOL_CATEGORIES.map(c =>
+        '<option value="'+c.key+'"'+(c.key===tool.type?' selected':'')+'>'+escapeHtml(c.short)+'</option>').join('');
+      tr.innerHTML =
+        '<td><input type="number" value="'+tool.t+'" data-field="t" data-idx="'+idx+'"></td>'+
+        '<td><input type="text" value="'+escapeHtml(tool.name||'')+'" data-field="name" data-idx="'+idx+'"></td>'+
+        '<td><select data-field="type" data-idx="'+idx+'">'+opts+'</select></td>'+
+        '<td><input type="number" step="0.1" value="'+tool.d+'" data-field="d" data-idx="'+idx+'"></td>'+
+        '<td><input type="number" step="0.1" value="'+tool.h+'" data-field="h" data-idx="'+idx+'"></td>'+
+        '<td><button class="row-del" data-idx="'+idx+'" title="Ta bort">✕</button></td>';
+      body.appendChild(tr);
+    });
   });
   body.querySelectorAll('input').forEach(inp => {
     inp.addEventListener('input', () => {
@@ -1481,6 +1556,22 @@ function renderToolTable() {
       toolTable[idx][field] = (field==='name') ? inp.value : (parseFloat(inp.value)||0);
       saveJSON('gkodviz_tools_v1', toolTable);
       drawFromText(false);
+    });
+  });
+  body.querySelectorAll('select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      toolTable[parseInt(sel.dataset.idx,10)].type = sel.value;
+      saveJSON('gkodviz_tools_v1', toolTable);
+      renderToolTable(); // the tool moves to its new category
+    });
+  });
+  body.querySelectorAll('.tool-add').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cat = TOOL_CATEGORIES.find(c => c.key === btn.dataset.cat);
+      const nextT = toolTable.length ? Math.max(...toolTable.map(t=>Number(t.t)))+1 : 1;
+      toolTable.push({t:nextT, name:cat.add.name, d:cat.add.d, h:cat.add.h, type:cat.key});
+      saveJSON('gkodviz_tools_v1', toolTable);
+      renderToolTable();
     });
   });
   body.querySelectorAll('.row-del').forEach(btn => {
@@ -1639,12 +1730,6 @@ document.addEventListener('click', (e) => {
   if (homePosEdit.classList.contains('open') && !homePosEdit.contains(e.target) && e.target!==homePosText) {
     closeHomeEdit();
   }
-});
-document.getElementById('addToolBtn').addEventListener('click', () => {
-  const nextT = toolTable.length ? Math.max(...toolTable.map(t=>Number(t.t)))+1 : 1;
-  toolTable.push({t:nextT, name:'Nytt verktyg', d:6, h:50});
-  saveJSON('gkodviz_tools_v1', toolTable);
-  renderToolTable();
 });
 document.getElementById('toolLibraryBtn').addEventListener('click', () => {
   renderToolTable();
@@ -3633,7 +3718,7 @@ function loadTextIntoEditor(text) {
     try {
       const loadedTools = JSON.parse(base64ToUtf8(m[1]));
       if (Array.isArray(loadedTools) && loadedTools.length) {
-        toolTable = loadedTools;
+        toolTable = normalizeTools(loadedTools);
         saveJSON('gkodviz_tools_v1', toolTable);
         renderToolTable();
       }
