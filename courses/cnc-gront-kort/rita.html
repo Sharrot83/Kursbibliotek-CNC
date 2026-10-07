@@ -68,6 +68,8 @@
   .warn-indicator.ok { border-color:var(--ok); color:var(--ok); }
   .warn-indicator.warn { border-color:var(--danger); color:var(--danger); }
   .warn-indicator.warn:hover { background:#2a1a1a; }
+  .warn-indicator.caution { border-color:#e0a62f; color:#e0a62f; }
+  .warn-indicator.caution:hover { background:#2a2314; }
   .warn-indicator.ok:hover { background:#163322; }
   .warn-popup {
     display:none;
@@ -80,6 +82,10 @@
   .warn-popup h3 { margin:0 0 8px; font-size:13px; color:var(--danger); }
   .warn-popup ul { margin:0; padding-left:18px; }
   .warn-popup li { font-size:12.5px; color:var(--text); margin-bottom:6px; line-height:1.4; }
+  .warn-popup li.err::marker, .warn-popup li.err strong { color:var(--danger); }
+  .warn-popup li.caution::marker, .warn-popup li.caution strong { color:#e0a62f; }
+  .warn-popup.caution-only { border-color:#e0a62f; }
+  .warn-popup.caution-only h3 { color:#e0a62f; }
 
   .app {
     display:grid;
@@ -404,7 +410,7 @@
     <button id="singleBlockBtn" class="transport-btn" title="Kör exakt ett rörelsesegment och pausa — tryck igen för nästa">⏭ Singel block</button>
     <button id="warnIndicator" class="warn-indicator ok" title="Inga parser-varningar">✓</button>
     <div class="warn-popup" id="warnPopup">
-      <h3>Parser-varningar</h3>
+      <h3>Varningar och gränsfall</h3>
       <ul id="warnList"></ul>
     </div>
   </div>
@@ -2048,7 +2054,7 @@ function compOffsetVector(prev, cur, next, def, side, radius) {
   return {u:m.u*scale,v:m.v*scale};
 }
 
-function applyCutterCompensation(segments, warnings) {
+function applyCutterCompensation(segments, warnings, cautions) {
   for (let si=0; si<segments.length; si++) {
     const seg=segments[si];
     seg.centerPts=seg.pts.map(p=>({...p}));
@@ -2068,7 +2074,7 @@ function applyCutterCompensation(segments, warnings) {
         // whole arc, and its centre just pivots on the arc centre. Geometrically valid (the
         // school rule "tool diameter at most 2 x the radius" allows it) but right at the
         // limit, and many controls raise a cutter-compensation alarm there.
-        warnings.push('Rad '+seg.line+': verktygsradien är exakt lika stor som bågradien ('+seg.arcRadius+' mm) – gränsfall. Hörnet går att fräsa (verktygets mittpunkt stannar i bågens centrum), men många styrsystem larmar här. Ta helst ett något mindre verktyg.');
+        cautions.push('Rad '+seg.line+': verktygsradien är exakt lika stor som bågradien ('+seg.arcRadius+' mm) – gränsfall. Hörnet går att fräsa (verktygets mittpunkt stannar i bågens centrum), men många styrsystem larmar här. Ta helst ett något mindre verktyg.');
       }
     }
     const prevSeg=segments[si-1], nextSeg=segments[si+1];
@@ -2140,6 +2146,7 @@ function applyCutterCompensation(segments, warnings) {
 function parseGcode(text) {
   const result=[];
   const warnings=[];
+  const cautions=[]; // yellow: things that work but sit right at a limit
   // `pos` is always machine/effective position. Program coordinates are derived
   // from it and the active WCS/G92 offsets, avoiding stale coordinates after
   // G53, WCS changes and G92/G92.1.
@@ -2398,7 +2405,7 @@ function parseGcode(text) {
     if (endCode) { endedBy={code:endCode,line:lineNo+1}; break; }
   }
 
-  applyCutterCompensation(result,warnings);
+  applyCutterCompensation(result,warnings,cautions);
   return {
     paths:result,
     bounds:{minX,maxX,minY,maxY,minZ,maxZ},
@@ -2408,7 +2415,8 @@ function parseGcode(text) {
     pendingStopBefore,
     endedBy,
     finalMode:{units,absolute,motion,plane,wcs:currentWCS,activeTool,cutterCompMode,cutterCompD,lengthCompActive,lengthCompH},
-    warnings
+    warnings,
+    cautions
   };
 }
 
@@ -3154,24 +3162,35 @@ function updateStats(parsed) {
 
   setActiveToolDisplay(m.activeTool);
 
-  if (parsed.warnings.length) {
-    warnIndicator.classList.add('warn');
-    warnIndicator.classList.remove('ok');
+  const errs = parsed.warnings || [], cauts = parsed.cautions || [];
+  warnList.innerHTML = '';
+  warnIndicator.classList.remove('ok','warn','caution');
+  warnPopup.classList.remove('caution-only');
+  if (errs.length || cauts.length) {
+    const onlyCautions = !errs.length;
+    warnIndicator.classList.add(onlyCautions ? 'caution' : 'warn');
+    warnPopup.classList.toggle('caution-only', onlyCautions);
     warnIndicator.textContent = '⚠';
-    warnIndicator.title = parsed.warnings.length+' parser-varning(ar) — klicka för detaljer';
-    warnList.innerHTML = '';
-    parsed.warnings.forEach(w => {
+    const parts = [];
+    if (errs.length) parts.push(errs.length+' varning(ar)');
+    if (cauts.length) parts.push(cauts.length+' gränsfall');
+    warnIndicator.title = parts.join(' och ')+' — klicka för detaljer';
+    const addItem = (text, cls, label) => {
       const li = document.createElement('li');
-      li.textContent = w;
+      li.className = cls;
+      const tag = document.createElement('strong');
+      tag.textContent = label+': ';
+      li.appendChild(tag);
+      li.appendChild(document.createTextNode(text));
       warnList.appendChild(li);
-    });
+    };
+    errs.forEach(w => addItem(w, 'err', 'Fel'));
+    cauts.forEach(w => addItem(w, 'caution', 'Obs'));
   } else {
     warnIndicator.classList.add('ok');
-    warnIndicator.classList.remove('warn');
     warnIndicator.textContent = '✓';
     warnIndicator.title = 'Inga parser-varningar';
     warnPopup.classList.remove('open');
-    warnList.innerHTML = '';
   }
 }
 
