@@ -617,7 +617,7 @@
     <ul class="hint" style="margin:4px 0 8px 18px;padding:0;">
       <li><code>Z</code> = håldjup, <code>R</code> = returplan (dit går verktyget snabbt innan matningen börjar), <code>Q</code> = stegdjup (G73/G83), <code>P</code> = paus i millisekunder, <code>F</code> = matning.</li>
       <li>Fler hål: skriv bara nya <code>X</code>/<code>Y</code> på följande rader. Z, R, Q, P och F ligger kvar tills <code>G80</code> avslutar cykeln. G0–G3 avbryter den också.</li>
-      <li>Med G91 räknas R från startnivån och Z från R-planet, och <code>L</code> upprepar hålet med X/Y som steg.</li>
+      <li>Med G91 räknas R från startnivån och Z från R-planet, och <code>K</code> (eller <code>L</code>) upprepar hålet så många gånger med X/Y som steg. Z och R tolkas om efter G90/G91, så en cykel som börjar med G90 och fortsätter med G91 får ett annat djup på de upprepade hålen.</li>
       <li>Cykeln ritas som vanliga rörelser, så hålen syns i 2D (cirkel), 3D och CNC-Fräs-simuleringen. Hålet blir lika brett som verktyget i verktygslådan; borrspetsen ritas inte. G83 backar upp 1 mm över förra nivån vid nästa steg.</li>
       <li>Cykler stöds i planet G17. G76 och G85–G89 stöds inte ännu och ger en varning.</li>
     </ul>
@@ -2399,8 +2399,10 @@ function parseGcode(text) {
     const hasXY=Number.isFinite(w.X)||Number.isFinite(w.Y);
     // A block drills when it gives a hole position — or names the cycle together with Z/R (drill where the tool stands)
     if (!(hasXY || (onCycleLine && (Number.isFinite(w.Z)||Number.isFinite(w.R))))) return {built:null};
-    let reps=Number.isFinite(w.L) ? Math.floor(w.L) : 1;
-    if (reps<=0) return {built:null};          // L0: store the data only
+    // Repeat count: K on Fanuc 16/18/21/0i, L on Haas and older Fanuc — accept either
+    const repeatWord = Number.isFinite(w.K) ? w.K : (Number.isFinite(w.L) ? w.L : 1);
+    let reps=Math.floor(repeatWord);
+    if (reps<=0) return {built:null};          // K0/L0: store the data only
     if (absolute) reps=1;                      // repeat count only makes sense with incremental hole steps
     if (plane!==17) { warnings.push('Rad '+L1+': borrcykel G'+g+' stöds bara i planet G17 (XY); raden ignoreras.'); return {built:null}; }
     const R=cycleParams.R, Zb=cycleParams.Z, Q=cycleParams.Q, Pms=cycleParams.P;
