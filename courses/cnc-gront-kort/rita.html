@@ -357,6 +357,10 @@
     width:100%; max-width:560px; max-height:86vh; overflow-y:auto;
     padding:18px 20px 20px;
   }
+  /* The toolbox window is as wide as its longest tool name needs (see fitToolboxWidth):
+     the variables below are set from JavaScript; the numbers here are the minimum. */
+  #toolModalOverlay .modal { width:var(--tool-modal-w, 740px); max-width:96vw; }
+  .tool-table th.tool-name-col { min-width:var(--tool-name-w, 190px); }
   .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
   .modal-head h2 { margin:0; font-size:18px; }
   .modal h3 { font-size:14px; margin:16px 0 8px; color:var(--muted); }
@@ -552,7 +556,7 @@
     </div>
     <h3>Verktyg (T · Ø D · Längd H)</h3>
     <table class="tool-table">
-      <thead><tr><th style="width:52px;">T</th><th>Namn</th><th style="width:96px;">Typ</th><th style="width:76px;">Ø D (mm)</th><th style="width:84px;">Längd H (mm)</th><th style="width:70px;" title="Fasvinkel: flankens vinkel mot verktygsaxeln (45 = 45° fas). Tomt = rak cylinder.">Vinkel °</th><th style="width:28px;"></th></tr></thead>
+      <thead><tr><th style="width:52px;">T</th><th class="tool-name-col">Namn</th><th style="width:96px;">Typ</th><th style="width:76px;">Ø D (mm)</th><th style="width:84px;">Längd H (mm)</th><th style="width:70px;" title="Fasvinkel: flankens vinkel mot verktygsaxeln (45 = 45° fas). Tomt = rak cylinder.">Vinkel °</th><th style="width:28px;"></th></tr></thead>
       <tbody id="toolTableBody"></tbody>
     </table>
     <p class="hint">Verktygen är sorterade efter typ och diameter. Verktygsnumret (T) är verktygets plats i listan, 1, 2, 3 … uppifrån och ner. Det räknas om automatiskt när du lägger till, tar bort eller flyttar ett verktyg, så kontrollera T-numren i dina program efteråt. Typen är till för överblicken – i simuleringen ritas alla verktyg som en rak cylinder med diametern D, utom profilfräsar med en vinkel i kolumnen Vinkel (till exempel fasfräs 45°). De ritas som en kon där Z är verktygsspetsen, så fasen blir lika vinklad som verktyget.</p>
@@ -1707,6 +1711,46 @@ function toolByNumber(n) {
   return toolTable.find(t => Number(t.t)===Number(n)) || null;
 }
 
+// ---- Toolbox width: wide enough for the longest tool name ----
+// The name column gets the width of the longest name (measured in the input's
+// own font) but never less than TOOL_NAME_MIN_PX; the window is that plus the
+// other columns. Adding or typing a longer name makes the whole window wider.
+const TOOL_NAME_MIN_PX = 190;
+const TOOL_OTHER_COLUMNS_PX = 546;   // T, type, Ø, length, angle, delete columns + cell and window padding
+let toolMeasureCtx = null;
+function measureTextPx(text, font) {
+  try {
+    if (!toolMeasureCtx) toolMeasureCtx = document.createElement('canvas').getContext('2d');
+    if (!toolMeasureCtx) return String(text).length * 7.5;
+    toolMeasureCtx.font = font;
+    return toolMeasureCtx.measureText(String(text)).width;
+  } catch (e) { return String(text).length * 7.5; }
+}
+function fitToolboxWidth() {
+  const overlay = document.getElementById('toolModalOverlay');
+  const modal = overlay && overlay.querySelector && overlay.querySelector('.modal');
+  if (!modal || !overlay.querySelectorAll) return;
+  const inputs = overlay.querySelectorAll('#toolTableBody input[data-field="name"]');
+  let font = '13px sans-serif';
+  if (inputs.length && window.getComputedStyle) {
+    const cs = window.getComputedStyle(inputs[0]);
+    if (cs && cs.fontSize) font = (cs.fontWeight||'400')+' '+cs.fontSize+' '+(cs.fontFamily||'sans-serif');
+  }
+  let widest = 0;
+  inputs.forEach(i => { widest = Math.max(widest, measureTextPx(i.value, font)); });
+  const nameCol = Math.max(TOOL_NAME_MIN_PX, Math.ceil(widest) + 48);   // + input and cell padding
+  modal.style.setProperty('--tool-name-w', nameCol+'px');
+  modal.style.setProperty('--tool-modal-w', (nameCol + TOOL_OTHER_COLUMNS_PX)+'px');
+  // Once laid out, widen a little more if the table still doesn't fit (fonts differ between systems)
+  if (window.requestAnimationFrame) window.requestAnimationFrame(() => {
+    const over = modal.scrollWidth - modal.clientWidth;
+    if (over > 1 && modal.getBoundingClientRect().width < window.innerWidth*0.96 - 1) {
+      const cur = parseFloat(modal.style.getPropertyValue('--tool-modal-w')) || 0;
+      modal.style.setProperty('--tool-modal-w', Math.ceil(cur + over + 2)+'px');
+    }
+  });
+}
+
 let toolAddDraftCat = null;   // category whose "new tool" row is open
 let toolJustAdded = null;     // tool to highlight after the next render
 const TOOL_NAME_PREFIX = {endmill:'Pinnfräs Ø', drill:'Borr Ø', face:'Planfräs Ø', tap:'Gängtapp M', spot:'Centrumborr Ø', profile:'Profilfräs Ø'};
@@ -1841,6 +1885,7 @@ function renderToolTable() {
       const field = inp.dataset.field;
       toolTable[idx][field] = (field==='name') ? inp.value : (parseFloat(inp.value)||0);
       saveJSON('gkodviz_tools_v1', toolTable);
+      if (field==='name') fitToolboxWidth();   // a longer name makes the window wider right away
       drawFromText(false);
     });
   });
@@ -1862,6 +1907,7 @@ function renderToolTable() {
       renderToolTable();
     });
   });
+  fitToolboxWidth();
   body.querySelectorAll('.row-del').forEach(btn => {
     btn.addEventListener('click', () => {
       toolTable.splice(parseInt(btn.dataset.idx,10),1);
@@ -2066,6 +2112,7 @@ document.getElementById('toolLibraryBtn').addEventListener('click', () => {
   renderWcsTable();
   renderHomeTable();
   document.getElementById('toolModalOverlay').classList.add('open');
+  fitToolboxWidth();   // measure again now that the window is visible
 });
 document.getElementById('closeToolModal').addEventListener('click', () => {
   document.getElementById('toolModalOverlay').classList.remove('open');
