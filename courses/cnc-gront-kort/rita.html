@@ -608,11 +608,11 @@
         <tr><td>G54–G59</td><td>Nollpunktsförskjutning (arbetskoordinatsystem 1–6)</td></tr>
         <tr><td>G80</td><td>Avbryt fast cykel (borrcykel)</td></tr>
         <tr><td>G73</td><td>Snabbborrning (spånbrytning): borrar Q mm i taget och backar 1 mm emellan</td></tr>
-        <tr><td>G74</td><td>Vänstergängning: matas ner och ut med samma matning (P = paus i botten)</td></tr>
+        <tr><td>G74</td><td>Vänstergängning: matas ner och ut med samma matning (P = paus i botten). Gängade väggar blir gröna i CNC-Fräs-läget.</td></tr>
         <tr><td>G81</td><td>Enkel borrning: snabbt till R-planet, matning ner till Z, snabbt upp</td></tr>
         <tr><td>G82</td><td>Som G81 men med paus (P, i millisekunder) i hålets botten</td></tr>
         <tr><td>G83</td><td>Djuphålsborrning: borrar Q mm i taget och backar helt till R-planet emellan</td></tr>
-        <tr><td>G84</td><td>Högergängning: matas ner och ut med samma matning (P = paus i botten)</td></tr>
+        <tr><td>G84</td><td>Högergängning: matas ner och ut med samma matning (P = paus i botten). Gängade väggar blir blå i CNC-Fräs-läget.</td></tr>
         <tr><td>G98</td><td>Efter varje hål tillbaka till startnivån (gäller om inget annat anges)</td></tr>
         <tr><td>G99</td><td>Efter varje hål bara tillbaka till R-planet</td></tr>
         <tr><td>G90</td><td>Absoluta mått</td></tr>
@@ -1119,6 +1119,7 @@ function removeStockMesh() {
   }
   webgl.chunkGridRef = null;
   webgl.stockMaterial = null;
+  webgl.stockColorMaterial = null;
 }
 
 function rebuildStockMesh() {
@@ -1178,6 +1179,21 @@ function rebuildStockMesh() {
 // boundaries stay correct even though each chunk is a separate mesh) has a
 // different height. Untouched chunks elsewhere are never revisited, which
 // is what keeps a single tool movement cheap regardless of total grid size.
+// Colours of the stock mesh. Every vertex carries its own colour: the base
+// grey-blue, a blue tint for right-hand thread walls (G84) and a green tint
+// for left-hand thread walls (G74), each multiplied by a shade factor that
+// darkens corners (see aoFactor below).
+const STOCK_TINTS = [
+  [0.667, 0.722, 0.800],   // 0: ordinary material (same colour as before)
+  [0.280, 0.600, 1.000],   // 1: right-hand thread, G84 (blue)
+  [0.250, 0.800, 0.420]    // 2: left-hand thread, G74 (green)
+];
+const STOCK_TINTS_255 = STOCK_TINTS.map(t => t.map(c => c*255));
+const CORNER_SHADE = 0.45;     // 0 = no darkening, higher = darker corners
+const CORNER_DISTS_MM = [0.5, 1.2, 2.2];
+const CORNER_DIRS = [[1,0],[-1,0],[0,1],[0,-1],[0.7071,0.7071],[0.7071,-0.7071],[-0.7071,0.7071],[-0.7071,-0.7071]];
+const WALL_SHADE_BAND_MM = 2.0; // the darker foot of a wall, measured up from the floor
+
 function rebuildChunk(w, g, ci, cj) {
   const key = cj*g.chunkNX+ci;
   const meshes = g._meshes || w.chunkMeshes;   // box faces keep their own mesh map + group
@@ -1195,10 +1211,13 @@ function rebuildChunk(w, g, ci, cj) {
   let normLen = 0;
   let idxBuf = new Uint32Array(1024);
   let idxLen = 0;
+  let colBuf = new Uint8Array(1024);   // colours as 0–255 bytes (normalized on upload): a quarter of the memory of floats
+  let colLen = 0;
   let vertCount = 0;
   function growPos(extra) { if (posLen+extra>posBuf.length) { const nb=new Float32Array(Math.max(posBuf.length*2,posLen+extra)); nb.set(posBuf.subarray(0,posLen)); posBuf=nb; } }
   function growNorm(extra) { if (normLen+extra>normBuf.length) { const nb=new Float32Array(Math.max(normBuf.length*2,normLen+extra)); nb.set(normBuf.subarray(0,normLen)); normBuf=nb; } }
   function growIdx(extra) { if (idxLen+extra>idxBuf.length) { const nb=new Uint32Array(Math.max(idxBuf.length*2,idxLen+extra)); nb.set(idxBuf.subarray(0,idxLen)); idxBuf=nb; } }
+  function growCol(extra) { if (colLen+extra>colBuf.length) { const nb=new Uint8Array(Math.max(colBuf.length*2,colLen+extra)); nb.set(colBuf.subarray(0,colLen)); colBuf=nb; } }
   // Every vertex gets an EXPLICIT, hand-assigned normal for its quad's
   // known flat direction (up for tops, outward-axis for walls) instead of
   // one computed per tiny face. With computed-per-face normals, a curve
@@ -1208,7 +1227,13 @@ function rebuildChunk(w, g, ci, cj) {
   // every vertex of a given face type the SAME constant normal makes
   // adjoining facets shade identically, so the seams disappear even
   // though the underlying geometry is still faceted.
-  function quad(x0,y0,z0, x1,y1,z1, x2,y2,z2, x3,y3,z3, nx,ny,nz) {
+  function quad(x0,y0,z0, x1,y1,z1, x2,y2,z2, x3,y3,z3, nx,ny,nz, f0=1,f1=1,f2=1,f3=1, tint=0) {
+    growCol(12);
+    const T=STOCK_TINTS_255[tint];
+    colBuf[colLen++]=T[0]*f0+0.5; colBuf[colLen++]=T[1]*f0+0.5; colBuf[colLen++]=T[2]*f0+0.5;
+    colBuf[colLen++]=T[0]*f1+0.5; colBuf[colLen++]=T[1]*f1+0.5; colBuf[colLen++]=T[2]*f1+0.5;
+    colBuf[colLen++]=T[0]*f2+0.5; colBuf[colLen++]=T[1]*f2+0.5; colBuf[colLen++]=T[2]*f2+0.5;
+    colBuf[colLen++]=T[0]*f3+0.5; colBuf[colLen++]=T[1]*f3+0.5; colBuf[colLen++]=T[2]*f3+0.5;
     growPos(12);
     posBuf[posLen++]=x0; posBuf[posLen++]=y0; posBuf[posLen++]=z0;
     posBuf[posLen++]=x1; posBuf[posLen++]=y1; posBuf[posLen++]=z1;
@@ -1236,6 +1261,44 @@ function rebuildChunk(w, g, ci, cj) {
     return (dx*dx+dy*dy) <= g.radius*g.radius;
   }
 
+  // Soft corner darkening ("ambient occlusion"): a cell below the original
+  // surface looks at the surrounding terrain in 8 directions at 3 distances;
+  // the higher and the closer the neighbours that rise above it, the darker.
+  // Only floors/walls near other walls darken — flat open areas stay as they
+  // were. Offsets are capped at 22 cells so a change never reaches further
+  // than the neighbouring chunks that are rebuilt together with it.
+  const aoN = CORNER_DISTS_MM.length*CORNER_DIRS.length;
+  const aoDI = new Int32Array(aoN), aoDJ = new Int32Array(aoN), aoD = new Float32Array(aoN);
+  { let n=0;
+    for (const dMM of CORNER_DISTS_MM) for (const dir of CORNER_DIRS) {
+      aoDI[n]=Math.max(-22,Math.min(22,Math.round(dir[0]*dMM/g.cellW)));
+      aoDJ[n]=Math.max(-22,Math.min(22,Math.round(dir[1]*dMM/g.cellH)));
+      aoD[n]=dMM; n++;
+    } }
+  function aoFactor(i, j) {
+    const h = g.heights[j*res+i];
+    if (h >= g.top-1e-6) return 1;                 // untouched surface: nothing can rise above it
+    let occ = 0;
+    for (let n=0;n<aoN;n++) {
+      const ii=i+aoDI[n], jj=j+aoDJ[n];
+      if (ii<0||ii>=res||jj<0||jj>=res) continue;
+      if (g.shape==='cylinder' && !cellInside(ii,jj)) continue;
+      const dh = g.heights[jj*res+ii]-h;
+      if (dh <= 0.05) continue;
+      occ += Math.atan2(dh, aoD[n]) / 1.5708;      // 0..1
+    }
+    return 1 - CORNER_SHADE*(occ/aoN);
+  }
+  function tintAt(i, j) { return g.tags ? g.tags[j*res+i] : 0; }
+  // A wall is drawn darker toward its foot (lowest WALL_SHADE_BAND_MM), where
+  // it meets the floor, matching the darkened floor cell next to it.
+  function wallSplit(hi, lo, fLow, emit) {
+    if (fLow >= 0.999) { emit(hi, lo, 1, 1); return; }
+    const H = hi-lo;
+    if (H > WALL_SHADE_BAND_MM+0.05) { emit(hi, lo+WALL_SHADE_BAND_MM, 1, 1); emit(lo+WALL_SHADE_BAND_MM, lo, 1, fLow); }
+    else emit(hi, lo, fLow+(1-fLow)*(H/WALL_SHADE_BAND_MM), fLow);
+  }
+
   for (let j=j0;j<j1;j++) {
     for (let i=i0;i<i1;i++) {
       if (!cellInside(i,j)) continue;
@@ -1244,19 +1307,25 @@ function rebuildChunk(w, g, ci, cj) {
       const x0=g.minX+i*g.cellW, x1=x0+g.cellW;
       const y0=g.minY+j*g.cellH, y1=y0+g.cellH;
 
-      quad(x0,h,y0, x1,h,y0, x1,h,y1, x0,h,y1, 0,1,0);
+      const fc = aoFactor(i,j);
+      quad(x0,h,y0, x1,h,y0, x1,h,y1, x0,h,y1, 0,1,0, fc,fc,fc,fc, 0);
 
       // A box face has no perimeter skirt: its edge is shared with the
       // neighbouring face, so the surface simply ends there.
-      const rightH = cellInside(i+1,j) ? g.heights[idx+1] : (g.boxFace ? h : g.bottom);
-      const frontH = cellInside(i,j+1) ? g.heights[idx+res] : (g.boxFace ? h : g.bottom);
+      const rightIn = cellInside(i+1,j), frontIn = cellInside(i,j+1);
+      const rightH = rightIn ? g.heights[idx+1] : (g.boxFace ? h : g.bottom);
+      const frontH = frontIn ? g.heights[idx+res] : (g.boxFace ? h : g.bottom);
       if (Math.abs(h-rightH) > 0.01) {
         const lo = Math.min(h,rightH), hi = Math.max(h,rightH);
-        quad(x1,hi,y0, x1,hi,y1, x1,lo,y1, x1,lo,y0, 1,0,0);
+        let fLow = 1, tint = 0;
+        if (rightIn) { const li = h<rightH ? i : i+1; fLow = aoFactor(li,j); tint = tintAt(li,j); }
+        wallSplit(hi, lo, fLow, (a,b,fa,fb) => quad(x1,a,y0, x1,a,y1, x1,b,y1, x1,b,y0, 1,0,0, fa,fa,fb,fb, tint));
       }
       if (Math.abs(h-frontH) > 0.01) {
         const lo = Math.min(h,frontH), hi = Math.max(h,frontH);
-        quad(x0,hi,y1, x1,hi,y1, x1,lo,y1, x0,lo,y1, 0,0,1);
+        let fLow = 1, tint = 0;
+        if (frontIn) { const lj = h<frontH ? j : j+1; fLow = aoFactor(i,lj); tint = tintAt(i,lj); }
+        wallSplit(hi, lo, fLow, (a,b,fa,fb) => quad(x0,a,y1, x1,a,y1, x1,b,y1, x0,b,y1, 0,0,1, fa,fa,fb,fb, tint));
       }
       if (!g.boxFace && !cellInside(i-1,j) && Math.abs(h-g.bottom) > 0.01) {
         quad(x0,h,y1, x0,h,y0, x0,g.bottom,y0, x0,g.bottom,y1, -1,0,0);
@@ -1273,8 +1342,10 @@ function rebuildChunk(w, g, ci, cj) {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(posBuf.subarray(0,posLen),3));
   geo.setAttribute('normal', new THREE.BufferAttribute(normBuf.subarray(0,normLen),3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colBuf.subarray(0,colLen),3,true)); // normalized bytes -> 0..1
   geo.setIndex(new THREE.BufferAttribute(idxBuf.subarray(0,idxLen), 1));
-  const mesh = new THREE.Mesh(geo, w.stockMaterial);
+  if (!w.stockColorMaterial) w.stockColorMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, metalness:0.1, roughness:0.8, flatShading:false, side: THREE.DoubleSide });
+  const mesh = new THREE.Mesh(geo, w.stockColorMaterial);
   parent.add(mesh);
   meshes.set(key, mesh);
 }
@@ -1508,7 +1579,12 @@ const DEFAULT_TOOLS = [
   {t:18, name:'Gängtapp M6', d:6, h:50, type:'tap'},
   {t:19, name:'Gängfräs M10 (Ø8)', d:8, h:40, type:'tap'},
   {t:20, name:'Fasfräs 45° Ø12', d:12, h:50, type:'profile'},
-  {t:21, name:'Radiefräs R2 Ø10', d:10, h:50, type:'profile'}
+  {t:21, name:'Radiefräs R2 Ø10', d:10, h:50, type:'profile'},
+  {t:22, name:'Hörnradiefräs R1 Ø8', d:8, h:50, type:'profile'},
+  {t:23, name:'Hörnradiefräs R2 Ø10', d:10, h:50, type:'profile'},
+  {t:24, name:'Hörnradiefräs R3 Ø12', d:12, h:50, type:'profile'},
+  {t:25, name:'Hörnradiefräs R4 Ø14', d:14, h:55, type:'profile'},
+  {t:26, name:'Hörnradiefräs R5 Ø16', d:16, h:55, type:'profile'}
 ];
 // Tools saved before types existed (browser storage or an opened .nc file)
 // get a type guessed from their name, so nothing lands in the wrong place.
@@ -2956,11 +3032,12 @@ function stockBoxMachineToFace(x,y,z) {
   return {grid:b.faces[f.key], u:bv[f.ua], v:bv[f.va]};
 }
 // Stamps one tool position, routing to the right face when in box mode.
-function stampAt(g, x, y, radius, z) {
-  if (!stockBox) { stampTool(g, x, y, radius, z); return; }
+function stampAt(g, x, y, radius, z, tag) {
+  if (!stockBox) { stampTool(g, x, y, radius, z, tag); return; }
   const m=stockBoxMachineToFace(x,y,z);
-  stampTool(m.grid, m.u, m.v, radius, z);
+  stampTool(m.grid, m.u, m.v, radius, z, tag);
 }
+function threadTagFor(seg) { return seg.cycle===84 ? 1 : (seg.cycle===74 ? 2 : 0); }
 // Maps a face's local scene coordinates (X=u, Y=height, Z=-v — the same
 // layout the chunk mesher produces) to machine scene coordinates
 // (X=mx, Y=mz, Z=-my) for the CURRENT orientation. Returned as a
@@ -3004,7 +3081,10 @@ function markChunkDirty(g, i, j) {
   }
 }
 
-function stampTool(g, x, y, radius, z) {
+// tag: 0 = ordinary cut, 1 = right-hand thread (G84), 2 = left-hand thread (G74).
+// A cell keeps the tag of whatever cut it LAST, so a later ordinary cut that
+// goes deeper removes the thread colour from that wall.
+function stampTool(g, x, y, radius, z, tag) {
   const i0 = Math.max(0, Math.floor((x-radius-g.minX)/g.cellW));
   const i1 = Math.min(g.res-1, Math.ceil((x+radius-g.minX)/g.cellW));
   const j0 = Math.max(0, Math.floor((y-radius-g.minY)/g.cellH));
@@ -3019,6 +3099,7 @@ function stampTool(g, x, y, radius, z) {
         const idx = j*g.res+i;
         if (z < g.heights[idx]) {
           g.heights[idx] = Math.max(z, g.bottom);
+          if (tag || g.tags) { if (!g.tags) g.tags = new Uint8Array(g.res*g.res); g.tags[idx] = tag || 0; }
           markChunkDirty(g, i, j);
         }
       }
@@ -3078,8 +3159,8 @@ function stampSegmentFully(g, seg) {
   // point instead of a mark connected to the rest of the cut, which is
   // what actually happens on a real machine.
   if (seg.type===0 || seg.type==='tilt' || seg.skipMotion || seg.invalidGeometry) return;
-  const radius = toolRadiusFor(seg);
-  for (const p of getSegmentSamples(seg)) stampAt(g, p.x, p.y, radius, p.z);
+  const radius = toolRadiusFor(seg), tag = threadTagFor(seg);
+  for (const p of getSegmentSamples(seg)) stampAt(g, p.x, p.y, radius, p.z, tag);
 }
 
 function stampSegmentPartial(g, seg, t) {
@@ -3087,10 +3168,10 @@ function stampSegmentPartial(g, seg, t) {
   const samples = getSegmentSamples(seg);
   const total = samples[samples.length-1].cum;
   const targetLen = total*t;
-  const radius = toolRadiusFor(seg);
+  const radius = toolRadiusFor(seg), tag = threadTagFor(seg);
   for (const p of samples) {
     if (p.cum > targetLen+1e-9) break;
-    stampAt(g, p.x, p.y, radius, p.z);
+    stampAt(g, p.x, p.y, radius, p.z, tag);
   }
 }
 
