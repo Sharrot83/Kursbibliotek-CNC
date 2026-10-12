@@ -695,6 +695,7 @@ V X-90        (vält tillbaka)</pre>
       <button class="sk-tab active" data-sktab="fras">Fräsning</button>
       <button class="sk-tab" data-sktab="svarv">Svarvning</button>
       <button class="sk-tab" data-sktab="borr">Borrning</button>
+      <button class="sk-tab" data-sktab="gang">Gängning</button>
     </div>
 
     <!-- ===== FRÄSNING ===== -->
@@ -871,6 +872,60 @@ V X-90        (vält tillbaka)</pre>
         </div>
       </div>
       <p class="hint">Förvalda värden (Vc 25, fn 0,15) är riktvärden för materialgrupp 1,4, snabbstålsborr, obelagd, utan skärvätska, Ø(10)–15.</p>
+    </div>
+
+    <div class="sk-panel" id="sk-panel-gang">
+      <h3>Varvtal (n)</h3>
+      <p style="font-family:ui-monospace,monospace; font-size:17px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; display:inline-block;">n = (Vc × 1000) / (π × d)</p>
+      <p class="hint">d = gängans nominella diameter (t.ex. 8 för M8) · Vc = skärhastighet (m/min)</p>
+
+      <h3>Matningshastighet (Vf)</h3>
+      <p style="font-family:ui-monospace,monospace; font-size:17px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; display:inline-block;">Vf = P × n</p>
+      <p class="hint">P = gängans stigning (mm/varv). Vid gängning är matningen per varv lika med stigningen, så tappen följer gängan. I G84/G74 gäller alltså <b>F = S × P</b>, till exempel M8 (P 1,25) med S640 ger F800.</p>
+
+      <h3>Skärhastigheter Vc — Maskingängning, snabbstål</h3>
+      <div class="sk-tablewrap">
+        <table class="tool-table">
+          <thead>
+            <tr><th rowspan="2">Materialgrupp</th><th colspan="2">Skärande gängtapp</th><th colspan="2">Pressgängtapp (rullgängtapp)</th><th>Gängsnitt</th></tr>
+            <tr><th>Obelagd</th><th>Belagd</th><th>Obelagd</th><th>Belagd</th><th>Obelagt</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1, 4</td><td>20</td><td>40</td><td>27</td><td>50</td><td>10</td></tr>
+            <tr><td>2, 3, 5, 8</td><td>16</td><td>32</td><td>23</td><td>45</td><td>8</td></tr>
+            <tr><td>6, 7, 9, 10, 11, 12</td><td>12</td><td>27</td><td>20</td><td>40</td><td>6</td></tr>
+            <tr><td>13, 15, 17</td><td>5</td><td>12</td><td>–</td><td>15</td><td>3</td></tr>
+            <tr><td>16</td><td>7</td><td>12</td><td>–</td><td>18</td><td>4</td></tr>
+            <tr><td>18</td><td>7</td><td>12</td><td>–</td><td>–</td><td>4</td></tr>
+            <tr><td>19</td><td>10</td><td>22</td><td>–</td><td>–</td><td>5</td></tr>
+            <tr><td>20</td><td>12</td><td>18</td><td>–</td><td>25</td><td>6</td></tr>
+            <tr><td>21</td><td>20</td><td>35</td><td>–</td><td>40</td><td>10</td></tr>
+            <tr><td>22</td><td>30</td><td>45</td><td>–</td><td>–</td><td>15</td></tr>
+            <tr><td>23</td><td>35</td><td>45</td><td>38</td><td>55</td><td>18</td></tr>
+            <tr><td>24</td><td>20</td><td>30</td><td>22</td><td>40</td><td>10</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="hint">Vc i m/min. Riktvärden: skärdata är valda för bearbetning under stabila förhållanden i maskiner med tillräcklig motoreffekt och förutsätter riklig användning av skärvätska. Ett streck (–) betyder att tabellen inte anger något riktvärde för den kombinationen. Materialgrupperna finns på sidorna 256–257 i boken.</p>
+
+      <h3>Miniräknare</h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; margin-top:8px;">
+        <div><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:3px;">Skärhastighet Vc (m/min)</label><input type="number" id="ga-vc" value="16" step="1" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 9px; font-family:ui-monospace,monospace;"></div>
+        <div><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:3px;">Gänga (grov stigning)</label><select id="ga-size" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 9px; font-family:ui-monospace,monospace;"><option value="">Egen</option></select></div>
+        <div><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:3px;">Gängdiameter d (mm)</label><input type="number" id="ga-d" value="8" step="0.1" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 9px; font-family:ui-monospace,monospace;"></div>
+        <div><label style="display:block; font-size:12px; color:var(--muted); margin-bottom:3px;">Stigning P (mm)</label><input type="number" id="ga-p" value="1.25" step="0.05" style="width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:7px 9px; font-family:ui-monospace,monospace;"></div>
+      </div>
+      <div style="display:flex; gap:14px; margin-top:14px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:160px; background:var(--panel2); border:1px solid var(--ok); border-radius:8px; padding:12px 14px;">
+          <div style="font-size:12px; color:var(--muted);">Varvtal (n) — S i programmet</div>
+          <div id="ga-out-n" style="font-size:20px; font-weight:800; color:var(--ok); font-family:ui-monospace,monospace;">637 varv/min</div>
+        </div>
+        <div style="flex:1; min-width:160px; background:var(--panel2); border:1px solid var(--ok); border-radius:8px; padding:12px 14px;">
+          <div style="font-size:12px; color:var(--muted);">Matningshastighet (Vf) — F i programmet</div>
+          <div id="ga-out-vf" style="font-size:20px; font-weight:800; color:var(--ok); font-family:ui-monospace,monospace;">796 mm/min</div>
+        </div>
+      </div>
+      <p class="hint">Förvalda värden (Vc 16, M8) är riktvärde för materialgrupp 2, 3, 5, 8 med skärande gängtapp, obelagd. Välj en gänga i listan så fylls diameter och stigning i (standardgängor med grov stigning), eller skriv egna värden.</p>
     </div>
   </div>
 </div>
@@ -2026,6 +2081,35 @@ document.querySelectorAll('.sk-tab').forEach(btn => {
   }
   [vcEl,dEl,fnEl].forEach(el=>el.addEventListener('input', calcBorr));
   calcBorr();
+})();
+(function(){
+  // Standard ISO metric threads, coarse pitch: [name, nominal diameter, pitch]
+  const SIZES=[['M3',3,0.5],['M4',4,0.7],['M5',5,0.8],['M6',6,1],['M8',8,1.25],['M10',10,1.5],['M12',12,1.75],['M14',14,2],['M16',16,2],['M20',20,2.5]];
+  const vcEl=document.getElementById('ga-vc'), dEl=document.getElementById('ga-d'), pEl=document.getElementById('ga-p'),
+        selEl=document.getElementById('ga-size'),
+        nOut=document.getElementById('ga-out-n'), vfOut=document.getElementById('ga-out-vf');
+  SIZES.forEach(([name])=>{ const o=document.createElement('option'); o.value=name; o.textContent=name; selEl.appendChild(o); });
+  selEl.value='M8';
+  function calcGang() {
+    const vc=parseFloat(vcEl.value), d=parseFloat(dEl.value), pitch=parseFloat(pEl.value);
+    if (!(vc>0) || !(d>0)) { nOut.textContent='— varv/min'; vfOut.textContent='— mm/min'; return; }
+    const n=(vc*1000)/(Math.PI*d);
+    nOut.textContent = Math.round(n).toLocaleString('sv-SE')+' varv/min';
+    if (pitch>0) vfOut.textContent = Math.round(pitch*n).toLocaleString('sv-SE')+' mm/min';
+    else vfOut.textContent = '— mm/min';
+  }
+  selEl.addEventListener('change', () => {
+    const hit=SIZES.find(x=>x[0]===selEl.value);
+    if (hit) { dEl.value=hit[1]; pEl.value=hit[2]; }
+    calcGang();
+  });
+  // typing your own diameter/pitch means it is no longer one of the listed sizes
+  [dEl,pEl].forEach(el=>el.addEventListener('input', () => {
+    const hit=SIZES.find(x=>x[1]===parseFloat(dEl.value) && x[2]===parseFloat(pEl.value));
+    selEl.value = hit ? hit[0] : '';
+  }));
+  [vcEl,dEl,pEl].forEach(el=>el.addEventListener('input', calcGang));
+  calcGang();
 })();
 
 const EXAMPLES = {

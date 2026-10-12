@@ -78,6 +78,11 @@
     color:var(--text); padding:9px 10px; font-size:15px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
   .field input:focus{outline:2px solid var(--blue); outline-offset:1px;}
+  .field select{
+    width:100%; background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    color:var(--text); padding:9px 10px; font-size:15px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  .field select:focus{outline:2px solid var(--blue); outline-offset:1px;}
   .results{display:flex; gap:16px; margin-top:18px; flex-wrap:wrap;}
   .result{
     flex:1; min-width:180px; background:var(--green-dim); border:1px solid #2f5d3f; border-radius:8px;
@@ -114,13 +119,14 @@
 
 <main class="wrap">
   <div class="eyebrow">Lathund</div>
-  <h1>Skärdata — Fräsning, svarvning, borrning</h1>
+  <h1>Skärdata — Fräsning, svarvning, borrning och gängning</h1>
   <div class="sub">Riktvärden för skärhastighet och matning per materialgrupp, med formler och miniräknare för respektive bearbetning. Siffrorna är avskrivna från Verkstadshandboken (snabbstål/HSS-tabeller) — stäm alltid av mot maskinens och verktygstillverkarens egna rekommendationer.</div>
 
   <div class="tabs">
     <button class="tab active" data-tab="frasning">Fräsning</button>
     <button class="tab" data-tab="svarvning">Svarvning</button>
     <button class="tab" data-tab="borrning">Borrning</button>
+    <button class="tab" data-tab="gangning">Gängning</button>
   </div>
 
   <!-- ============ FRÄSNING ============ -->
@@ -357,6 +363,74 @@
       <div class="note">Förvalda värden (Vc 25, fn 0,15) är riktvärden för materialgrupp 1,4, snabbstålsborr, obelagd, utan skärvätska, Ø(10)–15.</div>
     </div>
   </section>
+
+  <!-- ============ GÄNGNING ============ -->
+  <section class="panel" id="panel-gangning">
+    <div class="card">
+      <h2><span class="n">1</span>Varvtal (n)</h2>
+      <div class="formula">n = (Vc × 1000) / (π × d)</div>
+      <div class="keys"><b>n</b> = varvtal (varv/min), det som skrivs som S i programmet &nbsp;·&nbsp; <b>Vc</b> = skärhastighet (m/min) &nbsp;·&nbsp; <b>d</b> = gängans nominella diameter (mm, t.ex. 8 för M8)</div>
+    </div>
+    <div class="card">
+      <h2><span class="n">2</span>Matningshastighet (Vf)</h2>
+      <div class="formula">Vf = P × n</div>
+      <div class="keys"><b>Vf</b> = matningshastighet (mm/min), det som skrivs som F i programmet &nbsp;·&nbsp; <b>P</b> = gängans stigning (mm/varv) &nbsp;·&nbsp; <b>n</b> = varvtal (varv/min)</div>
+      <div class="keys">Vid gängning är matningen per varv lika med stigningen, så att tappen följer gängan. I G84 och G74 gäller alltså <b>F = S × P</b>, till exempel M8 (P 1,25) med S640 ger F800.</div>
+    </div>
+
+    <div class="card">
+      <h2>Skärhastigheter Vc — Maskingängning, snabbstål</h2>
+      <div class="tablewrap">
+        <table class="data">
+          <thead>
+            <tr>
+              <th rowspan="2">Material-<br>grupp</th>
+              <th colspan="2">Skärande gängtapp</th>
+              <th colspan="2">Pressgängtapp (rullgängtapp)</th>
+              <th>Gängsnitt</th>
+            </tr>
+            <tr>
+              <th>obelagd</th><th>belagd</th>
+              <th>obelagd</th><th>belagd</th>
+              <th>obelagt</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th>1, 4</th><td>20</td><td>40</td><td>27</td><td>50</td><td>10</td></tr>
+            <tr><th>2, 3, 5, 8</th><td>16</td><td>32</td><td>23</td><td>45</td><td>8</td></tr>
+            <tr><th>6, 7, 9, 10, 11, 12</th><td>12</td><td>27</td><td>20</td><td>40</td><td>6</td></tr>
+            <tr><th>13, 15, 17</th><td>5</td><td>12</td><td>–</td><td>15</td><td>3</td></tr>
+            <tr><th>16</th><td>7</td><td>12</td><td>–</td><td>18</td><td>4</td></tr>
+            <tr><th>18</th><td>7</td><td>12</td><td>–</td><td>–</td><td>4</td></tr>
+            <tr><th>19</th><td>10</td><td>22</td><td>–</td><td>–</td><td>5</td></tr>
+            <tr><th>20</th><td>12</td><td>18</td><td>–</td><td>25</td><td>6</td></tr>
+            <tr><th>21</th><td>20</td><td>35</td><td>–</td><td>40</td><td>10</td></tr>
+            <tr><th>22</th><td>30</td><td>45</td><td>–</td><td>–</td><td>15</td></tr>
+            <tr><th>23</th><td>35</td><td>45</td><td>38</td><td>55</td><td>18</td></tr>
+            <tr><th>24</th><td>20</td><td>30</td><td>22</td><td>40</td><td>10</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="srcnote">Vc i m/min. Riktvärden: skärdata är valda för bearbetning under stabila förhållanden i maskiner med tillräcklig motoreffekt och förutsätter riklig användning av skärvätska. Ett streck (–) betyder att tabellen inte anger något riktvärde för den kombinationen. Materialgrupperna finns på sidorna 256–257 i boken.</div>
+    </div>
+
+    <div class="calc">
+      <h2>Miniräknare — Gängning</h2>
+      <div class="hint">Fyll i Vc, gängdiameter och stigning — varvtal (S) och matning (F) räknas ut automatiskt. Välj en standardgänga i listan så fylls diameter och stigning i.</div>
+      <div class="calc-grid">
+        <div class="field"><label for="gg-vc">Skärhastighet Vc (m/min)</label><input type="number" id="gg-vc" value="16" step="1"></div>
+        <div class="field"><label for="gg-size">Gänga (grov stigning)</label><select id="gg-size"></select></div>
+        <div class="field"><label for="gg-d">Gängdiameter d (mm)</label><input type="number" id="gg-d" value="8" step="0.1"></div>
+        <div class="field"><label for="gg-p">Stigning P (mm)</label><input type="number" id="gg-p" value="1.25" step="0.05"></div>
+      </div>
+      <button class="presetbtn" id="gg-preset">Återställ till riktvärden: grupp 2, 3, 5, 8, M8 (skärande gängtapp, obelagd)</button>
+      <div class="results">
+        <div class="result"><div class="rlabel">Varvtal (n) — S i programmet</div><div class="rvalue" id="gg-n">— varv/min</div></div>
+        <div class="result"><div class="rlabel">Matningshastighet (Vf) — F i programmet</div><div class="rvalue" id="gg-vf">— mm/min</div></div>
+      </div>
+      <div class="note">Förvalda värden (Vc 16, M8) är riktvärden för materialgrupp 2, 3, 5, 8 med skärande gängtapp, obelagd. Listan med standardgängor (grov stigning) fyller i diameter och stigning, men du kan skriva egna värden.</div>
+    </div>
+  </section>
 </main>
 
 <script>
@@ -422,6 +496,30 @@
       const fn = parseFloat(fnEl.value);
       return (fn > 0) ? fn * n : null;
     }, {'mb-vc':25, 'mb-d':8, 'mb-fn':0.15}, 'mb-preset');
+  })();
+
+  // Gängning: Vf = P * n, with a list of standard metric coarse threads that fills in d and P
+  (function() {
+    const SIZES = [['M3',3,0.5],['M4',4,0.7],['M5',5,0.8],['M6',6,1],['M8',8,1.25],['M10',10,1.5],['M12',12,1.75],['M14',14,2],['M16',16,2],['M20',20,2.5]];
+    const selEl = document.getElementById('gg-size'), dEl = document.getElementById('gg-d'), pEl = document.getElementById('gg-p');
+    const egen = document.createElement('option'); egen.value = ''; egen.textContent = 'Egen'; selEl.appendChild(egen);
+    SIZES.forEach(([name]) => { const o = document.createElement('option'); o.value = name; o.textContent = name; selEl.appendChild(o); });
+    selEl.value = 'M8';
+    wireCalc('gg', 'gg-p', (n) => {
+      const p = parseFloat(pEl.value);
+      return (p > 0) ? p * n : null;
+    }, {'gg-vc':16, 'gg-d':8, 'gg-p':1.25}, 'gg-preset');
+    function syncSelect() {
+      const hit = SIZES.find(x => x[1] === parseFloat(dEl.value) && x[2] === parseFloat(pEl.value));
+      selEl.value = hit ? hit[0] : '';
+    }
+    selEl.addEventListener('change', () => {
+      const hit = SIZES.find(x => x[0] === selEl.value);
+      if (hit) { dEl.value = hit[1]; pEl.value = hit[2]; }
+      document.getElementById('gg-vc').dispatchEvent(new Event('input'));
+    });
+    [dEl, pEl].forEach(el => el.addEventListener('input', syncSelect));
+    document.getElementById('gg-preset').addEventListener('click', syncSelect);
   })();
 </script>
 </body>
