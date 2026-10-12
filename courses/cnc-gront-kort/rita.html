@@ -551,10 +551,10 @@
     </div>
     <h3>Verktyg (T · Ø D · Längd H)</h3>
     <table class="tool-table">
-      <thead><tr><th style="width:52px;">T</th><th>Namn</th><th style="width:96px;">Typ</th><th style="width:76px;">Ø D (mm)</th><th style="width:84px;">Längd H (mm)</th><th style="width:28px;"></th></tr></thead>
+      <thead><tr><th style="width:52px;">T</th><th>Namn</th><th style="width:96px;">Typ</th><th style="width:76px;">Ø D (mm)</th><th style="width:84px;">Längd H (mm)</th><th style="width:70px;" title="Fasvinkel: flankens vinkel mot verktygsaxeln (45 = 45° fas). Tomt = rak cylinder.">Vinkel °</th><th style="width:28px;"></th></tr></thead>
       <tbody id="toolTableBody"></tbody>
     </table>
-    <p class="hint">Verktygen är sorterade efter typ och diameter. Nya verktyg får nummer efter närmast mindre verktyg i gruppen, och verktyg med nummer därefter flyttas ett steg – kontrollera T-numren i dina program. Typen är till för överblicken – i simuleringen ritas alla verktyg som en rak cylinder med diametern D.</p>
+    <p class="hint">Verktygen är sorterade efter typ och diameter. Nya verktyg får nummer efter närmast mindre verktyg i gruppen, och verktyg med nummer därefter flyttas ett steg – kontrollera T-numren i dina program. Typen är till för överblicken – i simuleringen ritas alla verktyg som en rak cylinder med diametern D, utom profilfräsar med en vinkel i kolumnen Vinkel (till exempel fasfräs 45°). De ritas som en kon där Z är verktygsspetsen, så fasen blir lika vinklad som verktyget.</p>
     <div class="tool-reset-row">
       <button class="small tool-reset" id="resetToolsBtn" title="Ersätter hela verktygslistan med standardverktygen">↺ Återställ standardverktyg</button>
       <span class="hint" id="resetToolsHint">Har du ändrat eller tagit bort fel? Den här knappen ger tillbaka standardlistan.</span>
@@ -1512,9 +1512,18 @@ function updateWebGLToolMarker(playPos) {
   const g = stockGrid;
   const height = g ? Math.max(15, (g.top-g.bottom)*2) : 30;
   if (webgl.toolMarker.geometry) webgl.toolMarker.geometry.dispose();
-  webgl.toolMarker.geometry = new THREE.CylinderGeometry(radius, radius, height, 24);
-  // cylinder is centered on its own origin — lift it so its BOTTOM tip sits at the actual cutting point
-  webgl.toolMarker.position.set(p.x, (p.z||0) + height/2, -p.y);
+  const shape = toolShape(tool);
+  if (shape) {
+    // cone up to the full diameter, then the straight shank; its tip sits at the cutting point
+    const coneH = Math.min(height, (radius-shape.tipR)*shape.k);
+    webgl.toolMarker.geometry = new THREE.LatheGeometry([
+      new THREE.Vector2(shape.tipR, 0), new THREE.Vector2(radius, coneH), new THREE.Vector2(radius, height)], 24);
+    webgl.toolMarker.position.set(p.x, (p.z||0), -p.y);
+  } else {
+    webgl.toolMarker.geometry = new THREE.CylinderGeometry(radius, radius, height, 24);
+    // cylinder is centered on its own origin — lift it so its BOTTOM tip sits at the actual cutting point
+    webgl.toolMarker.position.set(p.x, (p.z||0) + height/2, -p.y);
+  }
   webgl.toolMarker.visible = true;
 }
 
@@ -1633,13 +1642,19 @@ const DEFAULT_TOOLS = [
   {t:17, name:'Planfräs Ø50 (HM)', d:50, h:45, type:'face'},
   {t:18, name:'Gängtapp M6', d:6, h:50, type:'tap'},
   {t:19, name:'Gängfräs M10 (Ø8)', d:8, h:40, type:'tap'},
-  {t:20, name:'Fasfräs 45° Ø12', d:12, h:50, type:'profile'},
+  {t:20, name:'Fasfräs 45° Ø12', d:12, h:50, type:'profile', angle:45},
   {t:21, name:'Radiefräs R2 Ø10', d:10, h:50, type:'profile'},
   {t:22, name:'Hörnradiefräs R1 Ø8', d:8, h:50, type:'profile'},
   {t:23, name:'Hörnradiefräs R2 Ø10', d:10, h:50, type:'profile'},
   {t:24, name:'Hörnradiefräs R3 Ø12', d:12, h:50, type:'profile'},
   {t:25, name:'Hörnradiefräs R4 Ø14', d:14, h:55, type:'profile'},
-  {t:26, name:'Hörnradiefräs R5 Ø16', d:16, h:55, type:'profile'}
+  {t:26, name:'Hörnradiefräs R5 Ø16', d:16, h:55, type:'profile'},
+  {t:27, name:'Centrumborr Ø2', d:2, h:40, type:'spot'},
+  {t:28, name:'Centrumborr Ø4', d:4, h:45, type:'spot'},
+  {t:29, name:'Centrumborr Ø5', d:5, h:50, type:'spot'},
+  {t:30, name:'Centrumborr Ø6', d:6, h:50, type:'spot'},
+  {t:31, name:'Centrumborr Ø7', d:7, h:55, type:'spot'},
+  {t:32, name:'Centrumborr Ø8', d:8, h:60, type:'spot'}
 ];
 // Tools saved before types existed (browser storage or an opened .nc file)
 // get a type guessed from their name, so nothing lands in the wrong place.
@@ -1656,6 +1671,10 @@ function normalizeTools(list) {
   if (!Array.isArray(list)) return list;
   list.forEach(t => {
     if (!TOOL_CATEGORIES.some(c => c.key === t.type)) t.type = guessToolType(t);
+    if (t.type === 'profile' && t.angle === undefined && /fas|chamfer/i.test(String(t.name||''))) {
+      const m = String(t.name).match(/(\d+(?:[.,]\d+)?)\s*°/);
+      if (m) t.angle = parseFloat(m[1].replace(',','.'));
+    }
   });
   return list;
 }
@@ -1716,7 +1735,7 @@ function renderToolTable() {
     const head = document.createElement('tr');
     head.className = 'tool-cat';
     head.innerHTML =
-      '<td colspan="6"><div class="tool-cat-head"><div><strong>'+escapeHtml(cat.title)+'</strong>'+
+      '<td colspan="7"><div class="tool-cat-head"><div><strong>'+escapeHtml(cat.title)+'</strong>'+
       '<div class="tool-cat-desc">'+escapeHtml(cat.desc)+'</div></div>'+
       '<button class="small tool-add" data-cat="'+cat.key+'">+ Lägg till</button></div></td>';
     body.appendChild(head);
@@ -1726,7 +1745,7 @@ function renderToolTable() {
     if (!list.length) {
       const empty = document.createElement('tr');
       empty.className = 'tool-empty';
-      empty.innerHTML = '<td colspan="6">Inga verktyg i den här kategorin än.</td>';
+      empty.innerHTML = '<td colspan="7">Inga verktyg i den här kategorin än.</td>';
       body.appendChild(empty);
     }
     list.forEach(({tool, idx}) => {
@@ -1740,6 +1759,9 @@ function renderToolTable() {
         '<td><select data-field="type" data-idx="'+idx+'">'+opts+'</select></td>'+
         '<td><input type="number" step="0.1" value="'+tool.d+'" data-field="d" data-idx="'+idx+'"></td>'+
         '<td><input type="number" step="0.1" value="'+tool.h+'" data-field="h" data-idx="'+idx+'"></td>'+
+        (tool.type==='profile'
+          ? '<td><input type="number" step="1" min="0" max="89" placeholder="–" value="'+(tool.angle>0?tool.angle:'')+'" data-field="angle" data-idx="'+idx+'" title="Fasvinkel mot verktygsaxeln (45 = 45° fas). Tomt = rak cylinder."></td>'
+          : '<td></td>')+
         '<td><button class="row-del" data-idx="'+idx+'" title="Ta bort">✕</button></td>';
       body.appendChild(tr);
       if (tool === toolJustAdded && tr.scrollIntoView) tr.scrollIntoView({block:'nearest'});
@@ -1748,7 +1770,7 @@ function renderToolTable() {
       const draft = document.createElement('tr');
       draft.className = 'tool-draft';
       draft.innerHTML =
-        '<td colspan="6"><div class="tool-draft-row">'+
+        '<td colspan="7"><div class="tool-draft-row">'+
         '<label for="toolDraftD">Ø D (mm)</label>'+
         '<input type="number" step="0.1" min="0.1" id="toolDraftD" placeholder="t.ex. 12">'+
         '<button class="small primary" id="toolDraftOk">Lägg till</button>'+
@@ -3116,10 +3138,10 @@ function stockBoxMachineToFace(x,y,z) {
   return {grid:b.faces[f.key], u:bv[f.ua], v:bv[f.va]};
 }
 // Stamps one tool position, routing to the right face when in box mode.
-function stampAt(g, x, y, radius, z, tag) {
-  if (!stockBox) { stampTool(g, x, y, radius, z, tag); return; }
+function stampAt(g, x, y, radius, z, tag, shape) {
+  if (!stockBox) { stampTool(g, x, y, radius, z, tag, shape); return; }
   const m=stockBoxMachineToFace(x,y,z);
-  stampTool(m.grid, m.u, m.v, radius, z, tag);
+  stampTool(m.grid, m.u, m.v, radius, z, tag, shape);
 }
 function threadTagFor(seg) { return seg.cycle===84 ? 1 : (seg.cycle===74 ? 2 : 0); }
 // Maps a face's local scene coordinates (X=u, Y=height, Z=-v — the same
@@ -3168,7 +3190,7 @@ function markChunkDirty(g, i, j) {
 // tag: 0 = ordinary cut, 1 = right-hand thread (G84), 2 = left-hand thread (G74).
 // A cell keeps the tag of whatever cut it LAST, so a later ordinary cut that
 // goes deeper removes the thread colour from that wall.
-function stampTool(g, x, y, radius, z, tag) {
+function stampTool(g, x, y, radius, z, tag, shape) {
   const i0 = Math.max(0, Math.floor((x-radius-g.minX)/g.cellW));
   const i1 = Math.min(g.res-1, Math.ceil((x+radius-g.minX)/g.cellW));
   const j0 = Math.max(0, Math.floor((y-radius-g.minY)/g.cellH));
@@ -3179,10 +3201,14 @@ function stampTool(g, x, y, radius, z, tag) {
     for (let i=i0; i<=i1; i++) {
       const cx = g.minX+(i+0.5)*g.cellW;
       const dx=cx-x, dy=cy-y;
-      if (dx*dx+dy*dy <= r2) {
+      const d2 = dx*dx+dy*dy;
+      if (d2 <= r2) {
         const idx = j*g.res+i;
-        if (z < g.heights[idx]) {
-          g.heights[idx] = Math.max(z, g.bottom);
+        // cone: the tool's lowest point at this distance from the axis; cylinder: flat at z
+        let zc = z;
+        if (shape) { const rho = Math.sqrt(d2); if (rho > shape.tipR) zc = z + (rho-shape.tipR)*shape.k; }
+        if (zc < g.heights[idx]) {
+          g.heights[idx] = Math.max(zc, g.bottom);
           if (tag || g.tags) { if (!g.tags) g.tags = new Uint8Array(g.res*g.res); g.tags[idx] = tag || 0; }
           markChunkDirty(g, i, j);
         }
@@ -3191,6 +3217,20 @@ function stampTool(g, x, y, radius, z, tag) {
   }
 }
 
+// A tool with an angle (chamfer mill) is a cone, not a straight cylinder. The
+// angle is the flank angle measured from the tool axis (45 = a 45° chamfer),
+// and the programmed Z is the tool tip. At distance rho from the axis the
+// cone's surface sits (rho - tip radius) / tan(angle) above the tip, so every
+// grid cell is cut to its OWN height — a smooth ramp made of very small steps
+// (one grid cell wide), instead of the single vertical step a cylinder leaves.
+const CONE_TIP_DIAMETER_MM = 0;   // pointed tip; raise it if you want a flat tip on the cone
+function toolShape(tool) {
+  if (!tool) return null;
+  const a = Number(tool.angle);
+  if (!(a > 0 && a < 89.5)) return null;
+  return {k: 1/Math.tan(a*Math.PI/180), tipR: CONE_TIP_DIAMETER_MM/2};
+}
+function toolShapeFor(seg) { return toolShape(toolByNumber(seg.T)); }
 function toolRadiusFor(seg) {
   const tool = toolByNumber(seg.T);
   return tool ? tool.d/2 : DEFAULT_STAMP_RADIUS;
@@ -3215,7 +3255,8 @@ function getSegmentSamples(seg) {
   // with the old radius*0.6 formula, a 6mm tool sampled at 1.8mm spacing,
   // leaving a visible "waist" between stamps on the swept boundary that a
   // small tool (which happened to already fall under 0.8mm) never showed.
-  const step = Math.max(0.5, Math.min(radius*0.6, 0.8));
+  let step = Math.max(0.5, Math.min(radius*0.6, 0.8));
+  if (toolShapeFor(seg)) step = Math.min(step, 0.4); // a sloped cutting edge shows spacing more than a flat one
   const samples = [{x:src[0].x, y:src[0].y, z:src[0].z||0, cum:0}];
   let cum = 0;
   for (let k=0; k<src.length-1; k++) {
@@ -3243,8 +3284,8 @@ function stampSegmentFully(g, seg) {
   // point instead of a mark connected to the rest of the cut, which is
   // what actually happens on a real machine.
   if (seg.type===0 || seg.type==='tilt' || seg.skipMotion || seg.invalidGeometry) return;
-  const radius = toolRadiusFor(seg), tag = threadTagFor(seg);
-  for (const p of getSegmentSamples(seg)) stampAt(g, p.x, p.y, radius, p.z, tag);
+  const radius = toolRadiusFor(seg), tag = threadTagFor(seg), shape = toolShapeFor(seg);
+  for (const p of getSegmentSamples(seg)) stampAt(g, p.x, p.y, radius, p.z, tag, shape);
 }
 
 function stampSegmentPartial(g, seg, t) {
@@ -3252,10 +3293,10 @@ function stampSegmentPartial(g, seg, t) {
   const samples = getSegmentSamples(seg);
   const total = samples[samples.length-1].cum;
   const targetLen = total*t;
-  const radius = toolRadiusFor(seg), tag = threadTagFor(seg);
+  const radius = toolRadiusFor(seg), tag = threadTagFor(seg), shape = toolShapeFor(seg);
   for (const p of samples) {
     if (p.cum > targetLen+1e-9) break;
-    stampAt(g, p.x, p.y, radius, p.z, tag);
+    stampAt(g, p.x, p.y, radius, p.z, tag, shape);
   }
 }
 
