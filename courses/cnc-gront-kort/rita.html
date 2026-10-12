@@ -386,6 +386,7 @@
   .tool-cat-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
   .tool-cat-head strong { font-size:13px; }
   .tool-cat-desc { color:var(--muted); font-size:12px; margin-top:2px; line-height:1.4; font-weight:400; }
+  .tool-table td.tool-t { font-weight:800; text-align:center; color:var(--muted); font-family:ui-monospace,monospace; }
   .tool-table tr.tool-draft td { padding:8px 4px; background:rgba(47,164,100,.10); }
   .tool-draft-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .tool-draft-row label { font-size:12.5px; color:var(--muted); }
@@ -554,7 +555,7 @@
       <thead><tr><th style="width:52px;">T</th><th>Namn</th><th style="width:96px;">Typ</th><th style="width:76px;">Ø D (mm)</th><th style="width:84px;">Längd H (mm)</th><th style="width:70px;" title="Fasvinkel: flankens vinkel mot verktygsaxeln (45 = 45° fas). Tomt = rak cylinder.">Vinkel °</th><th style="width:28px;"></th></tr></thead>
       <tbody id="toolTableBody"></tbody>
     </table>
-    <p class="hint">Verktygen är sorterade efter typ och diameter. Nya verktyg får nummer efter närmast mindre verktyg i gruppen, och verktyg med nummer därefter flyttas ett steg – kontrollera T-numren i dina program. Typen är till för överblicken – i simuleringen ritas alla verktyg som en rak cylinder med diametern D, utom profilfräsar med en vinkel i kolumnen Vinkel (till exempel fasfräs 45°). De ritas som en kon där Z är verktygsspetsen, så fasen blir lika vinklad som verktyget.</p>
+    <p class="hint">Verktygen är sorterade efter typ och diameter. Verktygsnumret (T) är verktygets plats i listan, 1, 2, 3 … uppifrån och ner. Det räknas om automatiskt när du lägger till, tar bort eller flyttar ett verktyg, så kontrollera T-numren i dina program efteråt. Typen är till för överblicken – i simuleringen ritas alla verktyg som en rak cylinder med diametern D, utom profilfräsar med en vinkel i kolumnen Vinkel (till exempel fasfräs 45°). De ritas som en kon där Z är verktygsspetsen, så fasen blir lika vinklad som verktyget.</p>
     <div class="tool-reset-row">
       <button class="small tool-reset" id="resetToolsBtn" title="Ersätter hela verktygslistan med standardverktygen">↺ Återställ standardverktyg</button>
       <span class="hint" id="resetToolsHint">Har du ändrat eller tagit bort fel? Den här knappen ger tillbaka standardlistan.</span>
@@ -1623,38 +1624,40 @@ const TOOL_CATEGORIES = [
    add:{name:'Ny profilfräs', d:12, h:50}}
 ];
 const DEFAULT_TOOLS = [
+  // Numbered 1, 2, 3 … in the order they appear in the toolbox: group by group
+  // (see TOOL_CATEGORIES), each group sorted by diameter.
   {t:1, name:'Pinnfräs Ø6', d:6, h:50, type:'endmill'},
   {t:2, name:'Pinnfräs Ø10', d:10, h:55, type:'endmill'},
   {t:3, name:'Pinnfräs Ø15 (HM)', d:15, h:45, type:'endmill'},
-  {t:4, name:'Centrumborr Ø3', d:3, h:40, type:'spot'},
-  {t:5, name:'Borr Ø5', d:5, h:60, type:'drill'},
-  {t:6, name:'Borr Ø1', d:1, h:34, type:'drill'},
-  {t:7, name:'Borr Ø2', d:2, h:49, type:'drill'},
-  {t:8, name:'Borr Ø3', d:3, h:61, type:'drill'},
-  {t:9, name:'Borr Ø4', d:4, h:75, type:'drill'},
-  {t:10, name:'Borr Ø6', d:6, h:93, type:'drill'},
-  {t:11, name:'Borr Ø7', d:7, h:109, type:'drill'},
-  {t:12, name:'Borr Ø8', d:8, h:117, type:'drill'},
-  {t:13, name:'Borr Ø9', d:9, h:125, type:'drill'},
-  {t:14, name:'Borr Ø10', d:10, h:133, type:'drill'},
-  {t:15, name:'Borr Ø11', d:11, h:142, type:'drill'},
-  {t:16, name:'Borr Ø12', d:12, h:151, type:'drill'},
-  {t:17, name:'Planfräs Ø50 (HM)', d:50, h:45, type:'face'},
-  {t:18, name:'Gängtapp M6', d:6, h:50, type:'tap'},
-  {t:19, name:'Gängfräs M10 (Ø8)', d:8, h:40, type:'tap'},
-  {t:20, name:'Fasfräs 45° Ø12', d:12, h:50, type:'profile', angle:45},
-  {t:21, name:'Radiefräs R2 Ø10', d:10, h:50, type:'profile'},
-  {t:22, name:'Hörnradiefräs R1 Ø8', d:8, h:50, type:'profile'},
-  {t:23, name:'Hörnradiefräs R2 Ø10', d:10, h:50, type:'profile'},
-  {t:24, name:'Hörnradiefräs R3 Ø12', d:12, h:50, type:'profile'},
-  {t:25, name:'Hörnradiefräs R4 Ø14', d:14, h:55, type:'profile'},
-  {t:26, name:'Hörnradiefräs R5 Ø16', d:16, h:55, type:'profile'},
-  {t:27, name:'Centrumborr Ø2', d:2, h:40, type:'spot'},
-  {t:28, name:'Centrumborr Ø4', d:4, h:45, type:'spot'},
-  {t:29, name:'Centrumborr Ø5', d:5, h:50, type:'spot'},
-  {t:30, name:'Centrumborr Ø6', d:6, h:50, type:'spot'},
-  {t:31, name:'Centrumborr Ø7', d:7, h:55, type:'spot'},
-  {t:32, name:'Centrumborr Ø8', d:8, h:60, type:'spot'}
+  {t:4, name:'Borr Ø1', d:1, h:34, type:'drill'},
+  {t:5, name:'Borr Ø2', d:2, h:49, type:'drill'},
+  {t:6, name:'Borr Ø3', d:3, h:61, type:'drill'},
+  {t:7, name:'Borr Ø4', d:4, h:75, type:'drill'},
+  {t:8, name:'Borr Ø5', d:5, h:60, type:'drill'},
+  {t:9, name:'Borr Ø6', d:6, h:93, type:'drill'},
+  {t:10, name:'Borr Ø7', d:7, h:109, type:'drill'},
+  {t:11, name:'Borr Ø8', d:8, h:117, type:'drill'},
+  {t:12, name:'Borr Ø9', d:9, h:125, type:'drill'},
+  {t:13, name:'Borr Ø10', d:10, h:133, type:'drill'},
+  {t:14, name:'Borr Ø11', d:11, h:142, type:'drill'},
+  {t:15, name:'Borr Ø12', d:12, h:151, type:'drill'},
+  {t:16, name:'Planfräs Ø50 (HM)', d:50, h:45, type:'face'},
+  {t:17, name:'Gängtapp M6', d:6, h:50, type:'tap'},
+  {t:18, name:'Gängfräs M10 (Ø8)', d:8, h:40, type:'tap'},
+  {t:19, name:'Centrumborr Ø2', d:2, h:40, type:'spot'},
+  {t:20, name:'Centrumborr Ø3', d:3, h:40, type:'spot'},
+  {t:21, name:'Centrumborr Ø4', d:4, h:45, type:'spot'},
+  {t:22, name:'Centrumborr Ø5', d:5, h:50, type:'spot'},
+  {t:23, name:'Centrumborr Ø6', d:6, h:50, type:'spot'},
+  {t:24, name:'Centrumborr Ø7', d:7, h:55, type:'spot'},
+  {t:25, name:'Centrumborr Ø8', d:8, h:60, type:'spot'},
+  {t:26, name:'Hörnradiefräs R1 Ø8', d:8, h:50, type:'profile'},
+  {t:27, name:'Radiefräs R2 Ø10', d:10, h:50, type:'profile'},
+  {t:28, name:'Hörnradiefräs R2 Ø10', d:10, h:50, type:'profile'},
+  {t:29, name:'Fasfräs 45° Ø12', d:12, h:50, type:'profile', angle:45},
+  {t:30, name:'Hörnradiefräs R3 Ø12', d:12, h:50, type:'profile'},
+  {t:31, name:'Hörnradiefräs R4 Ø14', d:14, h:55, type:'profile'},
+  {t:32, name:'Hörnradiefräs R5 Ø16', d:16, h:55, type:'profile'}
 ];
 // Tools saved before types existed (browser storage or an opened .nc file)
 // get a type guessed from their name, so nothing lands in the wrong place.
@@ -1691,6 +1694,10 @@ function saveJSON(key, value) {
 }
 
 let toolTable = normalizeTools(loadJSON('gkodviz_tools_v1', DEFAULT_TOOLS));
+// T is the tool's place in the toolbox list (1, 2, 3 …). A list saved by an
+// older version may not follow that, so it is put in order once at load.
+const toolsRenumberedOnLoad = renumberTools().length;
+if (toolsRenumberedOnLoad) saveJSON('gkodviz_tools_v1', toolTable);
 let wcsTable = loadJSON('gkodviz_wcs_v1', DEFAULT_WCS);
 let homePosition = loadJSON('gkodviz_home_v1', {x:0, y:0, z:0});
 let stockSize = loadJSON('gkodviz_stocksize_v1', {auto:true, width:100, depth:100, thickness:20, quadrant:'center-path', shape:'square', diameter:60, cylHeight:20});
@@ -1703,30 +1710,38 @@ function toolByNumber(n) {
 let toolAddDraftCat = null;   // category whose "new tool" row is open
 let toolJustAdded = null;     // tool to highlight after the next render
 const TOOL_NAME_PREFIX = {endmill:'Pinnfräs Ø', drill:'Borr Ø', face:'Planfräs Ø', tap:'Gängtapp M', spot:'Centrumborr Ø', profile:'Profilfräs Ø'};
-// Adds a tool of diameter d to its group in diameter order. It takes the
-// number right after the next-smaller tool in the group (the first tool in
-// the group if none is smaller). If that number is already used, the tools
-// in the unbroken run of numbers from there move one step up, so no two
-// tools share a number.
+// The order the toolbox shows its tools in: group by group, and inside each
+// group by diameter (equal diameters keep their current order).
+function toolsInPageOrder(list) {
+  const out = [];
+  TOOL_CATEGORIES.forEach(cat => {
+    out.push(...list.filter(t => t.type === cat.key)
+      .sort((a, b) => (Number(a.d) - Number(b.d)) || (Number(a.t) - Number(b.t))));
+  });
+  list.forEach(t => { if (!out.includes(t)) out.push(t); });
+  return out;
+}
+// Gives every tool the number of its place in that order: 1, 2, 3 … with no
+// gaps, wherever in the list a tool is added or removed. Returns the tools
+// whose number changed.
+function renumberTools() {
+  const changed = [];
+  toolsInPageOrder(toolTable).forEach((t, i) => {
+    if (Number(t.t) !== i+1) { t.t = i+1; changed.push(t); }
+  });
+  return changed;
+}
+// Adds a tool of diameter d to its group (sorted by diameter) and renumbers the
+// whole list, so the new tool gets the number of its place in the list and every
+// tool after it moves one step.
 function addToolSorted(cat, d) {
-  const group = toolTable.filter(t => t.type === cat.key)
-    .sort((a, b) => (Number(a.d) - Number(b.d)) || (Number(a.t) - Number(b.t)));
-  let prevTool = null, nextTool = null;
-  for (const t of group) { if (Number(t.d) <= d) prevTool = t; else { nextTool = t; break; } }
-  let newT;
-  if (prevTool) newT = Number(prevTool.t) + 1;
-  else if (nextTool) newT = Number(nextTool.t);
-  else newT = toolTable.length ? Math.max(...toolTable.map(t => Number(t.t))) + 1 : 1;
-  const used = new Set(toolTable.map(t => Number(t.t)));
-  let end = newT;
-  while (used.has(end)) end++;                  // end = first free number at or after newT
-  let shifted = 0;
-  for (const t of toolTable) if (Number(t.t) >= newT && Number(t.t) < end) { t.t = Number(t.t) + 1; shifted++; }
   const label = String(+d.toFixed(2));
-  const tool = {t:newT, name:(TOOL_NAME_PREFIX[cat.key] || 'Verktyg Ø')+label, d, h:cat.add.h, type:cat.key};
-  toolTable.push(tool);
+  const tool = {t:(toolTable.length ? Math.max(...toolTable.map(t => Number(t.t))) : 0) + 1,
+                name:(TOOL_NAME_PREFIX[cat.key] || 'Verktyg Ø')+label, d, h:cat.add.h, type:cat.key};
+  toolTable.push(tool);      // numbered last for now, so it sorts after equal diameters
+  const changed = renumberTools();
   toolJustAdded = tool;
-  return {tool, shifted};
+  return {tool, shifted: changed.filter(t => t !== tool).length};
 }
 function renderToolTable() {
   const body = document.getElementById('toolTableBody');
@@ -1754,7 +1769,7 @@ function renderToolTable() {
       const opts = TOOL_CATEGORIES.map(c =>
         '<option value="'+c.key+'"'+(c.key===tool.type?' selected':'')+'>'+escapeHtml(c.short)+'</option>').join('');
       tr.innerHTML =
-        '<td><input type="number" value="'+tool.t+'" data-field="t" data-idx="'+idx+'"></td>'+
+        '<td class="tool-t" title="Numret följer platsen i listan">'+tool.t+'</td>'+
         '<td><input type="text" value="'+escapeHtml(tool.name||'')+'" data-field="name" data-idx="'+idx+'"></td>'+
         '<td><select data-field="type" data-idx="'+idx+'">'+opts+'</select></td>'+
         '<td><input type="number" step="0.1" value="'+tool.d+'" data-field="d" data-idx="'+idx+'"></td>'+
@@ -1794,7 +1809,7 @@ function renderToolTable() {
       renderToolTable();
       drawFromText(false); // tool numbers may have moved, so programs may now point at other tools
       showToast('Nytt verktyg: T'+result.tool.t+' ('+result.tool.name+').'+
-        (result.shifted ? ' '+result.shifted+' verktyg med nummer '+result.tool.t+' och uppåt fick ett nummer högre – kontrollera T-numren i dina program.' : ''), 9000);
+        (result.shifted ? ' Numren följer platsen i listan, så '+result.shifted+' verktyg efter det fick ett nummer högre – kontrollera T-numren i dina program.' : ''), 9000);
     };
     draftInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); confirmAdd(); }
@@ -1805,6 +1820,22 @@ function renderToolTable() {
     if (draftInput.focus) draftInput.focus();
   }
   body.querySelectorAll('input[data-field]').forEach(inp => {
+    if (inp.dataset.field === 'd') {
+      // once the diameter is entered, the tool may belong elsewhere in the diameter order
+      inp.addEventListener('change', () => {
+        const idx = parseInt(inp.dataset.idx,10);
+        const moved = toolTable[idx];
+        const changed = renumberTools();
+        if (!changed.length) return;
+        saveJSON('gkodviz_tools_v1', toolTable);
+        toolJustAdded = moved;
+        renderToolTable();
+        drawFromText(false);
+        const again = document.querySelector('#toolTableBody input[data-field="d"][data-idx="'+idx+'"]');
+        if (again && again.focus) again.focus();
+        showToast('Verktyget flyttades i listan efter diameter. '+changed.length+' verktyg fick nytt nummer – kontrollera T-numren i dina program.', 9000);
+      });
+    }
     inp.addEventListener('input', () => {
       const idx = parseInt(inp.dataset.idx,10);
       const field = inp.dataset.field;
@@ -1815,9 +1846,14 @@ function renderToolTable() {
   });
   body.querySelectorAll('select').forEach(sel => {
     sel.addEventListener('change', () => {
-      toolTable[parseInt(sel.dataset.idx,10)].type = sel.value;
+      const moved = toolTable[parseInt(sel.dataset.idx,10)];
+      moved.type = sel.value;
+      const changed = renumberTools(); // the tool moves to its new category, and the numbers follow the list
       saveJSON('gkodviz_tools_v1', toolTable);
-      renderToolTable(); // the tool moves to its new category
+      toolJustAdded = moved;
+      renderToolTable();
+      drawFromText(false);
+      if (changed.length) showToast('Verktyget flyttades till en annan grupp. '+changed.length+' verktyg fick nytt nummer – kontrollera T-numren i dina program.', 9000);
     });
   });
   body.querySelectorAll('.tool-add').forEach(btn => {
@@ -1829,9 +1865,11 @@ function renderToolTable() {
   body.querySelectorAll('.row-del').forEach(btn => {
     btn.addEventListener('click', () => {
       toolTable.splice(parseInt(btn.dataset.idx,10),1);
+      const changed = renumberTools(); // close the gap so the numbers stay 1, 2, 3 …
       saveJSON('gkodviz_tools_v1', toolTable);
       renderToolTable();
       drawFromText(false);
+      if (changed.length) showToast('Verktyget togs bort. '+changed.length+' verktyg efter det fick ett nummer lägre – kontrollera T-numren i dina program.', 9000);
     });
   });
 }
@@ -1840,6 +1878,7 @@ function renderToolTable() {
 // be hit by accident, and it doesn't rely on a browser pop-up dialog.
 function resetToolsToDefaults() {
   toolTable = normalizeTools(JSON.parse(JSON.stringify(DEFAULT_TOOLS)));
+  renumberTools();
   saveJSON('gkodviz_tools_v1', toolTable);
   renderToolTable();
   drawFromText(false); // tool diameters feed the drawing and the simulation
@@ -1871,6 +1910,9 @@ function resetToolsToDefaults() {
     timer = setTimeout(() => { hint.textContent = idleHint; }, 4000);
   });
 })();
+if (toolsRenumberedOnLoad) {
+  showToast('Verktygsnumren ordnades om så att T är verktygets plats i listan (1, 2, 3 …). '+toolsRenumberedOnLoad+' verktyg fick nytt nummer – kontrollera T-numren i dina program.', 12000);
+}
 function renderWcsTable() {
   const body = document.getElementById('wcsTableBody');
   body.innerHTML = '';
