@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toleranser &amp; passningar — Quiz | CNC-Grönt kort</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{ width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto; }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{ content:""; position:absolute; background:var(--amber); }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+  .footcta{
+    margin-top:48px; border-top:1px solid var(--line); padding-top:26px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .footcta .ft-txt{font-size:13.5px; color:var(--muted); max-width:44ch;}
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+
+<style>
+  .progress-row{display:flex; align-items:center; gap:10px; margin:24px 0 20px;}
+  .progress-track{flex:1; height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden;}
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--page-accent), var(--green)); width:0%; transition:width .25s;}
+  .progress-label{font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap; font-family:"IBM Plex Mono",monospace;}
+  .card{
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid var(--line); border-radius:14px; padding:26px 24px;
+    box-shadow: 0 20px 40px -25px rgba(0,0,0,.6);
+  }
+  .qmeta{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;}
+  .qtag{font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; font-weight:700; padding:4px 9px; border-radius:6px;}
+  .qnum{color:var(--muted); font-size:13px; font-family:"IBM Plex Mono",monospace;}
+  .prompt{font-size:18.5px; font-weight:600; line-height:1.4; margin-bottom:18px;}
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .opt{
+    text-align:left; padding:13px 15px; border-radius:10px; border:1px solid var(--line);
+    background:#161d24; color:var(--text); font-size:15px; cursor:pointer; transition:.12s;
+    display:flex; gap:10px; align-items:flex-start; width:100%;
+  }
+  .opt:hover:not([disabled]){border-color:var(--page-accent); background:#1a222b;}
+  .opt .k{
+    flex:0 0 auto; width:22px; height:22px; border-radius:6px; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--muted); font-weight:700;
+  }
+  .opt[disabled]{cursor:default;}
+  .opt.correct{border-color:var(--green); background:var(--green-dim);}
+  .opt.correct .k{border-color:var(--green); color:var(--green); background:#122a1a;}
+  .opt.wrong{border-color:var(--red); background:var(--red-dim);}
+  .opt.wrong .k{border-color:var(--red); color:var(--red); background:#2a1513;}
+  .feedback{margin-top:16px; padding:14px 16px; border-radius:10px; font-size:14.5px; line-height:1.5; display:none;}
+  .feedback.show{display:block;}
+  .feedback.ok{background:var(--green-dim); border:1px solid #2f6b47; color:#cdeed9;}
+  .feedback.bad{background:var(--red-dim); border:1px solid #7a3833; color:#f3d2ce;}
+  .feedback b{display:block; margin-bottom:3px; font-size:13px; text-transform:uppercase; letter-spacing:.06em;}
+  .controls{display:flex; justify-content:flex-end; margin-top:20px;}
+  button.next{
+    background:var(--page-accent); color:#12161b; border:none; padding:11px 22px;
+    border-radius:9px; font-weight:700; font-size:14.5px; cursor:pointer;
+  }
+  button.next:disabled{background:var(--panel-2); color:var(--muted); cursor:not-allowed;}
+  button.next:hover:not(:disabled){filter:brightness(1.08);}
+  .result{text-align:center; padding:20px 10px 10px;}
+  .result .big{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; font-size:56px; line-height:1;}
+  .result .of{color:var(--muted); font-size:15px; margin-top:6px;}
+  .review{margin-top:26px; text-align:left; display:flex; flex-direction:column; gap:10px;}
+  .review-item{border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-size:14px;}
+  .review-item.ok{border-left:3px solid var(--green);}
+  .review-item.bad{border-left:3px solid var(--red);}
+  .review-item .q{font-weight:600; margin-bottom:4px;}
+  .review-item .a{color:var(--muted);}
+  .restart{
+    margin-top:24px; background:none; border:1px solid var(--line); color:var(--text);
+    padding:10px 20px; border-radius:9px; cursor:pointer; font-size:14px; font-weight:600;
+  }
+  .restart:hover{border-color:var(--page-accent); color:var(--page-accent);}
+  .pool-note{margin-top:10px; font-size:13px; color:var(--page-accent); font-weight:600;
+    background:var(--page-dim); display:inline-block; padding:5px 12px; border-radius:8px;
+    font-family:"IBM Plex Mono",monospace;}
+</style>
+<style>:root{--page-accent:#4fb3a5; --page-dim:#1c3d38;}
+  :root[data-theme="light"]{
+    --page-accent: #2f8f81;
+    --page-dim: #e0f3f0;
+  }</style>
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="../material.html"><span class="mark"></span>CNC-GRÖNT KORT</a>
+  <nav>
+    <a href="../material.html">Delkurser</a>
+    <a href="../quiz-alla.html">Storquiz</a>
+  </nav>
+</div>
+
+<main class="wrap narrow">
+  <header class="hero">
+    <div class="eyebrow">MTL-04 · Quiz</div>
+    <h1>Toleranser &amp; passningar</h1>
+    <div class="sub">Öva på frågor från <a href="../material/toleranser.html" style="color:var(--page-accent); font-weight:600;">läsmaterialet om toleranser och passningar</a>. Frågorna och svarsalternativen slumpas varje omgång.</div>
+    <div class="pool-note" id="poolNote"></div>
+  </header>
+
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 0</div>
+  </div>
+
+  <div class="card" id="card"></div>
+
+  <div class="footcta">
+    <div class="ft-txt">Svara i din egen takt — resultatet sparas inte och skickas ingenstans.</div>
+    <a class="btn btn-ghost" href="../material.html">&larr; Alla delkurser</a>
+  </div>
+</main>
+
+<script>
+const CAT_ID = "toleranser";
+const CAT_LABEL = "Toleranser";
+const QUESTIONS = [
+    {q:"På ritningen står 20 ±1. Inom vilka mått blir detaljen godkänd?", opts:["19–21 mm", "20–21 mm", "19–20 mm", "18–22 mm"], correct:0, fb:"Basmåttet 20 får avvika högst 1 mm uppåt och 1 mm neråt, alltså 19–21 mm."},
+    {q:"Vad visar basmåttet på en ritning?", opts:["Detaljens storlek", "Detaljens form", "Hur mycket måttet får avvika", "Vilken maskin som ska användas"], correct:0, fb:"Bilden visar formen, basmåttet storleken och toleransen gränserna för tillåten avvikelse."},
+    {q:"Vilket av följande är INTE en fördel med dimensionstoleranser?", opts:["Att alla detaljer blir exakt lika stora", "Lägre tillverkningskostnad", "Bättre funktion", "Enklare reservdelsbyte"], correct:0, fb:"Toleranser ger lägre kostnad, bättre funktion och enklare reservdelsbyte — just för att man inte behöver träffa exakt basmått."},
+    {q:"Vad kallas det största mått som kan godkännas?", opts:["Övre gränsmått", "Övre gränsavmått", "Basmått", "Toleransvidd"], correct:0, fb:"Det största godkända måttet är övre gränsmått, det minsta är undre gränsmått."},
+    {q:"Vad kallas skillnaden mellan övre och undre gränsmått?", opts:["Toleransvidd", "Lägesavmått", "Noll-linje", "Basmått"], correct:0, fb:"Toleransvidden är toleransområdets höjd, alltså skillnaden mellan övre och undre gränsmått."},
+    {q:"Var slutar basmåttets övre pil?", opts:["Mot noll-linjen", "Mot övre toleransgränsen", "Mot undre toleransgränsen", "Mitt i toleransområdet"], correct:0, fb:"Basmåttet slutar mot noll-linjen, som är utgångspunkten för alla avmått."},
+    {q:"Hur betecknas området ovanför noll-linjen?", opts:["Positivt (+)", "Negativt (−)", "Noll (0)", "Neutralt (±)"], correct:0, fb:"En detalj som är längre än basmåttet når ovanför noll-linjen — det området är positivt."},
+    {q:"En axel har måttet Ø5 ±0,5. Hur stor är toleransvidden?", opts:["1 mm", "0,5 mm", "5 mm", "0,25 mm"], correct:0, fb:"Övre gränsmått 5,5 minus undre gränsmått 4,5 = 1 mm."},
+    {q:"Vad kallas måttet från noll-linjen till toleransområdets gräns?", opts:["Gränsavmått", "Gränsmått", "Basmått", "Toleransvidd"], correct:0, fb:"Avståndet från noll-linjen till toleransgränsen är gränsavmåttet — övre eller undre."},
+    {q:"Vad anger lägesavmåttet?", opts:["Kortaste avståndet från noll-linjen till toleransområdet", "Toleransområdets höjd", "Detaljens totala längd", "Största godkända mått"], correct:0, fb:"Lägesavmåttet anger toleransläget som kortaste avståndet från noll-linjen till toleransområdet."},
+    {q:"En fläns har måttet 12 (−0,2 / −0,5). Mellan vilka mått ska bredden vara?", opts:["11,5–11,8 mm", "11,8–12,2 mm", "12,2–12,5 mm", "11,8–12,0 mm"], correct:0, fb:"12 − 0,5 = 11,5 och 12 − 0,2 = 11,8."},
+    {q:"Vad händer med det godkända måttet om lägesavmåttet är positivt?", opts:["Det blir större än basmåttet", "Det blir mindre än basmåttet", "Det blir exakt basmåttet", "Det påverkas inte"], correct:0, fb:"Positivt lägesavmått: toleransområdet ligger över noll-linjen och måttet blir större än basmåttet (överdimension)."},
+    {q:"Hur skrivs en symmetrisk tolerans?", opts:["± följt av halva toleransvidden", "± följt av hela toleransvidden", "Bara övre gränsavmåttet", "Med en ISO-bokstav"], correct:0, fb:"Vid symmetrisk tolerans är båda halvorna lika stora, så man skriver ± och halva toleransvidden."},
+    {q:"Ett urtag har måttet 30 (+0,08 / 0). Vilken typ av tolerans är det?", opts:["Osymmetrisk", "Symmetrisk", "Generell", "Vinkeltolerans"], correct:0, fb:"Hela toleransområdet ligger på ena sidan av noll-linjen, så toleransen är osymmetrisk."},
+    {q:"Varför används över- och underdimensioner?", opts:["För att få lämpliga passningar mellan detaljer", "För att göra ritningen enklare att läsa", "För att slippa mäta detaljen", "För att sänka materialets hårdhet"], correct:0, fb:"Över- och underdimension styr hur detaljer passar ihop — lätt gående eller hårt gripande."},
+    {q:"Vilken standard innehåller generella toleranser för längd- och vinkelmått?", opts:["SS-ISO 2768-1", "SS-ISO 286-1", "SS 2142", "ISO 513"], correct:0, fb:"Generella toleranser finns i SS-ISO 2768-1 (tidigare SMS 715)."},
+    {q:"Hur ligger toleransområdet vid generella toleranser enligt SS-ISO 2768-1?", opts:["Symmetriskt kring noll-linjen", "Helt över noll-linjen", "Helt under noll-linjen", "Det varierar med klassen"], correct:0, fb:"Generella toleranser är symmetriska och märks med ±."},
+    {q:"Vilka fyra toleransklasser finns i SS-ISO 2768-1?", opts:["Fin, medel, grov, mycket grov", "A, B, C, D", "IT1–IT4", "Hård, mjuk, seg, spröd"], correct:0, fb:"Klasserna är f (fin), m (medel), c (grov) och v (mycket grov)."},
+    {q:"Ett otoleranssatt mått 40 mm, SS-ISO 2768-m. Vilken tolerans gäller?", opts:["±0,3 mm", "±0,2 mm", "±0,5 mm", "±0,8 mm"], correct:0, fb:"Klass medel, området över 30 t.o.m. 120 mm ger ±0,3 mm."},
+    {q:"Vilka mått berörs INTE av den generella toleransen?", opts:["Hjälpmått och teoretiska mått", "Alla diametrar", "Alla mått under 10 mm", "Radier och faser"], correct:0, fb:"Hjälpmått (inom parentes) och teoretiska mått (inramade) berörs inte. Radier och faser ingår däremot."},
+    {q:"Hur känner man igen ett hjälpmått på ritningen?", opts:["Det står inom parentes", "Det är inramat", "Det är understruket", "Det står i rött"], correct:0, fb:"Hjälpmått skrivs inom parentes, teoretiska mått är inramade."},
+    {q:"Vem tar ansvar för rätt tolerans när generella toleranser används?", opts:["Operatören", "Konstruktören vid varje mått", "Kvalitetschefen", "Ingen — måtten är fria"], correct:0, fb:"Operatören läser i tabellen vilka krav som gäller och tar därmed ansvaret."},
+    {q:"Hur skrivs en numerisk tolerans med två gränsavmått?", opts:["Övre gränsavmåttet överst, undre under", "Undre överst, övre under", "Bredvid varandra med snedstreck", "Alltid som ± värde"], correct:0, fb:"Det övre gränsavmåttet skrivs överst och det undre under, både för invändiga och utvändiga mått."},
+    {q:"Ett gränsavmått är noll. Hur skrivs det?", opts:["Bara 0", "0,00 med lika många decimaler", "±0", "Det skrivs inte alls"], correct:0, fb:"Lika många decimaler gäller för båda gränsavmåtten — utom gränsavmåttet noll som bara skrivs 0."},
+    {q:"Hur många minuter är en vinkelgrad?", opts:["60", "100", "360", "10"], correct:0, fb:"En grad = 60 minuter och en minut = 60 sekunder."},
+    {q:"Vilken sida räknas som längd vid generella vinkeltoleranser?", opts:["Den kortaste sidan i vinkeln", "Den längsta sidan", "Summan av sidorna", "Diagonalen"], correct:0, fb:"Längdområdet bestäms av den kortaste sidan i toleransvinkeln."},
+    {q:"En vinkel med kortaste ben 40 mm, SS-ISO 2768-m. Vilken vinkeltolerans gäller?", opts:["±0°30′", "±1°", "±0°20′", "±0°10′"], correct:0, fb:"Klass m och längdområdet över 10 t.o.m. 50 mm ger ±0°30′."},
+    {q:"Enligt SMS 723 gäller e = ±6 mm (klass B). Vinkelbenet L är 1500 mm. Tillåten måttavvikelse?", opts:["±9 mm", "±6 mm", "±1,5 mm", "±15 mm"], correct:0, fb:"e · L / 1000 = 6 · 1500 / 1000 = ±9 mm."},
+    {q:"I ISO-symbolen 25H7, vad betyder bokstaven H?", opts:["Toleransläget", "Toleransgraden", "Basmåttet", "Materialet"], correct:0, fb:"Bokstaven anger toleransläget, siffran toleransgraden."},
+    {q:"I ISO-symbolen 25H7, vad betyder siffran 7?", opts:["Toleransgraden", "Toleransläget", "Antal decimaler", "Toleransklassen i SS-ISO 2768"], correct:0, fb:"Siffran är toleransgraden, som motsvarar en viss toleransvidd."},
+    {q:"Vilka bokstäver används för hål?", opts:["Stora bokstäver A–Z", "Små bokstäver a–z", "Grekiska bokstäver", "Siffror"], correct:0, fb:"Stora bokstäver för hål och invändiga mått, små för axlar och utvändiga mått."},
+    {q:"Vilket toleransläge har lägesavmåttet noll och används för bashål?", opts:["H", "A", "Z", "JS"], correct:0, fb:"H (och h för axlar) har lägesavmåttet noll — toleransområdet startar från noll-linjen."},
+    {q:"Vad betyder JS/js?", opts:["Symmetrisk tolerans kring noll-linjen", "Störst möjliga spel", "Mycket grov tolerans", "Japansk standard"], correct:0, fb:"JS för hål och js för axlar betecknar symmetrisk tolerans (s = symmetri)."},
+    {q:"Hur påverkar toleranslägen A–H ett hål?", opts:["Hålet blir aningen större än basmåttet", "Hålet blir aningen mindre än basmåttet", "Hålet blir exakt basmåttet", "De påverkar bara ytjämnheten"], correct:0, fb:"A–H ger hålet en diameter aningen större än basmåttet, störst vid A."},
+    {q:"Hur påverkar toleranslägen k–z en axel?", opts:["Axeln blir aningen större än basmåttet", "Axeln blir aningen mindre än basmåttet", "Axeln blir exakt basmåttet", "Axeln blir konisk"], correct:0, fb:"k–z ger axeln en diameter aningen större än basmåttet, störst vid z."},
+    {q:"Låg toleransgrad (t.ex. IT5) innebär…", opts:["liten toleransvidd och stor noggrannhet", "stor toleransvidd och liten noggrannhet", "att måttet saknar tolerans", "grov bearbetning"], correct:0, fb:"Låga grader motsvarar små toleransvidder = stor noggrannhet = högre kostnad."},
+    {q:"Vad står IT för?", opts:["Internationell Tolerans", "Intern Toleransklass", "Industriell Teknik", "Inre Tolerans"], correct:0, fb:"IT betyder Internationell Tolerans."},
+    {q:"Basmåttet är exakt 30 mm. På vilken rad läser du i ISO-tabellen?", opts:["18–30", "30–50", "Båda raderna", "Ingen av dem"], correct:0, fb:"T.o.m. betyder till och med, så 30 hör till raden över 18 t.o.m. 30."},
+    {q:"Vilka gränsavmått har 30 H7?", opts:["+21 µm och 0", "+25 µm och 0", "0 och −21 µm", "±10,5 µm"], correct:0, fb:"Tabellen för H7, raden 18–30 mm: övre +21 µm, undre 0."},
+    {q:"Övre gränsavmått −7 µm, undre −16 µm. Hur stor är toleransvidden?", opts:["9 µm", "23 µm", "7 µm", "16 µm"], correct:0, fb:"−7 − (−16) = −7 + 16 = 9 µm."},
+    {q:"Basmått 8 mm, övre gränsavmått −0,007 mm. Vad blir övre gränsmått?", opts:["7,993 mm", "8,007 mm", "7,984 mm", "8,000 mm"], correct:0, fb:"8 + (−0,007) = 7,993 mm."},
+    {q:"Måttet 30 mm saknar tolerans och ritningen anger ±IT14/2. IT14 = 0,52 mm. Vilken tolerans gäller?", opts:["±0,26 mm", "±0,52 mm", "±1,04 mm", "±0,14 mm"], correct:0, fb:"Toleransvidden delas med 2: 0,52 / 2 = 0,26 mm."},
+    {q:"Vad är tumregeln för samband mellan toleransgrad och kostnad?", opts:["Låg toleransgrad ger hög bearbetningskostnad", "Hög toleransgrad ger hög bearbetningskostnad", "Toleransgraden påverkar inte kostnaden", "Kostnaden beror bara på materialet"], correct:0, fb:"Snäva toleranser (låga grader) kräver mer tidsödande och dyrare bearbetning."},
+    {q:"Vilken är rätt vald toleransgrad?", opts:["Den som ger godkänd funktion medan närmast högre grad inte skulle göra det", "Alltid den lägsta möjliga", "Alltid IT7", "Den som maskinen klarar enklast"], correct:0, fb:"Man väljer den grövsta grad som fortfarande ger godkänd funktion."},
+    {q:"Vid vilken temperatur håller fasta mätdon sina mått?", opts:["+20 °C", "0 °C", "+25 °C", "+37 °C"], correct:0, fb:"Referenstemperaturen för mätning är +20 °C."},
+    {q:"Ett hål med riktig tolerans kontrolleras med en tolk. Vad gäller?", opts:["Gå-sidan går in, stopp-sidan går inte in", "Båda sidorna går in", "Ingen sida går in", "Stopp-sidan går in, gå-sidan inte"], correct:0, fb:"Hos ett godkänt hål går gå-sidan in men inte stopp-sidan."},
+    {q:"Ett hjul ska snurra lätt på en stillastående axel. Vilken passning behövs?", opts:["Spelpassning", "Greppassning", "Mellanpassning", "Ingen passning"], correct:0, fb:"Det behövs ett litet mellanrum mellan axel och hål — en spelpassning."},
+    {q:"Ett kullager ska pressas fast på en axel. Vilken passning används?", opts:["Greppassning", "Spelpassning", "Glidpassning utan tolerans", "Symmetrisk passning"], correct:0, fb:"Lager som pressas fast kräver greppassning."},
+    {q:"När har man en greppassning?", opts:["När axeln är större än hålet", "När hålet är större än axeln", "När de är exakt lika stora", "När båda har toleransläge H"], correct:0, fb:"Vid greppassning ligger hålets toleransområde helt under axelns."},
+    {q:"Vad kännetecknar en mellanpassning?", opts:["Hålets och axelns toleransområden överlappar", "Hålets område ligger helt över axelns", "Axelns område ligger helt över hålets", "Båda saknar tolerans"], correct:0, fb:"När områdena helt eller delvis täcker varandra blir det litet spel eller litet grepp."},
+    {q:"Vilket toleransläge har bashålet i system hålet bas?", opts:["H", "h", "JS", "A"], correct:0, fb:"Bashålet i ISO-passningssystemet har toleransläge H."},
+    {q:"Vilket toleransläge har basaxeln i system axeln bas?", opts:["h", "H", "js", "z"], correct:0, fb:"Basaxeln har toleransläge h."},
+    {q:"Varför väljer man ofta hålets toleransgrad ett steg högre än axelns?", opts:["Ett hål är svårare att tillverka än en axel", "Axlar mäts sämre", "Hål har alltid större diameter", "Standarden förbjuder lika grader"], correct:0, fb:"Det är svårare att tillverka ett hål, så det får en något större toleransvidd."},
+    {q:"I system hålet bas vill du ha greppassning. Vilka toleranslägen väljer du för axeln?", opts:["n–z", "a–h", "Nära js", "A–H"], correct:0, fb:"Axeln ska vara större än hålet: n–z, och ju närmare z desto fastare grepp."},
+    {q:"Tumregel: toleranslägen i början av alfabetet ger…", opts:["spelpassningar", "greppassningar", "mellanpassningar", "inga passningar"], correct:0, fb:"A, a, B, b … ger spel, … Z, z ger grepp."},
+    {q:"Hur räknas maxspel?", opts:["Hålets övre gränsavmått − axelns undre gränsavmått", "Hålets undre − axelns övre", "Axelns övre − hålets undre", "Hålets övre + axelns övre"], correct:0, fb:"Största hål minus minsta axel ger maxspel."},
+    {q:"Hur räknas minspel?", opts:["Hålets undre gränsavmått − axelns övre gränsavmått", "Hålets övre − axelns undre", "Axelns undre − hålets övre", "Maxspel delat med två"], correct:0, fb:"Minsta hål minus största axel ger minspel."},
+    {q:"Maxspel är positivt och minspel negativt. Vilken passning?", opts:["Mellanpassning", "Spelpassning", "Greppassning", "Går inte att avgöra"], correct:0, fb:"Positivt maxspel och negativt minspel betyder mellanpassning."},
+    {q:"Ø15 H7 (+18/0) och g6 (−6/−17). Hur stort är maxspelet?", opts:["+35 µm", "+24 µm", "+6 µm", "+12 µm"], correct:0, fb:"+18 − (−17) = +35 µm."},
+    {q:"Ø15 H7/g6 ger maxspel +35 µm och minspel +6 µm. Hur stor är passningen?", opts:["29 µm", "41 µm", "35 µm", "6 µm"], correct:0, fb:"Passningens storlek = maxspel − minspel = 35 − 6 = 29 µm (spelpassning)."},
+    {q:"Ø15 H7/k6 ger maxspel +17 µm och minspel −12 µm. Vilken passning är det?", opts:["Mellanpassning", "Spelpassning", "Greppassning", "Ingen passning"], correct:0, fb:"Maxspel positivt, minspel negativt → mellanpassning."},
+    {q:"Vad reglerar form- och lägetoleranser?", opts:["Avvikelser i form och läge hos ytor, t.ex. planhet", "Bara diametrar", "Materialets hårdhet", "Skärdata vid bearbetning"], correct:0, fb:"Form- och lägetoleranser reglerar t.ex. planhet, rakhet och parallellitet — inte storleken."},
+    {q:"Varför kan det löna sig att kombinera dimensionstolerans och formtolerans?", opts:["Det ger normalt lägre tillverkningskostnad", "Det gör ritningen kortare", "Då behövs inga mätdon", "Det ger alltid greppassning"], correct:0, fb:"Strängt krav bara där det behövs (t.ex. planhet) medan måttet får större tolerans — det blir billigare."}
+];
+
+const QUIZ_LENGTH = 30;
+let order = [];
+let idx = 0;
+let answered = false;
+let score = 0;
+let history = [];
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function shuffleOptions(item){
+  const pairs = item.opts.map((o, i) => ({ text: o, wasCorrect: i === item.correct }));
+  const shuffled = shuffle(pairs);
+  const newOpts = shuffled.map(p => p.text);
+  const newCorrect = shuffled.findIndex(p => p.wasCorrect);
+  return { ...item, opts: newOpts, correct: newCorrect };
+}
+function buildOrder(){
+  return shuffle(QUESTIONS).slice(0, Math.min(QUIZ_LENGTH, QUESTIONS.length)).map(shuffleOptions);
+}
+function updateProgress(){
+  const fill = document.getElementById('progressFill');
+  const label = document.getElementById('progressLabel');
+  const pct = order.length ? (idx/order.length)*100 : 0;
+  fill.style.width = pct + '%';
+  label.textContent = Math.min(idx+1, order.length) + ' / ' + order.length;
+}
+function startQuiz(){
+  order = buildOrder();
+  idx = 0; score = 0; history = [];
+  document.getElementById('poolNote').textContent = `Frågebank: ${QUESTIONS.length} frågor · ${Math.min(QUIZ_LENGTH, QUESTIONS.length)} slumpas ut denna omgång`;
+  renderQuestion();
+}
+function renderQuestion(){
+  answered = false;
+  updateProgress();
+  const card = document.getElementById('card');
+  if(idx >= order.length){ renderResult(); return; }
+  const item = order[idx];
+  const optHtml = item.opts.map((o,i) => {
+    const key = String.fromCharCode(65+i);
+    return `<button class="opt" data-i="${i}"><span class="k">${key}</span><span>${o}</span></button>`;
+  }).join('');
+  card.innerHTML = `
+    <div class="qmeta">
+      <span class="qtag" style="background:var(--page-dim); color:var(--page-accent);">${CAT_LABEL}</span>
+      <span class="qnum">Fråga ${idx+1} av ${order.length}</span>
+    </div>
+    <div class="prompt">${item.q}</div>
+    <div class="options">${optHtml}</div>
+    <div class="feedback" id="feedback"></div>
+    <div class="controls"><button class="next" id="nextBtn" disabled>Nästa</button></div>
+  `;
+  card.querySelectorAll('.opt').forEach(btn => {
+    btn.addEventListener('click', () => selectAnswer(parseInt(btn.dataset.i)));
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => { idx++; renderQuestion(); });
+}
+function selectAnswer(i){
+  if(answered) return;
+  answered = true;
+  const item = order[idx];
+  const correct = item.correct;
+  document.querySelectorAll('.opt').forEach((btn, bi) => {
+    btn.setAttribute('disabled','true');
+    if(bi === correct) btn.classList.add('correct');
+    if(bi === i && i !== correct) btn.classList.add('wrong');
+  });
+  const isCorrect = (i === correct);
+  if(isCorrect) score++;
+  history.push({q:item.q, correct:isCorrect, correctText:item.opts[correct]});
+  const fb = document.getElementById('feedback');
+  fb.classList.add('show', isCorrect ? 'ok' : 'bad');
+  fb.innerHTML = `<b>${isCorrect ? 'Rätt!' : 'Inte riktigt.'}</b>${item.fb}`;
+  document.getElementById('nextBtn').disabled = false;
+}
+function renderResult(){
+  const card = document.getElementById('card');
+  const pct = order.length ? Math.round((score/order.length)*100) : 0;
+  const reviewHtml = history.map(h => `
+    <div class="review-item ${h.correct ? 'ok' : 'bad'}">
+      <div class="q">${h.q}</div>
+      <div class="a">${h.correct ? 'Du svarade rätt.' : 'Rätt svar: ' + h.correctText}</div>
+    </div>`).join('');
+  card.innerHTML = `
+    <div class="result">
+      <div class="big" style="color:var(--page-accent);">${score} / ${order.length}</div>
+      <div class="of">${pct}% rätt</div>
+      <button class="restart" id="restartBtn">Kör igen (nya slumpade frågor)</button>
+      <div class="review">${reviewHtml}</div>
+    </div>`;
+  document.getElementById('restartBtn').addEventListener('click', startQuiz);
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressLabel').textContent = order.length + ' / ' + order.length;
+}
+startQuiz();
+
+</script>
+
+<script src="../../../assets/site.js"></script>
+</body>
+</html>

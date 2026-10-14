@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toleranser &amp; passningar — Läsmaterial | CNC-Grönt kort</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #4fb3a5;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{
+    width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto;
+  }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{
+    content:""; position:absolute; background:var(--amber);
+  }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+
+  .dim{
+    display:flex; align-items:center; gap:10px; margin:38px 0 26px; color:var(--muted);
+    font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace; font-size:11.5px;
+    letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+  }
+  .dim::before, .dim::after{ content:""; flex:1; height:1px; background:var(--line);
+    background-image: linear-gradient(90deg, var(--line) 0, var(--line) 100%);
+    position:relative;
+  }
+  .dim .tick{position:relative;}
+  .dim-line{flex:1; height:1px; background:var(--line); position:relative;}
+  .dim-line::before{content:"";position:absolute; left:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim-line::after{content:"";position:absolute; right:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim .label{padding:2px 4px; flex:0 0 auto;}
+
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  h1 .accent{color:var(--amber);}
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+
+  article.reading h2{
+    font-family:"Arial Narrow",Arial,sans-serif; font-size:24px; font-weight:800; letter-spacing:-.005em;
+    margin:36px 0 12px; padding-top:4px; color:var(--text);
+  }
+  article.reading h2 .num{color:var(--accent,var(--amber)); margin-right:8px; font-family:"IBM Plex Mono",monospace; font-size:16px;}
+  article.reading h3{
+    font-size:16.5px; font-weight:700; margin:22px 0 8px; color:var(--accent,var(--amber));
+  }
+  article.reading p{color:#c9d2d9; font-size:15px; line-height:1.72; margin:0 0 14px;}
+  article.reading ul{margin:0 0 16px; padding-left:0; list-style:none;}
+  article.reading ul li{
+    position:relative; padding-left:20px; margin-bottom:8px; color:#c9d2d9; font-size:14.6px; line-height:1.6;
+  }
+  article.reading ul li::before{
+    content:""; position:absolute; left:0; top:9px; width:7px; height:2px; background:var(--accent,var(--amber));
+  }
+  article.reading strong{color:var(--text);}
+  article.reading table.ref-table{width:100%; border-collapse:collapse; margin:14px 0 20px; font-size:14.5px;}
+  article.reading table.ref-table th, article.reading table.ref-table td{text-align:left; padding:8px 12px; border-bottom:1px solid var(--line);}
+  article.reading table.ref-table th{color:var(--muted); font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; font-weight:700;}
+  article.reading table.ref-table tr:hover td{background:var(--panel-2);}
+  .color-chip{
+    display:inline-block; width:16px; height:16px; border-radius:3px;
+    border:1px solid rgba(255,255,255,.35); vertical-align:-3px; margin-right:7px; flex:0 0 auto;
+  }
+  [data-theme="light"] .color-chip{ border-color:rgba(0,0,0,.25); }
+  .color-cell{ display:flex; flex-direction:column; gap:5px; white-space:nowrap; }
+  .chip-line{ display:flex; align-items:center; }
+  .chip-line .color-chip, .chip-line .iso-chip{ margin-right:7px; }
+  .iso-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin:16px 0 26px; }
+  .iso-card{ display:flex; gap:12px; padding:14px; border:1px solid var(--line); border-radius:8px; background:var(--panel); }
+  .iso-chip{
+    flex:0 0 auto; width:40px; height:40px; border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:18px; border:1px solid rgba(0,0,0,.25);
+  }
+  .iso-card h3{ margin:0 0 4px; font-size:15px; color:var(--text); }
+  .iso-card p{ margin:0; font-size:13px; color:var(--muted); line-height:1.5; }
+  .iso-chip.mini{ width:22px; height:22px; border-radius:4px; font-size:12px; margin-right:7px; vertical-align:-6px; }
+  .callout{
+    border-left:3px solid var(--accent,var(--amber)); background:var(--panel);
+    padding:13px 16px; margin:18px 0; border-radius:0 6px 6px 0; font-size:14.2px; color:#dfe6ea; line-height:1.6;
+  }
+  .callout b{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent,var(--amber)); margin-bottom:4px; font-family:"IBM Plex Mono",monospace;}
+  .toc{
+    display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 6px;
+  }
+  .toc a{
+    font-size:12.5px; padding:6px 11px; border:1px solid var(--line); border-radius:999px;
+    text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;
+  }
+  .toc a:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+
+  .footcta{
+    margin-top:48px; border-top:1px solid var(--line); padding-top:26px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .footcta .ft-txt{font-size:13.5px; color:var(--muted); max-width:44ch;}
+
+  footer.sitefoot{text-align:center; color:var(--muted); font-size:12px; margin-top:50px; padding-bottom:10px;}
+
+  @media (max-width:640px){
+    .topnav nav{gap:12px; font-size:12px;}
+  }
+
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+
+<style>
+  article.reading{max-width:720px;}
+  .mono{font-family:"IBM Plex Mono",Consolas,monospace; font-size:.94em; white-space:nowrap; color:var(--text);}
+  .mono sup,.mono sub{font-size:.72em; line-height:0;}
+  .tol{display:inline-flex; flex-direction:column; vertical-align:middle; font-size:.82em; line-height:1.1; margin-left:3px; text-align:left;}
+  .boxed{border:1px solid var(--muted); padding:0 4px; border-radius:2px;}
+  .fig{margin:18px 0 24px; padding:16px 14px 10px; border:1px solid var(--line); border-radius:8px; background:var(--panel);}
+  .fig svg{width:100%; height:auto; display:block;}
+  .fig figcaption{font-size:12.8px; color:var(--muted); margin-top:8px; line-height:1.5; text-align:center;}
+  .s-line{stroke:var(--muted); stroke-width:2;}
+  .s-part{fill:var(--panel-2); stroke:var(--muted); stroke-width:1.5;}
+  .s-zero{stroke:var(--text); stroke-width:1.5; stroke-dasharray:10 5 2 5;}
+  .s-dim{stroke:var(--muted); stroke-width:1.3; fill:none;}
+  .s-dim2{stroke:var(--accent,#4fb3a5); stroke-width:1.5; fill:none;}
+  .s-acc{stroke:var(--accent,#4fb3a5); stroke-width:1; stroke-dasharray:4 3; opacity:.8;}
+  .s-zone{fill:var(--accent,#4fb3a5); fill-opacity:.55; stroke:var(--accent,#4fb3a5); stroke-width:1.5;}
+  .s-zone2{fill:var(--blue); fill-opacity:.45; stroke:var(--blue); stroke-width:1.5;}
+  .m-fill{fill:var(--muted);} .m-acc{fill:var(--accent,#4fb3a5);}
+  .fig text{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif; fill:var(--text);}
+  .t-big{font-size:20px; font-weight:800;} .t-lbl{font-size:13px; font-weight:600;} .t-sm{font-size:12px; fill:var(--muted) !important;}
+  .t-acc{font-size:13px; font-weight:700; fill:var(--accent,#4fb3a5) !important;}
+  .key{display:inline-block; width:12px; height:12px; border-radius:2px; vertical-align:-1px; margin-right:4px;}
+  .key.k1{background:var(--accent,#4fb3a5);} .key.k2{background:var(--blue);}
+  .defgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin:16px 0 20px;}
+  .defgrid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
+  .defcard{border:1px solid var(--line); border-radius:8px; background:var(--panel); padding:14px 16px;}
+  .defcard .tag{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent,#4fb3a5); font-weight:700; margin-bottom:6px;}
+  article.reading .defcard p{font-size:14px; margin:0 0 8px; line-height:1.6;}
+  article.reading .defcard p:last-child{margin-bottom:0;}
+  article.reading .muted-s{color:var(--muted) !important; font-size:13px !important;}
+  .example{border:1px dashed var(--line); border-radius:8px; padding:12px 16px 4px; margin:14px 0; background:var(--panel-2);}
+  .example .ex-h{display:block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent,#4fb3a5); font-weight:700; margin-bottom:6px;}
+  article.reading .example p{font-size:14.4px; margin:0 0 10px;}
+  article.reading .example p.calc{font-family:"IBM Plex Mono",Consolas,monospace; font-size:13.4px; line-height:1.8;}
+  .formula-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin:16px 0 18px;}
+  .formula{border:1px solid var(--line); border-left:3px solid var(--accent,#4fb3a5); border-radius:0 8px 8px 0; background:var(--panel); padding:12px 14px; font-family:"IBM Plex Mono",Consolas,monospace; font-size:13.2px; line-height:1.75; color:var(--text);}
+  .formula .f-h{display:block; font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif; font-weight:700; font-size:13.5px; color:var(--accent,#4fb3a5); margin-bottom:4px;}
+  .formula .f-sum{display:inline-block; border-top:1px solid var(--line); padding-top:3px; margin-top:3px; font-weight:700;}
+  .formula.single{margin:12px 0 16px; text-align:center; font-size:15px;}
+  .isosym{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:16px 0 20px;}
+  .isosym .part{border:1px solid var(--line); border-radius:8px; background:var(--panel); padding:14px; text-align:center;}
+  .isosym .big{display:block; font-family:"Arial Narrow",Arial,sans-serif; font-size:40px; font-weight:800; line-height:1; color:var(--text);}
+  .isosym .part.acc .big{color:var(--accent,#4fb3a5);}
+  .isosym .lbl{display:block; font-size:11px; font-family:"IBM Plex Mono",monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:6px 0 8px;}
+  article.reading .isosym p{font-size:13px; line-height:1.5; margin:0;}
+  @media (max-width:560px){ .isosym{grid-template-columns:1fr;} }
+  .tscroll{overflow-x:auto; margin:14px 0 6px;}
+  .tscroll table.ref-table{margin:0; min-width:520px;}
+  article.reading table.ref-table.num td, article.reading table.ref-table.num th{white-space:nowrap; font-variant-numeric:tabular-nums;}
+  article.reading table.ref-table td{vertical-align:top; line-height:1.5;}
+  article.reading table.ref-table.num th{text-transform:none; letter-spacing:0; font-size:12.5px;}
+  article.reading p.tnote{font-size:12.8px; color:var(--muted); margin:6px 0 18px;}
+  article.reading ol.steps{margin:0 0 16px; padding-left:0; list-style:none; counter-reset:st;}
+  article.reading ol.steps li{counter-increment:st; position:relative; padding-left:34px; margin-bottom:9px; font-size:14.6px; line-height:1.6;}
+  article.reading ol.steps li::before{content:counter(st); position:absolute; left:0; top:1px; width:22px; height:22px; border-radius:50%; background:var(--accent,#4fb3a5); color:#0f1115; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center;}
+</style>
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="../material.html"><span class="mark"></span>CNC-GRÖNT KORT</a>
+  <nav>
+    <a href="../material.html">Delkurser</a>
+    <a href="../quiz-alla.html">Storquiz</a>
+  </nav>
+</div>
+
+<main class="wrap narrow">
+  <header class="hero">
+    <div class="eyebrow">MTL-04 · Läsmaterial</div>
+    <h1>Toleranser &amp; passningar</h1>
+    <div class="sub">Dimensionstoleranser från grunden: basmått, avmått och toleransområden, generella toleranser och vinkeltoleranser, ISO-toleranssystemet samt ISO-passningar mellan hål och axel.<br><span style="color:var(--muted); font-size:12.5px;">Källa: Toleranser – faktahäfte</span></div>
+    <div class="toc"><a href="#varfor">Varför toleranser?</a><a href="#nyckelord">Sex nyckelord</a><a href="#placering">Toleransområdets placering</a><a href="#avmatt">Avmått</a><a href="#over_under">Över- &amp; underdimension</a><a href="#symmetri">Symmetrisk tolerans</a><a href="#satt">Toleranser på olika sätt</a><a href="#generella">Generella toleranser</a><a href="#vinkel">Vinkeltoleranser</a><a href="#iso">ISO-toleranssystem</a><a href="#lage">Toleransläge</a><a href="#grad">Toleransgrad</a><a href="#tabell">Läsa ISO-tabell</a><a href="#berakning">Beräkningar</a><a href="#matning">Mätverktyg</a><a href="#passning">Passningar</a><a href="#system">Hålet bas / axeln bas</a><a href="#spel">Maxspel &amp; minspel</a><a href="#form">Form &amp; läge</a></div>
+  </header>
+  <div class="dim">TILL INNEHÅLLET</div>
+  <article class="reading" style="--accent:#4fb3a5">
+
+    <div class="callout"><b>Läs detta först</b>Dimensionstoleranser handlar ofta om mycket små mått — några tusendels millimeter. I figurerna här är toleranserna därför ritade kraftigt förstorade, och toleransområdena är markerade med kursens accentfärg. Alla mått anges i millimeter om inget annat sägs, precis som på en verkstadsritning. Det här materialet handlar om <strong>dimensionstoleranser</strong> (och passningar); när det står "tolerans" menas alltså dimensionstolerans.</div>
+
+    <!-- 01 -->
+    <h2 id="varfor"><span class="num">01</span>Varför toleranser?</h2>
+    <p>Anta att du ska tillverka rullar med längden 20 mm. För att rullarna ska fungera duger det om de är mellan 19 och 21 mm långa. På ritningen skrivs längden då som <span class="mono">20 ±1</span>.</p>
+    <p>Dimensionstoleransen är alltså ±1 mm: måttet får variera högst 1 mm uppåt och 1 mm neråt från 20 mm. Alla rullar inom det området blir godkända (om de är riktiga i övrigt). Du behöver därför inte lägga onödig tid på att träffa exakt 20,000 mm, utan kan välja den maskin och metod som enkelt och snabbt ger godkända detaljer. Det ger kortare produktionstid och lägre pris än om kraven vore strängare.</p>
+    <p>Dimensionstoleranser används också när man medvetet vill ge en detalj <strong>över- eller underdimension</strong> — för att få en lämplig <strong>passning</strong> när två eller flera detaljer ska fungera ihop på ett bestämt sätt.</p>
+
+    <div class="defgrid">
+      <div class="defcard"><span class="tag">Bilden</span><p>Den ritade bilden visar detaljens <strong>form</strong>.</p></div>
+      <div class="defcard"><span class="tag">Basmåttet</span><p>Visar detaljens <strong>storlek</strong>, t.ex. 20.</p></div>
+      <div class="defcard"><span class="tag">Toleransen</span><p>Anger <strong>gränserna</strong> för hur mycket det godkända måttet får avvika, t.ex. ±1.</p></div>
+    </div>
+
+    <h3>Dimensionstoleranser kan ge</h3>
+    <ul>
+      <li>lägre tillverkningskostnad</li>
+      <li>bättre funktion</li>
+      <li>enklare reservdelsbyte</li>
+    </ul>
+    <p>Toleranser kan gälla längd-, bredd- och höjdmått samt vinkelmått — t.ex. djupet på ett hål, en diameter eller avståndet mellan två centrumlinjer. De kan gälla mått i alla riktningar: vertikalt, horisontellt och lutande. Alla mått med en vanlig rak måttlinje, och alla vinkelmått, kan kompletteras med en dimensionstolerans.</p>
+
+    <!-- 02 -->
+    <h2 id="nyckelord"><span class="num">02</span>Sex nyckelord</h2>
+    <p>För att förstå teorin bakom toleranser och passningar behöver du kunna sex ord som återkommer hela tiden. I förklaringarna tänker vi oss att detaljen står på ett plant bord och att det toleranssatta måttet går från bordet och uppåt.</p>
+
+    <figure class="fig">
+      <svg viewBox="0 75 720 210" role="img" aria-label="Basmått, noll-linje, gränsmått, toleransgränser, toleransområde och toleransvidd">
+        <line x1="20" y1="270" x2="700" y2="270" class="s-line" />
+        <rect x="190" y="150" width="90" height="120" class="s-part" />
+        <line x1="70" y1="150" x2="660" y2="150" class="s-zero" />
+        <text x="40" y="155" class="t-big">0</text>
+        <text x="40" y="118" class="t-big">+</text>
+        <text x="42" y="192" class="t-big">−</text>
+        <line x1="150" y1="270" x2="150" y2="150" class="s-dim" marker-start="url(#ah)" marker-end="url(#ah)" />
+        <text x="140" y="215" class="t-lbl" text-anchor="end">Basmått</text>
+        <rect x="330" y="105" width="70" height="75" class="s-zone" />
+        <line x1="300" y1="105" x2="610" y2="105" class="s-acc" />
+        <line x1="300" y1="180" x2="655" y2="180" class="s-acc" />
+        <line x1="420" y1="105" x2="420" y2="180" class="s-dim2" marker-start="url(#ah2)" marker-end="url(#ah2)" />
+        <text x="436" y="100" class="t-lbl">Övre toleransgräns</text>
+        <text x="436" y="196" class="t-lbl">Undre toleransgräns</text>
+        <text x="436" y="138" class="t-acc">Toleransvidd</text>
+        <text x="345" y="94" class="t-sm" text-anchor="middle">Toleransområde</text>
+        <line x1="600" y1="270" x2="600" y2="105" class="s-dim" marker-end="url(#ah)" />
+        <line x1="645" y1="270" x2="645" y2="180" class="s-dim" marker-end="url(#ah)" />
+        <text transform="translate(593,266) rotate(-90)" class="t-sm" style="font-size:10.5px">Övre gränsmått</text>
+        <text transform="translate(638,266) rotate(-90)" class="t-sm" style="font-size:10.5px">Undre gränsmått</text>
+        <text x="664" y="143" class="t-sm" text-anchor="start">Noll-</text>
+        <text x="664" y="158" class="t-sm" text-anchor="start">linje</text>
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="m-fill"/></marker>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="m-acc"/></marker>
+        </defs>
+      </svg>
+      <figcaption>Toleransområdet (färgat) är ritat kraftigt förstorat. Det godkända måttet på detaljen ska sluta inom toleransvidden.</figcaption>
+    </figure>
+
+    <table class="ref-table">
+      <thead><tr><th>Nyckelord</th><th>Betydelse</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Basmått</strong></td><td>Det toleranssatta måttet på ritningen, t.ex. 20 i <span class="mono">20 ±1</span>. Basmåttets övre pil slutar mot noll-linjen.</td></tr>
+        <tr><td><strong>Noll-linje</strong></td><td>Den linje där basmåttet slutar. Avvikelser uppåt är positiva (+), avvikelser neråt negativa (−).</td></tr>
+        <tr><td><strong>Gränsmått</strong></td><td>Det <em>största</em> mått som kan godkännas kallas <strong>övre gränsmått</strong>, det <em>minsta</em> kallas <strong>undre gränsmått</strong>.</td></tr>
+        <tr><td><strong>Toleransgräns</strong></td><td>Där det övre gränsmåttets pil slutar går <strong>övre toleransgränsen</strong>; där det undre gränsmåttets pil slutar går <strong>undre toleransgränsen</strong>.</td></tr>
+        <tr><td><strong>Toleransområde</strong></td><td>Området mellan det största och det minsta mått som kan godkännas. Det godkända måttet ska sluta här.</td></tr>
+        <tr><td><strong>Toleransvidd</strong></td><td>Toleransområdets höjd, dvs. skillnaden mellan övre och undre gränsmått.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="example"><span class="ex-h">Exempel · axel</span>
+      <p>Ritningen anger diametern <span class="mono">Ø5 ±0,5</span>. Basmåttet är 5 mm. Övre gränsmått = 5,5 mm, undre gränsmått = 4,5 mm. Toleransvidden blir 5,5 − 4,5 = <strong>1 mm</strong>. Axelns diameter ska alltså vara mellan 4,5 och 5,5 mm.</p>
+    </div>
+    <div class="example"><span class="ex-h">Exempel · spår</span>
+      <p>Ett spår har bredden <span class="mono">10 ±1</span>. Bredden ska vara mellan 9 och 11 mm och får avvika högst 1 mm uppåt och 1 mm neråt från basmåttet 10 mm. Toleransvidden är 2 mm.</p>
+    </div>
+    <p>Du behöver inte känna dig överväldigad av alla begrepp — i praktiken står alla uppgifter du behöver för tillverkning och måttkontroll på ritningen.</p>
+
+    <!-- 03 -->
+    <h2 id="placering"><span class="num">03</span>Toleransområdets placering</h2>
+    <p>Toleransområdet — där det godkända måttet ska sluta — kan placeras på fyra olika sätt i förhållande till noll-linjen:</p>
+
+    <figure class="fig">
+      <svg viewBox="0 0 640 210" role="img" aria-label="Fyra placeringar av toleransområdet">
+        <g transform="translate(10,0)">
+          <line x1="10" y1="100" x2="140" y2="100" class="s-zero"/><text x="0" y="104" class="t-sm">0</text>
+          <rect x="60" y="70" width="40" height="60" class="s-zone"/>
+          <text x="75" y="175" class="t-sm" text-anchor="middle">Symmetriskt</text><text x="75" y="192" class="t-sm" text-anchor="middle">på noll-linjen</text>
+        </g>
+        <g transform="translate(165,0)">
+          <line x1="10" y1="100" x2="140" y2="100" class="s-zero"/><text x="0" y="104" class="t-sm">0</text>
+          <rect x="60" y="55" width="40" height="60" class="s-zone"/>
+          <text x="75" y="175" class="t-sm" text-anchor="middle">Osymmetriskt</text><text x="75" y="192" class="t-sm" text-anchor="middle">på noll-linjen</text>
+        </g>
+        <g transform="translate(320,0)">
+          <line x1="10" y1="100" x2="140" y2="100" class="s-zero"/><text x="0" y="104" class="t-sm">0</text>
+          <rect x="60" y="40" width="40" height="60" class="s-zone"/>
+          <text x="75" y="175" class="t-sm" text-anchor="middle">Gränsar till</text><text x="75" y="192" class="t-sm" text-anchor="middle">noll-linjen</text>
+        </g>
+        <g transform="translate(475,0)">
+          <line x1="10" y1="100" x2="140" y2="100" class="s-zero"/><text x="0" y="104" class="t-sm">0</text>
+          <rect x="60" y="20" width="40" height="55" class="s-zone"/>
+          <line x1="115" y1="100" x2="115" y2="75" class="s-dim2" marker-start="url(#ah2)" marker-end="url(#ah2)"/>
+          <text x="75" y="175" class="t-sm" text-anchor="middle">En bit ifrån</text><text x="75" y="192" class="t-sm" text-anchor="middle">noll-linjen</text>
+        </g>
+      </svg>
+    </figure>
+
+    <h3>Plus och minus</h3>
+    <ul>
+      <li>En detalj som är aningen <strong>längre</strong> än basmåttet når strax ovanför noll-linjen — längden är basmåttet <em>plus</em> några µm. Området ovanför noll-linjen är <strong>positivt (+)</strong>.</li>
+      <li>En detalj som är <strong>exakt</strong> lika lång som basmåttet (avviker 0 µm) slutar mot noll-linjen, som märks med <strong>0</strong>.</li>
+      <li>En detalj som är aningen <strong>kortare</strong> än basmåttet når strax under noll-linjen — basmåttet <em>minus</em> några µm. Området under noll-linjen är <strong>negativt (−)</strong>.</li>
+    </ul>
+
+    <div class="example"><span class="ex-h">Exempel · osymmetriskt på noll-linjen</span>
+      <p>Ett hål har djupet <span class="mono">20 <span class="tol"><span>+0,2</span><span>−0,5</span></span></span>. Djupet ska vara mellan 19,5 och 20,2 mm. Övre toleransgränsen ligger 0,2 mm över noll-linjen och den undre 0,5 mm under.</p>
+    </div>
+    <div class="example"><span class="ex-h">Exempel · helt ovanför noll-linjen</span>
+      <p>En nyckelvidd har måttet <span class="mono">22 <span class="tol"><span>+0,8</span><span>+0,2</span></span></span>. Nyckelvidden ska vara mellan 22,2 och 22,8 mm — den ska avvika uppåt, minst 0,2 mm och högst 0,8 mm från basmåttet 22 mm. Hela toleransområdet är positivt.</p>
+    </div>
+
+    <!-- 04 -->
+    <h2 id="avmatt"><span class="num">04</span>Avmått</h2>
+    <p>Ett <strong>avmått</strong> visar avvikelsen från basmåttet.</p>
+    <table class="ref-table">
+      <thead><tr><th>Begrepp</th><th>Betydelse</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Gränsavmått</strong></td><td>Måttet från noll-linjen till toleransområdets gräns. Till övre toleransgränsen: <strong>övre gränsavmått</strong>. Till undre toleransgränsen: <strong>undre gränsavmått</strong>.</td></tr>
+        <tr><td><strong>Lägesavmått</strong></td><td>När toleransområdet ligger en bit ifrån noll-linjen är ett av gränsavmåtten också lägesavmått. Det anger <em>toleransläget</em> som det kortaste avståndet från noll-linjen till toleransområdet.</td></tr>
+        <tr><td><strong>Positivt avmått</strong></td><td>Går i positiv riktning (uppåt) från noll-linjen. Plustecken skrivs framför, t.ex. <span class="mono">+0,05</span>.</td></tr>
+        <tr><td><strong>Negativt avmått</strong></td><td>Går i negativ riktning (neråt) från noll-linjen. Minustecken skrivs framför, t.ex. <span class="mono">−0,02</span>.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="example"><span class="ex-h">Exempel · fläns, negativt lägesavmått</span>
+      <p>En fläns har bredden <span class="mono">12 <span class="tol"><span>−0,2</span><span>−0,5</span></span></span> och ska vara mellan 11,5 och 11,8 mm. Övre gränsavmått = −0,2 mm, undre gränsavmått = −0,5 mm. Det övre gränsavmåttet ligger närmast noll-linjen och är därför också <strong>lägesavmått (−0,2 mm)</strong>.</p>
+    </div>
+    <div class="example"><span class="ex-h">Exempel · axeltapp, positivt lägesavmått</span>
+      <p>En axeltapp har längden <span class="mono">10 <span class="tol"><span>+0,6</span><span>+0,3</span></span></span> och ska vara mellan 10,3 och 10,6 mm. Undre gränsavmått = +0,3 mm är närmast noll-linjen och blir därmed <strong>lägesavmått (+0,3 mm)</strong>.</p>
+    </div>
+
+    <!-- 05 -->
+    <h2 id="over_under"><span class="num">05</span>Över- och underdimension</h2>
+    <p>När toleransområdet, eller dess ena gräns, ligger <strong>på</strong> noll-linjen får det godkända måttet bara avvika så mycket från basmåttet som toleransvidden tillåter.</p>
+    <p>När toleransområdet är <strong>flyttat ifrån</strong> noll-linjen styrs det godkända måttet till att bli större eller mindre än basmåttet. Man får en över- eller underdimension, vars storlek normalt är från några tusendels millimeter upp till någon millimeter.</p>
+    <div class="formula-grid">
+      <div class="formula"><span class="f-h">Överdimension</span>basmått<br>+ lägesavmått<br>+ del av toleransvidd<br><span class="f-sum">= godkänt mått</span></div>
+      <div class="formula"><span class="f-h">På noll-linjen</span>basmått<br>± del av toleransvidd<br><br><span class="f-sum">= godkänt mått</span></div>
+      <div class="formula"><span class="f-h">Underdimension</span>basmått<br>− lägesavmått<br>− del av toleransvidd<br><span class="f-sum">= godkänt mått</span></div>
+    </div>
+    <p>Över- och underdimensioner är viktiga för passningen när detaljer monteras ihop. Ibland vill man att en detalj ska gå lätt in i en annan, ibland att detaljerna ska gripa hårt tag i varandra.</p>
+    <div class="example"><span class="ex-h">Exempel · axel med underdimension</span>
+      <p><span class="mono">Ø15 <span class="tol"><span>−0,1</span><span>−0,2</span></span></span>: diametern ska vara mellan 14,8 och 14,9 mm. Båda gränsavmåtten är negativa, så axeln får underdimension.</p>
+    </div>
+    <div class="example"><span class="ex-h">Exempel · hål med överdimension</span>
+      <p><span class="mono">Ø15 <span class="tol"><span>+0,2</span><span>+0,1</span></span></span>: diametern ska vara mellan 15,1 och 15,2 mm. Båda gränsavmåtten är positiva, så hålet får överdimension.</p>
+    </div>
+
+    <!-- 06 -->
+    <h2 id="symmetri"><span class="num">06</span>Symmetrisk och osymmetrisk tolerans</h2>
+    <h3>Symmetrisk tolerans</h3>
+    <p>Vid symmetri har man två lika stora, spegelvända halvor. En symmetrisk tolerans betyder att måttet får avvika lika mycket uppåt som neråt. Toleransområdet ligger mitt på noll-linjen — halva på den positiva sidan och halva på den negativa. Därför skriver man <strong>±</strong> följt av halva toleransvidden.</p>
+    <div class="example"><span class="ex-h">Exempel</span>
+      <p>Två håls centrumavstånd <span class="mono">20 ±0,1</span> ska vara mellan 19,9 och 20,1 mm. Övre gränsavmått = +0,1, undre gränsavmått = −0,1.</p>
+    </div>
+    <h3>Osymmetrisk tolerans</h3>
+    <p>Varje tolerans som inte är symmetrisk är osymmetrisk. Toleransområdet är då ojämnt fördelat kring noll-linjen — antingen ligger hela området på ena sidan, eller olika stora delar på var sida.</p>
+    <div class="example"><span class="ex-h">Exempel</span>
+      <p>Ett urtag <span class="mono">30 <span class="tol"><span>+0,08</span><span>0</span></span></span> ska vara mellan 30,00 och 30,08 mm. Undre gränsavmåttet är 0, så undre toleransgränsen sammanfaller med noll-linjen.</p>
+    </div>
+
+    <div class="callout"><b>Sammanfattning</b>
+      Toleransvidden visar noggrannheten och speglar indirekt en del av tillverkningskostnaden. Lägesavmåttet styr det godkända måttet till att bli aningen större eller aningen mindre än basmåttet.<br><br>
+      <strong>Positivt lägesavmått:</strong> toleransområdet ligger över noll-linjen → det godkända måttet blir större än basmåttet.<br>
+      <strong>Negativt lägesavmått:</strong> toleransområdet ligger under noll-linjen → det godkända måttet blir mindre än basmåttet.
+    </div>
+
+    <!-- 07 -->
+    <h2 id="satt"><span class="num">07</span>Toleranser på olika sätt</h2>
+    <p>Beroende på företagets rutiner, detaljens användning och ritningens ålder kan toleranserna anges på olika sätt:</p>
+    <table class="ref-table">
+      <thead><tr><th>Sätt</th><th>Så fungerar det</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Numeriska toleranser</strong></td><td>Toleransens siffervärde skrivs ut vid varje toleranssatt mått. Alla exempel hittills har varit numeriska.</td></tr>
+        <tr><td><strong>Generella toleranser</strong></td><td>I stället för en tolerans vid varje mått hänvisar man på ett ställe på ritningen till en generell toleransstandard.</td></tr>
+        <tr><td><strong>Vinkeltoleranser</strong></td><td>Kan anges som numeriska eller som generella toleranser.</td></tr>
+        <tr><td><strong>ISO-toleranssystem</strong></td><td>Storlek och läge är ordnade i ett system. Vid måttet står en ISO-symbol (bokstav + siffra) vars värden läses i tabeller. Systemet är också grunden för ISO-passningssystemet.</td></tr>
+      </tbody>
+    </table>
+    <p>Toleranser och passningar regleras av gemensam svensk och internationell <strong>SS-ISO-standard</strong>. SS betyder Svensk Standard och ISO står för International Organization for Standardization. De mest använda tabellerna finns i vanliga verkstadshandböcker.</p>
+
+    <h3>Så skrivs numeriska toleranser</h3>
+    <ul>
+      <li>Det <strong>övre</strong> gränsavmåttet (eller gränsmåttet) skrivs överst och det <strong>undre</strong> under — både för invändiga och utvändiga mått. Ex: <span class="mono">20 <span class="tol"><span>+0,02</span><span>−0,06</span></span></span> eller <span class="mono">20,02 / 19,94</span>.</li>
+      <li>Samma måttenhet (mm) används för basmått och gränsavmått/gränsmått.</li>
+      <li>Lika många decimaler används för övre och undre gränsavmått — utom när gränsavmåttet är noll, som skrivs bara <span class="mono">0</span>.</li>
+      <li>Vid symmetrisk tolerans skrivs ± följt av gränsavmåttet, som då är halva toleransvidden. Ex: <span class="mono">25 ±0,5</span>.</li>
+    </ul>
+
+    <!-- 08 -->
+    <h2 id="generella"><span class="num">08</span>Generella toleranser</h2>
+    <p>Olika bearbetningsmetoder ger olika noggrannhet — en bräda formad med yxa blir mindre måttnoggrann än en som sågats med en fintandad såg. Inom verkstadsindustrin vet man av erfarenhet hur noggrant det normalt blir vid olika metoder och basmått. Dessa värden är sammanställda som generella toleranser i standarden <strong>SS-ISO 2768-1</strong> (tidigare SMS 715, som stämmer nästan helt med den nya).</p>
+    <p>Basmåtten från 0,5 till 4000 mm är indelade i åtta områden, och bearbetningen i fyra klasser: fin, medel, grov och mycket grov. På ritningen står vilken klass som gäller — alltså vilken rad i tabellen du ska läsa på.</p>
+    <div class="tscroll"><table class="ref-table num">
+      <thead><tr><th>Klass</th><th>0,5–3</th><th>&gt;3–6</th><th>&gt;6–30</th><th>&gt;30–120</th><th>&gt;120–400</th><th>&gt;400–1000</th><th>&gt;1000–2000</th><th>&gt;2000–4000</th></tr></thead>
+      <tbody>
+        <tr><td><strong>f</strong> fin</td><td>±0,05</td><td>±0,05</td><td>±0,1</td><td>±0,15</td><td>±0,2</td><td>±0,3</td><td>±0,5</td><td>–</td></tr>
+        <tr><td><strong>m</strong> medel</td><td>±0,1</td><td>±0,1</td><td>±0,2</td><td>±0,3</td><td>±0,5</td><td>±0,8</td><td>±1,2</td><td>±2</td></tr>
+        <tr><td><strong>c</strong> grov</td><td>±0,2</td><td>±0,3</td><td>±0,5</td><td>±0,8</td><td>±1,2</td><td>±2</td><td>±3</td><td>±4</td></tr>
+        <tr><td><strong>v</strong> mycket grov</td><td>–</td><td>±0,5</td><td>±1</td><td>±1,5</td><td>±2,5</td><td>±4</td><td>±6</td><td>±8</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tnote">Tillåtna avvikelser i mm för längdmått enligt SS-ISO 2768-1. Basmåttsområden i mm, "&gt;3–6" betyder över 3 till och med 6.</p>
+    <ul>
+      <li>Toleransområdet ligger <strong>symmetriskt</strong> kring noll-linjen — avvikelsen märks ±.</li>
+      <li>Ju större basmått och ju grövre bearbetning, desto större tillåten avvikelse.</li>
+      <li>Även radier och faser ingår i det generellt toleranssatta måttet, vilket kan påverka vilket basmåttsområde du väljer.</li>
+      <li>Den generella toleransen gäller <strong>inte</strong> mått som toleranssatts på annat sätt, och inte heller hjälpmått (inom parentes, t.ex. <span class="mono">(18)</span>) eller teoretiska mått (inramade, t.ex. <span class="mono boxed">20</span>).</li>
+    </ul>
+    <h3>Hänvisning på ritningen</h3>
+    <p>Hänvisningen kan stå i en egen ruta där siffervärdena är utskrivna, eller som en text, t.ex. <em>"Generella toleranser: Tillåtna måttavvikelser enligt SS-ISO 2768-1 medel"</em>. Företag med speciell tillverkning kan i stället hänvisa till en egen företagsstandard.</p>
+    <p>Med en generell tolerans anges en lägsta nivå på måttnoggrannheten för alla detaljens mått, utan att konstruktören behöver ta ställning till varje enskilt mått. Vid tillverkningen tar <strong>operatören</strong> över ansvaret, genom att i tabellen läsa ut vilka krav som gäller för varje mått.</p>
+    <div class="example"><span class="ex-h">Exempel</span>
+      <p>Ett otoleranssatt mått 40 mm på en ritning med <span class="mono">SS-ISO 2768-m</span>: raden <em>m</em>, kolumnen &gt;30–120 ger <strong>±0,3 mm</strong>. Måttet ska alltså vara mellan 39,7 och 40,3 mm.</p>
+    </div>
+
+    <!-- 09 -->
+    <h2 id="vinkel"><span class="num">09</span>Vinkeltoleranser</h2>
+    <p>Även vinklar kan toleranssättas, antingen med siffror vid måttet (numeriska vinkeltoleranser) eller som en generell anvisning för hela ritningen.</p>
+    <h3>Numeriska vinkeltoleranser</h3>
+    <p>Vinkel och tolerans kan skrivas med grader och decimaler, eller med grader, minuter och sekunder. En grad är 60 minuter (′) och en minut är 60 sekunder (″). Samma skrivsätt används för mått och tolerans.</p>
+    <ul>
+      <li><span class="mono">22,5° ±0,5°</span> läses: 22,5 grader plus/minus 0,5 grader.</li>
+      <li><span class="mono">20°30′ ±0°30′</span> läses: 20 grader 30 minuter, plus/minus 0 grader 30 minuter.</li>
+    </ul>
+    <h3>Generella vinkeltoleranser</h3>
+    <p>SS-ISO 2768-1 anger tillåtna avvikelser i grader och minuter för fyra toleransklasser och fem längdområden. Som längd räknas den <strong>kortaste sidan</strong> i vinkeln.</p>
+    <div class="tscroll"><table class="ref-table num">
+      <thead><tr><th>Klass</th><th>t.o.m. 10</th><th>&gt;10–50</th><th>&gt;50–120</th><th>&gt;120–400</th><th>&gt;400</th></tr></thead>
+      <tbody>
+        <tr><td><strong>f</strong> fin / <strong>m</strong> medel</td><td>±1°</td><td>±0°30′</td><td>±0°20′</td><td>±0°10′</td><td>±0°5′</td></tr>
+        <tr><td><strong>c</strong> grov</td><td>±1°30′</td><td>±1°</td><td>±0°30′</td><td>±0°15′</td><td>±0°10′</td></tr>
+        <tr><td><strong>v</strong> mycket grov</td><td>±3°</td><td>±2°</td><td>±1°</td><td>±0°30′</td><td>±0°20′</td></tr>
+      </tbody>
+    </table></div>
+    <div class="example"><span class="ex-h">Exempel</span>
+      <p>En vinkel vars kortaste ben är 40 mm, på en ritning med <span class="mono">SS-ISO 2768-m</span>: kolumnen &gt;10–50 ger <strong>±0°30′</strong>.</p>
+    </div>
+    <h3>Äldre standard och svetsade konstruktioner</h3>
+    <p>I äldre standard (SMS 723) och för svetsade konstruktioner kan vinkeltoleransen anges som en måttavvikelse <em>e</em> i mm på en 1000 mm lång sträcka av det kortaste vinkelbenet <em>L</em>:</p>
+    <div class="formula single">Tillåten måttavvikelse = e · L / 1000</div>
+    <div class="tscroll"><table class="ref-table num">
+      <thead><tr><th>Kortaste ben L (mm)</th><th>AA Δα</th><th>AA e</th><th>A Δα</th><th>A e</th><th>B Δα</th><th>B e</th><th>C Δα</th><th>C e</th><th>D Δα</th><th>D e</th></tr></thead>
+      <tbody>
+        <tr><td>t.o.m. 315</td><td>±20′</td><td>±6</td><td>±20′</td><td>±6</td><td>±45′</td><td>±13</td><td>±1°</td><td>±18</td><td>±1°30′</td><td>±26</td></tr>
+        <tr><td>&gt;315–1000</td><td>±10′</td><td>±3</td><td>±15′</td><td>±4,5</td><td>±30′</td><td>±9</td><td>±45′</td><td>±13</td><td>±1°15′</td><td>±22</td></tr>
+        <tr><td>&gt;1000</td><td>±3′</td><td>±1</td><td>±10′</td><td>±3</td><td>±20′</td><td>±6</td><td>±30′</td><td>±9</td><td>±1°</td><td>±18</td></tr>
+      </tbody>
+    </table></div>
+    <div class="example"><span class="ex-h">Exempel</span>
+      <p>L = 1500 mm, klass B → e = ±6 mm. Tillåten måttavvikelse = ±6 · 1500 / 1000 = <strong>±9 mm</strong>.</p>
+    </div>
+    <p>Om vinkelns storlek bestäms av olika längdmått (t.ex. en fas måttsatt med <span class="mono">25 ±0,5</span> och <span class="mono">12 ±0,2</span>) följer toleransen de vanliga reglerna för längdtoleranser.</p>
+
+    <!-- 10 -->
+    <h2 id="iso"><span class="num">10</span>ISO-toleranssystemet</h2>
+    <p>ISO-toleranssystemet är ett internationellt system som ofta används på svenska ritningar. En ISO-tolerans känns igen på <strong>ISO-symbolen</strong> (bokstav + siffra) efter basmåttet. Grunderna beskrivs i <strong>SS-ISO 286-1</strong>.</p>
+    <div class="isosym">
+      <div class="part"><span class="big">25</span><span class="lbl">Basmått</span><p>Det mått toleransen gäller för.</p></div>
+      <div class="part acc"><span class="big">H</span><span class="lbl">Toleransläge</span><p>Bokstaven avgör om måttet blir aningen större eller mindre än basmåttet (över- eller underdimension).</p></div>
+      <div class="part acc"><span class="big">7</span><span class="lbl">Toleransgrad</span><p>Siffran motsvarar en toleransvidd i µm som läses i tabell — ett mått på hur noggrant man ska bearbeta.</p></div>
+    </div>
+    <p>Toleransernas gränsavmått läses i standardtabeller. Gemensamt för tabellerna är att basmåtten står radvis till vänster och toleransgraderna i kolumner längst upp. De vanligaste tabellerna finns i formelsamlingar och verkstadshandböcker.</p>
+    <h3>Basmåttsområden</h3>
+    <p>I ISO-tabellerna är basmåtten från 0 till 3150 mm indelade i grupper, en per rad. Det finns en <strong>normalserie</strong> och en <strong>tät serie</strong>, där den täta har fler och mindre grupper.</p>
+    <div class="callout"><b>Viktigt: "t.o.m."</b>T.o.m. betyder <em>till och med</em>. Ett basmått som ligger exakt på gränsen mellan två områden läses alltså på den <strong>övre</strong> av de två raderna. Basmått 30 mm hör till raden 18–30, inte 30–50. I vissa tabeller står i stället en parentes runt "över"-måttet — det betyder samma sak.</div>
+
+    <!-- 11 -->
+    <h2 id="lage"><span class="num">11</span>Toleransläge — bokstaven</h2>
+    <p>Toleransläget representerar ett visst <strong>lägesavmått</strong>, som styr det godkända måttet till att bli lika med, aningen större eller aningen mindre än basmåttet. Det avgör om två detaljer får en lös eller fast sammansättning.</p>
+    <ul>
+      <li><strong>Stora bokstäver A–Z</strong> används för hål och andra invändiga mått.</li>
+      <li><strong>Små bokstäver a–z</strong> används för axlar och andra utvändiga mått.</li>
+    </ul>
+    <div class="tscroll"><table class="ref-table">
+      <thead><tr><th></th><th>Början av alfabetet (A/a…)</th><th>J/j</th><th>Slutet av alfabetet (…Z/z)</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Hål</strong></td><td>A–H ger diameter aningen <strong>större</strong> än basmåttet (störst vid A)</td><td>Nära basmåttet</td><td>K–Z ger diameter aningen <strong>mindre</strong> än basmåttet (minst vid Z)</td></tr>
+        <tr><td><strong>Axel</strong></td><td>a–h ger diameter aningen <strong>mindre</strong> än basmåttet (minst vid a)</td><td>Nära basmåttet</td><td>k–z ger diameter aningen <strong>större</strong> än basmåttet (störst vid z)</td></tr>
+        <tr><td><strong>Avverkning</strong></td><td>Mer avverkning än vid J/j</td><td></td><td>Mindre avverkning än vid J/j</td></tr>
+      </tbody>
+    </table></div>
+    <ul>
+      <li>Det ursprungliga antalet lägen har utökats med dubbelbeteckningar: CD, cd, EF, ef, FG, fg, ZA, za, ZB, zb, ZC och zc.</li>
+      <li>Symmetrisk tolerans kring noll-linjen betecknas <strong>JS</strong> för hål och <strong>js</strong> för axlar (s = symmetri).</li>
+      <li><strong>H, h</strong> (och med några undantag <strong>K, k</strong>) har lägesavmåttet <strong>noll</strong> — toleransområdet startar från noll-linjen, och måttet får avvika högst en toleransvidd från basmåttet.</li>
+    </ul>
+    <h3>Så förändras lägesavmåttet genom alfabetet</h3>
+    <p><strong>Hål:</strong> lägesavmåttet är störst (positivt) vid A och minskar till noll vid H. Vid JS ligger toleransvidden mitt på noll-linjen. Vid N är lägesavmåttet noll och toleransvidden negativ. Därefter ökar lägesavmåttet i negativ riktning fram till Z.</p>
+    <p><strong>Axlar:</strong> lägesavmåttet har sitt största negativa värde vid a och minskar till noll vid h. Vid js ligger toleransvidden mitt på noll-linjen. Vid k är lägesavmåttet noll och toleransvidden positiv. Därefter ökar lägesavmåttet i positiv riktning fram till z.</p>
+    <div class="callout"><b>I praktiken</b>För det praktiska arbetet räcker det att känna till gränsavmåtten — de ger automatiskt rätt toleransläge.</div>
+
+    <!-- 12 -->
+    <h2 id="grad"><span class="num">12</span>Toleransgrad — siffran</h2>
+    <p>Toleransgraden representerar en viss toleransvidd, alltså noggrannheten vid tillverkningen. Det finns 18 grader för allmänt bruk, numrerade 1–18 (plus de mycket fina 01 och 0). Ibland står <strong>IT</strong> framför numret — IT betyder Internationell Tolerans.</p>
+    <div class="formula-grid two">
+      <div class="formula"><span class="f-h">Låg toleransgrad (1, 2, 3 …)</span>liten toleransvidd<br><span class="f-sum">= stor noggrannhet</span></div>
+      <div class="formula"><span class="f-h">Hög toleransgrad (… 16, 17, 18)</span>stor toleransvidd<br><span class="f-sum">= mindre noggrannhet</span></div>
+    </div>
+    <div class="tscroll"><table class="ref-table num">
+      <thead><tr><th>Basmått mm</th><th>IT5</th><th>IT6</th><th>IT7</th><th>IT8</th><th>IT9</th><th>IT10</th><th>IT11</th><th>IT12</th><th>IT13</th><th>IT14</th></tr></thead>
+      <tbody>
+        <tr><td>t.o.m. 3</td><td>4</td><td>6</td><td>10</td><td>14</td><td>25</td><td>40</td><td>60</td><td>0,10</td><td>0,14</td><td>0,25</td></tr>
+        <tr><td>&gt;3–6</td><td>5</td><td>8</td><td>12</td><td>18</td><td>30</td><td>48</td><td>75</td><td>0,12</td><td>0,18</td><td>0,30</td></tr>
+        <tr><td>&gt;6–10</td><td>6</td><td>9</td><td>15</td><td>22</td><td>36</td><td>58</td><td>90</td><td>0,15</td><td>0,22</td><td>0,36</td></tr>
+        <tr><td>&gt;10–18</td><td>8</td><td>11</td><td>18</td><td>27</td><td>43</td><td>70</td><td>110</td><td>0,18</td><td>0,27</td><td>0,43</td></tr>
+        <tr><td>&gt;18–30</td><td>9</td><td>13</td><td>21</td><td>33</td><td>52</td><td>84</td><td>130</td><td>0,21</td><td>0,33</td><td>0,52</td></tr>
+        <tr><td>&gt;30–50</td><td>11</td><td>16</td><td>25</td><td>39</td><td>62</td><td>100</td><td>160</td><td>0,25</td><td>0,39</td><td>0,62</td></tr>
+        <tr><td>&gt;50–80</td><td>13</td><td>19</td><td>30</td><td>46</td><td>74</td><td>120</td><td>190</td><td>0,30</td><td>0,46</td><td>0,74</td></tr>
+        <tr><td>&gt;80–120</td><td>15</td><td>22</td><td>35</td><td>54</td><td>87</td><td>140</td><td>220</td><td>0,35</td><td>0,54</td><td>0,87</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tnote">Grundtoleranser (toleransvidder), utdrag. IT5–IT11 i µm, IT12–IT14 i mm. Ungefärlig användning: IT1–IT4 mätdon och mycket höga krav, IT5–IT7 kullager och vanliga passningar, IT8–IT11 svarvning, fräsning, borrning, IT12 och uppåt låga krav på noggrannhet.</p>
+
+    <h3>Toleransvidd och bearbetningskostnad</h3>
+    <p>En rätt vald toleransgrad ger lagom måttnoggrannhet: inte så stor toleransvidd att funktionen blir lidande, och inte så snäv tolerans att den inte kan utnyttjas. Hög precision kräver ofta dyrare bearbetning — det är svårare och mer tidsödande att träffa en liten toleransvidd än en stor. Ger inte den extra insatsen några fördelar kan samma funktion tillverkas billigare med ett lägre toleranskrav.</p>
+    <div class="callout"><b>Kom ihåg</b>Låg toleransgrad = höga krav på måttnoggrannhet = hög bearbetningskostnad. Rätt vald toleransgrad är den som ger godkänd funktion, samtidigt som närmast högre grad <em>inte</em> skulle göra det. Tumregel: sänker man toleransgraden två steg blir bearbetningskostnaden ungefär dubbelt så hög. Och vid tillverkningen: <strong>utnyttja hela toleransvidden!</strong></div>
+
+    <h3>Kombinationer av läge och grad</h3>
+    <p>Med 28 toleranslägen och 18 toleransgrader går det teoretiskt att få 28 × 18 = 504 kombinationer för hål och lika många för axlar. I praktiken används bara ett fåtal. De vanligaste ISO-toleranserna ligger i närheten av toleransläge JS/js och toleransgrad 7.</p>
+
+    <!-- 13 -->
+    <h2 id="tabell"><span class="num">13</span>Att läsa i ISO-tabell</h2>
+    <h3>Gränsavmått — tre steg</h3>
+    <ol class="steps">
+      <li>Slå upp den gränsavmåttstabell som innehåller toleranslägets bokstav och toleransgradens siffra.</li>
+      <li>Gå ner till raden som innehåller basmåttet.</li>
+      <li>På raden står gränsavmåtten (i µm).</li>
+    </ol>
+    <div class="example"><span class="ex-h">Exempel · 30 H7</span>
+      <p>Tabellen för H7, raden för basmått 18–30 mm (30 hör hit, "t.o.m."): <strong>övre gränsavmått +21 µm, undre gränsavmått 0</strong>.</p>
+    </div>
+    <h3>Toleransvidd — fyra steg</h3>
+    <ol class="steps">
+      <li>Slå upp toleransviddstabellen (grundtoleranser).</li>
+      <li>Gå in på raden för basmåttet.</li>
+      <li>Läs i kolumnen för toleransgraden (IT-numret).</li>
+      <li>Där står toleransvidden.</li>
+    </ol>
+    <div class="example"><span class="ex-h">Exempel · 30 H7</span>
+      <p>Raden 18–30 mm, kolumnen IT7 → <strong>toleransvidden är 21 µm</strong>. Toleransvidden kan också räknas fram ur gränsavmåtten (se Beräkningar).</p>
+    </div>
+
+    <h3>IT-toleranser som generella toleranser</h3>
+    <p>IT-toleranser är ISO-systemets sätt att ange generella toleranser och därmed lägsta nivån för måttnoggrannheten. Det finns två kvalitetsnivåer: en för mått till <strong>bearbetad</strong> yta och en för mått mellan <strong>obearbetade</strong> ytor. Ett exempel som kan stå i ritningshuvudet är <span class="mono">± IT14/2</span> för bearbetad yta och <span class="mono">± IT17/2</span> för obearbetad.</p>
+    <ul>
+      <li><strong>IT</strong> = Internationell Tolerans</li>
+      <li><strong>±</strong> = toleransen är symmetrisk</li>
+      <li><strong>2:an</strong> under bråkstrecket = toleransvidden ska delas med 2</li>
+    </ul>
+    <div class="example"><span class="ex-h">Exempel</span>
+      <p>Måttet 30 mm går mellan två bearbetade ytor och saknar utskriven tolerans, så ±IT14/2 gäller. Toleransviddstabellen, rad 18–30, kolumn IT14: 0,52 mm. Hälften är 0,26 mm, så måttet kunde ha skrivits <strong>30 ±0,26</strong>. Även här är det operatören som tolkar kraven och tar ansvaret för att måtten blir rätt.</p>
+    </div>
+
+    <!-- 14 -->
+    <h2 id="berakning"><span class="num">14</span>Beräkningar</h2>
+    <p>För en riktig verktygsinställning räcker det att känna basmåttet och gränsavmåtten — de står på ritningen eller i tabellen. Lägesavmått, toleransvidd och gränsmått räknas sedan enkelt fram:</p>
+    <ol class="steps">
+      <li><strong>Basmått</strong> — står på ritningen.</li>
+      <li><strong>Övre gränsavmått</strong> — läses i gränsavmåttstabell.</li>
+      <li><strong>Undre gränsavmått</strong> — läses i gränsavmåttstabell.</li>
+      <li><strong>Lägesavmått</strong> — det gränsavmått som är minst till storleken (närmast noll-linjen), utan hänsyn till +/−.</li>
+      <li><strong>Toleransvidd</strong> = övre gränsavmått − undre gränsavmått, med sina tecken. (Lika tecken ger plus, olika tecken ger minus.)</li>
+      <li><strong>Övre gränsmått</strong> = basmått + övre gränsavmått, med sitt tecken.</li>
+      <li><strong>Undre gränsmått</strong> = basmått + undre gränsavmått, med sitt tecken.</li>
+      <li>Det <strong>godkända måttet</strong> ska sluta inom toleransvidden.</li>
+    </ol>
+    <div class="example"><span class="ex-h">Exempel · Ø8 N6</span>
+      <p>Basmått 8 mm. Tabellen ger övre gränsavmått −7 µm (−0,007 mm) och undre gränsavmått −16 µm (−0,016 mm).</p>
+      <p class="calc">Lägesavmått = −7 µm (närmast noll-linjen)<br>
+      Toleransvidd = −7 − (−16) = −7 + 16 = 9 µm = 0,009 mm<br>
+      Övre gränsmått = 8 + (−0,007) = 7,993 mm<br>
+      Undre gränsmått = 8 + (−0,016) = 7,984 mm</p>
+    </div>
+
+    <!-- 15 -->
+    <h2 id="matning"><span class="num">15</span>Mätverktyg för måttkontroll</h2>
+    <p>Det är viktigt att kunna kontrollera storleken på det tillverkade måttet. Fasta mätdon håller sina nominella mått vid <strong>+20 °C</strong>, som är referenstemperaturen för mätning.</p>
+    <table class="ref-table">
+      <thead><tr><th>Mätdon</th><th>Användning</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Tolk (pluggtolk)</strong></td><td>Kontroll av hål. Hos ett hål med riktig tolerans går tolkens <strong>gå-sida</strong> in i hålet medan <strong>stopp-sidan</strong> inte gör det.</td></tr>
+        <tr><td><strong>Haktolk</strong></td><td>Kontroll av utvändiga mått, med mätkolvar för gå-sidan och stopp-sidan.</td></tr>
+        <tr><td><strong>Mikrometer, invändig</strong></td><td>Invändig mätning, t.ex. med digital avläsning.</td></tr>
+        <tr><td><strong>Mikrometer, utvändig</strong></td><td>Utvändig mätning, t.ex. med digital avläsning.</td></tr>
+        <tr><td><strong>Mätdatautrustning</strong></td><td>Mäter, registrerar och möjliggör statistisk utvärdering av mätvärdena.</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 16 -->
+    <h2 id="passning"><span class="num">16</span>ISO-passningssystemet</h2>
+    <p>Passningar går ut på att samordna valet av toleranser för två detaljer så att lämpliga över- och underdimensioner uppstår — så att detaljerna passar ihop på ett bestämt sätt. Passningens storlek och typ beror främst på valet av <strong>toleransläge</strong>, men också på <strong>toleransviddens</strong> storlek.</p>
+    <p>Ett hjul som ska snurra lätt på en stillastående axel behöver ett litet mellanrum mellan axeln och hålet — en <strong>spelpassning</strong>. Ett hjul som ska sitta fast och rotera tillsammans med axeln behöver en <strong>greppassning</strong>; sådana används bl.a. när kullager och glidlager pressas fast i ett nav eller på en axel.</p>
+
+    <figure class="fig">
+      <svg viewBox="0 0 640 230" role="img" aria-label="Spelpassning, mellanpassning och greppassning">
+        <g transform="translate(15,0)">
+          <line x1="0" y1="120" x2="180" y2="120" class="s-zero"/><text x="-8" y="124" class="t-sm">0</text>
+          <rect x="45" y="60" width="40" height="55" class="s-zone"/>
+          <rect x="105" y="125" width="40" height="45" class="s-zone2"/>
+          <text x="90" y="205" class="t-lbl" text-anchor="middle">Spelpassning</text>
+        </g>
+        <g transform="translate(225,0)">
+          <line x1="0" y1="120" x2="180" y2="120" class="s-zero"/><text x="-8" y="124" class="t-sm">0</text>
+          <rect x="45" y="75" width="40" height="45" class="s-zone"/>
+          <rect x="105" y="85" width="40" height="55" class="s-zone2"/>
+          <text x="90" y="205" class="t-lbl" text-anchor="middle">Mellanpassning</text>
+        </g>
+        <g transform="translate(435,0)">
+          <line x1="0" y1="120" x2="180" y2="120" class="s-zero"/><text x="-8" y="124" class="t-sm">0</text>
+          <rect x="45" y="80" width="40" height="40" class="s-zone"/>
+          <rect x="105" y="25" width="40" height="45" class="s-zone2"/>
+          <text x="90" y="205" class="t-lbl" text-anchor="middle">Greppassning</text>
+        </g>
+      </svg>
+      <figcaption><span class="key k1"></span>Hålets toleransområde &nbsp; <span class="key k2"></span>Axelns toleransområde</figcaption>
+    </figure>
+
+    <table class="ref-table">
+      <thead><tr><th>Passning</th><th>Kännetecken</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Spelpassning</strong></td><td>Hålet är större än axeln. Hålets toleransområde ligger helt över axelns. Axelns övre gränsmått ≤ hålets undre gränsmått.</td></tr>
+        <tr><td><strong>Greppassning</strong></td><td>Axeln är större än hålet. Hålets toleransområde ligger helt under axelns. Axelns undre gränsmått ≥ hålets övre gränsmått.</td></tr>
+        <tr><td><strong>Mellanpassning</strong></td><td>Hålets toleransområde täcker helt eller delvis axelns. Det blir antingen ett litet spel eller ett litet grepp.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><b>Tumregel</b>Toleranslägen i början av alfabetet (A, a, B, b …) ger spelpassningar och lägen i slutet (… Z, z) ger greppassningar. Passningsmåtten gäller före första hopsättningen.</div>
+
+    <!-- 17 -->
+    <h2 id="system"><span class="num">17</span>System hålet bas och system axeln bas</h2>
+    <p>Önskad passning får man genom att välja en ISO-tolerans för hålet och en för axeln. Det görs på ett av två sätt:</p>
+    <div class="defgrid two">
+      <div class="defcard"><span class="tag">System hålet bas</span>
+        <p>Man utgår från ett <strong>bashål</strong> med given tolerans som inte ändras, och väljer sedan den axeltolerans som ger önskad passning. Bashålet har toleransläge <strong>H</strong>.</p>
+        <p>Ex: bashål <strong>H7</strong>. Eftersom ett hål är svårare att tillverka än en axel väljer man hålets grad ett steg högre — axeln får grad <strong>6</strong>.</p>
+        <p>Spel: axel <strong>a–h</strong> (närmare a = större spel). Mellan: nära <strong>js</strong>. Grepp: <strong>n–z</strong> (närmare z = fastare).</p>
+        <p class="muted-s">Vanligt där man kontrollmäter med fasta mätdon.</p>
+      </div>
+      <div class="defcard"><span class="tag">System axeln bas</span>
+        <p>Man utgår från en <strong>basaxel</strong> med given tolerans som inte ändras, och väljer sedan den håltolerans som ger önskad passning. Basaxeln har toleransläge <strong>h</strong>.</p>
+        <p>Ex: axel <strong>h8</strong> → hålet en grad högre, alltså grad <strong>9</strong>.</p>
+        <p>Spel: hål <strong>A–H</strong> (närmare A = större spel). Mellan: nära <strong>JS</strong>. Grepp: <strong>N–Z</strong> (närmare Z = fastare).</p>
+        <p class="muted-s">Används främst där tillverkningen bygger på färdiga axlar vars toleranser inte kan påverkas.</p>
+      </div>
+    </div>
+
+    <!-- 18 -->
+    <h2 id="spel"><span class="num">18</span>Maxspel, minspel och passningens storlek</h2>
+    <p>För att avgöra om det blir spel eller grepp, och hur stor passningen blir, räknar man ut maxspel och minspel.</p>
+    <div class="formula-grid two">
+      <div class="formula"><span class="f-h">Maxspel</span>hålets största mått − axelns minsta mått<br><span class="f-sum">= hålets övre gränsavmått − axelns undre gränsavmått</span></div>
+      <div class="formula"><span class="f-h">Minspel</span>hålets minsta mått − axelns största mått<br><span class="f-sum">= hålets undre gränsavmått − axelns övre gränsavmått</span></div>
+    </div>
+    <table class="ref-table">
+      <thead><tr><th>Resultat</th><th>Passning</th></tr></thead>
+      <tbody>
+        <tr><td>Maxspel och minspel båda <strong>positiva</strong> (ett av dem kan vara noll)</td><td>Spelpassning</td></tr>
+        <tr><td>Maxspel och minspel båda <strong>negativa</strong> (ett av dem kan vara noll)</td><td>Greppassning</td></tr>
+        <tr><td>Maxspel <strong>positivt</strong>, minspel <strong>negativt</strong></td><td>Mellanpassning</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Passningens storlek</strong> = maxspel − minspel.</p>
+    <h3>Arbetsgång</h3>
+    <ol class="steps">
+      <li>Läs övre och undre gränsavmått för hålet och axeln i gränsavmåttstabellerna.</li>
+      <li>Maxspel = hålets övre gränsavmått − axelns undre gränsavmått. Håll koll på tecknen.</li>
+      <li>Minspel = hålets undre gränsavmått − axelns övre gränsavmått.</li>
+      <li>Passningens storlek = maxspel − minspel.</li>
+      <li>Bedöm passningens karaktär.</li>
+    </ol>
+    <div class="example"><span class="ex-h">Exempel · Ø15 H7/g6</span>
+      <p>Hål Ø15 H7: övre +18 µm, undre 0 µm. Axel Ø15 g6: övre −6 µm, undre −17 µm.</p>
+      <p class="calc">Maxspel = +18 − (−17) = +35 µm<br>
+      Minspel = 0 − (−6) = +6 µm<br>
+      Passningens storlek = 35 − 6 = 29 µm</p>
+      <p>Både maxspel och minspel är positiva → <strong>spelpassning</strong>, 29 µm stor.</p>
+    </div>
+
+    <h3>Passningstabeller</h3>
+    <p>I ISO-systemets passningstabeller kan man direkt läsa av passningens maxspel och minspel samt hålets och axelns gränsavmått.</p>
+    <div class="example"><span class="ex-h">Exempel · Ø15 H7/k6</span>
+      <p>Hål H7: +18 / 0 µm. Axel k6: +12 / +1 µm. Maxspel = 18 − 1 = <strong>+17 µm</strong>, minspel = 0 − 12 = <strong>−12 µm</strong>. Maxspel positivt och minspel negativt → <strong>mellanpassning</strong>.</p>
+    </div>
+    <div class="tscroll"><table class="ref-table num">
+      <thead><tr><th>Basmått mm</th><th>H7 hål</th><th>g6 axel</th><th>h6 axel</th><th>k6 axel</th></tr></thead>
+      <tbody>
+        <tr><td>t.o.m. 3</td><td>+10 / 0</td><td>−2 / −8</td><td>0 / −6</td><td>+6 / 0</td></tr>
+        <tr><td>&gt;3–6</td><td>+12 / 0</td><td>−4 / −12</td><td>0 / −8</td><td>+9 / +1</td></tr>
+        <tr><td>&gt;6–10</td><td>+15 / 0</td><td>−5 / −14</td><td>0 / −9</td><td>+10 / +1</td></tr>
+        <tr><td>&gt;10–18</td><td>+18 / 0</td><td>−6 / −17</td><td>0 / −11</td><td>+12 / +1</td></tr>
+        <tr><td>&gt;18–30</td><td>+21 / 0</td><td>−7 / −20</td><td>0 / −13</td><td>+15 / +2</td></tr>
+        <tr><td>&gt;30–50</td><td>+25 / 0</td><td>−9 / −25</td><td>0 / −16</td><td>+18 / +2</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tnote">Gränsavmått i µm (övre / undre), utdrag för några vanliga toleranser.</p>
+
+    <!-- 19 -->
+    <h2 id="form"><span class="num">19</span>Form- och lägetoleranser</h2>
+    <p>Förutom dimensionstoleranser finns ett annat toleranssystem: <strong>form- och lägetoleranser</strong>.</p>
+    <ul>
+      <li><strong>Dimensionstoleranser</strong> reglerar hur detaljens dimensioner (mått) får avvika.</li>
+      <li><strong>Form- och lägetoleranser</strong> reglerar avvikelsen i form och läge hos detaljens ytor och delar — t.ex. planhet, rakhet, rundhet, parallellitet och vinkelräthet.</li>
+    </ul>
+    <p>Systemen kan användas var för sig eller tillsammans.</p>
+    <div class="example"><span class="ex-h">Exempel · varför kombinera?</span>
+      <p>En detalj har två krav: höjden H ska ligga inom 0,6 mm, och den övre ytan A ska vara plan inom 0,2 mm.</p>
+      <p>Med enbart dimensionstolerans måste höjden toleranssättas efter det strängaste kravet: 0,2 mm. Med både dimensionstolerans och formtolerans kan höjden få variera inom 0,6 mm, medan kravet 0,2 mm bara gäller ytans planhet. Det ger normalt en <strong>lägre tillverkningskostnad</strong>.</p>
+    </div>
+
+  </article>
+  <div class="footcta">
+    <div class="ft-txt">Läs igenom materialet, testa sedan dina kunskaper i quizet för Toleranser &amp; passningar.</div>
+    <a class="btn btn-amber" style="background:#4fb3a5;" href="../quiz/toleranser.html">Starta quiz &rarr;</a>
+  </div>
+</main>
+
+<script src="../../../assets/site.js"></script>
+</body>
+</html>

@@ -5,7 +5,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CNC-Grönt kort — Storquiz (156 frågor)</title>
+<title>CNC-Grönt kort — Storquiz (219 frågor)</title>
 <style>
   .topnav{
     max-width:780px; margin:0 auto; padding:18px 20px 0;
@@ -227,14 +227,14 @@
   <a class="brand" href="material.html"><span class="mark"></span>CNC-GRÖNT KORT</a>
   <nav>
     <a href="material.html">Kursmaterial</a>
-    <a href="quiz-alla.html">Storquiz (156)</a>
+    <a href="quiz-alla.html">Storquiz (219)</a>
   </nav>
 </div>
 <main class="wrap">
   <header>
     <div class="eyebrow">Storquiz · Offline</div>
     <h1>CNC-Grönt kort</h1>
-    <div class="sub">Frågor om verktyg (svenska/engelska), materialkunskap och CNC-programmering — samtliga delkurser blandade. Fungerar helt utan internetuppkoppling.</div>
+    <div class="sub">Frågor om verktyg (svenska/engelska), materialkunskap, CNC-programmering samt toleranser och passningar — samtliga delkurser blandade. Fungerar helt utan internetuppkoppling.</div>
     <div class="pool-note" id="poolNote"></div>
   </header>
 
@@ -270,7 +270,11 @@ const CAT_META = {
   metalliska_material:    {label:"Metalliska material", color:"var(--green)", bg:"var(--green-dim)"},
   materialbeteckningar:   {label:"Materialbeteckningar", color:"var(--red)", bg:"var(--red-dim)"},
   handverktyg_matdon: {label:"Handverktyg & mätdon", color:"var(--blue)", bg:"var(--blue-dim)"},
-  skarande_verktyg:   {label:"Skärande verktyg", color:"var(--teal)", bg:"var(--teal-dim)"}
+  skarande_verktyg:   {label:"Skärande verktyg", color:"var(--teal)", bg:"var(--teal-dim)"},
+  tol_grundbegrepp: {label:"Toleranser – grundbegrepp", color:"var(--teal)", bg:"var(--teal-dim)"},
+  tol_angivning: {label:"Toleranser – angivning", color:"var(--purple)", bg:"var(--purple-dim)"},
+  tol_iso: {label:"ISO-toleranssystem", color:"var(--blue)", bg:"var(--blue-dim)"},
+  tol_passning: {label:"ISO-passningar", color:"var(--pink)", bg:"var(--pink-dim)"}
 };
 
 const QUESTIONS = {
@@ -463,6 +467,77 @@ const QUESTIONS = {
     {q:"Vad heter 'Fasfräs' på engelska?", opts:["Chamfermill", "Facemill", "Shouldermill", "Endmill"], correct:0, fb:"Fasfräs heter Chamfermill på engelska, och används för att bryta kanter (fasa)."},
     {q:"Vilket av dessa verktyg används för att finbearbeta ett hål till exakt mått och god ytfinhet?", opts:["Brotch (Reamer)", "Fasfräs (Chamfermill)", "Skiftnyckel (Adjustable wrench)", "Mätklocka (Dial gauge)"], correct:0, fb:"Brotch (engelska: Reamer) används för att finbearbeta ett redan förborrat hål till exakt mått och god ytfinhet."},
     {q:"Vilket av dessa verktyg används typiskt för att fräsa en plan yta på ett arbetsstycke?", opts:["Planfräs (Facemill)", "Dubbhålsborr (Centre drill)", "Vinkelmätare (Angle gauge)", "Lettringsgaffel (Knurling Tool)"], correct:0, fb:"Planfräs (engelska: Facemill) används typiskt för att fräsa fram en plan, jämn yta på arbetsstycket."}
+  ],
+  tol_grundbegrepp: [
+    {q:"På ritningen står 20 ±1. Inom vilka mått blir detaljen godkänd?", opts:["19–21 mm", "20–21 mm", "19–20 mm", "18–22 mm"], correct:0, fb:"Basmåttet 20 får avvika högst 1 mm uppåt och 1 mm neråt, alltså 19–21 mm."},
+    {q:"Vad visar basmåttet på en ritning?", opts:["Detaljens storlek", "Detaljens form", "Hur mycket måttet får avvika", "Vilken maskin som ska användas"], correct:0, fb:"Bilden visar formen, basmåttet storleken och toleransen gränserna för tillåten avvikelse."},
+    {q:"Vilket av följande är INTE en fördel med dimensionstoleranser?", opts:["Att alla detaljer blir exakt lika stora", "Lägre tillverkningskostnad", "Bättre funktion", "Enklare reservdelsbyte"], correct:0, fb:"Toleranser ger lägre kostnad, bättre funktion och enklare reservdelsbyte — just för att man inte behöver träffa exakt basmått."},
+    {q:"Vad kallas det största mått som kan godkännas?", opts:["Övre gränsmått", "Övre gränsavmått", "Basmått", "Toleransvidd"], correct:0, fb:"Det största godkända måttet är övre gränsmått, det minsta är undre gränsmått."},
+    {q:"Vad kallas skillnaden mellan övre och undre gränsmått?", opts:["Toleransvidd", "Lägesavmått", "Noll-linje", "Basmått"], correct:0, fb:"Toleransvidden är toleransområdets höjd, alltså skillnaden mellan övre och undre gränsmått."},
+    {q:"Var slutar basmåttets övre pil?", opts:["Mot noll-linjen", "Mot övre toleransgränsen", "Mot undre toleransgränsen", "Mitt i toleransområdet"], correct:0, fb:"Basmåttet slutar mot noll-linjen, som är utgångspunkten för alla avmått."},
+    {q:"Hur betecknas området ovanför noll-linjen?", opts:["Positivt (+)", "Negativt (−)", "Noll (0)", "Neutralt (±)"], correct:0, fb:"En detalj som är längre än basmåttet når ovanför noll-linjen — det området är positivt."},
+    {q:"En axel har måttet Ø5 ±0,5. Hur stor är toleransvidden?", opts:["1 mm", "0,5 mm", "5 mm", "0,25 mm"], correct:0, fb:"Övre gränsmått 5,5 minus undre gränsmått 4,5 = 1 mm."},
+    {q:"Vad kallas måttet från noll-linjen till toleransområdets gräns?", opts:["Gränsavmått", "Gränsmått", "Basmått", "Toleransvidd"], correct:0, fb:"Avståndet från noll-linjen till toleransgränsen är gränsavmåttet — övre eller undre."},
+    {q:"Vad anger lägesavmåttet?", opts:["Kortaste avståndet från noll-linjen till toleransområdet", "Toleransområdets höjd", "Detaljens totala längd", "Största godkända mått"], correct:0, fb:"Lägesavmåttet anger toleransläget som kortaste avståndet från noll-linjen till toleransområdet."},
+    {q:"En fläns har måttet 12 (−0,2 / −0,5). Mellan vilka mått ska bredden vara?", opts:["11,5–11,8 mm", "11,8–12,2 mm", "12,2–12,5 mm", "11,8–12,0 mm"], correct:0, fb:"12 − 0,5 = 11,5 och 12 − 0,2 = 11,8."},
+    {q:"Vad händer med det godkända måttet om lägesavmåttet är positivt?", opts:["Det blir större än basmåttet", "Det blir mindre än basmåttet", "Det blir exakt basmåttet", "Det påverkas inte"], correct:0, fb:"Positivt lägesavmått: toleransområdet ligger över noll-linjen och måttet blir större än basmåttet (överdimension)."},
+    {q:"Hur skrivs en symmetrisk tolerans?", opts:["± följt av halva toleransvidden", "± följt av hela toleransvidden", "Bara övre gränsavmåttet", "Med en ISO-bokstav"], correct:0, fb:"Vid symmetrisk tolerans är båda halvorna lika stora, så man skriver ± och halva toleransvidden."},
+    {q:"Ett urtag har måttet 30 (+0,08 / 0). Vilken typ av tolerans är det?", opts:["Osymmetrisk", "Symmetrisk", "Generell", "Vinkeltolerans"], correct:0, fb:"Hela toleransområdet ligger på ena sidan av noll-linjen, så toleransen är osymmetrisk."},
+    {q:"Varför används över- och underdimensioner?", opts:["För att få lämpliga passningar mellan detaljer", "För att göra ritningen enklare att läsa", "För att slippa mäta detaljen", "För att sänka materialets hårdhet"], correct:0, fb:"Över- och underdimension styr hur detaljer passar ihop — lätt gående eller hårt gripande."}
+  ],
+  tol_angivning: [
+    {q:"Vilken standard innehåller generella toleranser för längd- och vinkelmått?", opts:["SS-ISO 2768-1", "SS-ISO 286-1", "SS 2142", "ISO 513"], correct:0, fb:"Generella toleranser finns i SS-ISO 2768-1 (tidigare SMS 715)."},
+    {q:"Hur ligger toleransområdet vid generella toleranser enligt SS-ISO 2768-1?", opts:["Symmetriskt kring noll-linjen", "Helt över noll-linjen", "Helt under noll-linjen", "Det varierar med klassen"], correct:0, fb:"Generella toleranser är symmetriska och märks med ±."},
+    {q:"Vilka fyra toleransklasser finns i SS-ISO 2768-1?", opts:["Fin, medel, grov, mycket grov", "A, B, C, D", "IT1–IT4", "Hård, mjuk, seg, spröd"], correct:0, fb:"Klasserna är f (fin), m (medel), c (grov) och v (mycket grov)."},
+    {q:"Ett otoleranssatt mått 40 mm, SS-ISO 2768-m. Vilken tolerans gäller?", opts:["±0,3 mm", "±0,2 mm", "±0,5 mm", "±0,8 mm"], correct:0, fb:"Klass medel, området över 30 t.o.m. 120 mm ger ±0,3 mm."},
+    {q:"Vilka mått berörs INTE av den generella toleransen?", opts:["Hjälpmått och teoretiska mått", "Alla diametrar", "Alla mått under 10 mm", "Radier och faser"], correct:0, fb:"Hjälpmått (inom parentes) och teoretiska mått (inramade) berörs inte. Radier och faser ingår däremot."},
+    {q:"Hur känner man igen ett hjälpmått på ritningen?", opts:["Det står inom parentes", "Det är inramat", "Det är understruket", "Det står i rött"], correct:0, fb:"Hjälpmått skrivs inom parentes, teoretiska mått är inramade."},
+    {q:"Vem tar ansvar för rätt tolerans när generella toleranser används?", opts:["Operatören", "Konstruktören vid varje mått", "Kvalitetschefen", "Ingen — måtten är fria"], correct:0, fb:"Operatören läser i tabellen vilka krav som gäller och tar därmed ansvaret."},
+    {q:"Hur skrivs en numerisk tolerans med två gränsavmått?", opts:["Övre gränsavmåttet överst, undre under", "Undre överst, övre under", "Bredvid varandra med snedstreck", "Alltid som ± värde"], correct:0, fb:"Det övre gränsavmåttet skrivs överst och det undre under, både för invändiga och utvändiga mått."},
+    {q:"Ett gränsavmått är noll. Hur skrivs det?", opts:["Bara 0", "0,00 med lika många decimaler", "±0", "Det skrivs inte alls"], correct:0, fb:"Lika många decimaler gäller för båda gränsavmåtten — utom gränsavmåttet noll som bara skrivs 0."},
+    {q:"Hur många minuter är en vinkelgrad?", opts:["60", "100", "360", "10"], correct:0, fb:"En grad = 60 minuter och en minut = 60 sekunder."},
+    {q:"Vilken sida räknas som längd vid generella vinkeltoleranser?", opts:["Den kortaste sidan i vinkeln", "Den längsta sidan", "Summan av sidorna", "Diagonalen"], correct:0, fb:"Längdområdet bestäms av den kortaste sidan i toleransvinkeln."},
+    {q:"En vinkel med kortaste ben 40 mm, SS-ISO 2768-m. Vilken vinkeltolerans gäller?", opts:["±0°30′", "±1°", "±0°20′", "±0°10′"], correct:0, fb:"Klass m och längdområdet över 10 t.o.m. 50 mm ger ±0°30′."},
+    {q:"Enligt SMS 723 gäller e = ±6 mm (klass B). Vinkelbenet L är 1500 mm. Tillåten måttavvikelse?", opts:["±9 mm", "±6 mm", "±1,5 mm", "±15 mm"], correct:0, fb:"e · L / 1000 = 6 · 1500 / 1000 = ±9 mm."}
+  ],
+  tol_iso: [
+    {q:"I ISO-symbolen 25H7, vad betyder bokstaven H?", opts:["Toleransläget", "Toleransgraden", "Basmåttet", "Materialet"], correct:0, fb:"Bokstaven anger toleransläget, siffran toleransgraden."},
+    {q:"I ISO-symbolen 25H7, vad betyder siffran 7?", opts:["Toleransgraden", "Toleransläget", "Antal decimaler", "Toleransklassen i SS-ISO 2768"], correct:0, fb:"Siffran är toleransgraden, som motsvarar en viss toleransvidd."},
+    {q:"Vilka bokstäver används för hål?", opts:["Stora bokstäver A–Z", "Små bokstäver a–z", "Grekiska bokstäver", "Siffror"], correct:0, fb:"Stora bokstäver för hål och invändiga mått, små för axlar och utvändiga mått."},
+    {q:"Vilket toleransläge har lägesavmåttet noll och används för bashål?", opts:["H", "A", "Z", "JS"], correct:0, fb:"H (och h för axlar) har lägesavmåttet noll — toleransområdet startar från noll-linjen."},
+    {q:"Vad betyder JS/js?", opts:["Symmetrisk tolerans kring noll-linjen", "Störst möjliga spel", "Mycket grov tolerans", "Japansk standard"], correct:0, fb:"JS för hål och js för axlar betecknar symmetrisk tolerans (s = symmetri)."},
+    {q:"Hur påverkar toleranslägen A–H ett hål?", opts:["Hålet blir aningen större än basmåttet", "Hålet blir aningen mindre än basmåttet", "Hålet blir exakt basmåttet", "De påverkar bara ytjämnheten"], correct:0, fb:"A–H ger hålet en diameter aningen större än basmåttet, störst vid A."},
+    {q:"Hur påverkar toleranslägen k–z en axel?", opts:["Axeln blir aningen större än basmåttet", "Axeln blir aningen mindre än basmåttet", "Axeln blir exakt basmåttet", "Axeln blir konisk"], correct:0, fb:"k–z ger axeln en diameter aningen större än basmåttet, störst vid z."},
+    {q:"Låg toleransgrad (t.ex. IT5) innebär…", opts:["liten toleransvidd och stor noggrannhet", "stor toleransvidd och liten noggrannhet", "att måttet saknar tolerans", "grov bearbetning"], correct:0, fb:"Låga grader motsvarar små toleransvidder = stor noggrannhet = högre kostnad."},
+    {q:"Vad står IT för?", opts:["Internationell Tolerans", "Intern Toleransklass", "Industriell Teknik", "Inre Tolerans"], correct:0, fb:"IT betyder Internationell Tolerans."},
+    {q:"Basmåttet är exakt 30 mm. På vilken rad läser du i ISO-tabellen?", opts:["18–30", "30–50", "Båda raderna", "Ingen av dem"], correct:0, fb:"T.o.m. betyder till och med, så 30 hör till raden över 18 t.o.m. 30."},
+    {q:"Vilka gränsavmått har 30 H7?", opts:["+21 µm och 0", "+25 µm och 0", "0 och −21 µm", "±10,5 µm"], correct:0, fb:"Tabellen för H7, raden 18–30 mm: övre +21 µm, undre 0."},
+    {q:"Övre gränsavmått −7 µm, undre −16 µm. Hur stor är toleransvidden?", opts:["9 µm", "23 µm", "7 µm", "16 µm"], correct:0, fb:"−7 − (−16) = −7 + 16 = 9 µm."},
+    {q:"Basmått 8 mm, övre gränsavmått −0,007 mm. Vad blir övre gränsmått?", opts:["7,993 mm", "8,007 mm", "7,984 mm", "8,000 mm"], correct:0, fb:"8 + (−0,007) = 7,993 mm."},
+    {q:"Måttet 30 mm saknar tolerans och ritningen anger ±IT14/2. IT14 = 0,52 mm. Vilken tolerans gäller?", opts:["±0,26 mm", "±0,52 mm", "±1,04 mm", "±0,14 mm"], correct:0, fb:"Toleransvidden delas med 2: 0,52 / 2 = 0,26 mm."},
+    {q:"Vad är tumregeln för samband mellan toleransgrad och kostnad?", opts:["Låg toleransgrad ger hög bearbetningskostnad", "Hög toleransgrad ger hög bearbetningskostnad", "Toleransgraden påverkar inte kostnaden", "Kostnaden beror bara på materialet"], correct:0, fb:"Snäva toleranser (låga grader) kräver mer tidsödande och dyrare bearbetning."},
+    {q:"Vilken är rätt vald toleransgrad?", opts:["Den som ger godkänd funktion medan närmast högre grad inte skulle göra det", "Alltid den lägsta möjliga", "Alltid IT7", "Den som maskinen klarar enklast"], correct:0, fb:"Man väljer den grövsta grad som fortfarande ger godkänd funktion."},
+    {q:"Vid vilken temperatur håller fasta mätdon sina mått?", opts:["+20 °C", "0 °C", "+25 °C", "+37 °C"], correct:0, fb:"Referenstemperaturen för mätning är +20 °C."},
+    {q:"Ett hål med riktig tolerans kontrolleras med en tolk. Vad gäller?", opts:["Gå-sidan går in, stopp-sidan går inte in", "Båda sidorna går in", "Ingen sida går in", "Stopp-sidan går in, gå-sidan inte"], correct:0, fb:"Hos ett godkänt hål går gå-sidan in men inte stopp-sidan."}
+  ],
+  tol_passning: [
+    {q:"Ett hjul ska snurra lätt på en stillastående axel. Vilken passning behövs?", opts:["Spelpassning", "Greppassning", "Mellanpassning", "Ingen passning"], correct:0, fb:"Det behövs ett litet mellanrum mellan axel och hål — en spelpassning."},
+    {q:"Ett kullager ska pressas fast på en axel. Vilken passning används?", opts:["Greppassning", "Spelpassning", "Glidpassning utan tolerans", "Symmetrisk passning"], correct:0, fb:"Lager som pressas fast kräver greppassning."},
+    {q:"När har man en greppassning?", opts:["När axeln är större än hålet", "När hålet är större än axeln", "När de är exakt lika stora", "När båda har toleransläge H"], correct:0, fb:"Vid greppassning ligger hålets toleransområde helt under axelns."},
+    {q:"Vad kännetecknar en mellanpassning?", opts:["Hålets och axelns toleransområden överlappar", "Hålets område ligger helt över axelns", "Axelns område ligger helt över hålets", "Båda saknar tolerans"], correct:0, fb:"När områdena helt eller delvis täcker varandra blir det litet spel eller litet grepp."},
+    {q:"Vilket toleransläge har bashålet i system hålet bas?", opts:["H", "h", "JS", "A"], correct:0, fb:"Bashålet i ISO-passningssystemet har toleransläge H."},
+    {q:"Vilket toleransläge har basaxeln i system axeln bas?", opts:["h", "H", "js", "z"], correct:0, fb:"Basaxeln har toleransläge h."},
+    {q:"Varför väljer man ofta hålets toleransgrad ett steg högre än axelns?", opts:["Ett hål är svårare att tillverka än en axel", "Axlar mäts sämre", "Hål har alltid större diameter", "Standarden förbjuder lika grader"], correct:0, fb:"Det är svårare att tillverka ett hål, så det får en något större toleransvidd."},
+    {q:"I system hålet bas vill du ha greppassning. Vilka toleranslägen väljer du för axeln?", opts:["n–z", "a–h", "Nära js", "A–H"], correct:0, fb:"Axeln ska vara större än hålet: n–z, och ju närmare z desto fastare grepp."},
+    {q:"Tumregel: toleranslägen i början av alfabetet ger…", opts:["spelpassningar", "greppassningar", "mellanpassningar", "inga passningar"], correct:0, fb:"A, a, B, b … ger spel, … Z, z ger grepp."},
+    {q:"Hur räknas maxspel?", opts:["Hålets övre gränsavmått − axelns undre gränsavmått", "Hålets undre − axelns övre", "Axelns övre − hålets undre", "Hålets övre + axelns övre"], correct:0, fb:"Största hål minus minsta axel ger maxspel."},
+    {q:"Hur räknas minspel?", opts:["Hålets undre gränsavmått − axelns övre gränsavmått", "Hålets övre − axelns undre", "Axelns undre − hålets övre", "Maxspel delat med två"], correct:0, fb:"Minsta hål minus största axel ger minspel."},
+    {q:"Maxspel är positivt och minspel negativt. Vilken passning?", opts:["Mellanpassning", "Spelpassning", "Greppassning", "Går inte att avgöra"], correct:0, fb:"Positivt maxspel och negativt minspel betyder mellanpassning."},
+    {q:"Ø15 H7 (+18/0) och g6 (−6/−17). Hur stort är maxspelet?", opts:["+35 µm", "+24 µm", "+6 µm", "+12 µm"], correct:0, fb:"+18 − (−17) = +35 µm."},
+    {q:"Ø15 H7/g6 ger maxspel +35 µm och minspel +6 µm. Hur stor är passningen?", opts:["29 µm", "41 µm", "35 µm", "6 µm"], correct:0, fb:"Passningens storlek = maxspel − minspel = 35 − 6 = 29 µm (spelpassning)."},
+    {q:"Ø15 H7/k6 ger maxspel +17 µm och minspel −12 µm. Vilken passning är det?", opts:["Mellanpassning", "Spelpassning", "Greppassning", "Ingen passning"], correct:0, fb:"Maxspel positivt, minspel negativt → mellanpassning."},
+    {q:"Vad reglerar form- och lägetoleranser?", opts:["Avvikelser i form och läge hos ytor, t.ex. planhet", "Bara diametrar", "Materialets hårdhet", "Skärdata vid bearbetning"], correct:0, fb:"Form- och lägetoleranser reglerar t.ex. planhet, rakhet och parallellitet — inte storleken."},
+    {q:"Varför kan det löna sig att kombinera dimensionstolerans och formtolerans?", opts:["Det ger normalt lägre tillverkningskostnad", "Det gör ritningen kortare", "Då behövs inga mätdon", "Det ger alltid greppassning"], correct:0, fb:"Strängt krav bara där det behövs (t.ex. planhet) medan måttet får större tolerans — det blir billigare."}
   ]
 };
 
