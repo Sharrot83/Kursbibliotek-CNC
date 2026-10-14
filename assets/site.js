@@ -45,8 +45,8 @@ const COURSES = [
     title: "CNC-Grönt kort",
     tag: "CNC-programmering",
     color: "var(--blue)",
-    desc: "Grundutbildning inför CNC-Grönt kort, uppdelad i delkurser: Verktyg (Svenska/Engelska), Materialkunskap, CNC-programmering samt Toleranser & passningar. Fler delkurser tillkommer.",
-    chapters: 4,
+    desc: "Grundutbildning inför CNC-Grönt kort, uppdelad i delkurser: Verktyg (Svenska/Engelska), Materialkunskap, CNC-programmering, Toleranser & passningar samt Skärande bearbetning.",
+    chapters: 5,
     status: "ready",
     material: "material.html",
     quiz: "quiz-alla.html"

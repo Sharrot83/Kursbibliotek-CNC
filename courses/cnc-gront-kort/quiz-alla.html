@@ -5,7 +5,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CNC-Grönt kort — Storquiz (219 frågor)</title>
+<title>CNC-Grönt kort — Storquiz (302 frågor)</title>
 <style>
   .topnav{
     max-width:780px; margin:0 auto; padding:18px 20px 0;
@@ -227,14 +227,14 @@
   <a class="brand" href="material.html"><span class="mark"></span>CNC-GRÖNT KORT</a>
   <nav>
     <a href="material.html">Kursmaterial</a>
-    <a href="quiz-alla.html">Storquiz (219)</a>
+    <a href="quiz-alla.html">Storquiz (302)</a>
   </nav>
 </div>
 <main class="wrap">
   <header>
     <div class="eyebrow">Storquiz · Offline</div>
     <h1>CNC-Grönt kort</h1>
-    <div class="sub">Frågor om verktyg (svenska/engelska), materialkunskap, CNC-programmering samt toleranser och passningar — samtliga delkurser blandade. Fungerar helt utan internetuppkoppling.</div>
+    <div class="sub">Frågor om verktyg (svenska/engelska), materialkunskap, CNC-programmering, toleranser och passningar samt skärande bearbetning — samtliga delkurser blandade. Fungerar helt utan internetuppkoppling.</div>
     <div class="pool-note" id="poolNote"></div>
   </header>
 
@@ -274,7 +274,12 @@ const CAT_META = {
   tol_grundbegrepp: {label:"Toleranser – grundbegrepp", color:"var(--teal)", bg:"var(--teal-dim)"},
   tol_angivning: {label:"Toleranser – angivning", color:"var(--purple)", bg:"var(--purple-dim)"},
   tol_iso: {label:"ISO-toleranssystem", color:"var(--blue)", bg:"var(--blue-dim)"},
-  tol_passning: {label:"ISO-passningar", color:"var(--pink)", bg:"var(--pink-dim)"}
+  tol_passning: {label:"ISO-passningar", color:"var(--pink)", bg:"var(--pink-dim)"},
+  sb_maskiner: {label:"Maskiner, underhåll & verktyg", color:"var(--amber)", bg:"var(--amber-dim)"},
+  sb_uppspanning: {label:"Uppspänning", color:"var(--teal)", bg:"var(--teal-dim)"},
+  sb_svarvning: {label:"Svarvning", color:"var(--blue)", bg:"var(--blue-dim)"},
+  sb_frasning: {label:"Fräsning", color:"var(--green)", bg:"var(--green-dim)"},
+  sb_hal_cnc: {label:"Hålbearbetning & CNC", color:"var(--red)", bg:"var(--red-dim)"}
 };
 
 const QUESTIONS = {
@@ -538,6 +543,99 @@ const QUESTIONS = {
     {q:"Ø15 H7/k6 ger maxspel +17 µm och minspel −12 µm. Vilken passning är det?", opts:["Mellanpassning", "Spelpassning", "Greppassning", "Ingen passning"], correct:0, fb:"Maxspel positivt, minspel negativt → mellanpassning."},
     {q:"Vad reglerar form- och lägetoleranser?", opts:["Avvikelser i form och läge hos ytor, t.ex. planhet", "Bara diametrar", "Materialets hårdhet", "Skärdata vid bearbetning"], correct:0, fb:"Form- och lägetoleranser reglerar t.ex. planhet, rakhet och parallellitet — inte storleken."},
     {q:"Varför kan det löna sig att kombinera dimensionstolerans och formtolerans?", opts:["Det ger normalt lägre tillverkningskostnad", "Det gör ritningen kortare", "Då behövs inga mätdon", "Det ger alltid greppassning"], correct:0, fb:"Strängt krav bara där det behövs (t.ex. planhet) medan måttet får större tolerans — det blir billigare."}
+  ],
+  sb_maskiner: [
+    {q:"Vad är skärande bearbetning?", opts:["Formförändring där material avskiljs i form av spån", "Formförändring genom pressning utan spån", "Sammanfogning av detaljer genom svetsning", "Gjutning av smält metall i form"], correct:0, fb:"Vid skärande bearbetning avskiljs material med verktyg i form av spån."},
+    {q:"Vad menas med skärdjup?", opts:["Den skärande eggens ingreppsdjup", "Verktygets förflyttning per tidsenhet", "Rörelsen mellan egg och arbetsstycke", "Antal varv per minut"], correct:0, fb:"Skärdjupet är hur djupt eggen går in i materialet."},
+    {q:"Vad är varvtal?", opts:["Skärhastigheten omsatt i rotation av verktyg eller arbetsstycke", "Matningen per minut", "Verktygets livslängd", "Hur många skär verktyget har"], correct:0, fb:"Varvtalet är skärhastigheten uttryckt som rotation."},
+    {q:"Varifrån hämtar du skärhastighet och matning?", opts:["Verkstadshandboken eller verktygstillverkarens rekommendationer", "Ritningens titelfält", "Maskinens typskylt", "Man gissar och provar"], correct:0, fb:"Skärdata väljs ur verkstadshandbok och/eller verktygstillverkarens handbok."},
+    {q:"Varför kallas supportsvarven så?", opts:["Verktyget stöds av den rörliga släden", "Den har extra stöd under arbetsstycket", "Den används för reservdelar", "Den kräver support från leverantören"], correct:0, fb:"Släden ger verktyget support, därav namnet."},
+    {q:"Vilken svarv används för mycket stora arbetsstycken som kraftverksturbiner?", opts:["Karusellsvarv", "Automatsvarv", "Träsvarv", "Bänksvarv"], correct:0, fb:"I karusellsvarven spänns arbetsstycket på en horisontell platta."},
+    {q:"Vilken är en stor fördel med horisontella fräsmaskiner?", opts:["Stabil spindel och bra spånhantering", "Spindeln kan vinklas fritt", "De är alltid billigast", "De passar bara små verktyg"], correct:0, fb:"Spindeln tar upp vibrationer bra och spånorna rasar ner och stör inte."},
+    {q:"Varför passar vertikala fräsmaskiner med många ställmöjligheter bäst för lättare bearbetning?", opts:["Ställbarheten försämrar stabiliteten", "De har för lite motoreffekt alltid", "De saknar spindel", "De kan inte använda pinnfräsar"], correct:0, fb:"Flexibiliteten ger sämre stabilitet och sämre förmåga att ta upp vibrationer."},
+    {q:"Vad kallas en horisontell maskin med vertikaltillsats?", opts:["Kombi- eller duofräsmaskin", "Portalfräs", "Karusellfräs", "Automatfräs"], correct:0, fb:"Kombinationer kallas kombi- eller duofräsmaskiner."},
+    {q:"Vad bör du göra dagligen med maskinen om manual saknas?", opts:["Ta bort spånor, torka bort skärvätska och smörja dagliga smörjställen", "Byta all olja", "Demontera skyddskåporna", "Kalibrera alla mätskalor"], correct:0, fb:"Dagligt underhåll: rengör, torka, fyll på olja och smörj dagliga smörjställen."},
+    {q:"Vad hör till veckounderhållet?", opts:["Lossa skyddskåpor och bälgar och rengöra noggrant", "Bara sopa golvet", "Byta alla vändskär", "Ingenting om maskinen går bra"], correct:0, fb:"Varje vecka rengörs även det som sitter bakom kåpor och bälgar, och oljenivåer kontrolleras."},
+    {q:"Var ska eggen på ett verktyg för utvändig svarvning ligga?", opts:["I eller aningen under centrum", "Aningen över centrum", "Långt under centrum", "Spelar ingen roll"], correct:0, fb:"Utvändigt: i eller aningen under centrum, så att skärvinklarna inte påverkas negativt."},
+    {q:"Var ska eggen på ett verktyg för invändig svarvning ligga?", opts:["Aningen över centrum", "Aningen under centrum", "Exakt 1 mm under centrum", "Var som helst"], correct:0, fb:"Invändigt ställs eggen aningen över centrum."},
+    {q:"Varför ska svarvverktyg ha kort överhäng?", opts:["Mindre belastning och säkrare avverkning", "För att se bättre", "För att spara material", "Det krävs av ritningen"], correct:0, fb:"Ju kortare överhäng, desto mindre belastning och säkrare avverkning."},
+    {q:"Vad kallas en planfräs med 90° ställvinkel?", opts:["Hörnfräs", "Skivfräs", "Profilfräs", "Valsfräs"], correct:0, fb:"En planfräs med 90° ställvinkel kallas också hörnfräs."},
+    {q:"Vad är ett borrande pinnfräs?", opts:["En pinnfräs med ett ändskär slipat in till centrum", "En borr med pinnfräsform", "En pinnfräs utan ändskär", "En fräs som bara kan borra"], correct:0, fb:"Den borrande pinnfräsen kan mata rakt ner tack vare ändskäret till centrum."},
+    {q:"Vad gäller skärdata för profilverktyg?", opts:["De är i regel lägre än för andra verktyg i samma material", "De är alltid högre", "De är samma som för borrar", "Profilverktyg har inga skärdata"], correct:0, fb:"Profilverktyg körs normalt med lägre skärdata."},
+    {q:"Vad är en fördel med spännhylschuck jämfört med weldonhållare?", opts:["Utsticket kan anpassas och udda mått kan spännas", "Den är billigare", "Verktyget behöver urtag på skaftet", "Den har fast diameter"], correct:0, fb:"Spännhylsor har ofta 1 mm spännområde och utsticket går att reglera."},
+    {q:"När rekommenderas flytande hållare?", opts:["Vid upprymning och brotschning", "Vid grovfräsning", "Vid lettring", "Vid kapning"], correct:0, fb:"Den låter verktyget följa det förbearbetade hålet så att maskinens brister inte påverkar."}
+  ],
+  sb_uppspanning: [
+    {q:"Vad är tumregeln vid utvändig uppspänning i chuck?", opts:["Minst 1×D innanför backarna och högst 2×D utstick", "Minst 2×D inne och högst 1×D ute", "Högst 5 mm inne", "Hela arbetsstycket ska vara inspänt"], correct:0, fb:"Minst en diameter instick och högst två diametrar utstick — annars dubb."},
+    {q:"Vad händer vid för kort instick?", opts:["Arbetsstycket kan brytas loss", "Ytfinheten blir bättre", "Varvtalet sjunker", "Ingenting"], correct:0, fb:"För kort instick kan göra att arbetsstycket bryts loss; för långt utstick ger vibrationer."},
+    {q:"Vad ska du göra om instick/utstick-regeln inte kan hållas?", opts:["Använda dubb", "Öka varvtalet", "Spänna hårdare", "Använda större verktyg"], correct:0, fb:"Då rekommenderas dubb som stöd."},
+    {q:"Vad måste du alltid göra innan du startar en svarv med chuck?", opts:["Ta bort chucknyckeln", "Öppna skyddet", "Lossa backarna", "Smörja dubben"], correct:0, fb:"Ta bort chucknyckeln före start!"},
+    {q:"Vad skiljer en backskiva från en självcentrerande chuck?", opts:["Backarna dras åt var för sig", "Den har bara två backar", "Den kan inte spänna utvändigt", "Den är alltid magnetisk"], correct:0, fb:"I backskivan rör sig backarna oberoende, vilket passar asymmetriska arbetsstycken."},
+    {q:"Vad är en nackdel med backskiva?", opts:["Många åtdragningsställen och risk för obalans", "Kan inte spänna asymmetriska detaljer", "Har dålig grepp", "Kan bara användas i fräs"], correct:0, fb:"Varje back dras för sig, det kräver mätning och kan ge obalans."},
+    {q:"Hur hårt ska dubbdockans dubb dras vid svarvning mellan dubbar?", opts:["Så att arbetsstycket fortfarande kan röras för hand", "Så hårt som möjligt", "Den ska inte vidröra arbetsstycket", "Med momentnyckel till 100 Nm"], correct:0, fb:"Drar man för hårt kan arbetsstycket kröka sig."},
+    {q:"När används stödlager?", opts:["Vid mycket långa och tunna arbetsstycken", "Vid korta och grova arbetsstycken", "Vid gängning med gängtapp", "Vid planfräsning"], correct:0, fb:"Stödlagret stadgar upp långa tunna detaljer."},
+    {q:"Vad är spännhylsor bäst för?", opts:["Tunna cylindriska arbetsstycken och serietillverkning", "Stora asymmetriska gjutgods", "Plana skivor", "Fyrkantsämnen"], correct:0, fb:"Spännhylsor finns för ca Ø1–20 mm och är snabba vid masstillverkning."},
+    {q:"Hur riktar du upp ett skruvstycke parallellt med bordet?", opts:["Indikatorklocka mot fasta backen och justera med plastklubba", "Mät med tumstock", "Rikta mot rörliga backen med ögonmått", "Spänn hårt så rättar det sig självt"], correct:0, fb:"Klockan förs längs fasta backen och skruvstycket justeras tills utslaget är inom tolerans."},
+    {q:"Var ska spännskruven placeras vid uppspänning med spännjärn?", opts:["Så nära arbetsstycket som möjligt", "Så nära stödklossen som möjligt", "Mitt emellan", "Det spelar ingen roll"], correct:0, fb:"Då går det mesta av spännkraften mot arbetsstycket."},
+    {q:"Varför används parallellbitar i skruvstycket?", opts:["För att detaljen ska hamna på lämplig höjd", "För att skydda backarna", "För att öka spännkraften", "För att kyla detaljen"], correct:0, fb:"Parallellbitarna lyfter detaljen till rätt höjd."},
+    {q:"När används en fixtur?", opts:["För oregelbundna detaljer som gjutna ämnen", "Bara för runda detaljer", "För att rikta spindeln", "För att mäta gängor"], correct:0, fb:"Fixturen positionerar oregelbundna detaljer, ofta flera samtidigt."},
+    {q:"En delningsapparat har utväxlingen 40:1. Hur många grader vrids arbetsstycket per vevvarv?", opts:["9°", "40°", "4°", "360°"], correct:0, fb:"360° / 40 = 9° per vevvarv."},
+    {q:"Vilka delningar kan göras med direkt delning på 24 lägen?", opts:["2, 3, 4, 6, 8, 12 och 24", "Alla tal upp till 24", "Bara 24", "5, 10, 15 och 20"], correct:0, fb:"Bara tal som går jämnt upp i 24."},
+    {q:"40:1-apparat, 25 delningar. Hur mycket vrids veven per delning?", opts:["1 varv och 9 hål i 15-hålscirkeln", "1 varv och 15 hål", "25 varv", "1 varv och 3 hål i 5-hålscirkeln"], correct:0, fb:"40/25 = 1 3/5 = 1 9/15, alltså 1 varv och 9 hål i hålcirkeln med 15 hål."},
+    {q:"Hur justerar du en vertikal spindel när klockan visar ett utslag efter ett halvt varv?", opts:["Justera halva utslaget", "Justera hela utslaget", "Justera dubbla utslaget", "Läs av gradskalan i stället"], correct:0, fb:"Man justerar halva utslaget, nollställer och upprepar."}
+  ],
+  sb_svarvning: [
+    {q:"Hur mycket arbetsmån lämnar du på diametern vid längdsvarvning?", opts:["1 mm", "0,1 mm", "5 mm", "Ingen"], correct:0, fb:"Lämna 1 mm till finsvarvning vid längdsvarvning."},
+    {q:"Hur mycket arbetsmån lämnar du vid plansvarvning?", opts:["0,5 mm", "2 mm", "0,05 mm", "Ingen"], correct:0, fb:"Vid plansvarvning lämnas 0,5 mm."},
+    {q:"Hur långt svarvar du innan du stänger av och kontrollmäter?", opts:["Ca 2 mm", "Hela längden", "Ca 20 mm", "Ingenting — mät först efter"], correct:0, fb:"Svarva ca 2 mm, för bort verktyget, stäng av och kontrollmät."},
+    {q:"Vilken ställvinkel har ett verktyg för ansatssvarvning?", opts:["Lika med eller något mindre än 0°", "Ca 45°", "Ca 90°", "Över 120°"], correct:0, fb:"Ansatsverktyget har ställvinkel ≤ 0° och spetsvinkel under 90°."},
+    {q:"Vid ansatssvarvning svarvar du först till längden minus…", opts:["ca 0,2 mm", "ca 2 mm", "ca 1 mm", "ca 5 mm"], correct:0, fb:"Spara ca 0,2 mm i längd till finsvarvningen."},
+    {q:"Spåret är bredare än stålet. Hur mycket flyttar du per steg?", opts:["Ca 75 % av stålbredden", "Hela stålbredden", "Ca 25 % av stålbredden", "2 mm"], correct:0, fb:"Flytta stegvis med ca 75 % av stålbredden."},
+    {q:"Vad kallas diameterförändringen per längdenhet hos en kona?", opts:["Konicitet", "Stigning", "Ställvinkel", "Ovalitet"], correct:0, fb:"Koniciteten anges med gradtal på ritningen."},
+    {q:"Vad får du INTE röra när du svarvar kona med toppsliden?", opts:["Släden", "Toppsliden", "Tvärsliden", "Spindeln"], correct:0, fb:"Svarvningen görs med toppsliden — släden ska stå still."},
+    {q:"När passar konsvarvning genom att justera dubbdockan?", opts:["Vid liten konicitet mellan dubbar", "Vid mycket stor konicitet", "Vid invändiga konor i chuck", "Alltid"], correct:0, fb:"Dubbdockans förskjutning räcker bara för konor med liten konicitet."},
+    {q:"I vilken vinkel ställs toppsliden vid gängning?", opts:["Halva gängans profilvinkel", "Hela profilvinkeln", "90°", "0°"], correct:0, fb:"Toppsliden ställs i halva profilvinkeln."},
+    {q:"Vad ska matningen vara vid gängskärning?", opts:["Lika med gängans stigning", "Så låg som möjligt", "Dubbla stigningen", "Samma som vid längdsvarvning"], correct:0, fb:"Matningen är lika med gängans stigning."},
+    {q:"När är gängan färdig?", opts:["När tolk, mutter eller skruv passar eller beräknat skärdjup nåtts", "Efter exakt tre skär", "När spånorna slutar komma", "När verktyget blir varmt"], correct:0, fb:"Kontrollera med tolk eller motpart."},
+    {q:"Vilka inställningar används vid lettring?", opts:["Lågt varvtal och relativt hög matning", "Högt varvtal och låg matning", "Högsta varvtalet", "Ingen matning alls"], correct:0, fb:"Lettring görs med lågt varvtal, relativt hög matning och olja."},
+    {q:"Vad händer med ytterdiametern vid lettring?", opts:["Den ökar", "Den minskar", "Den blir oförändrad", "Den blir oval"], correct:0, fb:"Materialet som pressas undan fyller trissornas spår, så diametern ökar."},
+    {q:"Vad görs efter att programmet provkörts grafiskt i en CNC-svarv?", opts:["Provkörning i dry run", "Direkt serieproduktion", "Referenspunktssökning", "Byte av chuck"], correct:0, fb:"Ordningen är grafiskt, dry run och single block, med redigering emellan."}
+  ],
+  sb_frasning: [
+    {q:"Hur stor bör planfräsen vara i förhållande till arbetsstyckets bredd?", opts:["Ca 30 % större", "Exakt lika stor", "Hälften så stor", "Tre gånger så stor"], correct:0, fb:"Förhållandet bör vara ca 4/3, alltså ca 30 % större."},
+    {q:"Vilken ställvinkel väljs i första hand vid planfräsning?", opts:["Ca 45°", "Ca 0°", "Ca 90°", "Ca 120°"], correct:0, fb:"Boken rekommenderar i första hand en fräs med ca 45° ställvinkel."},
+    {q:"Hur långt matas fräsen i sidled per drag när den inte räcker över hela ytan?", opts:["Ca 70 % av fräsdiametern", "Hela diametern", "Ca 10 % av diametern", "Ca 150 % av diametern"], correct:0, fb:"Mata ca 70 % av verktygets diameter i sidled."},
+    {q:"Varför är medfräsning förstahandsvalet?", opts:["Bättre ytfinhet, jämnare skärkrafter och mindre slitage", "Det är den enda metoden CNC klarar", "Det ger alltid större skärdjup", "Det kräver ingen skärvätska"], correct:0, fb:"Medfräsning ger mindre vibrationer, bättre yta och mindre verktygsslitage."},
+    {q:"När måste motfräsning användas?", opts:["När maskinen har glapp i sliderna", "Vid all finfräsning", "När fräsen är ny", "Vid fräsning av aluminium"], correct:0, fb:"Med glapp kan medfräsning dra med sig bordet."},
+    {q:"Hur mycket arbetsmån sparas till finfräsning vid planfräsning?", opts:["0,5 mm", "5 mm", "0,05 mm", "Ingen"], correct:0, fb:"Spara ca 0,5 mm till finfräsningen."},
+    {q:"Vad är en referensyta vid fräsning av rätblock?", opts:["Den yta man utgår ifrån när övriga sidor fräses i rät vinkel", "Den grövsta ytan", "Ytan som aldrig bearbetas", "Ytan mot den rörliga backen"], correct:0, fb:"Referensytan fräses först och de andra sidorna görs vinkelräta mot den."},
+    {q:"Mot vilken back placeras referensytan i skruvstycket?", opts:["Den fasta backen", "Den rörliga backen", "Ingen back", "Parallellbitarna alltid"], correct:0, fb:"Referensytan läggs mot den fasta backen."},
+    {q:"Vilken nackdel har hörnfräs vid ansatsfräsning?", opts:["Begränsat skärdjup, ca 8 mm", "Kräver mycket stark maskin", "Spånorna skärs alltid om", "Kan inte fräsa ansatser"], correct:0, fb:"Hörnfräsen ger bra resultat även i små maskiner men tillåter mindre skärdjup."},
+    {q:"Vilken metod passar för kilspår utan öppna ändar?", opts:["Pinnfräs", "Skivfräs", "Planfräs", "Lettring"], correct:0, fb:"Pinnfräsen används för spår utan öppna ändar."},
+    {q:"Varför blir ett pinnfräst spår ibland bredare i ändarna?", opts:["Fräsen fjädrar i sidled och återgår i ändarna", "Fräsen slits i ändarna", "Skärvätskan vidgar spåret", "Bordet rör sig snabbare där"], correct:0, fb:"Fjädringen gör spåret bredare i ändarna."},
+    {q:"Varför ska spånor spolas bort vid fickfräsning?", opts:["Annars skärs de om mellan verktyg och arbetsstycke", "För att verktyget ska rotera snabbare", "För att sänka varvtalet", "Det behövs inte"], correct:0, fb:"Spånor i botten kan komma i kläm och skada ytan och verktyget."},
+    {q:"Hur matar du vid grovfräsning av en ficka?", opts:["I spiralform med ca 30 % överlapp", "Bara i en rak linje", "Slumpvis", "Bara i djupled"], correct:0, fb:"Spiralfräsning moturs med ca 30 % överlapp."},
+    {q:"Hur undviker du släppmärken vid profilfräsning i CNC?", opts:["Tangentiell in- och utkörning vid konturen", "Högre varvtal", "Torrfräsning", "Större fräs"], correct:0, fb:"Tangentiell in- och utkörning ger inga släppmärken."},
+    {q:"Varför kör man med en hand på matningsövermanningen vid första körningen?", opts:["För att snabbt kunna stoppa", "För att öka matningen", "För att mäta verktyget", "För att byta verktyg"], correct:0, fb:"Då kan man snabbt stoppa om något är fel."},
+    {q:"Vad ska du göra om du ändrat i ett CNC-program vid maskinen?", opts:["Skicka tillbaka programmet så att det är korrekt nästa gång", "Radera programmet", "Ingenting", "Skriva ut det på papper"], correct:0, fb:"Den sparade versionen ska vara den korrekta."}
+  ],
+  sb_hal_cnc: [
+    {q:"Vad består borrning av?", opts:["Centrering, borrning och gradning", "Bara borrning", "Brotschning och gängning", "Fräsning och svarvning"], correct:0, fb:"Borrning består av centrering, borrning och gradning."},
+    {q:"När måste borren matas upp regelbundet?", opts:["När hålet är djupare än ca 2× borrdiametern", "Alltid vid första millimetern", "Bara i aluminium", "Aldrig"], correct:0, fb:"Vid djupa hål så att spånorna kommer ut."},
+    {q:"Vilken toleransgrad klarar man normalt vid borrning med spiralborr?", opts:["IT11–13", "IT5", "IT6", "IT1–3"], correct:0, fb:"Spiralborrning ger normalt IT11–13."},
+    {q:"Vilken toleransgrad klarar man ner till vid brotschning?", opts:["IT6", "IT11", "IT15", "IT2"], correct:0, fb:"Brotschning klarar toleranser ner till IT6."},
+    {q:"Hur hög matning ska en upprymmare ha jämfört med en spiralborr med samma diameter?", opts:["2–3 gånger högre", "Hälften", "Samma", "10 gånger högre"], correct:0, fb:"Upprymmare körs med 2–3 gånger högre matning."},
+    {q:"Vad är skärvätskans huvuduppgift vid brotschning?", opts:["Att smörja och transportera bort spånor", "Att kyla verktyget till minusgrader", "Att färga ytan", "Ingen, brotschning görs torrt"], correct:0, fb:"Vid brotschning ska skärvätskan främst smörja."},
+    {q:"Det står ingenting om fas på ritningen. Vad gör du med hålets kant?", opts:["Bryter den skarpa kanten", "Lämnar den skarp", "Gör en 5 mm fas", "Rundar med 10 mm radie"], correct:0, fb:"Saknas angivelse bryts kanten, vid konisk försänkning med en 45° fas."},
+    {q:"Vilket skärdjup används vid arborrning?", opts:["Ca 0,1–0,3 mm", "Ca 3–5 mm", "Ca 1 mm", "Så stort som möjligt"], correct:0, fb:"Bara tillräckligt för att renskära hålet."},
+    {q:"Vad används dragbrotschning till?", opts:["Profiler i hål, t.ex. splines och kilspår", "Plana ytor", "Utvändiga gängor", "Fasning"], correct:0, fb:"Dragbrotschning ger profiler i hål."},
+    {q:"Vad gör gängapparaten när gängan är klar?", opts:["Reverserar så att tappen gängas ur hålet", "Stoppar maskinen", "Ökar varvtalet", "Byter till nästa verktyg"], correct:0, fb:"Den byter rotationsriktning så att tappen skruvas ur."},
+    {q:"Vad är maskinnollpunkten?", opts:["En punkt bestämd av maskin- och styrsystemstillverkaren", "Den punkt programmeraren väljer", "Arbetsstyckets hörn", "Verktygets spets"], correct:0, fb:"Maskinnollpunkten är fast; programnollpunkten väljs fritt."},
+    {q:"Varför finns en referenspunkt skild från maskinnollpunkten?", opts:["Maskinnollpunkten kan vara svår att nå, t.ex. när en chuck sitter monterad", "För att spara ström", "För att maskinen ska gå snabbare", "Den behövs bara på gamla maskiner"], correct:0, fb:"Referenspunkten är en utgångspunkt som alltid går att nå efter uppstart."},
+    {q:"Vilken G-kod ger linjär snabbtransport?", opts:["G00", "G01", "G02", "G03"], correct:0, fb:"G00 är snabbtransport, G01 linjär arbetstransport."},
+    {q:"Vilken G-kod ger cirkulär rörelse moturs?", opts:["G03", "G02", "G01", "G00"], correct:0, fb:"G02 är medurs och G03 moturs."},
+    {q:"Vilken M-kod startar spindeln medurs?", opts:["M03", "M04", "M05", "M30"], correct:0, fb:"M03 = medurs, M04 = moturs, M05 = spindelstopp."},
+    {q:"Vad lagras i verktygsregistret?", opts:["Verktygens ställängder (längd och radie)", "Arbetsstyckets material", "Maskinens serienummer", "Operatörens namn"], correct:0, fb:"Ställängderna gör att maskinen kan kompensera för olika verktyg."}
   ]
 };
 

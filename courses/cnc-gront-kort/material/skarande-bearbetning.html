@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>(function(){try{var t=localStorage.getItem("kbc-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");}catch(e){}})();</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skärande bearbetning — Läsmaterial | CNC-Grönt kort</title>
+<style>
+  :root{
+    --bg: #10151b;
+    --bg2: #0c1116;
+    --panel: #1a222b;
+    --panel-2: #212b35;
+    --line: #2c3844;
+    --line-soft: #212a33;
+    --text: #e9edf1;
+    --muted: #8fa0ac;
+    --amber: #ff8a2b;
+    --amber-dim: #6b4520;
+    --cyan: #6fc3d6;
+    --green: #4fa571;
+    --green-dim: #1f3d2b;
+    --red: #e0584f;
+    --red-dim: #3d2320;
+    --blue: #5b9bd5;
+    --blue-dim: #1c3245;
+    --purple: #a487d6;
+    --purple-dim: #2c2440;
+    --teal: #d97aa0;
+    --teal-dim: #1c3d38;
+    --pink: #d97aa0;
+    --pink-dim: #3a2230;
+  }
+  :root[data-theme="light"]{
+    --bg: #eef0f2;
+    --bg2: #e4e7ea;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --line: #d7dbe0;
+    --line-soft: #e6e9ec;
+    --text: #1b2127;
+    --muted: #5c6670;
+    --amber: #c96a12;
+    --amber-dim: #fdead2;
+    --cyan: #3f97ab;
+    --green: #2f8a52;
+    --green-dim: #e1f3e7;
+    --red: #c2453c;
+    --red-dim: #fbe4e2;
+    --blue: #3f7ab8;
+    --blue-dim: #e3edf7;
+    --purple: #7d5cb8;
+    --purple-dim: #ece6f7;
+    --teal: #2f8f81;
+    --teal-dim: #e0f3f0;
+    --pink: #b5567c;
+    --pink-dim: #f6e4ec;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #1b2530 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #241a14 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height:100vh;
+  }
+  [data-theme="light"] body{
+    background:
+      linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/34px 100%,
+      radial-gradient(1200px 500px at 12% -10%, #dce6f0 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #f5e6d8 0%, transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--amber); color:#1a1105;}
+
+  .wrap{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+  .wrap.narrow{max-width:780px;}
+
+  .topnav{
+    max-width:960px; margin:0 auto; padding:18px 20px 0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-size:12.5px; letter-spacing:.04em;
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:9px; text-decoration:none; color:var(--text);
+    font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:.02em; font-size:15px;
+  }
+  .topnav .brand .mark{
+    width:20px; height:20px; border:2px solid var(--amber); position:relative; flex:0 0 auto;
+  }
+  .topnav .brand .mark::before, .topnav .brand .mark::after{
+    content:""; position:absolute; background:var(--amber);
+  }
+  .topnav .brand .mark::before{ left:50%; top:2px; bottom:2px; width:2px; transform:translateX(-50%); }
+  .topnav .brand .mark::after{ top:50%; left:2px; right:2px; height:2px; transform:translateY(-50%); }
+  .topnav nav{display:flex; gap:18px;}
+  .topnav nav a{text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;}
+  .topnav nav a:hover{color:var(--amber);}
+
+  .dim{
+    display:flex; align-items:center; gap:10px; margin:38px 0 26px; color:var(--muted);
+    font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace; font-size:11.5px;
+    letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+  }
+  .dim::before, .dim::after{ content:""; flex:1; height:1px; background:var(--line);
+    background-image: linear-gradient(90deg, var(--line) 0, var(--line) 100%);
+    position:relative;
+  }
+  .dim .tick{position:relative;}
+  .dim-line{flex:1; height:1px; background:var(--line); position:relative;}
+  .dim-line::before{content:"";position:absolute; left:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim-line::after{content:"";position:absolute; right:0; top:-4px; width:1px; height:9px; background:var(--line);}
+  .dim .label{padding:2px 4px; flex:0 0 auto;}
+
+  header.hero{padding:34px 0 6px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono", Consolas, monospace;
+    letter-spacing:.18em; text-transform:uppercase; font-size:11.5px;
+    color:var(--amber); font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--amber);display:inline-block;}
+  h1{
+    font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+    font-weight:800; font-size:clamp(28px,6vw,44px); letter-spacing:-0.01em;
+    margin:8px 0 6px; line-height:1.04;
+  }
+  h1 .accent{color:var(--amber);}
+  .sub{color:var(--muted); font-size:15.5px; max-width:62ch; line-height:1.6;}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:11px 20px; border-radius:7px; font-weight:700; font-size:14px; border:1px solid transparent;
+    transition:.15s; cursor:pointer;
+  }
+  .btn-amber{background:var(--amber); color:#1a1105;}
+  .btn-amber:hover{filter:brightness(1.08);}
+  .btn-ghost{border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--amber); color:var(--amber);}
+
+  article.reading h2{
+    font-family:"Arial Narrow",Arial,sans-serif; font-size:24px; font-weight:800; letter-spacing:-.005em;
+    margin:36px 0 12px; padding-top:4px; color:var(--text);
+  }
+  article.reading h2 .num{color:var(--accent,var(--amber)); margin-right:8px; font-family:"IBM Plex Mono",monospace; font-size:16px;}
+  article.reading h3{
+    font-size:16.5px; font-weight:700; margin:22px 0 8px; color:var(--accent,var(--amber));
+  }
+  article.reading p{color:#c9d2d9; font-size:15px; line-height:1.72; margin:0 0 14px;}
+  article.reading ul{margin:0 0 16px; padding-left:0; list-style:none;}
+  article.reading ul li{
+    position:relative; padding-left:20px; margin-bottom:8px; color:#c9d2d9; font-size:14.6px; line-height:1.6;
+  }
+  article.reading ul li::before{
+    content:""; position:absolute; left:0; top:9px; width:7px; height:2px; background:var(--accent,var(--amber));
+  }
+  article.reading strong{color:var(--text);}
+  article.reading table.ref-table{width:100%; border-collapse:collapse; margin:14px 0 20px; font-size:14.5px;}
+  article.reading table.ref-table th, article.reading table.ref-table td{text-align:left; padding:8px 12px; border-bottom:1px solid var(--line);}
+  article.reading table.ref-table th{color:var(--muted); font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; font-weight:700;}
+  article.reading table.ref-table tr:hover td{background:var(--panel-2);}
+  .color-chip{
+    display:inline-block; width:16px; height:16px; border-radius:3px;
+    border:1px solid rgba(255,255,255,.35); vertical-align:-3px; margin-right:7px; flex:0 0 auto;
+  }
+  [data-theme="light"] .color-chip{ border-color:rgba(0,0,0,.25); }
+  .color-cell{ display:flex; flex-direction:column; gap:5px; white-space:nowrap; }
+  .chip-line{ display:flex; align-items:center; }
+  .chip-line .color-chip, .chip-line .iso-chip{ margin-right:7px; }
+  .iso-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin:16px 0 26px; }
+  .iso-card{ display:flex; gap:12px; padding:14px; border:1px solid var(--line); border-radius:8px; background:var(--panel); }
+  .iso-chip{
+    flex:0 0 auto; width:40px; height:40px; border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:18px; border:1px solid rgba(0,0,0,.25);
+  }
+  .iso-card h3{ margin:0 0 4px; font-size:15px; color:var(--text); }
+  .iso-card p{ margin:0; font-size:13px; color:var(--muted); line-height:1.5; }
+  .iso-chip.mini{ width:22px; height:22px; border-radius:4px; font-size:12px; margin-right:7px; vertical-align:-6px; }
+  .callout{
+    border-left:3px solid var(--accent,var(--amber)); background:var(--panel);
+    padding:13px 16px; margin:18px 0; border-radius:0 6px 6px 0; font-size:14.2px; color:#dfe6ea; line-height:1.6;
+  }
+  .callout b{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent,var(--amber)); margin-bottom:4px; font-family:"IBM Plex Mono",monospace;}
+  .toc{
+    display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 6px;
+  }
+  .toc a{
+    font-size:12.5px; padding:6px 11px; border:1px solid var(--line); border-radius:999px;
+    text-decoration:none; color:var(--muted); font-weight:600; transition:.15s;
+  }
+  .toc a:hover{border-color:var(--accent,var(--amber)); color:var(--accent,var(--amber));}
+
+  .footcta{
+    margin-top:48px; border-top:1px solid var(--line); padding-top:26px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .footcta .ft-txt{font-size:13.5px; color:var(--muted); max-width:44ch;}
+
+  footer.sitefoot{text-align:center; color:var(--muted); font-size:12px; margin-top:50px; padding-bottom:10px;}
+
+  @media (max-width:640px){
+    .topnav nav{gap:12px; font-size:12px;}
+  }
+
+  .topbar{position:sticky; top:0; z-index:999; background:rgba(16,21,27,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:960px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .topbar .brand{font-family:"Arial Narrow", Arial, sans-serif; font-weight:800; letter-spacing:-.01em; font-size:16px; display:flex; align-items:center; gap:8px; white-space:nowrap; text-decoration:none; color:var(--text);}
+  .topbar .brand::before{content:"";width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block;}
+  .course-select{margin-left:auto; background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:13.5px; font-weight:600; font-family:inherit; cursor:pointer; min-width:190px;}
+</style>
+
+<style>
+  article.reading{max-width:720px;}
+  .mono{font-family:"IBM Plex Mono",Consolas,monospace; font-size:.94em; white-space:nowrap; color:var(--text);}
+  .mono sup,.mono sub{font-size:.72em; line-height:0;}
+  .tol{display:inline-flex; flex-direction:column; vertical-align:middle; font-size:.82em; line-height:1.1; margin-left:3px; text-align:left;}
+  .boxed{border:1px solid var(--muted); padding:0 4px; border-radius:2px;}
+  .fig{margin:18px 0 24px; padding:16px 14px 10px; border:1px solid var(--line); border-radius:8px; background:var(--panel);}
+  .fig svg{width:100%; height:auto; display:block;}
+  .fig figcaption{font-size:12.8px; color:var(--muted); margin-top:8px; line-height:1.5; text-align:center;}
+  .s-line{stroke:var(--muted); stroke-width:2;}
+  .s-part{fill:var(--panel-2); stroke:var(--muted); stroke-width:1.5;}
+  .s-zero{stroke:var(--text); stroke-width:1.5; stroke-dasharray:10 5 2 5;}
+  .s-dim{stroke:var(--muted); stroke-width:1.3; fill:none;}
+  .s-dim2{stroke:var(--accent,#d97aa0); stroke-width:1.5; fill:none;}
+  .s-acc{stroke:var(--accent,#d97aa0); stroke-width:1; stroke-dasharray:4 3; opacity:.8;}
+  .s-zone{fill:var(--accent,#d97aa0); fill-opacity:.55; stroke:var(--accent,#d97aa0); stroke-width:1.5;}
+  .s-zone2{fill:var(--blue); fill-opacity:.45; stroke:var(--blue); stroke-width:1.5;}
+  .m-fill{fill:var(--muted);} .m-acc{fill:var(--accent,#d97aa0);}
+  .fig text{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif; fill:var(--text);}
+  .t-big{font-size:20px; font-weight:800;} .t-lbl{font-size:13px; font-weight:600;} .t-sm{font-size:12px; fill:var(--muted) !important;}
+  .t-acc{font-size:13px; font-weight:700; fill:var(--accent,#d97aa0) !important;}
+  .key{display:inline-block; width:12px; height:12px; border-radius:2px; vertical-align:-1px; margin-right:4px;}
+  .key.k1{background:var(--accent,#d97aa0);} .key.k2{background:var(--blue);}
+  .defgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin:16px 0 20px;}
+  .defgrid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
+  .defcard{border:1px solid var(--line); border-radius:8px; background:var(--panel); padding:14px 16px;}
+  .defcard .tag{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent,#d97aa0); font-weight:700; margin-bottom:6px;}
+  article.reading .defcard p{font-size:14px; margin:0 0 8px; line-height:1.6;}
+  article.reading .defcard p:last-child{margin-bottom:0;}
+  article.reading .defcard ul, article.reading .defcard ol.steps{margin:4px 0 0;}
+  article.reading .defcard li{font-size:14px;}
+  article.reading table.ref-table td ul{margin:0;}
+  article.reading .muted-s{color:var(--muted) !important; font-size:13px !important;}
+  .example{border:1px dashed var(--line); border-radius:8px; padding:12px 16px 4px; margin:14px 0; background:var(--panel-2);}
+  .example .ex-h{display:block; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent,#d97aa0); font-weight:700; margin-bottom:6px;}
+  article.reading .example p{font-size:14.4px; margin:0 0 10px;}
+  article.reading .example p.calc{font-family:"IBM Plex Mono",Consolas,monospace; font-size:13.4px; line-height:1.8;}
+  .formula-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin:16px 0 18px;}
+  .formula{border:1px solid var(--line); border-left:3px solid var(--accent,#d97aa0); border-radius:0 8px 8px 0; background:var(--panel); padding:12px 14px; font-family:"IBM Plex Mono",Consolas,monospace; font-size:13.2px; line-height:1.75; color:var(--text);}
+  .formula .f-h{display:block; font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif; font-weight:700; font-size:13.5px; color:var(--accent,#d97aa0); margin-bottom:4px;}
+  .formula .f-sum{display:inline-block; border-top:1px solid var(--line); padding-top:3px; margin-top:3px; font-weight:700;}
+  .formula.single{margin:12px 0 16px; text-align:center; font-size:15px;}
+  .isosym{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:16px 0 20px;}
+  .isosym .part{border:1px solid var(--line); border-radius:8px; background:var(--panel); padding:14px; text-align:center;}
+  .isosym .big{display:block; font-family:"Arial Narrow",Arial,sans-serif; font-size:40px; font-weight:800; line-height:1; color:var(--text);}
+  .isosym .part.acc .big{color:var(--accent,#d97aa0);}
+  .isosym .lbl{display:block; font-size:11px; font-family:"IBM Plex Mono",monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:6px 0 8px;}
+  article.reading .isosym p{font-size:13px; line-height:1.5; margin:0;}
+  @media (max-width:560px){ .isosym{grid-template-columns:1fr;} }
+  .tscroll{overflow-x:auto; margin:14px 0 6px;}
+  .tscroll table.ref-table{margin:0; min-width:520px;}
+  article.reading table.ref-table.num td, article.reading table.ref-table.num th{white-space:nowrap; font-variant-numeric:tabular-nums;}
+  article.reading table.ref-table td{vertical-align:top; line-height:1.5;}
+  article.reading table.ref-table.num th{text-transform:none; letter-spacing:0; font-size:12.5px;}
+  article.reading p.tnote{font-size:12.8px; color:var(--muted); margin:6px 0 18px;}
+  article.reading ol.steps{margin:0 0 16px; padding-left:0; list-style:none; counter-reset:st;}
+  article.reading ol.steps li{counter-increment:st; position:relative; padding-left:34px; margin-bottom:9px; font-size:14.6px; line-height:1.6;}
+  article.reading ol.steps li::before{content:counter(st); position:absolute; left:0; top:1px; width:22px; height:22px; border-radius:50%; background:var(--accent,#d97aa0); color:#0f1115; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center;}
+</style>
+</head>
+<body>
+<div id="topbar" class="topbar"></div>
+
+<div class="topnav">
+  <a class="brand" href="../material.html"><span class="mark"></span>CNC-GRÖNT KORT</a>
+  <nav>
+    <a href="../material.html">Delkurser</a>
+    <a href="../quiz-alla.html">Storquiz</a>
+  </nav>
+</div>
+
+<main class="wrap narrow">
+  <header class="hero">
+    <div class="eyebrow">MTL-05 · Läsmaterial</div>
+    <h1>Skärande bearbetning</h1>
+    <div class="sub">Maskiner, underhåll, verktyg och uppspänning — och arbetsgången för svarvning, fräsning och hålbearbetning i både konventionella maskiner och CNC-maskiner.<br><span style="color:var(--muted); font-size:12.5px;">Källa: Skärande bearbetning – faktahäfte</span></div>
+    <div class="toc"><a href="#intro">Vad är skärande bearbetning?</a><a href="#svarvar">Svarvar</a><a href="#frasmaskiner">Fräsmaskiner</a><a href="#underhall">Underhåll</a><a href="#svarvverktyg">Svarvverktyg</a><a href="#frasverktyg">Fräsverktyg</a><a href="#halverktyg">Verktyg för hål</a><a href="#uppsp_svarv">Uppspänning i svarv</a><a href="#uppsp_fras">Uppspänning vid fräsning</a><a href="#delning">Delningsapparat</a><a href="#riggning">Riggning</a><a href="#planlangd">Plan- &amp; längdsvarvning</a><a href="#ansats">Ansatssvarvning</a><a href="#spar">Spårsvarvning</a><a href="#kona">Konsvarvning</a><a href="#gangning">Gängning i svarv</a><a href="#lettring">Lettring</a><a href="#cnc_svarv">CNC-svarvning</a><a href="#planfras">Planfräsning</a><a href="#ratblock">Rätblock</a><a href="#ansatsfras">Ansatsfräsning</a><a href="#sparfras">Spårfräsning</a><a href="#ficka">Fickfräsning</a><a href="#profil">Profilfräsning</a><a href="#cnc_fras">CNC-fräsning</a><a href="#hal">Hålbearbetning</a><a href="#cnc">CNC-teknik</a></div>
+  </header>
+  <div class="dim">TILL INNEHÅLLET</div>
+  <article class="reading" style="--accent:#d97aa0">
+
+    <!-- 01 -->
+    <h2 id="intro"><span class="num">01</span>Vad är skärande bearbetning?</h2>
+    <p>Skärande bearbetning är en formförändring av arbetsstycken där man med hjälp av olika verktyg avskiljer material i form av <strong>spån</strong>. Skärförloppet påverkas av olika <strong>skärdata</strong>, som i första hand bestäms av materialet i arbetsstycke och verktyg.</p>
+    <table class="ref-table">
+      <thead><tr><th>Skärdata</th><th>Betydelse</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Skärhastighet</strong></td><td>Den relativa rörelsen mellan skäregg och arbetsstycke.</td></tr>
+        <tr><td><strong>Matning</strong></td><td>Verktygets eller arbetsstyckets förflyttning per tidsenhet (eller per varv).</td></tr>
+        <tr><td><strong>Skärdjup</strong></td><td>Den skärande eggens ingreppsdjup.</td></tr>
+        <tr><td><strong>Varvtal</strong></td><td>Skärhastigheten omsatt i rotation av verktyg eller arbetsstycke.</td></tr>
+      </tbody>
+    </table>
+    <p>Skärhastighet och matning väljs alltid utifrån <strong>verkstadshandboken</strong> och/eller <strong>verktygstillverkarens rekommendationer</strong> — det återkommer i varje arbetsgång längre fram.</p>
+
+    <!-- 02 -->
+    <h2 id="svarvar"><span class="num">02</span>Maskiner — svarvar</h2>
+    <p>Svarvar delas generellt in i supportsvarvar, automatsvarvar, karusellsvarvar, träsvarvar och NC/CNC-maskiner. I en svarv är det oftast <strong>arbetsstycket som roterar</strong>.</p>
+    <table class="ref-table">
+      <thead><tr><th>Typ</th><th>Kännetecken</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Supportsvarv</strong></td><td>Verktyget stöds (ges <em>support</em>) av den rörliga släden. Finns i många utföranden och storlekar.</td></tr>
+        <tr><td><strong>Automatsvarv</strong></td><td>Byggd för en speciell arbetsuppgift, t.ex. tillverkning av skruv.</td></tr>
+        <tr><td><strong>Karusellsvarv</strong></td><td>För arbetsstycken som är för stora för en supportsvarv, t.ex. kraftverksturbiner. Arbetsstycket spänns på en horisontell platta.</td></tr>
+        <tr><td><strong>Träsvarv</strong></td><td>För trä. Har i allmänhet ingen support — verktyget förs för hand.</td></tr>
+        <tr><td><strong>CNC-svarv</strong></td><td>Styrs av dator. Numera den vanligaste svarvtypen i verkstadsindustrin.</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 03 -->
+    <h2 id="frasmaskiner"><span class="num">03</span>Maskiner — fräsmaskiner</h2>
+    <p>Fräsmaskiner delas in i två huvudgrupper efter hur spindeln är placerad: <strong>vertikala</strong> (spindeln lodrät) och <strong>horisontella</strong> (spindeln vågrät). Det finns också kombinationer — oftast en horisontell maskin med vertikaltillsats, så kallad <em>kombi-</em> eller <em>duo-fräsmaskin</em>.</p>
+    <div class="defgrid two">
+      <div class="defcard"><span class="tag">Vertikal fräsmaskin</span>
+        <p>Har ofta vridskivor så att spindeln kan vinklas, ibland pinolrörelse så att maskinen kan borra, och ibland vridbart bord.</p>
+        <p>Ställbarheten ger flexibilitet men <strong>sämre stabilitet</strong> och sämre förmåga att ta upp vibrationer. Lämplig för lättare bearbetning med små till medelstora verktyg.</p>
+        <p class="muted-s">Utföranden: knäfräs, bäddfräs.</p>
+      </div>
+      <div class="defcard"><span class="tag">Horisontell fräsmaskin</span>
+        <p>Mycket <strong>stabil spindel</strong> som tar upp vibrationer bra. Stor fördel med spånhanteringen — spånorna rasar ner och stör inte bearbetningen.</p>
+        <p>Saknar däremot ställbarheten hos vertikala maskiner. Lämplig för medelstora till stora verktyg.</p>
+        <p class="muted-s">Utföranden: knäfräs, bäddfräs, portalfräs.</p>
+      </div>
+    </div>
+    <p><strong>Bäddfräsar</strong> är ofta stora maskiner för tunga och stora arbetsstycken. <strong>Knäfräsar</strong> är oftast mindre och inte avsedda för lika stora och tunga arbetsstycken.</p>
+
+    <!-- 04 -->
+    <h2 id="underhall"><span class="num">04</span>Underhåll och ordning</h2>
+    <p>Ett mekaniskt objekt måste underhållas för att fungera länge och väl. Spånor och smuts måste tas bort regelbundet, smörjmedel tillföras i lagringar och styrningar, och slidernas skalor måste vara rena för att kunna läsas av. En investering i maskiner och verktyg är inte lönsam om de inte underhålls — gör regelbundet underhåll till en god vana.</p>
+    <p>Ordning och reda är också A och O för trivsel och <strong>säkerhet</strong>. En stökig arbetsplats är grogrund för olyckor: manöverorgan måste fungera, maskinen får inte läcka skärvätska eller olja som man kan halka i, och spånskydden måste vara i sådant skick att de förhindrar spånsprut mot operatören.</p>
+    <div class="callout"><b>Följ maskinens manual</b>De flesta maskiner har en underhållsmanual. Placera den synligt och gör det till rutin att följa angivna intervaller. Finns ingen manual gäller nedanstående.</div>
+    <table class="ref-table">
+      <thead><tr><th>Intervall</th><th>Att göra</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Dagligen</strong> (maskin)</td><td>Rengör maskinen efter avslutat jobb: ta bort spånor, torka bort skärvätska, torka manöverorgan och skalor. Fyll på olja i centralsmörjaren och smörj dagliga smörjställen. Sopa runt maskinen och sätt tillbaka verktyg och tillbehör på sin plats.</td></tr>
+        <tr><td><strong>Varje vecka</strong> (maskin)</td><td>Grundlig rengöring — lossa skyddskåpor och bälgar och ta bort smuts som trängt in. Kontrollera oljenivåer, smörj veckosmörjställen. Kontrollera manöverorgan, skyddsbälgar, avstrykare, drivlinor, elkablar och kopplingar.</td></tr>
+        <tr><td><strong>Dagligen</strong> (verktyg med vändskär)</td><td>Kontrollera skärplattornas tillstånd och byt förslitna eggar. Kontrollera plattlägen och stöd, byt skadade delar.</td></tr>
+        <tr><td><strong>Dagligen</strong> (snabbstålsverktyg)</td><td>Kontrollera eggen och skärp vid behov. Kontrollera skaftets tillstånd (koniskt eller cylindriskt).</td></tr>
+        <tr><td><strong>Dagligen</strong> (arbetsplats)</td><td>Håll rent och se till att verktyg och utrustning finns på sin plats.</td></tr>
+      </tbody>
+    </table>
+    <p>Tiden det tar att städa och sätta tillbaka verktygen tjänar du lätt in genom att slippa leta nästa gång.</p>
+
+    <!-- 05 -->
+    <h2 id="svarvverktyg"><span class="num">05</span>Verktyg för svarvning</h2>
+    <p>Gemensamt för skärande verktyg är att den skärande eggen riktas åt det håll bearbetningen ska ske. Det görs antingen genom att <strong>slipa</strong> verktygsämnen (t.ex. snabbstål och borrar) eller genom <strong>hållare med skär</strong> (lösa vändskär eller fastlödda skär). Vinkeln som skäret ansätts med mot arbetsstycket är avgörande för resultatet.</p>
+    <p>Vanliga verktygskategorier i svarv är verktyg för utvändig och invändig svarvning, borrar, brotschar och gängverktyg. Det finns också specialfall som dragbrotschar för kilspår och verktyg för trycksvarvning.</p>
+    <table class="ref-table">
+      <thead><tr><th></th><th>Utvändig svarvning</th><th>Invändig svarvning</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Avverkar</strong></td><td>Material på arbetsstyckets utsida</td><td>Material på arbetsstyckets insida</td></tr>
+        <tr><td><strong>Åtkomlighet</strong></td><td>God — verktyget kan göras stabilt</td><td>Sämre — verktyget kan bli instabilt</td></tr>
+        <tr><td><strong>Montering</strong></td><td>I sidohållaren på verktygsfästet</td><td>I sidohållaren, vid behov med v-block</td></tr>
+        <tr><td><strong>Centrumhöjd</strong></td><td>Eggen <strong>i eller aningen under</strong> centrum</td><td>Eggen <strong>aningen över</strong> centrum</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><b>Kort överhäng</b>Alla svarvverktyg ska monteras med så <strong>kort överhäng</strong> som möjligt. Ju kortare överhäng, desto mindre belastning och säkrare avverkning. Rätt centrumhöjd behövs för att inte påverka skärvinklarna negativt.</div>
+    <h3>Lettringsgaffel</h3>
+    <p>Lettring ger en räfflad eller kryssad yta genom att trissorna pressas mot det roterande arbetsstycket. Lettringsgaffeln monteras i sidohållaren med trissorna i centrum av arbetsstycket, och vinklas några grader från 90° så att trissorna lättare tränger in utan för stor belastning.</p>
+
+    <!-- 06 -->
+    <h2 id="frasverktyg"><span class="num">06</span>Fräsverktyg</h2>
+    <p>Gemensamt för alla fräsverktyg är en cylindrisk kropp med tänder runt periferin på en eller flera sidor. De delas in efter utseende och användning:</p>
+    <table class="ref-table">
+      <thead><tr><th>Verktyg</th><th>Användning och kännetecken</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Pinnfräs</strong></td><td>Främst spår- och fickfräsning. Snabbstål eller hårdmetall, 2–6 skär, ca Ø1–40 mm. Kan vara <em>borrande</em> (ett ändskär slipat in till centrum) eller icke borrande. Spånbrytande skär för grovfräsning, släta skär för finbearbetning. Hårdmetall tillåter högre skärhastighet och är styvare.</td></tr>
+        <tr><td><strong>Pinnfräs med vändskär</strong></td><td>Hög skärhastighet → hög bordsmatning och stor spånavverkning. Skärdjupet begränsas av vändskärets höjd.</td></tr>
+        <tr><td><strong>Planfräs</strong></td><td>Planfräsning. Positiv eller negativ spånvinkel, gles/normal/tät tandning, ställvinkel ca 45°–90°. Med 90° ställvinkel kallas den <strong>hörnfräs</strong>. Från ca Ø32 mm (3 tänder) till ca Ø500 mm (50 tänder).</td></tr>
+        <tr><td><strong>Skivfräs / slitsfräs</strong></td><td>Spårfräsning, hörnfräsning och kapning. En-, två- eller tresidigt skärande, fast eller ställbar bredd. Spårbredd från tiondels mm till ca 50 mm, diameter ca Ø30–500 mm.</td></tr>
+        <tr><td><strong>Profilfräs</strong></td><td>Verktygets form ger arbetsstyckets profil (t.ex. fas, radie, gänga). Både skaftfräsar och skivfräsar. Skärdata är i regel <strong>lägre</strong> än för andra verktyg i samma material.</td></tr>
+      </tbody>
+    </table>
+    <h3>Uppsättning av fräsverktyg</h3>
+    <table class="ref-table">
+      <thead><tr><th>Fäste</th><th>Kännetecken</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Spännhylschuck</strong></td><td>För cylindriska skaft. Utsticket kan anpassas. Hylsorna har ofta 1 mm spännområde, så även udda mått går att spänna (en hylsa 9–10 mm tar t.ex. ett 9,4 mm-verktyg).</td></tr>
+        <tr><td><strong>Weldonhållare</strong></td><td>Billigare alternativ, fast diameter, utsticket går inte att reglera. Verktyget måste ha slipade urtag på skaftet.</td></tr>
+        <tr><td><strong>Fräsdorn</strong></td><td>För större verktyg som plan- och valsfräsar, samt skiv- och slitsfräsar i vertikala maskiner och CNC-maskiner. Riktigt stora verktyg monteras direkt på spindelnosen.</td></tr>
+        <tr><td><strong>Fräsbom</strong></td><td>I horisontella maskiner. Flera verktyg kan monteras i bredd, och bommen är lagrad i båda ändar → stabil uppspänning.</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 07 -->
+    <h2 id="halverktyg"><span class="num">07</span>Verktyg för hålbearbetning</h2>
+    <p>Hål borras huvudsakligen med spiralskurna snabbstålsborrar eller borrar med vändskär. Hål till snäva toleranser och fina ytor bearbetas med <strong>brotschar</strong>, som skär med periferiskären och inte kan avverka mycket material — förbearbetning med borr och upprymmare krävs, och skärdata är mycket låga. Invändiga gängor görs med <strong>gängtapp</strong>, utvändiga med <strong>gängsnitt</strong>.</p>
+    <table class="ref-table">
+      <thead><tr><th>Fäste</th><th>Kännetecken</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Borrchuck</strong></td><td>För borr, brotschar m.m. med cylindriska skaft upp till ca 13 mm, vid bearbetning i axiell riktning.</td></tr>
+        <tr><td><strong>Morsekonor och insatshylsor</strong></td><td>Vanligt vid borrning och annan bearbetning i axiell riktning.</td></tr>
+        <tr><td><strong>Flytande (pendlande) hållare</strong></td><td>Rekommenderas vid upprymning och brotschning. Hållaren styr inte verktyget — verktyget följer det förbearbetade hålets form och läge, så brister i maskinen påverkar inte hålet. Lämpar sig inte för annan bearbetning.</td></tr>
+        <tr><td><strong>Gängapparat / gänghållare</strong></td><td>Har medbringare för gängtappens fyrkant. I borrmaskin byter den rotationsriktning när gängan är klar så att tappen "skruvas ur". I svarv monteras gängtapp och gängsnitt i hållare i dubbdockan.</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 08 -->
+    <h2 id="uppsp_svarv"><span class="num">08</span>Uppspänning i svarv</h2>
+    <p>Ett bra bearbetningsresultat kräver att arbetsstycket sitter så stadigt som möjligt — då kan skärdata och skärdjup väljas så att bearbetningen blir produktiv. Valet av uppspänning beror på vilken del som ska bearbetas och på arbetsstyckets form.</p>
+
+    <figure class="fig">
+      <svg viewBox="0 0 420 200" style="max-width:520px;margin:0 auto" role="img" aria-label="Instick minst en gång diametern, utstick högst två gånger diametern">
+        <rect x="40" y="40" width="120" height="120" class="s-part"/>
+        <rect x="70" y="20" width="60" height="25" class="s-part"/><rect x="70" y="155" width="60" height="25" class="s-part"/>
+        <text x="75" y="62" class="t-sm" text-anchor="middle">Chuck</text>
+        <rect x="100" y="70" width="180" height="60" class="s-zone" />
+        <line x1="160" y1="100" x2="292" y2="100" class="s-zero"/>
+        <line x1="100" y1="150" x2="160" y2="150" class="s-dim2" marker-start="url(#ah2)" marker-end="url(#ah2)"/>
+        <text x="130" y="195" class="t-acc" text-anchor="middle">Instick ≥ 1×D</text>
+        <line x1="160" y1="150" x2="280" y2="150" class="s-dim" marker-start="url(#ah)" marker-end="url(#ah)"/>
+        <text x="220" y="172" class="t-lbl" text-anchor="middle">Utstick ≤ 2×D</text>
+        <line x1="300" y1="70" x2="300" y2="130" class="s-dim" marker-start="url(#ah)" marker-end="url(#ah)"/>
+        <text x="312" y="105" class="t-lbl">D</text>
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="m-fill"/></marker>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="m-acc"/></marker>
+        </defs>
+      </svg>
+      <figcaption>Tumregel för utvändig uppspänning i chuck, backskiva och spännhylsa. För kort instick → arbetsstycket kan brytas loss. För långt utstick → vibrationer eller krökning. Klarar man inte regeln: använd dubb.</figcaption>
+    </figure>
+
+    <table class="ref-table">
+      <thead><tr><th>Metod</th><th>Används när</th><th>+ Fördelar</th><th>− Nackdelar</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Chuck</strong> (självcentrerande)</td><td>Cylindriska arbetsstycken, symmetrisk bearbetning. Alla backar rör sig samtidigt mot/från centrum.</td><td>Symmetrisk rörelse, snabb</td><td>Sämre precision, klarar inte asymmetriska arbetsstycken</td></tr>
+        <tr><td><strong>Backskiva</strong> (oftast 4 backar)</td><td>Icke cylindriska arbetsstycken eller asymmetrisk bearbetning. Backarna dras åt var för sig.</td><td>Asymmetriska arbetsstycken, centrumförskjutning, noggrann centrering</td><td>Många åtdragningsställen, kräver mätning, kan ge obalans</td></tr>
+        <tr><td><strong>Mellan dubbar</strong></td><td>Långa cylindriska arbetsstycken med höga krav på parallella och koaxiala ytor, och långa koniska axlar.</td><td>Svarvning från båda ändar med bibehållen symmetri och precision</td><td>Instabil uppspänning som ofta ger vibrationer</td></tr>
+        <tr><td><strong>Planskiva</strong></td><td>Asymmetriska arbetsstycken där backskiva inte passar. Plan skiva med T-spår för skruvar och spännjärn — direkt eller indirekt (via jigg/fixtur).</td><td>Arbetsstyckets form hindrar inte uppspänning</td><td>Tar lång tid, inte helt säker, ger ofta obalans</td></tr>
+        <tr><td><strong>Spännhylsa</strong></td><td>Tunna cylindriska arbetsstycken (Ø1–20 mm i hela mm) och serietillverkning.</td><td>Snabb vid masstillverkning, god precision</td><td>Omständlig riggning, bara små diametrar</td></tr>
+      </tbody>
+    </table>
+    <h3>Att tänka på</h3>
+    <ul>
+      <li><strong>Chuck:</strong> ta bort chucknyckeln före start! Se till att arbetsstyckets periferiyta är parallell med backarna innan du drar åt.</li>
+      <li><strong>Backskiva:</strong> dra åt alla backar och starta på lågt varvtal med tanke på obalans.</li>
+      <li><strong>Invändig uppspänning</strong> (arbetsstycket träs över backarnas ansats): så långt in som backarna tillåter, och utsticket bör inte överstiga 2×diametern.</li>
+      <li><strong>Planskiva:</strong> grovrikta med t.ex. dubb eller höjdritsmått, finrikta med mätklocka. Dra skruvar och spännjärn ordentligt och kör på lågt varvtal.</li>
+    </ul>
+    <h3>Svarvning mellan dubbar — gång för gång</h3>
+    <ol class="steps">
+      <li>Svarva ändplanen så att arbetsstycket får rätt längd, och borra dubbhål.</li>
+      <li>Montera dubbar i spindelnos och dubbdocka. Kontrollera att dubbspetsen är i centrum.</li>
+      <li>Montera medbringarskiva på spindeln och medbringare på arbetsstyckets ände mot spindeln (använd skyddsplåt mot spännmärken).</li>
+      <li>Sätt upp arbetsstycket. Dra inte fast dubbdockan förrän du vet att verktyget får plats.</li>
+      <li>Dra inte dubben hårdare än att arbetsstycket fortfarande kan röras för hand — annars kan det kröka sig. Kontrollera alltid parallelliteten.</li>
+    </ol>
+    <p><strong>Stödlager</strong> används för mycket långa och tunna arbetsstycken, t.ex. vid svarvning mellan dubbar. Det har två–tre stödpunkter (fasta, ofta lagermetall, eller roterande kullager) och monteras fast på svarvens prisma eller rörligt på släden.</p>
+
+    <!-- 09 -->
+    <h2 id="uppsp_fras"><span class="num">09</span>Uppspänning vid fräsning och borrning</h2>
+    <h3>Montera och rikta upp skruvstycket</h3>
+    <p>Maskinbord och skruvstycke måste vara rena och fria från grader och slagmärken — annars blir skruvstycket inte parallellt med bordet.</p>
+    <ol class="steps">
+      <li>Gör rent bordet, stryk på ett tunt lager olja och gör rent skruvstyckets undersida.</li>
+      <li>Placera skruvstycket (för hand eller med lyft) så att arbetsstycket täcks av maskinens arbetsområde.</li>
+      <li>Montera fästjärnen; dra lätt på ett av dem, låt övriga sitta löst. Grovrikta med en anslagsvinkel.</li>
+      <li>Fäst en indikatorklocka stadigt, tangera och nollställ mot den <strong>fasta backen</strong> i ena änden.</li>
+      <li>För bordet längs backen och läs av. Justera genom att knacka med plastklubba tills utslaget är inom angivet område.</li>
+      <li>Dra åt nästa fästjärn och kontrollera att skruvstycket inte flyttade sig. Dra sedan resten.</li>
+    </ol>
+    <table class="ref-table">
+      <thead><tr><th>Metod</th><th>Används när</th><th>+ / −</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Skruvstycke</strong></td><td>Detaljer med minst två parallella ytor. Parallellbitar ger rätt höjd, materialstopp underlättar byten.</td><td>+ stabil och billig, passar många detaljer<br>− en detalj åt gången</td></tr>
+        <tr><td><strong>Spännjärn</strong></td><td>Stora detaljer eller former som inte passar i skruvstycke. Undersidan ska vara plan och gradfri.</td><td>+ mycket stabilt, även stora detaljer<br>− varje detalj måste riktas</td></tr>
+        <tr><td><strong>Rundmatningsbord</strong></td><td>Cirkulära rörelser i konventionell fräsmaskin, t.ex. radier och bågformade detaljer. Graderat 0–360°, delningsskiva med 24 lägen.</td><td>+ radier i konventionell maskin<br>− sämre stabilitet och vibrationsupptagning</td></tr>
+        <tr><td><strong>Vinkelhylla</strong></td><td>Fast (90°) eller ställbar (ca 45–90°). När formen inte medger skruvstycke, eller bara två sidor ska bearbetas.</td><td></td></tr>
+        <tr><td><strong>Chuck</strong></td><td>Cylindriska detaljer i fräsmaskin. Mjuka backar för tunnväggiga detaljer och detaljer som inte får få spännmärken.</td><td>+ snabb och noggrann<br>− kräver regelbunden form</td></tr>
+        <tr><td><strong>Fixtur</strong></td><td>Oregelbundna detaljer, t.ex. gjutna ämnen. Kan spänna flera ämnen samtidigt.</td><td>+ positionerar oregelbundna detaljer<br>− dyr, oftast bara för en detaljtyp</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><b>Spännjärn rätt</b>Placera spännskruven <strong>så nära arbetsstycket som möjligt</strong>, så att det mesta av spännkraften går mot arbetsstycket. Stödklossen ska bara ge spännjärnet rätt vinkel. Kontrollera att verktyget inte kan kollidera med spännjärnen.</div>
+    <h3>Rikta upp en vertikal spindel</h3>
+    <p>Vridskivans gradskala är inte tillräckligt noggrann för rätvinklig fräsning — spindeln måste indikeras:</p>
+    <ol class="steps">
+      <li>Montera en indikatorklocka på spindelnosen så att spetsen pekar mot bordet ca 100 mm från spindelcentrum.</li>
+      <li>Tangera några tiondels mm mot bordet (eller en passbit) och nollställ.</li>
+      <li>Vrid spindeln för hand ett halvt varv och läs av.</li>
+      <li>Lossa vridskivan och justera <strong>halva utslaget</strong>. Nollställ och upprepa tills utslaget är inom någon hundradel.</li>
+    </ol>
+    <h3>Uppspänning vid borrning</h3>
+    <p>Samma principer som vid fräsning, men arbetsstycket måste dessutom positioneras i rätt läge mot borren — antingen med <strong>maskinens mätskalor</strong> (tangera detaljens sidor, t.ex. med mätklocka, och nollställ) eller genom <strong>ritsning och körnslag</strong> (centrera med en centrerborr, via koordinatbord eller genom att frikoppla och vrida bordet).</p>
+
+    <!-- 10 -->
+    <h2 id="delning"><span class="num">10</span>Delningsapparat</h2>
+    <p>Delningsapparaten används när detaljen ska vridas till en viss vinkel eller när en delning ska fräsas, t.ex. ett kugghjul eller ett nyckelgrepp. Exemplen nedan gäller en delningsapparat med utväxlingen <strong>40:1</strong> — 40 vevvarv ger ett varv på arbetsstycket.</p>
+    <table class="ref-table">
+      <thead><tr><th>Sätt</th><th>Så fungerar det</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Direkt delning</strong></td><td>Delningsskivan har ett bestämt antal lägen, oftast 24. Möjliga delningar: 2, 3, 4, 6, 8, 12 och 24.</td></tr>
+        <tr><td><strong>Indirekt delning</strong></td><td>När antalet delningar inte går jämnt upp i 24. Man använder apparatens hålskivor.</td></tr>
+        <tr><td><strong>Vinkeldelning</strong></td><td>När arbetsstycket ska vridas en viss vinkel. Ett vevvarv = 360°/40 = 9°.</td></tr>
+      </tbody>
+    </table>
+    <div class="example"><span class="ex-h">Exempel · indirekt delning, 25 delningar</span>
+      <p class="calc">40 / 25 = 1 3/5<br>Förläng bråket till en hålcirkel som finns: 3/5 = 9/15</p>
+      <p>Veven vrids <strong>1 varv och 9 hål</strong> i hålcirkeln med 15 hål för varje delning.</p>
+    </div>
+    <div class="example"><span class="ex-h">Exempel · vinkeldelning, 35°</span>
+      <p class="calc">35 / 9 = 3 8/9<br>Förläng bråket: 8/9 = 72/81</p>
+      <p>Veven vrids <strong>3 varv och 72 hål</strong> i hålcirkeln med 81 hål.</p>
+    </div>
+    <p>Delningsapparaten ger stor noggrannhet, men tar på grund av sin konstruktion upp skärkrafter och vibrationer sämre. Mothåll med t.ex. dubbstöd.</p>
+
+    <!-- 11 -->
+    <h2 id="riggning"><span class="num">11</span>Riggning — samma grund varje gång</h2>
+    <p>Alla arbetsgångar i boken börjar med samma riggning. Lär dig den, så behöver du bara tänka på det som är speciellt för varje operation.</p>
+    <div class="defgrid two">
+      <div class="defcard"><span class="tag">Arbetsstycket</span>
+        <p>Spänn upp på lämpligt sätt. Valet avgörs av:</p>
+        <ul><li>arbetsstyckets storlek och form</li><li>hur många detaljer som ska bearbetas</li><li>ritningens krav, t.ex. toleranser och form- och lägestoleranser</li></ul>
+      </div>
+      <div class="defcard"><span class="tag">Verktyget</span>
+        <ul><li>montera verktyget rätt (se Verktyg ovan)</li><li>kontrollera att maskinens rörelseområde räcker till</li><li>välj skärhastighet ur verkstadshandbok/tillverkarens handbok</li><li>ställ in varvtal och matning</li></ul>
+      </div>
+    </div>
+    <div class="callout"><b>Alltid</b>Kontrollera att <strong>rotationsriktningen</strong> är den rätta. Vid fräsning: sätt upp skydd mot spånsprut. Vid borrning och hålbearbetning: <strong>använd skyddsglasögon</strong> — snabbstålsverktyg kan splittras om de överbelastas.</div>
+
+    <!-- 12 -->
+    <h2 id="planlangd"><span class="num">12</span>Plan- och längdsvarvning</h2>
+    <p>Att svarva <strong>axiellt (längd)</strong> eller <strong>radiellt (plan)</strong> innebär att detaljens diameter- eller längdmått förändras, utvändigt eller invändigt. Verktygen kan ha en ställvinkel upp till ca 30° för att minimera skärkraften och en spetsvinkel större än 90° för att förbättra ytfinheten.</p>
+    <div class="defgrid two">
+      <div class="defcard"><span class="tag">Plansvarvning</span>
+        <ol class="steps"><li>Flytta verktyget utanför arbetsstycket och tangera planet. Nollställ längdskalan.</li><li>Kontrollera varvtal och matning.</li><li>Mata in skärdjup — lämna <strong>0,5 mm</strong> till finsvarvning.</li><li>Grovsvarva, mata tillbaka.</li><li>Mata in till slutmått, svarva ca 2 mm, kontrollmät.</li><li>Justera och svarva till färdigt mått.</li></ol>
+      </div>
+      <div class="defcard"><span class="tag">Längdsvarvning</span>
+        <ol class="steps"><li>Tangera mantelytan och nollställ tvärslidsskalan.</li><li>Kontrollera varvtal och matning.</li><li>Mata in skärdjup — lämna <strong>1 mm</strong> på diametern till finsvarvning.</li><li>Grovsvarva till förutbestämd diameter, mata tillbaka.</li><li>Mata in till slutmått, svarva ca 2 mm, kontrollmät.</li><li>Justera och svarva till färdigt mått.</li></ol>
+      </div>
+    </div>
+    <p><strong>Invändigt</strong> tangerar man i stället mot den förbearbetade inre mantelytan (förborrat hål eller ämnesrör). Invändig plansvarvning görs ofta direkt efter den axiella, t.ex. när botten i ett lagerläge ska bli plan och toleranssatt.</p>
+    <div class="callout"><b>Mönstret i alla arbetsgångar</b>Tangera → nollställ → grovbearbeta och spara arbetsmån → mätskär (ca 2 mm) → <strong>stäng av och kontrollmät</strong> → justera → färdigbearbeta.</div>
+
+    <!-- 13 -->
+    <h2 id="ansats"><span class="num">13</span>Ansatssvarvning</h2>
+    <p>En ansats är en begränsad förändring i diameter och längd, t.ex. ett lagerläge eller en anpassning till en gänga. Verktyget har en <strong>spetsvinkel mindre än 90°</strong> och en <strong>ställvinkel lika med eller något mindre än 0°</strong>. Det kan vara av snabbstål (HSS) eller ha ett rombiskt eller triangulärt hårdmetallskär.</p>
+    <ol class="steps">
+      <li>Tangera ändplanet och nollställ längdskalan. Tangera mantelytan och nollställ tvärslidsskalan.</li>
+      <li>Mata in skärdjup och lämna 1 mm till finsvarvning.</li>
+      <li>Svarva till förutbestämd längd <strong>minus ca 0,2 mm</strong>, mata tillbaka.</li>
+      <li>Mata in till slutmått, svarva ca 2 mm, stäng av och kontrollmät.</li>
+      <li>Justera och svarva till färdigt mått.</li>
+    </ol>
+
+    <!-- 14 -->
+    <h2 id="spar"><span class="num">14</span>Spårsvarvning</h2>
+    <p>Spårsvarvning är en operation begränsad i två riktningar — t.ex. spår för O-ringar, smörjning eller gängavslut. Verktyget anpassas efter spåret, genom slipning av snabbstål eller val av skärhållare. Spår kan svarvas utvändigt, invändigt eller i planet.</p>
+    <ol class="steps">
+      <li>Tangera nollplanet axiellt och nollställ. Tangera mantelytan (eller planet) och nollställ, eller skriv in diametern på elektronisk skala.</li>
+      <li>Flytta verktyget till spårets ena ändplan och kontrollera varvtal och matning.</li>
+      <li>Mata in spårdjupet <strong>minus 0,2 mm</strong>.</li>
+      <li>Är spåret bredare än stålet: flytta stegvis med ca <strong>75 % av stålbredden</strong> och mata in vid varje steg.</li>
+      <li>När bredden är rätt: mata in till rätt djup och finsvarva spårets botten.</li>
+    </ol>
+
+    <!-- 15 -->
+    <h2 id="kona"><span class="num">15</span>Konsvarvning</h2>
+    <p>En kona är en kontinuerlig diameterförändring över en bestämd längd. Diameterförändringen per längdenhet kallas <strong>konicitet</strong> och anges med gradtal på ritningen. Konor förekommer som styrning (äntringskonor), fästelement (morsekonor) eller en kombination.</p>
+    <h3>Med toppsliden</h3>
+    <ol class="steps">
+      <li>Ställ toppsliden i ritningens vinkel. Tangera ändplanet och mantelytan och nollställ.</li>
+      <li>Ställ verktygsspetsen i nollplanet axiellt och radiellt. Backa <strong>toppsliden</strong> så att spetsen går fri — <strong>rör inte släden</strong>.</li>
+      <li>Mata in skärdjup och svarva med toppsliden till förutbestämd längd.</li>
+      <li>Kontrollera koniciteten (gradtalet) och justera vid behov.</li>
+      <li>Svarva tills 1 mm återstår, mata in till slutmått, kontrollmät (invändigt: både diameter och längd) och svarva färdigt.</li>
+    </ol>
+    <h3>Med justerad dubbdocka</h3>
+    <p>Konor med <strong>liten konicitet</strong> kan svarvas mellan dubbar genom att dubbdockan förskjuts i sidled med sin dubbelverkande skruv:</p>
+    <ol class="steps">
+      <li>Spänn upp en mall (cylindrisk axel med dubbhål) mellan dubbarna och ansätt en mätklocka i axelns centrum.</li>
+      <li>Lossa dubbdockans låsning och justera åt det håll ritningen anger.</li>
+      <li>Flytta mätklockan en bestämd längd (t.ex. 100 mm) och kontrollera gradtalet. Upprepa tills det stämmer.</li>
+      <li>Lås dubbdockan och svarva enligt "mellan dubbar".</li>
+    </ol>
+
+    <!-- 16 -->
+    <h2 id="gangning"><span class="num">16</span>Gängning i svarv</h2>
+    <p>Gängning ger ett cylindriskt arbetsstycke ett spiralformat spår för förflyttning och förband. Gängan kan vara invändig eller utvändig och ha olika profil och <strong>stigning</strong> (avståndet mellan gängtopparna). Gängor tillverkas genom pressning/prägling, med gängsnitt (utvändigt) och gängtapp (invändigt), eller genom gängskärning i svarv med profilslipat svarvstål.</p>
+    <div class="callout"><b>Två regler</b>Ställ toppsliden i <strong>halva gängans profilvinkel</strong>. Och: <strong>matningen är lika med gängans stigning!</strong></div>
+    <ol class="steps">
+      <li>Tangera ändplanet och mantelytan (invändigt: den förborrade innerdiametern) och nollställ.</li>
+      <li>Ställ in reglagen för gängskärning, kontrollera varvtal och att matningen ger rätt stigning.</li>
+      <li>Mata in skärdjup med den <strong>vinklade toppsliden</strong> och gänga till förutbestämd längd.</li>
+      <li>Vänd rotationsriktningen och backa samtidigt tvärsliden så att spetsen går fri.</li>
+      <li>Medan matningen tar verktyget tillbaka matas nästa skär in på toppsliden. Stoppa i utgångsläget och ställ tillbaka tvärsliden.</li>
+      <li>Upprepa tills gängan är klar — när tolk, mutter/skruv passar eller beräknat skärdjup är uppnått.</li>
+    </ol>
+
+    <!-- 17 -->
+    <h2 id="lettring"><span class="num">17</span>Lettring</h2>
+    <p>Lettring ger en räfflad eller kryssad yta — för grepp (oftast kryss), för att underlätta inpressning av en bussning (oftast räfflad) eller som dekoration. Trissorna präglar ytan; materialet som pressas undan fyller trissornas spår, så lettringen ger också en <strong>ökning av ytterdiametern</strong>.</p>
+    <ol class="steps">
+      <li>Ställ in <strong>lågt varvtal</strong> och relativt <strong>hög matning</strong>.</li>
+      <li>Ansätt lettringsgaffeln mot mantelytan och tillför olja (underlättar prägling och smörjer trissorna).</li>
+      <li>Mata in tills du får en tydlig markering och slå till matningen till angiven längd.</li>
+      <li>Verktyget måste trycka mot arbetsstycket hela tiden — släpper trycket går det inte att fortsätta.</li>
+      <li>Mata in ytterligare, mata åt motsatt håll och upprepa tills mönsterdjupet är det önskade.</li>
+    </ol>
+
+    <!-- 18 -->
+    <h2 id="cnc_svarv"><span class="num">18</span>Arbetsgång i CNC-svarv</h2>
+    <p>Vid plan-, ansats-, spår- och konsvarvning i CNC-maskin är arbetsgången densamma:</p>
+    <ol class="steps">
+      <li>Starta maskinen och kör <strong>referenspunktssökning</strong> och övriga uppstartsrutiner.</li>
+      <li>Skriv eller mata in programmet.</li>
+      <li>Rigga maskinen med verktygen, mät in <strong>ställängder</strong> och för in dem i verktygsregistret.</li>
+      <li>Sätt programnollpunkten i nollpunktsregistret.</li>
+      <li>Provkör programmet <strong>grafiskt</strong> → redigera.</li>
+      <li>Provkör i <strong>dry run</strong> → redigera.</li>
+      <li>Provkör i <strong>single block</strong> (ett block i taget) → redigera.</li>
+      <li>Kontrollmät och justera i verktygsregistret.</li>
+    </ol>
+
+    <!-- 19 -->
+    <h2 id="planfras"><span class="num">19</span>Planfräsning</h2>
+    <p>Planfräsning är den vanligaste fräsoperationen i konventionella maskiner. Den delas upp i två steg:</p>
+    <ul>
+      <li><strong>Grovfräsning:</strong> avverka så mycket material som möjligt, så snabbt som möjligt. Verktyg, maskin och skärdata väljs för det.</li>
+      <li><strong>Finfräsning:</strong> bearbeta till rätt mått och rätt ytjämnhet. Moderna verktyg gör att finfräsning ofta kan ersätta slipning — även härdade detaljer fräses.</li>
+    </ul>
+    <div class="callout"><b>Verktygsval</b>Fräsen bör vara ca <strong>30 % större</strong> än arbetsstyckets bredd (förhållande ca 4/3), och i första hand ha ställvinkel <strong>ca 45°</strong>. Räcker inte fräsen till, mata i sidled ca <strong>70 % av fräsdiametern</strong> per drag. Se till att arbetsstycket sitter ordentligt — skärkrafterna blir stora.</div>
+    <h3>Med- och motfräsning</h3>
+    <figure class="fig">
+      <svg viewBox="0 0 640 190" role="img" aria-label="Medfräsning och motfräsning">
+        <g transform="translate(20,0)">
+          <rect x="0" y="110" width="270" height="50" class="s-part"/>
+          <circle cx="135" cy="70" r="45" class="s-zone"/>
+          <path d="M 175 45 A 48 48 0 0 1 165 112" class="s-dim2" marker-end="url(#ah2)"/>
+          <line x1="70" y1="135" x2="20" y2="135" class="s-dim" marker-end="url(#ah)"/>
+          <text x="80" y="139" class="t-sm">bordets matning</text>
+          <text x="135" y="185" class="t-lbl" text-anchor="middle">Medfräsning</text>
+        </g>
+        <g transform="translate(340,0)">
+          <rect x="0" y="110" width="270" height="50" class="s-part"/>
+          <circle cx="135" cy="70" r="45" class="s-zone"/>
+          <path d="M 175 45 A 48 48 0 0 1 165 112" class="s-dim2" marker-end="url(#ah2)"/>
+          <line x1="200" y1="135" x2="250" y2="135" class="s-dim" marker-end="url(#ah)"/>
+          <text x="190" y="139" class="t-sm" text-anchor="end">bordets matning</text>
+          <text x="135" y="185" class="t-lbl" text-anchor="middle">Motfräsning</text>
+        </g>
+      </svg>
+      <figcaption>Fräsen roterar medurs i båda bilderna, så tänderna rör sig åt vänster där de möter arbetsstycket. Vid medfräsning matas arbetsstycket i samma riktning som tänderna rör sig i ingreppet, vid motfräsning mot dem.</figcaption>
+    </figure>
+    <table class="ref-table">
+      <thead><tr><th></th><th>Egenskaper</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Medfräsning</strong></td><td>Förstahandsvalet: jämnare skärkrafter, mindre vibrationer, <strong>bättre ytfinhet</strong> och mindre verktygsslitage.</td></tr>
+        <tr><td><strong>Motfräsning</strong></td><td>Används när maskinen har <strong>glapp i sliderna</strong> — annars kan verktyget dra med sig maskinbordet. Minska skärhastigheten (eller öka matningen) så att spåntjockleken räcker och vibrationerna minskar.</td></tr>
+      </tbody>
+    </table>
+    <h3>Arbetsgång</h3>
+    <div class="defgrid two">
+      <div class="defcard"><span class="tag">Grovfräsning</span>
+        <ol class="steps"><li>Snabbförflytta till ovanför arbetsstycket — tänk på kollisionsrisken.</li><li>Starta spindeln, mata försiktigt för hand tills verktyget tangerar översidan. Nollställ axeln.</li><li>Placera verktyget utanför kortsidan med centrum mitt för detaljen.</li><li>Ställ in skärdjup och bearbeta med arbetsmatning till andra sidan.</li><li>Nytt skärdjup, mata tillbaka. Upprepa.</li><li>Spara <strong>0,5 mm</strong> till finfräsning.</li></ol>
+      </div>
+      <div class="defcard"><span class="tag">Finfräsning</span>
+        <ol class="steps"><li>Låt stora arbetsstycken svalna efter grovfräsningen.</li><li>Ställ in finfräsdata, tangera och nollställ.</li><li>Förskjut verktygets centrum så att det mesta blir <strong>medfräsning</strong>.</li><li>Fräs ett mätskär, frilägg, stoppa och kontrollmät.</li><li>Lås sliden som inte ska röra sig, justera och finfräs hela detaljen.</li></ol>
+      </div>
+    </div>
+
+    <!-- 20 -->
+    <h2 id="ratblock"><span class="num">20</span>Fräsning av rätblock</h2>
+    <p>Tillverkningen av en detalj börjar ofta med att ett <strong>rätblock</strong> fräses — råämnet fräses på alla sidor till angivna mått och i rät vinkel. Stora arbetsstycken passar i horisontell maskin (spännjärn), mindre i skruvstycke i vertikal maskin.</p>
+    <ol class="steps">
+      <li>Spänn ämnet med den sida som ska bli <strong>referensyta</strong> uppåt (den yta övriga sidor bearbetas i rät vinkel mot). Planfräs den.</li>
+      <li>Vänd: referensytan mot skruvstyckets <strong>fasta back</strong>, en rundstång mellan detaljen och den rörliga backen. Fräs sida 2.</li>
+      <li>Vänd: sida 2 ner mot parallellbitarna, referensytan mot fasta backen. Fräs bredden till mått.</li>
+      <li>Spänn med referensytan nedåt mot parallellbitarna. Sitter bitarna fast efter några slag med mjuk klubba är vinklarna rätt. Fräs tjockleken till mått.</li>
+      <li>Ställ en kortsida uppåt, rikta med anslagsvinkel och fräs. Vänd och fräs till rätt längd.</li>
+    </ol>
+    <p><strong>Tumregel:</strong> detaljen får sticka upp ungefär lika mycket över skruvstycket som den del som är inspänd. I CNC-maskin kan man kapa ämnet lite större så att det finns material att spänna i — då kan fem sidor fräsas i samma uppspänning.</p>
+
+    <!-- 21 -->
+    <h2 id="ansatsfras"><span class="num">21</span>Ansatsfräsning</h2>
+    <p>En ansats kan fräsas med hörnfräs eller skivfräs.</p>
+    <table class="ref-table">
+      <thead><tr><th></th><th>+ Fördelar</th><th>− Nackdelar</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Hörnfräs</strong></td><td>Bra resultat även i små och effektsvaga maskiner</td><td>Begränsat skärdjup, ca 8 mm med standardskär</td></tr>
+        <tr><td><strong>Skivfräs</strong></td><td>Stora skärdjup — fräsens bredd avgör</td><td>Spånor kan dras med och skada ytan. Kräver stabil maskin för höga bordsmatningar</td></tr>
+      </tbody>
+    </table>
+    <p>Välj verktyget ca 30 % större än ansatsens bredd. Breda ansatser delas upp så att ca 70 % av fräsdiametern är i ingrepp. Vänd arbetsstycket så att <strong>spånsprutet riktas bort från dig</strong>. Grovfräsning blir både med- och motfräsning när man matar fram och tillbaka; finfräs med medfräsning, mät två riktningar och spara lite arbetsmån till finskäret.</p>
+
+    <!-- 22 -->
+    <h2 id="sparfras"><span class="num">22</span>Spårfräsning</h2>
+    <table class="ref-table">
+      <thead><tr><th></th><th>Skivfräs</th><th>Pinnfräs</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Lämpligt för</strong></td><td>Långa och djupa spår med öppna ändar (eller slut med verktygets form)</td><td>Spår utan öppna ändar, t.ex. kilspår, och korta grunda spår</td></tr>
+        <tr><td><strong>+ Fördelar</strong></td><td>Stora skärdjup, stor spånavverkning, flera fräsar i bredd ger flera spår samtidigt</td><td>Låg verktygskostnad</td></tr>
+        <tr><td><strong>− Nackdelar</strong></td><td>Lång riggningstid, kräver stabil och stark maskin</td><td>Fräsen fjädrar i sidled → spåret blir bredare i ändarna, svårare att hålla tolerans</td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li>Tangera från den sida måttsättningen utgår ifrån, med verktyget ca 5 mm under ytan (eller under centrum på runda detaljer). Räkna med fräsens diameter eller bredd.</li>
+      <li>Låt inte pinnfräsen sticka ut mer än nödvändigt — den fjädrar då onödigt mycket.</li>
+      <li>Gör ett mätskär. Använd rikligt med skärvätska och rikta munstycket så att hela verktyget kyls.</li>
+      <li>Kom ihåg att arbetsstyckets egenskaper förändras när djupa spår fräses.</li>
+    </ul>
+
+    <!-- 23 -->
+    <h2 id="ficka"><span class="num">23</span>Fickfräsning</h2>
+    <p>Fickor fräses oftast med pinnfräs. Fräsen fjädrar i sidled, så djupa fickor kan bli mindre i botten än upptill. <strong>Spola bort spånorna</strong> med skärvätska eller tryckluft — annars hamnar de mellan verktyg och arbetsstycke och skärs om.</p>
+    <p>Välj verktyg efter hur stor radien i fickans hörn får vara. Är hörnradien liten: grovfräs först med stort verktyg, sedan hörnen med mindre verktyg för jämn arbetsmån. Ritsa gärna fickans konturer.</p>
+    <ol class="steps">
+      <li>Tangera översidan och nollställ. Snabbförflytta fräsen till fickans mitt.</li>
+      <li>Mata ner till skärdjup. Mata ca 2/3 av fräsdiametern i längdled, sedan 2/3 i sidled.</li>
+      <li>Fortsätt i spiralform moturs med ca 30 % överlapp (ca 70 % av diametern i ingrepp) tills ca 0,5 mm återstår till fickans kant.</li>
+      <li>Upprepa på nya djup. Spara arbetsmån i botten.</li>
+      <li>Finfräs: börja med de två sidor som fickans läge är måttsatt från, mätskär, kontrollmät, och dra av fräsens diameter från fickans mått för att veta hur långt du ska mata. Avsluta med botten.</li>
+    </ol>
+
+    <!-- 24 -->
+    <h2 id="profil"><span class="num">24</span>Profilfräsning</h2>
+    <p>Profilfräsning är ett samlingsnamn för metoder där verktygets form ger arbetsstyckets form — fasning, hörnrundning, gängfräsning, kugghjulsfräsning m.m. Profilverktyg ska oftast ha <strong>lägre skärhastighet</strong> än t.ex. pinnfräsar.</p>
+    <p>I CNC-maskin är fasning och hörnrundning vanligt, och gängor ner till ca M10 går att fräsa (invändigt med begränsat gängdjup). Har konturen fräst med ett underprogram kan samma underprogram återanvändas med samma startposition. Programmeras profilen separat: använd <strong>tangentiell in- och utkörning</strong> så att inga släppmärken bildas.</p>
+
+    <!-- 25 -->
+    <h2 id="cnc_fras"><span class="num">25</span>Arbetsgång i CNC-fräs</h2>
+    <p>Plan-, rätblocks-, ansats-, spår-, fick- och profilfräsning i CNC-maskin följer samma upplägg. Delningen i grov- och finfräsning görs på samma sätt som i konventionella maskiner.</p>
+    <h3>Programmering</h3>
+    <ul>
+      <li>Programmera nollpunktsförflyttning, verktygsanrop, skärdata och spindelstart.</li>
+      <li>Positionera till en lämplig startpunkt (vid fickor oftast fickans centrum).</li>
+      <li>Använd maskinens <strong>färdiga cykler</strong> (spår-, fickfräsningscykler) om de finns, annars programmera manuellt eller med CAM.</li>
+      <li>Programmera för <strong>medfräsning</strong>.</li>
+      <li>Måste skärdjupet delas upp: gör ett <strong>underprogram (makro)</strong> som upprepas. Med relativ programmering kan samma underprogram användas för flera likadana fickor.</li>
+    </ul>
+    <h3>Körning</h3>
+    <ol class="steps">
+      <li>Rigga verktygen och mata in ställdata i verktygsoffset.</li>
+      <li>Spänn upp arbetsstycket — se till att verktyget inte kan kollidera med spännjärn eller skruvar.</li>
+      <li>Tänk på var arbetsstyckets nollpunkt (<strong>origo</strong>) ligger. Mät upp, t.ex. med probe, och mata in nollpunktsförflyttningen.</li>
+      <li>Knappa in eller för över programmet och <strong>simulera</strong> det.</li>
+      <li>Kör med <strong>en hand på matningsövermanningen</strong> så att du snabbt kan stoppa. Var extra vaksam på snabbförflyttningar inuti detaljer och vid flera nivåer.</li>
+      <li>Spola eller blås bort spånorna, kontrollmät och justera.</li>
+      <li>Har du ändrat i programmet: <strong>skicka tillbaka det</strong>, så att det är korrekt nästa gång.</li>
+    </ol>
+
+    <!-- 26 -->
+    <h2 id="hal"><span class="num">26</span>Hålbearbetning</h2>
+    <p>Hålbearbetning är ett samlingsnamn för bearbetning som skapar ett hål — oftast cylindriskt, men även t.ex. med kilspår, splines eller fyrkant. <strong>Borrning</strong> är den vanligaste typen av skärande bearbetning: mer än hälften av all skärande bearbetning är borrning av cylindriska hål.</p>
+    <table class="ref-table">
+      <thead><tr><th>Metod</th><th>Används för</th><th>Noggrannhet</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Borrning</strong> (spiralborr)</td><td>Skruv- och nitförband, frigående hål, förbearbetning</td><td>IT11–13</td></tr>
+        <tr><td><strong>Upprymning</strong></td><td>Förbättra form och mått på borrade hål (krokiga, orunda, koniska), färdigt eller före brotschning</td><td>IT9–10, Ra ca 4 µm</td></tr>
+        <tr><td><strong>Brotschning</strong></td><td>Mycket noggranna mått och fina ytor</td><td>ner till IT6, Ra ca 1 µm</td></tr>
+        <tr><td><strong>Arborrning / finborrning</strong></td><td>Höga krav på hålets form och läge</td><td>ner till IT5</td></tr>
+        <tr><td><strong>Försänkning</strong></td><td>Gradning och plats för skruvskallar/muttrar</td><td></td></tr>
+        <tr><td><strong>Gängning</strong> (gängtapp)</td><td>Vanligaste sättet att göra invändiga gängor</td><td></td></tr>
+        <tr><td><strong>Dragbrotschning</strong></td><td>Profiler i hål, t.ex. splines och kilspår</td><td></td></tr>
+      </tbody>
+    </table>
+    <h3>Borrning</h3>
+    <p>Borrning består av <strong>centrering, borrning och gradning</strong>.</p>
+    <ol class="steps">
+      <li>Se till att borren går fritt under detaljen om hålet är genomgående.</li>
+      <li>Borra ett centrummärke med centrumborr.</li>
+      <li>Byt till borren, ställ in varvtal och borra. Är hålet djupare än ca <strong>2× borrdiametern</strong>: mata upp borren regelbundet så att spånorna kommer ut. Se till att borren kyls.</li>
+      <li>Byt till försänkare och fasa kanten. Står inget på ritningen ska den skarpa kanten bara brytas.</li>
+      <li>Sätt tillbaka verktygen och städa av maskinen.</li>
+    </ol>
+    <h3>Upprymning</h3>
+    <p>Upprymmare tillverkas med undermått för brotschning eller med färdigmått. Kontrollera att det förborrade hålet har rätt arbetsmån. En upprymmare ska ha <strong>2–3 gånger högre matning</strong> än en spiralborr med samma diameter. Mata genom hela hålet utan avbrott (avbrott försämrar ytan), se till att verktyget kyls rikligt och grada kanten.</p>
+    <h3>Brotschning</h3>
+    <p>Ytfinheten beror på matning, skärhastighet och smörjning. Kontrollera förborrat hål och arbetsmån, välj brotsch efter genomgående hål eller bottenhål, och använd en <strong>flytande hållare</strong> som centrerar brotschen. Skärvätskans huvuduppgift är här att <strong>smörja</strong> och transportera bort spånor. Mata ner och upp med <strong>konstant matningshastighet</strong>.</p>
+    <h3>Försänkning</h3>
+    <ul>
+      <li><strong>Konisk försänkning:</strong> vanligast som gradning med 90°-försänkare. Saknas mått på ritningen bryts kanten med en 45°-fas. Görs också för skruvar och nitar med koniska skallar.</li>
+      <li><strong>Planförsänkning:</strong> cylindrisk försänkning med plan botten för skruvskallar och muttrar. Verktyget (planförsänkare) har ofta en styrtapp i centrum.</li>
+      <li>Arbetsstycket bör kunna röra sig något i sidled. Använd maskinens djupstopp om flera hål ska försänkas lika djupt.</li>
+    </ul>
+    <h3>Gängning med gängtapp</h3>
+    <ol class="steps">
+      <li>Kontrollera att hålet är borrat med rätt diameter för gängan, och att tappen får sticka ut under detaljen vid genomgående hål.</li>
+      <li>Välj gängtapp efter material och om hålet är genomgående eller bottenhål.</li>
+      <li>Montera tappen i en <strong>gängapparat</strong> inställd för gängdiametern och ställ in varvtal.</li>
+      <li>Mata ner till angivet djup, mata upp så att apparaten reverserar och gängar ur tappen.</li>
+    </ol>
+    <h3>Arborrning / finborrning</h3>
+    <p>Alternativ till upprymning vid höga krav — någon eller några hundradels mm i form och läge. Kräver stabil maskin (koordinatborrmaskin eller fräsmaskin). Ställvinkeln bör vara nära <strong>90°</strong> för att minimera radiella skärkrafter, skärdjupet litet (ca <strong>0,1–0,3 mm</strong>) och matningen ca <strong>0,1 mm/varv</strong>. Tangera med kantsökare, borra ett mätskär, kontrollmät läge och diameter och borra sedan till djup.</p>
+    <h3>Dragbrotschning</h3>
+    <p>För profiler som splines och kilspår. Placera stödhylsan i hålet och rikta den så att spåret hamnar rätt. Smörj glidytor och skäreggar och pressa brotschen <strong>rakt</strong> genom — trycks den snett påverkas resultatet och brotschen kan skadas. Djupa spår kan kräva mellanlägg och flera drag.</p>
+
+    <!-- 27 -->
+    <h2 id="cnc"><span class="num">27</span>CNC-teknik i korthet</h2>
+    <p>Principen för styrning är densamma oavsett maskintyp: maskinen ska orientera sig i ett fleraxligt <strong>koordinatsystem</strong>, med en eller flera talaxlar och en gemensam nollpunkt (origo). Koordinatsystemet används för att beskriva verktygsvägar, lägesbestämma verktyg och utföra cirkulär interpolering. Mer om programmering finns i delkursen <a href="cnc-programmering.html" style="color:var(--accent); font-weight:600;">CNC-programmering</a>.</p>
+    <table class="ref-table">
+      <thead><tr><th>Punkt</th><th>Betydelse</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Maskinnollpunkt</strong></td><td>Bestämd av maskin- och styrsystemstillverkaren, t.ex. spindelnosen i en svarv eller fräsbordets övre vänstra hörn. Opraktisk att programmera från.</td></tr>
+        <tr><td><strong>Programnollpunkt</strong></td><td>Väljs av programmeraren. Avståndet till maskinnollpunkten skrivs in i ett <strong>nollpunktsregister</strong>, eller så förflyttas verktyget dit och mätskalorna nollställs.</td></tr>
+        <tr><td><strong>Referenspunkt</strong></td><td>Styrsystemets utgångspunkt efter uppstart, på ett fast avstånd från maskinnollpunkten (som kan vara svår att nå, t.ex. när en chuck sitter på spindelnosen). Nyare system söker den automatiskt.</td></tr>
+      </tbody>
+    </table>
+    <h3>Verktygsinställning</h3>
+    <p>Verktygens <strong>ställängder</strong> lagras i ett verktygsregister så att maskinen kan kompensera för olika verktyg. I svarvar med verktygsrevolver mäts avståndet från revolverns nollpunkt till verktygsspetsen. I fräsar och fleroperationsmaskiner utgår man t.ex. från ett nollningsverktyg eller en <strong>probe</strong>, och för in skillnaden i längd och radie.</p>
+    <h3>Att programmera: var, vart, hur och med vad</h3>
+    <ul>
+      <li><strong>Var</strong> — maskinen vet var den är efter referenspunktssökningen; sedan hämtas eller sätts programnollpunkten.</li>
+      <li><strong>Vart</strong> — slutpunkten för varje förflyttning anges utifrån ritningens måttsättning.</li>
+      <li><strong>Hur</strong> — linjärt eller cirkulärt (medurs/moturs), och hur fort.</li>
+      <li><strong>Med vad</strong> — hjälpfunktioner: spindel, varvtal, verktyg, kylning.</li>
+    </ul>
+    <div class="tscroll"><table class="ref-table num">
+      <thead><tr><th>Kod</th><th>Funktion</th><th>Kod</th><th>Funktion</th></tr></thead>
+      <tbody>
+        <tr><td>G00</td><td>Linjär snabbtransport</td><td>M03</td><td>Spindelstart medurs</td></tr>
+        <tr><td>G01</td><td>Linjär arbetstransport</td><td>M04</td><td>Spindelstart moturs</td></tr>
+        <tr><td>G02</td><td>Cirkulär arbetstransport medurs</td><td>M05</td><td>Spindelstopp</td></tr>
+        <tr><td>G03</td><td>Cirkulär arbetstransport moturs</td><td>M07/M08</td><td>Kylvätska till</td></tr>
+        <tr><td>F</td><td>Matning (mm/varv eller mm/min)</td><td>M09</td><td>Kylvätska från</td></tr>
+        <tr><td>S</td><td>Spindelvarvtal</td><td>M00</td><td>Programstopp</td></tr>
+        <tr><td>T</td><td>Verktyg + verktygskompensering</td><td>M30</td><td>Programslut</td></tr>
+      </tbody>
+    </table></div>
+    <div class="example"><span class="ex-h">Exempel · fräsa ett 10 mm brett spår i en axel</span>
+      <p class="calc">T0101 S1500 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(verktyg och varvtal)<br>
+      M03 M07 G00 X-17.5 Y0 Z5 &nbsp;(spindel, kylning, snabbt till start)<br>
+      G01 F100 Z-5 &nbsp;&nbsp;&nbsp;&nbsp;(arbetsmatning ner till djup)<br>
+      X-25 F400 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(fräs spåret)<br>
+      G00 Z100 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(snabbt upp)</p>
+    </div>
+
+  </article>
+  <div class="footcta">
+    <div class="ft-txt">Läs igenom materialet, testa sedan dina kunskaper i quizet för Skärande bearbetning.</div>
+    <a class="btn btn-amber" style="background:#d97aa0;" href="../quiz/skarande-bearbetning.html">Starta quiz &rarr;</a>
+  </div>
+</main>
+
+<script src="../../../assets/site.js"></script>
+</body>
+</html>
