@@ -372,7 +372,9 @@ function initTts(){
       <select id="ttsVoice"></select>
       <label class="tts-check"><input type="checkbox" id="ttsOnline"><span>Tillåt onlineröster. Då skickar din webbläsare texten till dess leverantör (t.ex. Google eller Microsoft) för att läsa upp den.</span></label>
       <p class="tts-note">Rösterna kommer från din enhet, så ljudet skiljer sig mellan datorer och mobiler.</p>
+      <p class="tts-note" id="ttsDiag"></p>
       <p class="tts-msg" id="ttsMsg"></p>
+      <button type="button" class="tts-btn" id="ttsForce" hidden>Läs ändå med webbläsarens standardröst</button>
     </div>`;
   const themeSwitch = inner.querySelector(".theme-switch");
   inner.insertBefore(bar, themeSwitch || null);
@@ -387,6 +389,7 @@ function initTts(){
   let allowOnline = get(TTS_KEYS.online, "0") === "1";
   let voiceURI = get(TTS_KEYS.voice, "");
   let state = "idle", units = [], flat = [], idx = 0, session = 0, current = null, errorCount = 0, lastUnit = null;
+  let waiting = false, forceDefault = false; // forceDefault: användaren har själv valt att läsa utan känd röst
 
   TTS_RATES.forEach(r => {
     const o = document.createElement("option"); o.value = String(r); o.textContent = r === 1 ? "Normal (1×)" : r + "×";
@@ -405,13 +408,20 @@ function initTts(){
     list.sort((a, b) => (b.localService ? 1 : 0) - (a.localService ? 1 : 0) || String(a.name).localeCompare(String(b.name)));
     return { total: (synth.getVoices() || []).length, all, list };
   }
+  function showDiag(info){
+    const v = info.list.find(x => x.voiceURI === voiceSel.value) || info.list[0] || null;
+    $("ttsDiag").textContent = info.total
+      ? "Webbläsaren visar " + info.total + " röster, " + info.all.length + " på svenska. Röst som används: " + (v ? v.name : (forceDefault ? "webbläsarens standardröst" : "ingen")) + "."
+      : "Webbläsaren har inte lämnat ut någon lista över röster.";
+  }
   function fillVoices(){
     const info = voiceInfo();
     voiceSel.innerHTML = "";
     if(!info.list.length){
       const o = document.createElement("option");
-      o.value = ""; o.textContent = info.total ? "Ingen svensk röst tillgänglig" : "Standardröst";
+      o.value = ""; o.textContent = info.total ? "Ingen svensk röst tillgänglig" : "Inga röster hittades";
       voiceSel.appendChild(o);
+      showDiag(info);
       return info;
     }
     info.list.forEach(v => {
@@ -421,6 +431,7 @@ function initTts(){
     });
     const keep = info.list.find(v => v.voiceURI === voiceURI);
     voiceSel.value = keep ? keep.voiceURI : info.list[0].voiceURI;
+    showDiag(info);
     return info;
   }
   function pickVoice(){
@@ -477,15 +488,42 @@ function initTts(){
     synth.speak(u);
   }
 
+  function waitForVoices(maxMs){
+    return new Promise(resolve => {
+      const t0 = Date.now();
+      (function poll(){
+        if((synth.getVoices() || []).length || Date.now() - t0 >= maxMs) resolve();
+        else window.setTimeout(poll, 100);
+      })();
+    });
+  }
   function startPlayback(){
+    if(waiting) return;
     const scope = ttsReadingScope();
     if(!scope) return;
-    const info = fillVoices();
-    if(!info.list.length && info.total && !allowOnline){
-      showMsg(info.all.length
-        ? "Svenska röster finns bara som onlineröster på den här enheten. Slå på \"Tillåt onlineröster\" om du vill använda dem (texten skickas då till webbläsarens leverantör)."
-        : "Ingen svensk röst hittades på den här enheten.", true);
+    // Webbläsare fyller ofta röstlistan först strax efter sidladdningen: vänta in den.
+    if(!(synth.getVoices() || []).length && !forceDefault){
+      waiting = true; playBtn.disabled = true; $("ttsPlayLabel").textContent = "Letar röster…"; say("Letar efter röster");
+      waitForVoices(2500).then(() => { waiting = false; playBtn.disabled = false; setState("idle"); begin(scope); });
       return;
+    }
+    begin(scope);
+  }
+  function begin(scope){
+    const info = fillVoices();
+    $("ttsForce").hidden = true;
+    if(!forceDefault){
+      if(!info.total){
+        showMsg("Webbläsaren lämnar inte ut någon lista över röster, så jag vet inte vilken röst som skulle läsa och startar därför inte. Det kan bero på att röstmotorn inte hunnit starta (ladda om sidan och försök igen) eller på webbläsarens sekretesskydd.", true);
+        $("ttsForce").hidden = false;
+        return;
+      }
+      if(!info.list.length){
+        showMsg(info.all.length
+          ? "Svenska röster finns bara som onlineröster på den här enheten. Slå på \"Tillåt onlineröster\" om du vill använda dem (texten skickas då till webbläsarens leverantör)."
+          : "Ingen svensk röst hittades på den här enheten, och jag vill inte läsa svensk text med en röst på ett annat språk. Installera en svensk röst i datorns eller mobilens inställningar och ladda om sidan.", true);
+        return;
+      }
     }
     showMsg("");
     units = ttsCollectUnits(scope);
@@ -521,6 +559,7 @@ function initTts(){
     else resumePlayback();
   });
   stopBtn.addEventListener("click", () => { stopAll(); say("Stoppad"); });
+  $("ttsForce").addEventListener("click", () => { forceDefault = true; showMsg(""); $("ttsForce").hidden = true; startPlayback(); });
   setBtn.addEventListener("click", () => togglePop());
   rateSel.addEventListener("change", () => { rate = parseFloat(rateSel.value) || 1; put(TTS_KEYS.rate, String(rate)); restartCurrent(); });
   voiceSel.addEventListener("change", () => { voiceURI = voiceSel.value; put(TTS_KEYS.voice, voiceURI); restartCurrent(); });
