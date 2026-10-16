@@ -42,12 +42,14 @@
       <li>Tangentbordsnavigering (knappar, menyer, formulär) <span class="status unknown">Ej kontrollerat</span></li>
       <li>Skärmläsarkompatibilitet (ARIA, fokusordning) <span class="status unknown">Ej kontrollerat</span></li>
       <li>Rubrikstruktur (h1–h3 i logisk ordning) <span class="status unknown">Ej kontrollerat på samtliga sidor</span></li>
+      <li>Uppläsning av kursmaterial (Lyssna-knappen, webbläsarens talsyntes) <span class="status unknown">Ej testad med skärmläsare</span></li>
       <li>G-kodsvisualiseraren och sänka skepp-spelet (canvas-baserade, mycket interaktiva) <span class="status warn">Sannolikt bristfällig tangentbords-/skärmläsarstöd</span></li>
     </ul>
 
     <h2>Kända begränsningar</h2>
     <p>De två interaktiva verktygen — G-kodsvisualiseraren och sänka skepp-spelet — bygger till stor del på musstyrd interaktion med en HTML5 canvas-yta. Sådana ytor är generellt svåra att göra fullt tillgängliga för skärmläsare och ren tangentbordsnavigering, och har <strong>inte</strong> anpassats för detta ännu. Övriga sidor (kursmaterial, quiz) bygger på vanlig HTML och bör fungera väsentligt bättre med hjälpmedel, men har inte testats med faktisk skärmläsare.</p>
 
+    <p>På sidor med kursmaterial finns en Lyssna-knapp som läser upp texten med webbläsarens inbyggda talsyntes. Den är ett komplement för den som vill lyssna, inte en ersättning för skärmläsare. Rösternas kvalitet och uttal beror på enheten, och tabeller och kodblock läses inte upp.</p>
     <h2>Hur vi jobbar vidare</h2>
     <p>Nästa steg är att testa sidorna med tangentbord enbart (utan mus) och med en skärmläsare, samt gå igenom rubrikstrukturen sida för sida. Den här redogörelsen uppdateras när det är gjort.</p>
 
