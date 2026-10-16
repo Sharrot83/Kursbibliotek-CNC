@@ -210,6 +210,8 @@ document.addEventListener("DOMContentLoaded", renderFooter);
    Sajten skickar aldrig något själv. */
 const TTS_KEYS = { rate: "kbc-tts-rate", voice: "kbc-tts-voice", online: "kbc-tts-online" };
 const TTS_RATES = [0.7, 0.85, 1, 1.15, 1.3, 1.5];
+const TTS_KNOWN_SV = /^(microsoft (bengt|hedvig|sofie|mattias|hillevi)|google svenska|alva|oskar)\b/i; // kända riktiga svenska röster hamnar först
+const TTS_TEST_TEXT = "Så här låter rösten. Hej, det här är ett test.";
 const TTS_MAX_CHUNK = 200; // korta stycken: långa yttranden kan klippas i vissa webbläsare
 const TTS_BLOCK = "h1,h2,h3,h4,p,li,dt,dd,blockquote,figcaption,summary,.callout,.lawbox,.note";
 const TTS_SKIP = "nav,.toc,.side-nav,.audio-box,table,pre,script,style,noscript,svg,canvas,button,select,input,textarea,[hidden],[aria-hidden=\"true\"],.num,.tts-bar,#topbar,#sitefooter";
@@ -370,8 +372,9 @@ function initTts(){
       <select id="ttsRate"></select>
       <label for="ttsVoice">Röst</label>
       <select id="ttsVoice"></select>
+      <button type="button" class="tts-btn" id="ttsTest" style="margin-top:8px;">▶ Prova rösten</button>
       <label class="tts-check"><input type="checkbox" id="ttsOnline"><span>Tillåt onlineröster. Då skickar din webbläsare texten till dess leverantör (t.ex. Google eller Microsoft) för att läsa upp den.</span></label>
-      <p class="tts-note">Rösterna kommer från din enhet, så ljudet skiljer sig mellan datorer och mobiler.</p>
+      <p class="tts-note">Rösterna kommer från din enhet, så ljudet skiljer sig mellan datorer och mobiler. Låter det fel (till exempel engelskt uttal)? Välj en annan röst och tryck Prova rösten.</p>
       <p class="tts-note" id="ttsDiag"></p>
       <p class="tts-msg" id="ttsMsg"></p>
       <button type="button" class="tts-btn" id="ttsForce" hidden>Läs ändå med webbläsarens standardröst</button>
@@ -387,7 +390,7 @@ function initTts(){
 
   let rate = parseFloat(get(TTS_KEYS.rate, "1")) || 1;
   let allowOnline = get(TTS_KEYS.online, "0") === "1";
-  let voiceURI = get(TTS_KEYS.voice, "");
+  let voicePref = get(TTS_KEYS.voice, ""); // "namn|språk" — voiceURI kan vara lika för flera röster, så den används inte
   let state = "idle", units = [], flat = [], idx = 0, session = 0, current = null, errorCount = 0, lastUnit = null;
   let waiting = false, forceDefault = false; // forceDefault: användaren har själv valt att läsa utan känd röst
 
@@ -405,11 +408,14 @@ function initTts(){
   function voiceInfo(){
     const all = (synth.getVoices() || []).filter(v => /^sv([-_]|$)/i.test(v.lang || ""));
     const list = allowOnline ? all.slice() : all.filter(v => v.localService);
-    list.sort((a, b) => (b.localService ? 1 : 0) - (a.localService ? 1 : 0) || String(a.name).localeCompare(String(b.name)));
+    list.sort((a, b) => (b.localService ? 1 : 0) - (a.localService ? 1 : 0)
+      || (TTS_KNOWN_SV.test(b.name) ? 1 : 0) - (TTS_KNOWN_SV.test(a.name) ? 1 : 0)
+      || String(a.name).localeCompare(String(b.name)));
     return { total: (synth.getVoices() || []).length, all, list };
   }
+  const voiceKey = v => v ? v.name + "|" + v.lang : "";
   function showDiag(info){
-    const v = info.list.find(x => x.voiceURI === voiceSel.value) || info.list[0] || null;
+    const v = info.list[parseInt(voiceSel.value, 10)] || null;
     $("ttsDiag").textContent = info.total
       ? "Webbläsaren visar " + info.total + " röster, " + info.all.length + " på svenska. Röst som används: " + (v ? v.name : (forceDefault ? "webbläsarens standardröst" : "ingen")) + "."
       : "Webbläsaren har inte lämnat ut någon lista över röster.";
@@ -424,19 +430,19 @@ function initTts(){
       showDiag(info);
       return info;
     }
-    info.list.forEach(v => {
+    info.list.forEach((v, i) => {
       const o = document.createElement("option");
-      o.value = v.voiceURI; o.textContent = v.name + (v.localService ? "" : " (online)");
+      o.value = String(i); o.textContent = v.name + (v.localService ? "" : " (online)"); // index, inte voiceURI
       voiceSel.appendChild(o);
     });
-    const keep = info.list.find(v => v.voiceURI === voiceURI);
-    voiceSel.value = keep ? keep.voiceURI : info.list[0].voiceURI;
+    const keep = info.list.findIndex(v => voiceKey(v) === voicePref);
+    voiceSel.value = String(keep >= 0 ? keep : 0);
     showDiag(info);
     return info;
   }
   function pickVoice(){
     const info = voiceInfo();
-    return info.list.find(v => v.voiceURI === voiceSel.value) || info.list[0] || null;
+    return info.list[parseInt(voiceSel.value, 10)] || info.list[0] || null;
   }
 
   function setState(s){
@@ -562,7 +568,22 @@ function initTts(){
   $("ttsForce").addEventListener("click", () => { forceDefault = true; showMsg(""); $("ttsForce").hidden = true; startPlayback(); });
   setBtn.addEventListener("click", () => togglePop());
   rateSel.addEventListener("change", () => { rate = parseFloat(rateSel.value) || 1; put(TTS_KEYS.rate, String(rate)); restartCurrent(); });
-  voiceSel.addEventListener("change", () => { voiceURI = voiceSel.value; put(TTS_KEYS.voice, voiceURI); restartCurrent(); });
+  voiceSel.addEventListener("change", () => {
+    voicePref = voiceKey(pickVoice()); put(TTS_KEYS.voice, voicePref);
+    showDiag(voiceInfo());                // raden under rutan ska alltid visa rösten som faktiskt används
+    restartCurrent();
+  });
+  $("ttsTest").addEventListener("click", () => {
+    const v = pickVoice();
+    if(!v && !forceDefault){ showMsg("Ingen svensk röst är vald. Se meddelandet ovan eller välj en annan röst.", true); return; }
+    if(state !== "idle") stopAll();
+    session++; synth.cancel();
+    const u = new window.SpeechSynthesisUtterance(TTS_TEST_TEXT);
+    u.lang = v ? v.lang : "sv-SE"; if(v) u.voice = v; u.rate = rate;
+    current = u;
+    window.setTimeout(() => synth.speak(u), 40);
+    say("Provar rösten " + (v ? v.name : "standardrösten"));
+  });
   onlineChk.addEventListener("change", () => {
     allowOnline = onlineChk.checked; put(TTS_KEYS.online, allowOnline ? "1" : "0");
     const info = fillVoices();
