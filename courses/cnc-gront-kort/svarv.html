@@ -179,6 +179,15 @@
     .backlink { text-decoration:none; color:#c3d2d9; cursor:pointer; }
   .backlink:hover { border-color:var(--cyan); color:#fff; }
   .backlink:focus-visible { outline:2px solid var(--cyan); outline-offset:2px; }
+  .dkeys { display:none; margin-left:auto; flex:0 1 410px; min-width:0; }
+  .dkeys .dk { display:grid; grid-template-columns:1fr 1fr; gap:8px 18px; margin-top:10px; font-size:11.5px; color:#cbd7dd; }
+  .dkeys .dk > div { display:flex; align-items:center; gap:7px; white-space:nowrap; }
+  .dkeys .kk { display:inline-flex; gap:3px; }
+  .dkeys kbd { min-width:22px; padding:2px 5px; }
+  .dkeys .dk-wide { grid-column:1 / -1; color:var(--amber); }
+  @media (min-width:1840px) { .dkeys { display:block; } }
+  @media (min-width:1510px) { #drawer.closed ~ #center .dkeys { display:block; } }
+  @media (max-width:900px) { .dkeys { display:none !important; } }
 </style>
 </head>
 <body>
@@ -192,9 +201,9 @@
     </nav>
     <aside id="drawer" aria-label="Meny">
     <div id="subtabs" class="" role="group" aria-label="Verktyg"><button data-s="verktyg" class="" aria-pressed="false">Skärverktyg</button><button data-s="reitstock" aria-pressed="true" class="on">Reitstock</button></div>
-    <section class="card stock dp off" data-p="amne"><div class="eyebrow">ÄMNE</div><label>DIAMETER mm <input id="diameter" type="number" min="10" max="120" step="0.5" value="40"></label><label>LÄNGD mm <input id="length" type="number" min="30" max="300" step="1" value="80"></label><div class="presets"><span>SNABBVAL</span><button data-d="30" data-l="60">Ø30×60</button><button data-d="40" data-l="80">Ø40×80</button><button data-d="50" data-l="100">Ø50×100</button><button data-d="80" data-l="150">Ø80×150</button></div><div class="snote" id="stockNote">Ø 10–120 mm • längd 30–300 mm. Ca 21 mm av längden sitter i chucken. Ämnet byts ut när du ändrar måtten.</div></section>
+    <section class="card stock dp off" data-p="amne"><div class="eyebrow">ÄMNE</div><label>DIAMETER mm <input id="diameter" type="number" min="10" max="120" step="0.5" value="40"></label><label>LÄNGD mm <input id="length" type="number" min="30" max="300" step="1" value="80"></label><div class="presets"><span>SNABBVAL</span><button data-d="30" data-l="60">Ø30×60</button><button data-d="40" data-l="80">Ø40×80</button><button data-d="50" data-l="100">Ø50×100</button><button data-d="80" data-l="150">Ø80×150</button></div><div class="snote" id="stockNote">Ø 10–120 mm • längd 30–300 mm. Ca 21 mm av längden sitter i chucken. Ämnet byts ut när du ändrar måtten.</div><label>MATERIAL <select id="material"><option value="P" selected="">P — Stål</option><option value="M">M — Rostfritt</option><option value="K">K — Gjutjärn</option><option value="N">N — Aluminium</option><option value="S">S — Superlegering</option></select></label></section>
     <section class="card stock dp off" data-p="verktyg"><div class="eyebrow">SKÄRVERKTYG</div><div class="eyebrow" style="margin-top:10px">VERKTYGSLÅDA — klicka för att montera</div><div id="ctbox"><div class="grp">Utvändigt</div><div class="trw cur" data-id="SVJBR"><div><b>SVJBR</b><br><span>93° • max 1000 N</span></div></div><div class="trw" data-id="SVVCN"><div><b>SVVCN</b><br><span>72,5° • max 900 N</span></div></div><div class="trw" data-id="SVUBR"><div><b>SVUBR</b><br><span>95° • max 1000 N</span></div></div><div class="trw" data-id="SVQBR"><div><b>SVQBR</b><br><span>117,5° • max 900 N</span></div></div><div class="trw" data-id="MGMN"><div><b>MGMN 300</b><br><span>Avstick 3 mm • max 1300 N</span></div></div><div class="grp">Invändigt (borrstång i Z-led)</div><div class="trw" data-id="BSCLCR"><div><b>S-SCLCR</b><br><span>95° invändig</span></div></div><div class="trw" data-id="BSDUCR"><div><b>S-SDUCR</b><br><span>93° invändig</span></div></div><div class="trw" data-id="BSVUBR"><div><b>S-SVUBR</b><br><span>93° invändig (35°)</span></div></div></div><label style="display:none"><select id="toolType"><optgroup label="Utvändigt"><option value="SVJBR">SVJBR — 93°</option><option value="SVVCN">SVVCN — 72,5°</option><option value="SVUBR">SVUBR — 95°</option><option value="SVQBR">SVQBR — 117,5°</option><option value="MGMN">MGMN 300 — Avstick 3 mm</option></optgroup><optgroup label="Invändigt (borrstång i Z-led)"><option value="BSCLCR">S-SCLCR — 95° invändig</option><option value="BSDUCR">S-SDUCR — 93° invändig</option><option value="BSVUBR">S-SVUBR — 93° invändig (35°)</option></optgroup></select></label><label>HÅLLARVINKEL <input id="holderAngle" type="range" min="-90" max="90" value="0" step="1"></label><label id="barRow1" style="display:none">BORRSTÅNG Ø <select id="barD"><option value="3">Ø 3 mm</option><option value="4">Ø 4 mm</option><option value="5">Ø 5 mm</option><option value="6">Ø 6 mm</option><option value="8">Ø 8 mm</option><option value="10">Ø 10 mm</option><option value="12">Ø 12 mm</option><option value="16" selected="">Ø 16 mm</option><option value="20">Ø 20 mm</option><option value="25">Ø 25 mm</option></select></label><label id="barRow2" style="display:none">UTSTICK <select id="barL"><option value="20">20 mm</option><option value="30">30 mm</option><option value="40">40 mm</option><option value="60">60 mm</option><option value="80">80 mm</option><option value="100" selected="">100 mm</option><option value="120">120 mm</option><option value="150">150 mm</option><option value="200">200 mm</option></select></label><div class="toolnote" id="toolTypeRead">SVJBR • hållare 0° • ingrepp 93.0° • max 1000 N</div></section>
-    <section class="card stock dp off" data-p="process"><div class="eyebrow">BEARBETNING</div><label>VARVTAL <span class="toolnote" id="rpmSet">712 varv/min (växellåda)</span></label><label>SKÄRANDE EGG <select id="cutMode"><option value="edge" selected="">Hela eggen</option><option value="tip">Bara spetsen</option></select></label><label>MATERIAL <select id="material"><option value="P" selected="">P — Stål</option><option value="M">M — Rostfritt</option><option value="K">K — Gjutjärn</option><option value="N">N — Aluminium</option><option value="S">S — Superlegering</option></select></label><label>RIKTNING <select id="spinDir"><option value="1" selected="">Mot urs (M04)</option><option value="-1">Med urs (M03)</option></select></label><div class="toolnote" id="cutDataRead">S712 • F0.20 mm/v (170 mm/min) • Ra≈8.3 µm</div></section>
+    <section class="card stock dp off" data-p="process"><div class="eyebrow">BEARBETNING</div><label>VARVTAL <span class="toolnote" id="rpmSet">712 varv/min (växellåda)</span></label><label>SKÄRANDE EGG <select id="cutMode"><option value="edge" selected="">Hela eggen</option><option value="tip">Bara spetsen</option></select></label><label>RIKTNING <select id="spinDir"><option value="1" selected="">Mot urs (M04)</option><option value="-1">Med urs (M03)</option></select></label><div class="toolnote" id="cutDataRead">S712 • F0.20 mm/v (170 mm/min) • Ra≈8.3 µm</div></section>
     <section class="card gear dp off locked" id="gearPanel" data-p="vaxel">
     <div class="gh"><div class="eyebrow">VÄXELLÅDA • VARVTAL</div><button id="gearToggle" title="Visa/dölj">▾</button></div>
     <div class="gb">
@@ -234,14 +243,14 @@
       </details>
     </div>
   </section>
-    <section class="card controls dp off" data-p="hjalp"><h2>Styrning</h2><div class="keygrid"><div><kbd>A</kbd> mot chuck (Z−)</div><div><kbd>D</kbd> från chuck (Z+)</div><div><kbd>W</kbd> inåt mot centrum (X−)</div><div><kbd>S</kbd> utåt från centrum (X+)</div><div><kbd>←</kbd> <kbd>→</kbd> X− / X+</div><div><kbd>↑</kbd> <kbd>↓</kbd> Z− / Z+</div><div><kbd>Q</kbd> <kbd>E</kbd> överslid (längs vinkeln)</div><div><kbd>I</kbd> <kbd>K</kbd> reitstock Z− / Z+</div><div><kbd>J</kbd> <kbd>L</kbd> pinol ut / in</div></div><p class="hint">Alla axlar rör sig med den hastighet som matningsreglaget anger (mm/min = matning × 850), oberoende av varvtalet. Utanför ämnet ger <kbd>Shift</kbd> snabbgång (50 mm/s). Bara den yttersta skärspetsen skär (spetsradie 0,15 mm = 0,3 mm bred skåra). X− går inåt mot centrum, X+ utåt. Skäret tar bort material med eggen; hållaren får inte gå in i material (kollision). Utan spindel kan inget skäras, och spindeln ramper upp och ner. Chuck och käftar är fasta. Skärkraften räknas som kc·snittarea per varv; blir den för stor går skäret sönder (byt med 🔧). Starta matning Z− kör kraftmatning mot chucken (matningsreglagets hastighet) tills du stoppar; X styr du fortfarande för hand, och Z+ stoppar matningen.</p></section>
+    <section class="card controls dp off" data-p="hjalp"><h2>Styrning</h2><div class="keygrid"><div><kbd>A</kbd> mot chuck (Z−)</div><div><kbd>D</kbd> från chuck (Z+)</div><div><kbd>W</kbd> inåt mot centrum (X−)</div><div><kbd>S</kbd> utåt från centrum (X+)</div><div><kbd>←</kbd> <kbd>→</kbd> X− / X+</div><div><kbd>↑</kbd> <kbd>↓</kbd> Z− / Z+</div><div><kbd>Q</kbd> <kbd>E</kbd> överslid (längs vinkeln)</div><div><kbd>I</kbd> <kbd>K</kbd> reitstock Z− / Z+</div><div><kbd>J</kbd> <kbd>L</kbd> pinol ut / in</div><div><kbd>Shift</kbd> snabbgång (utanför ämnet)</div></div><p class="hint">Alla axlar rör sig med den hastighet som matningsreglaget anger (mm/min = matning × 850), oberoende av varvtalet. Utanför ämnet ger <kbd>Shift</kbd> snabbgång (50 mm/s). Bara den yttersta skärspetsen skär (spetsradie 0,15 mm = 0,3 mm bred skåra). X− går inåt mot centrum, X+ utåt. Skäret tar bort material med eggen; hållaren får inte gå in i material (kollision). Utan spindel kan inget skäras, och spindeln ramper upp och ner. Chuck och käftar är fasta. Skärkraften räknas som kc·snittarea per varv; blir den för stor går skäret sönder (byt med 🔧). Starta matning Z− kör kraftmatning mot chucken (matningsreglagets hastighet) tills du stoppar; X styr du fortfarande för hand, och Z+ stoppar matningen.</p></section>
     </aside>
     <div id="center">
       <header id="topbar">
         <div class="tb-l">
           <a class="pill backlink" href="material.html">&larr; Tillbaka till CNC-Grönt kort</a>
           <div class="eyebrow">VIRTUELL CNC-SVARV • TRAINING MODE</div>
-          <div class="pill"><i class="lamp feedlimit" id="lamp"></i><span id="mode">MATNING Z− • F0.20 mm/v</span></div>
+          <div class="pill"><i class="lamp feedlimit" id="lamp"></i><span id="mode">SPINDEL AV — ingen skärning</span></div>
         </div>
         <div class="tb-r">
           <button id="newInsert">🔧 Byt skär</button>
@@ -293,8 +302,21 @@
         <section class="dpanel" id="runPanel">
           <div class="lbl">KÖRNING</div>
           <div class="runbtns">
-            <button class="primary" id="spindle">⏻ Spindel: PÅ</button>
-            <button id="demo">❚❚ Stoppa matning</button>
+            <button class="primary" id="spindle">⏻ Spindel: AV</button>
+            <button id="demo">▶ Starta matning Z−</button>
+          </div>
+        </section>
+        <section class="dpanel dkeys" aria-labelledby="dkeysLbl">
+          <div class="lbl" id="dkeysLbl">TANGENTER</div>
+          <div class="dk">
+            <div><span class="kk"><kbd>A</kbd><kbd>D</kbd></span> mot / från chuck</div>
+            <div><span class="kk"><kbd>W</kbd><kbd>S</kbd></span> in / ut (X− / X+)</div>
+            <div><span class="kk"><kbd>←</kbd><kbd>→</kbd></span> X− / X+</div>
+            <div><span class="kk"><kbd>↑</kbd><kbd>↓</kbd></span> Z− / Z+</div>
+            <div><span class="kk"><kbd>Q</kbd><kbd>E</kbd></span> överslid</div>
+            <div><span class="kk"><kbd>I</kbd><kbd>K</kbd></span> reitstock Z− / Z+</div>
+            <div><span class="kk"><kbd>J</kbd><kbd>L</kbd></span> pinol ut / in</div>
+            <div class="dk-wide"><span class="kk"><kbd>Shift</kbd></span> + axeltangent = snabbgång (utanför ämnet)</div>
           </div>
         </section>
       </footer>
@@ -676,7 +698,7 @@
     toolType.onchange=()=>{toolBroken=false;showBarRows();applyHolder();}; barD.onchange=barL.onchange=()=>{toolBroken=false;applyHolder();}; holderAngle.oninput=applyHolder; showBarRows(); setToolStyle();
 
     // ---------- Tillstånd, matningsbegränsning ----------
-    const state={x:3.05,z:1.7,keys:{},cutting:false,demo:false,demoPhase:0,removed:0,rpm:850,feed:.2,crash:0,spindle:true,cutMode:'edge',rpmAct:0,fc:0,fcFrame:0,fcd:0,fcdFrame:0,spinDir:1,dirAct:1}; // spinDir/dirAct: +1 = mot urs, −1 = med urs (sett från reitstocken mot chucken)
+    const state={x:3.05,z:1.7,keys:{},cutting:false,demo:false,demoPhase:0,removed:0,rpm:850,feed:.2,crash:0,spindle:false,cutMode:'edge',rpmAct:0,fc:0,fcFrame:0,fcd:0,fcdFrame:0,spinDir:1,dirAct:1}; // spinDir/dirAct: +1 = mot urs, −1 = med urs (sett från reitstocken mot chucken)
 
     // ---- Spån ----
     const NCH=500, chipPos=new Float32Array(NCH*3).fill(0), chipVel=new Float32Array(NCH*3), chipLife=new Float32Array(NCH); let chipHead=0;
@@ -839,7 +861,7 @@
       if(state.z<=stockStart+.12){state.z=stockStart+.12;stopFeed('MATNING STOPPAD — ändläge');}
     }
     addEventListener('keydown',e=>{if(e.target&&e.target.matches&&e.target.matches('input[type="text"],input[type="number"],textarea'))return; if(['KeyW','KeyA','KeyS','KeyD','KeyQ','KeyE','KeyI','KeyK','KeyJ','KeyL','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight'].includes(e.code)){e.preventDefault();state.keys[e.key.toLowerCase()]=true;if(e.key==='Shift')state.keys.Shift=true;}});addEventListener('keyup',e=>{state.keys[e.key.toLowerCase()]=false;if(e.key==='Shift')state.keys.Shift=false;});
-    function newStock(){ offX=0;offZ=0; state.demo=false;state.x=initialR+1;state.z=stockStart+stockLength+.6;state.removed=0;prev=null;ts.centerHole=false;resetStock();tsEnforce();positionTool();document.querySelector('#mode').textContent='MANUELL MATNING';document.querySelector('#demo').textContent='▶ Starta matning Z−'; }
+    function newStock(){ offX=0;offZ=0; state.demo=false;state.x=initialR+1;state.z=stockStart+stockLength+.6;state.removed=0;prev=null;ts.centerHole=false;resetStock();tsEnforce();positionTool();document.querySelector('#mode').textContent=baseMode();document.querySelector('#demo').textContent='▶ Starta matning Z−'; }
     document.querySelector('#reset').onclick=newStock;
     const dIn=document.querySelector('#diameter'), lIn=document.querySelector('#length'), sNote=document.querySelector('#stockNote'), sNoteTxt=sNote.textContent;
     function applyStockDims(){ let d=parseFloat(dIn.value), l=parseFloat(lIn.value), clamped=false;
