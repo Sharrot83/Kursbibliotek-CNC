@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="sv"><head><meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CNC Svarv — Interaktiv simulering</title>
+  <style>
+    :root { color-scheme: dark; --ink:#e8f0f5; --muted:#8ba0ab; --line:#203946; --panel:rgba(8,20,28,.82); --cyan:#35e2d2; --amber:#ffb454; --red:#ff6b6b; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; overflow:hidden; font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; background:#061017; color:var(--ink); }
+    #scene { position:fixed; inset:0; }
+    #hud { position:fixed; inset:0; pointer-events:none; padding:24px; display:flex; flex-direction:column; justify-content:space-between; }
+    .top, .bottom { display:flex; justify-content:space-between; gap:18px; align-items:flex-start; }
+    .card { pointer-events:auto; background:var(--panel); border:1px solid var(--line); border-radius:13px; box-shadow:0 18px 60px #0008; backdrop-filter:blur(12px); }
+    .brand { padding:14px 18px; min-width:270px; }
+    .eyebrow { font-size:10px; color:var(--cyan); letter-spacing:.18em; font-weight:800; }
+    h1 { font-size:18px; margin:5px 0 0; letter-spacing:.015em; }
+    .status { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px; margin-top:5px; }
+    .lamp { width:8px; height:8px; border-radius:50%; background:var(--cyan); box-shadow:0 0 13px var(--cyan); transition:.15s; }
+    .lamp.feedlimit { background:var(--amber); box-shadow:0 0 13px var(--amber); }
+    .lamp.crash { background:var(--red); box-shadow:0 0 16px var(--red); }
+    .readout { display:grid; grid-template-columns:repeat(5,minmax(70px,1fr)); padding:10px; gap:1px; min-width:500px; background:var(--line); overflow:hidden; }
+    .readout div { background:#0a171e; padding:9px 12px; }
+    .readout span { display:block; font-size:10px; letter-spacing:.13em; color:var(--muted); }
+    .readout strong { display:block; font-family:"SFMono-Regular",Consolas,monospace; font-size:18px; color:var(--cyan); margin-top:2px; }
+    .rcol { display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
+    .zerobar { padding:5px 8px; display:flex; gap:6px; align-items:center; }
+    .zerobar span { font-size:10px; letter-spacing:.13em; color:var(--muted); margin-right:4px; }
+    .zerobar button { padding:4px 10px; }
+    .readout strong.warn { color:var(--amber); } .readout strong.bad { color:var(--red); }
+    .controls { padding:15px 16px; width:min(420px,100%); }
+    .controls h2 { margin:0 0 10px; font-size:12px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); }
+    .keygrid { display:grid; grid-template-columns:1fr 1fr; gap:7px; font-size:12px; color:#cbd7dd; }
+    kbd { display:inline-block; min-width:25px; padding:3px 6px; border:1px solid #466472; border-bottom-width:3px; border-radius:4px; background:#142831; color:#fff; font-family:inherit; font-size:11px; text-align:center; }
+    .hint { margin:11px 0 0; padding-top:10px; border-top:1px solid var(--line); color:var(--muted); line-height:1.45; font-size:11px; }
+    .actions { padding:12px; display:flex; gap:8px; align-items:center; }
+    button { cursor:pointer; border:1px solid #416571; border-radius:7px; padding:8px 11px; color:var(--ink); background:#122832; font:600 12px inherit; transition:.18s; }
+    button:hover { border-color:var(--cyan); background:#173743; }
+    button.primary { background:#0b716b; border-color:#36cfc3; }
+    button.primary:hover { background:#0c9188; }
+    .legend { font-size:11px; color:var(--muted); padding:10px 13px; }
+    .legend b { color:var(--amber); }
+    .stock { padding:12px; min-width:220px; }
+    .stock label { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; color:var(--muted); font-size:10px; letter-spacing:.08em; margin:6px 0; }
+    select { appearance:none; border:1px solid #416571; border-radius:6px; color:var(--ink); background:#112932; padding:6px 26px 6px 8px; font:600 11px inherit; }
+    input[type="range"] { width:126px; accent-color:var(--cyan); }
+    .toolnote { color:var(--cyan); font:700 10px "SFMono-Regular",Consolas,monospace; text-align:right; }
+    .viewhint { position:fixed; left:50%; bottom:20px; transform:translateX(-50%); color:#8ba0ab; font-size:11px; text-align:center; pointer-events:none; text-shadow:0 2px 8px #000; }
+    .gear { position:fixed; left:24px; top:112px; width:318px; max-height:calc(100vh - 372px); overflow:auto; padding:12px 14px; z-index:5; }
+    .gear .gh { display:flex; justify-content:space-between; align-items:center; }
+    .gear .gh button { padding:3px 9px; }
+    .gear.collapsed .gb { display:none; }
+    .rpmbig { display:flex; align-items:baseline; gap:8px; margin:8px 0 2px; }
+    .rpmbig strong { font:700 30px "SFMono-Regular",Consolas,monospace; color:var(--cyan); }
+    .rpmbig span { color:var(--muted); font-size:12px; }
+    .vc { color:var(--muted); font-size:11px; line-height:1.45; margin-bottom:6px; }
+    .knobs { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:8px 0; }
+    .kb { display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; color:var(--muted); letter-spacing:.08em; text-align:center; }
+    .kb b { color:var(--ink); font-size:12px; letter-spacing:.04em; }
+    .kb span { color:var(--cyan); font:700 12px "SFMono-Regular",Consolas,monospace; }
+    .knob { width:62px; height:62px; border-radius:50%; border:2px solid #5a7a88; padding:0; position:relative; cursor:pointer; background:radial-gradient(circle at 35% 30%,#3c5560,#101c23); box-shadow:0 4px 12px #0007; }
+    .knob i { position:absolute; left:50%; top:5px; width:4px; height:20px; margin-left:-2px; border-radius:2px; background:var(--amber); transform-origin:50% 24px; transform:rotate(var(--a,0deg)); transition:transform .18s; }
+    .knob:hover { border-color:var(--cyan); }
+    .gear.locked .knob { opacity:.45; cursor:not-allowed; }
+    .chain { font:11px/1.55 "SFMono-Regular",Consolas,monospace; color:#cbd7dd; background:#0a171e; border:1px solid var(--line); border-radius:8px; padding:8px 9px; }
+    .chain b { color:var(--cyan); }
+    .gmsg { min-height:15px; color:var(--red); font-size:11px; margin:6px 0 2px; }
+    .gear details { border-top:1px solid var(--line); padding:7px 0; }
+    .gear summary { cursor:pointer; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+    .gear ul, .gear p { margin:7px 0 0; padding-left:16px; font-size:11px; line-height:1.5; color:#cbd7dd; }
+    .gear p { padding-left:0; }
+    .gear li { margin-bottom:6px; }
+    .gear li b { color:var(--ink); }
+    .gtab { width:100%; border-collapse:collapse; font:11px "SFMono-Regular",Consolas,monospace; margin-top:6px; }
+    .gtab td, .gtab th { padding:3px 5px; text-align:right; border-bottom:1px solid #16303b; }
+    .gtab th { color:var(--muted); font-weight:600; }
+    .gtab tbody tr { cursor:pointer; }
+    .gtab tbody tr:hover { background:#12303a; }
+    .gtab tr.cur { background:#0b716b66; color:#fff; }
+    .rstack { position:fixed; right:24px; top:142px; width:262px; display:flex; flex-direction:column; gap:10px; max-height:calc(100vh - 230px); overflow:auto; z-index:4; }
+    .tsp { position:fixed; right:300px; top:142px; width:310px; max-height:calc(100vh - 300px); overflow:auto; padding:12px 14px; z-index:5; }
+    .tsp .gh { display:flex; justify-content:space-between; align-items:center; }
+    .tsp .gh button { padding:3px 9px; }
+    .tsp.collapsed .gb { display:none; }
+    .tsr { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border-radius:8px; overflow:hidden; margin:8px 0; }
+    .tsr div { background:#0a171e; padding:6px 9px; }
+    .tsr span { display:block; font-size:9px; letter-spacing:.12em; color:var(--muted); }
+    .tsr strong { display:block; font:700 15px "SFMono-Regular",Consolas,monospace; color:var(--cyan); margin-top:1px; }
+    .tsp label { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; color:var(--muted); font-size:10px; letter-spacing:.08em; margin:6px 0; }
+    .tsp input[type="range"] { width:160px; }
+    .trow { display:flex; gap:6px; margin:8px 0; flex-wrap:wrap; }
+    .trow button { padding:6px 9px; }
+    #tbox, #ctbox { display:flex; flex-direction:column; gap:4px; margin-top:6px; max-height:230px; overflow:auto; }
+    #ctbox { max-height:none; margin-bottom:10px; }
+    #ctbox .grp { margin-top:6px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+    .trw { display:flex; justify-content:space-between; align-items:center; gap:6px; padding:6px 9px; border:1px solid var(--line); border-radius:8px; background:#0a171e; cursor:pointer; font-size:11px; color:#cbd7dd; line-height:1.35; }
+    .trw span { color:var(--muted); font-size:10px; }
+    .trw:hover { border-color:var(--cyan); }
+    .trw.cur { background:#0b716b66; border-color:#36cfc3; color:#fff; }
+    .trw .del { padding:2px 7px; font-size:11px; }
+    .tsp summary { cursor:pointer; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-top:10px; }
+    .addf { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; }
+    .addf label { display:block; margin:0; }
+    .addf label span { display:block; margin-bottom:2px; }
+    .addf .full { grid-column:1/-1; }
+    .addf input[type="text"], .addf input[type="number"] { width:100%; border:1px solid #416571; border-radius:6px; background:#112932; color:var(--ink); padding:6px 8px; font:600 11px inherit; }
+    #tbMsg { min-height:14px; color:var(--red); font-size:11px; margin-top:5px; }
+    @media (max-width:720px) { #hud { padding:12px; } .top { flex-direction:column; } .readout { min-width:0; width:100%; } .bottom { align-items:flex-end; } .controls { width:250px; } .keygrid { grid-template-columns:1fr; } .legend { display:none; } }
+  </style>
+<style id="layoutB">
+    /* Layout B: ikonrail + utfällbar meny + vy + mätpanel */
+    body { overflow:hidden; }
+    button { font-family:inherit; font-size:12px; font-weight:600; }
+    #app { position:fixed; inset:0; display:flex; background:#061017; }
+    #rail { flex:0 0 72px; display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px; background:#08141b; border-right:1px solid var(--line); overflow-y:auto; z-index:30; }
+    #rail button { width:60px; display:flex; flex-direction:column; align-items:center; gap:4px; padding:9px 0 7px; border:1px solid transparent; border-radius:10px; background:transparent; color:var(--muted); font-size:10px; letter-spacing:.04em; }
+    #rail button:hover { border-color:var(--cyan); background:#173743; color:var(--ink); }
+    #rail button.on { background:#0b716b; border-color:#36cfc3; color:#fff; }
+    #rail svg { width:22px; height:22px; }
+    #drawer { flex:0 0 330px; background:#0a171e; border-right:1px solid var(--line); overflow-y:auto; z-index:25; }
+    #drawer.closed { display:none; }
+    #subtabs { display:flex; gap:6px; padding:12px 16px 0; position:sticky; top:0; z-index:2; background:#0a171e; }
+    #subtabs.off { display:none; }
+    #subtabs button { flex:1; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:#112932; color:var(--muted); }
+    #subtabs button:hover { border-color:var(--cyan); color:var(--ink); }
+    #subtabs button.on { background:#0b716b; border-color:#36cfc3; color:#fff; }
+    #drawer .dp.off { display:none; }
+    #drawer .card { border:0; border-radius:0; box-shadow:none; background:transparent; backdrop-filter:none; position:static; width:auto; max-height:none; overflow:visible; margin:0; padding:16px; min-width:0; }
+    #drawer .gear.collapsed .gb, #drawer .tsp.collapsed .gb { display:block; }
+    #gearToggle, #tsToggle { display:none; }
+    #drawer .stock label { grid-template-columns:1fr auto; }
+    #center { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; }
+    #topbar { flex:0 0 auto; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; padding:10px 16px; background:#08141b; border-bottom:1px solid var(--line); }
+    .tb-l { display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
+    .tb-r { display:flex; flex-wrap:wrap; gap:8px; }
+    .pill { display:flex; align-items:center; gap:8px; padding:4px 11px; border:1px solid var(--line); border-radius:999px; color:#c3d2d9; font-size:12px; }
+    #app #scene { position:relative; inset:auto; flex:1 1 auto; min-height:0; overflow:hidden; }
+    #scene canvas { position:absolute; left:0; top:0; display:block; }
+    .vhint { position:absolute; left:14px; top:14px; z-index:2; padding:6px 10px; border:1px solid var(--line); border-radius:8px; background:rgba(8,20,28,.82); color:#c3d2d9; font-size:11px; pointer-events:none; }
+    .vhint b { color:var(--amber); }
+    #dock { flex:0 0 auto; display:flex; flex-wrap:wrap; align-items:stretch; justify-content:flex-start; gap:14px; padding:12px 16px; background:#08141b; border-top:1px solid var(--line); }
+    .dpanel { padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:#0a171e; }
+    .dleft { flex:0 1 540px; min-width:0; }
+    .lbl { font-size:10px; letter-spacing:.12em; color:var(--muted); }
+    .dro { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+    .dro span { display:block; font-size:10px; letter-spacing:.12em; color:var(--muted); }
+    .dro strong { display:block; margin-top:2px; font-family:"SFMono-Regular",Consolas,monospace; font-size:26px; color:var(--cyan); }
+    .fd { margin-top:12px; display:flex; align-items:center; gap:12px; }
+    .fd input[type="range"] { flex:1; width:auto; min-width:0; height:28px; accent-color:var(--cyan); cursor:pointer; }
+    .fd strong { min-width:92px; text-align:right; font-family:"SFMono-Regular",Consolas,monospace; font-size:14px; color:var(--cyan); }
+    .fl { margin-top:12px; }
+    .fh { display:flex; justify-content:space-between; align-items:baseline; font-size:11px; letter-spacing:.08em; color:var(--muted); }
+    .fh b { font-weight:600; color:var(--muted); font-family:"SFMono-Regular",Consolas,monospace; font-size:12px; }
+    .fh strong { font-size:14px; color:var(--cyan); font-weight:700; }
+    .fh em { font-style:normal; color:var(--ink); }
+    .fh strong.warn { color:var(--amber); } .fh strong.bad { color:var(--red); }
+    .fbar { margin-top:5px; height:8px; border-radius:4px; background:var(--line); overflow:hidden; }
+    .fbar i { display:block; height:100%; width:0; background:var(--cyan); transition:width .12s, background .12s; }
+    .zr { margin-top:12px; display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+    .zr button { padding:5px 10px; }
+    .zr .rem { margin-left:auto; font-family:"SFMono-Regular",Consolas,monospace; font-size:12px; color:var(--muted); }
+    #jog { margin-top:8px; display:grid; grid-template-columns:repeat(3,52px); grid-template-rows:repeat(3,52px); gap:6px; }
+    #jog button { padding:0; font-family:"SFMono-Regular",Consolas,monospace; touch-action:none; user-select:none; -webkit-user-select:none; }
+    #jog button.act { background:#0b716b; border-color:#36cfc3; }
+    #jogRapid { border-color:var(--amber); color:var(--amber); font-family:inherit; font-size:10px; }
+    #jogRapid.act { background:#5a3b10; border-color:var(--amber); color:#fff; }
+    #runPanel { display:flex; flex-direction:column; }
+    .runbtns { margin-top:8px; flex:1 1 auto; display:flex; flex-direction:column; gap:6px; min-width:190px; }
+    .runbtns button { flex:1 1 0; padding:8px 14px; font-size:13px; }
+    #drawer .stock input[type="number"] { width:96px; border:1px solid #416571; border-radius:6px; background:#112932; color:var(--ink); padding:6px 8px; font-family:inherit; font-size:12px; font-weight:600; text-align:right; }
+    #drawer .stock input[type="number"]:focus { outline:1px solid var(--cyan); border-color:var(--cyan); }
+    .presets { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:10px; }
+    .presets span { width:100%; font-size:10px; letter-spacing:.08em; color:var(--muted); }
+    .presets button { padding:5px 9px; }
+    .snote { margin-top:10px; font-size:11px; line-height:1.5; color:var(--muted); }
+    .snote.warn { color:var(--amber); }
+    @media (max-width:900px) { #drawer { position:absolute; left:72px; top:0; bottom:0; width:min(330px,calc(100vw - 72px)); box-shadow:0 0 40px #000a; } }
+    @media (max-width:600px) { .dro { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-height:760px) { #jog { grid-template-columns:repeat(3,44px); grid-template-rows:repeat(3,44px); } .dro strong { font-size:22px; } }
+    .backlink { text-decoration:none; color:#c3d2d9; cursor:pointer; }
+  .backlink:hover { border-color:var(--cyan); color:#fff; }
+  .backlink:focus-visible { outline:2px solid var(--cyan); outline-offset:2px; }
+</style>
+</head>
+<body>
+  <div id="app">
+    <nav id="rail" aria-label="Menyer">
+      <button data-p="amne" aria-label="Ämne" title="Ämne" aria-pressed="false" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7l8-4 8 4v10l-8 4-8-4z M4 7l8 4 8-4 M12 11v10"></path></svg><span>Ämne</span></button>
+      <button data-p="verktyg" aria-label="Verktyg" title="Verktyg" class="on" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l7-7 M14 4l6 6-4 4-6-6z M9 9l-5 11"></path></svg><span>Verktyg</span></button>
+      <button data-p="process" aria-label="Process" title="Process" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16 M4 12h16 M4 18h16 M9 4v4 M15 10v4 M8 16v4"></path></svg><span>Process</span></button>
+      <button data-p="vaxel" aria-label="Växel" title="Växel" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8a4 4 0 100 8 4 4 0 000-8z M12 2v3 M12 19v3 M2 12h3 M19 12h3 M5 5l2 2 M17 17l2 2 M19 5l-2 2 M7 17l-2 2"></path></svg><span>Växel</span></button>
+      <button data-p="hjalp" aria-label="Hjälp" title="Hjälp" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 100 18 9 9 0 000-18z M9.5 9.5a2.5 2.5 0 115 0c0 1.6-2.5 2-2.5 3.6 M12 17h.01"></path></svg><span>Hjälp</span></button>
+    </nav>
+    <aside id="drawer" aria-label="Meny">
+    <div id="subtabs" class="" role="group" aria-label="Verktyg"><button data-s="verktyg" class="" aria-pressed="false">Skärverktyg</button><button data-s="reitstock" aria-pressed="true" class="on">Reitstock</button></div>
+    <section class="card stock dp off" data-p="amne"><div class="eyebrow">ÄMNE</div><label>DIAMETER mm <input id="diameter" type="number" min="10" max="120" step="0.5" value="40"></label><label>LÄNGD mm <input id="length" type="number" min="30" max="300" step="1" value="80"></label><div class="presets"><span>SNABBVAL</span><button data-d="30" data-l="60">Ø30×60</button><button data-d="40" data-l="80">Ø40×80</button><button data-d="50" data-l="100">Ø50×100</button><button data-d="80" data-l="150">Ø80×150</button></div><div class="snote" id="stockNote">Ø 10–120 mm • längd 30–300 mm. Ca 21 mm av längden sitter i chucken. Ämnet byts ut när du ändrar måtten.</div></section>
+    <section class="card stock dp off" data-p="verktyg"><div class="eyebrow">SKÄRVERKTYG</div><div class="eyebrow" style="margin-top:10px">VERKTYGSLÅDA — klicka för att montera</div><div id="ctbox"><div class="grp">Utvändigt</div><div class="trw cur" data-id="SVJBR"><div><b>SVJBR</b><br><span>93° • max 1000 N</span></div></div><div class="trw" data-id="SVVCN"><div><b>SVVCN</b><br><span>72,5° • max 900 N</span></div></div><div class="trw" data-id="SVUBR"><div><b>SVUBR</b><br><span>95° • max 1000 N</span></div></div><div class="trw" data-id="SVQBR"><div><b>SVQBR</b><br><span>117,5° • max 900 N</span></div></div><div class="trw" data-id="MGMN"><div><b>MGMN 300</b><br><span>Avstick 3 mm • max 1300 N</span></div></div><div class="grp">Invändigt (borrstång i Z-led)</div><div class="trw" data-id="BSCLCR"><div><b>S-SCLCR</b><br><span>95° invändig</span></div></div><div class="trw" data-id="BSDUCR"><div><b>S-SDUCR</b><br><span>93° invändig</span></div></div><div class="trw" data-id="BSVUBR"><div><b>S-SVUBR</b><br><span>93° invändig (35°)</span></div></div></div><label style="display:none"><select id="toolType"><optgroup label="Utvändigt"><option value="SVJBR">SVJBR — 93°</option><option value="SVVCN">SVVCN — 72,5°</option><option value="SVUBR">SVUBR — 95°</option><option value="SVQBR">SVQBR — 117,5°</option><option value="MGMN">MGMN 300 — Avstick 3 mm</option></optgroup><optgroup label="Invändigt (borrstång i Z-led)"><option value="BSCLCR">S-SCLCR — 95° invändig</option><option value="BSDUCR">S-SDUCR — 93° invändig</option><option value="BSVUBR">S-SVUBR — 93° invändig (35°)</option></optgroup></select></label><label>HÅLLARVINKEL <input id="holderAngle" type="range" min="-90" max="90" value="0" step="1"></label><label id="barRow1" style="display:none">BORRSTÅNG Ø <select id="barD"><option value="3">Ø 3 mm</option><option value="4">Ø 4 mm</option><option value="5">Ø 5 mm</option><option value="6">Ø 6 mm</option><option value="8">Ø 8 mm</option><option value="10">Ø 10 mm</option><option value="12">Ø 12 mm</option><option value="16" selected="">Ø 16 mm</option><option value="20">Ø 20 mm</option><option value="25">Ø 25 mm</option></select></label><label id="barRow2" style="display:none">UTSTICK <select id="barL"><option value="20">20 mm</option><option value="30">30 mm</option><option value="40">40 mm</option><option value="60">60 mm</option><option value="80">80 mm</option><option value="100" selected="">100 mm</option><option value="120">120 mm</option><option value="150">150 mm</option><option value="200">200 mm</option></select></label><div class="toolnote" id="toolTypeRead">SVJBR • hållare 0° • ingrepp 93.0° • max 1000 N</div></section>
+    <section class="card stock dp off" data-p="process"><div class="eyebrow">BEARBETNING</div><label>VARVTAL <span class="toolnote" id="rpmSet">712 varv/min (växellåda)</span></label><label>SKÄRANDE EGG <select id="cutMode"><option value="edge" selected="">Hela eggen</option><option value="tip">Bara spetsen</option></select></label><label>MATERIAL <select id="material"><option value="P" selected="">P — Stål</option><option value="M">M — Rostfritt</option><option value="K">K — Gjutjärn</option><option value="N">N — Aluminium</option><option value="S">S — Superlegering</option></select></label><label>RIKTNING <select id="spinDir"><option value="1" selected="">Mot urs (M04)</option><option value="-1">Med urs (M03)</option></select></label><div class="toolnote" id="cutDataRead">S712 • F0.20 mm/v (170 mm/min) • Ra≈8.3 µm</div></section>
+    <section class="card gear dp off locked" id="gearPanel" data-p="vaxel">
+    <div class="gh"><div class="eyebrow">VÄXELLÅDA • VARVTAL</div><button id="gearToggle" title="Visa/dölj">▾</button></div>
+    <div class="gb">
+      <div class="rpmbig"><strong id="gRpm">712</strong><span>varv/min på chucken</span></div>
+      <div class="vc" id="gVc">Skärhastighet vid Ø40 mm: <b style="color:var(--ink)">89 m/min</b>. Tumregel stål + hårdmetall ≈ 100–200 m/min → 796–1592 varv/min för detta ämne.</div>
+      <div class="knobs">
+        <div class="kb"><button class="knob" id="kC" title="Klicka = nästa läge, högerklick/scroll = föregående" style="--a: 40deg;"><i></i></button><b>C • OMRÅDE</b><span id="kCt">HÖG</span></div>
+        <div class="kb"><button class="knob" id="kB" title="Klicka = nästa läge, högerklick/scroll = föregående" style="--a: -40deg;"><i></i></button><b>B • GROVSTEG</b><span id="kBt">1</span></div>
+        <div class="kb"><button class="knob" id="kA" title="Klicka = nästa läge, högerklick/scroll = föregående" style="--a: 60deg;"><i></i></button><b>A • FINSTEG</b><span id="kAt">3</span></div>
+      </div>
+      <div class="chain" id="gChain">Motor <b>1440</b> → rem ×<b>1,389</b><br>→ A <b>35:35</b> (×1,000)<br>→ B <b>21:59</b> (×0,356)<br>→ C <b>direkt (×1,000)</b><br>= <b>712</b> varv/min</div>
+      <div class="gmsg" id="gMsg"></div>
+      <details open=""><summary>Förklaring av vreden</summary><ul id="gExpl"><li><b>Spindel PÅ/AV (knappen)</b> kopplar in motorn. Spindeln ramper upp till valt varvtal. <b>Växla aldrig med spindeln igång</b> – vreden är låsta tills chucken står still.</li><li><b>Riktning (rutan Riktning)</b> väljer mot urs (M04) eller med urs (M03). Byte sker först när spindeln stannat.</li><li><b>C • Område (bakväxeln)</b>: <b>LÅG</b> kopplar in bakväxeln, två reduktionssteg i serie (≈ 1:7,9) → alla varvtal delas med ca 7,9. Ger lågt varv och högt vridmoment: stora diametrar, gängning, borrning, hårda material. <b>HÖG</b> = direktdrift för små diametrar och finbearbetning.</li><li><b>B • Grovsteg (2 lägen)</b>: väljer ett av två kuggpar (21:59 eller 40:40). Varvet ändras med faktor ≈ 2,8.</li><li><b>A • Finsteg (3 lägen)</b>: väljer ett av tre kuggpar (24:46, 29:41, 35:35). Varje steg ändrar varvet med ≈ ×1,38.</li><li><b>Tillsammans</b> ger C × B × A tolv varvtal i en jämn serie (×1,4 per steg). Tabellen visar vilken kombination som ger vilket varvtal.</li></ul></details>
+      <details><summary>Så fungerar växellådan</summary><p id="gHow">Motorn går med nästan konstant varvtal (här 1440 varv/min) och driver via en rem (utväxling ×1,389) en ingående axel. På splinesade axlar sitter glidande kugghjulsblock. Varje vred flyttar ett block med en växelgaffel så att <i>ett</i> kuggpar går i ingrepp medan de andra släpper; spärrar hindrar att två par kopplas samtidigt. Spindelns varvtal blir: <b>n = motorvarv × rem × (A-paret) × (B-paret) × C</b>. Eftersom kuggen ska glida in i ingrepp ställer man alltid om i stillastående och ibland får man vrida chucken lite för hand. <br><br><i>Obs: kuggtalen här är en egen, realistisk uppsättning – en riktig maskin har sin egen varvtalsplatta.</i></p></details>
+      <details open=""><summary>Varvtalstabell (klicka för att välja)</summary><table class="gtab"><thead><tr><th>#</th><th>varv/min</th><th>C</th><th>B</th><th>A</th></tr></thead><tbody id="gTable"><tr data-c="0" data-b="0" data-a="0"><td>1</td><td>47</td><td>LÅG</td><td>1</td><td>1</td></tr><tr data-c="0" data-b="0" data-a="1"><td>2</td><td>64</td><td>LÅG</td><td>1</td><td>2</td></tr><tr data-c="0" data-b="0" data-a="2"><td>3</td><td>90</td><td>LÅG</td><td>1</td><td>3</td></tr><tr data-c="0" data-b="1" data-a="0"><td>4</td><td>132</td><td>LÅG</td><td>2</td><td>1</td></tr><tr data-c="0" data-b="1" data-a="1"><td>5</td><td>179</td><td>LÅG</td><td>2</td><td>2</td></tr><tr data-c="0" data-b="1" data-a="2"><td>6</td><td>253</td><td>LÅG</td><td>2</td><td>3</td></tr><tr data-c="1" data-b="0" data-a="0"><td>7</td><td>371</td><td>HÖG</td><td>1</td><td>1</td></tr><tr data-c="1" data-b="0" data-a="1"><td>8</td><td>504</td><td>HÖG</td><td>1</td><td>2</td></tr><tr data-c="1" data-b="0" data-a="2" class="cur"><td>9</td><td>712</td><td>HÖG</td><td>1</td><td>3</td></tr><tr data-c="1" data-b="1" data-a="0"><td>10</td><td>1043</td><td>HÖG</td><td>2</td><td>1</td></tr><tr data-c="1" data-b="1" data-a="1"><td>11</td><td>1415</td><td>HÖG</td><td>2</td><td>2</td></tr><tr data-c="1" data-b="1" data-a="2"><td>12</td><td>2000</td><td>HÖG</td><td>2</td><td>3</td></tr></tbody></table></details>
+    </div>
+  </section>
+    <section class="card tsp dp" id="tsPanel" data-p="reitstock">
+    <div class="gh"><div class="eyebrow">REITSTOCK • VERKTYGSLÅDA</div><button id="tsToggle" title="Visa/dölj">▾</button></div>
+    <div class="gb">
+      <div class="tsr"><div><span>SPETS Z mm</span><strong id="tsZ">-5.1</strong></div><div><span>PINOL mm</span><strong id="tsQ">0.0</strong></div><div><span>BORRDJUP mm</span><strong id="tsD">0.0</strong></div></div>
+      <label>REITSTOCK (Z) <input id="tsSlider" type="range" min="0" max="1300" step="1" value="0"></label>
+      <label>PINOL <input id="qSlider" type="range" min="0" max="126" step="0.5" value="0"></label>
+      <div class="trow"><button id="tsLock">🔓 Reitstock olåst</button><button id="tsAuto">▶ Borrmatning (pinol)</button></div>
+      <div class="vc"><kbd>I</kbd> <kbd>K</kbd> reitstock Z− / Z+ (när den är olåst) • <kbd>J</kbd> <kbd>L</kbd> pinol ut / in • <kbd>Shift</kbd> snabbgång utanför material. Pinolen sitter exakt på spindelaxeln (X0, Y0). Låst reitstock + pinolmatning ger borrning. Spindeln måste gå, annars stannar borren mot ämnet.</div>
+      <div class="eyebrow" style="margin-top:10px">VERKTYGSLÅDA — klicka för att montera</div>
+      <div id="tbox"><div class="trw cur" data-id="center"><div><b>Dödgångscentrum 60°</b><br><span>60° spets • stödjer ämnet i ett centrumhål</span></div></div><div class="trw" data-id="cd25_8"><div><b>Dubbhålsborr A 2,5/8</b><br><span>pilot Ø2.5 mm • centrumhål 60° till Ø8 mm • L 24 mm • max 1920 N</span></div></div><div class="trw" data-id="d3"><div><b>Spiralborr Ø3</b><br><span>Ø3 mm • L 30 mm • 118° • max 270 N</span></div></div><div class="trw" data-id="d4"><div><b>Spiralborr Ø4</b><br><span>Ø4 mm • L 32 mm • 118° • max 480 N</span></div></div><div class="trw" data-id="d5"><div><b>Spiralborr Ø5</b><br><span>Ø5 mm • L 40 mm • 118° • max 750 N</span></div></div><div class="trw" data-id="d6"><div><b>Spiralborr Ø6</b><br><span>Ø6 mm • L 48 mm • 118° • max 1080 N</span></div></div><div class="trw" data-id="d8"><div><b>Spiralborr Ø8</b><br><span>Ø8 mm • L 64 mm • 118° • max 1920 N</span></div></div><div class="trw" data-id="d10"><div><b>Spiralborr Ø10</b><br><span>Ø10 mm • L 80 mm • 118° • max 3000 N</span></div></div><div class="trw" data-id="d12"><div><b>Spiralborr Ø12</b><br><span>Ø12 mm • L 96 mm • 118° • max 4320 N</span></div></div><div class="trw" data-id="d16"><div><b>Spiralborr Ø16</b><br><span>Ø16 mm • L 128 mm • 118° • max 7680 N</span></div></div><div class="trw" data-id="d20"><div><b>Spiralborr Ø20</b><br><span>Ø20 mm • L 160 mm • 118° • max 12000 N</span></div></div><div class="trw" data-id="d25"><div><b>Spiralborr Ø25</b><br><span>Ø25 mm • L 200 mm • 118° • max 18750 N</span></div></div></div>
+      <details><summary>＋ Lägg till eget verktyg</summary>
+        <div class="addf">
+          <label class="full"><span>NAMN (valfritt)</span><input id="tbN" type="text" maxlength="40" placeholder="t.ex. Långborr"></label>
+          <label><span>DIAMETER mm</span><input id="tbD" type="number" min="0.5" max="60" step="0.1" value="8.5"></label>
+          <label><span>LÄNGD mm</span><input id="tbL" type="number" min="10" max="300" step="1" value="100"></label>
+          <label><span>SPETSVINKEL °</span><input id="tbP" type="number" min="60" max="170" step="1" value="118"></label>
+          <button id="tbAdd" class="primary full">＋ Lägg till i lådan</button>
+        </div>
+        <div id="tbMsg"></div>
+      </details>
+    </div>
+  </section>
+    <section class="card controls dp off" data-p="hjalp"><h2>Styrning</h2><div class="keygrid"><div><kbd>A</kbd> mot chuck (Z−)</div><div><kbd>D</kbd> från chuck (Z+)</div><div><kbd>W</kbd> inåt mot centrum (X−)</div><div><kbd>S</kbd> utåt från centrum (X+)</div><div><kbd>←</kbd> <kbd>→</kbd> X− / X+</div><div><kbd>↑</kbd> <kbd>↓</kbd> Z− / Z+</div><div><kbd>Q</kbd> <kbd>E</kbd> överslid (längs vinkeln)</div><div><kbd>I</kbd> <kbd>K</kbd> reitstock Z− / Z+</div><div><kbd>J</kbd> <kbd>L</kbd> pinol ut / in</div></div><p class="hint">Alla axlar rör sig med den hastighet som matningsreglaget anger (mm/min = matning × 850), oberoende av varvtalet. Utanför ämnet ger <kbd>Shift</kbd> snabbgång (50 mm/s). Bara den yttersta skärspetsen skär (spetsradie 0,15 mm = 0,3 mm bred skåra). X− går inåt mot centrum, X+ utåt. Skäret tar bort material med eggen; hållaren får inte gå in i material (kollision). Utan spindel kan inget skäras, och spindeln ramper upp och ner. Chuck och käftar är fasta. Skärkraften räknas som kc·snittarea per varv; blir den för stor går skäret sönder (byt med 🔧). Starta matning Z− kör kraftmatning mot chucken (matningsreglagets hastighet) tills du stoppar; X styr du fortfarande för hand, och Z+ stoppar matningen.</p></section>
+    </aside>
+    <div id="center">
+      <header id="topbar">
+        <div class="tb-l">
+          <a class="pill backlink" href="material.html">&larr; Tillbaka till CNC-Grönt kort</a>
+          <div class="eyebrow">VIRTUELL CNC-SVARV • TRAINING MODE</div>
+          <div class="pill"><i class="lamp feedlimit" id="lamp"></i><span id="mode">MATNING Z− • F0.20 mm/v</span></div>
+        </div>
+        <div class="tb-r">
+          <button id="newInsert">🔧 Byt skär</button>
+          <button id="reset">↺ Nytt ämne</button>
+          <button id="sound">🔊 Ljud: PÅ</button>
+        </div>
+      </header>
+      <div id="scene"><div class="vhint">Dra = rotera • scrolla = zooma • <b>●</b> orange lampa = matningsbegränsad</div></div>
+      <footer id="dock">
+        <section class="dpanel dleft">
+          <div class="dro">
+            <div><span>X Ø (X− = inåt)</span><strong id="xRead">38.9</strong></div>
+            <div><span>Z / LÄNGD</span><strong id="zRead">-215.0</strong></div>
+            <div><span>S • VARV/MIN</span><strong id="rpmRead">712</strong></div>
+            <div><span>F • MM/MIN</span><strong id="fRead">170</strong></div>
+          </div>
+          <div class="fd">
+            <span class="lbl">MATNING</span>
+            <input id="feed" type="range" min="0.05" max="0.5" step="0.01" value="0.2" aria-label="Matning, mm per varv">
+            <strong id="feedVal">0,20 mm/v</strong>
+          </div>
+          <div class="fl">
+            <div class="fh"><span>SKÄRKRAFT</span><b><strong id="fcRead" class="">171</strong> N • <em id="fcPct">17 %</em></b></div>
+            <div class="fbar"><i id="fcBar" style="width: 17.0581%; background: var(--cyan);"></i></div>
+          </div>
+          <div class="zr">
+            <span class="lbl">NOLLPUNKT</span>
+            <button id="zeroX" title="Sätt nuvarande X till 0">X = 0</button>
+            <button id="zeroZ" title="Sätt nuvarande Z till 0">Z = 0</button>
+            <button id="zeroXZ" title="Sätt både X och Z till 0">X0 Z0</button>
+            <button id="zeroClr" title="Tillbaka till ämnets framkant / centrum">Återställ</button>
+            <span class="rem" id="removed">14.16 cm³ avverkat</span>
+          </div>
+        </section>
+        <section class="dpanel">
+          <div class="lbl">HANDMATNING</div>
+          <div id="jog">
+            <span></span>
+            <button data-k="s" aria-label="Utåt, X plus (S)">X+</button>
+            <span></span>
+            <button data-k="a" aria-label="Mot chuck, Z minus (A)">Z−</button>
+            <button id="jogRapid" aria-label="Snabbgång (Shift)" class="">SNABB</button>
+            <button data-k="d" aria-label="Från chuck, Z plus (D)">Z+</button>
+            <span></span>
+            <button data-k="w" aria-label="Inåt, X minus (W)">X−</button>
+            <span></span>
+          </div>
+        </section>
+        <section class="dpanel" id="runPanel">
+          <div class="lbl">KÖRNING</div>
+          <div class="runbtns">
+            <button class="primary" id="spindle">⏻ Spindel: PÅ</button>
+            <button id="demo">❚❚ Stoppa matning</button>
+          </div>
+        </section>
+      </footer>
+    </div>
+  </div>
+  <script type="importmap">
+    { "imports": {
+      "three": "../../assets/vendor/three-r160/three.module.min.js",
+      "three/addons/": "../../assets/vendor/three-r160/addons/"
+    } }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const host = document.querySelector('#scene');
+    const vw=()=>host.clientWidth||innerWidth, vh=()=>host.clientHeight||innerHeight;
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x26343a);
+    scene.fog = new THREE.Fog(0x26343a, 90, 650);
+    const camera = new THREE.PerspectiveCamera(43, vw() / vh(), .1, 900);
+    camera.position.set(13, 6.5, -3); camera.lookAt(0, -.5, 0);
+    const renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(vw(), vh()); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; host.appendChild(renderer.domElement);
+    const orbit = new OrbitControls(camera, renderer.domElement); orbit.target.set(0,-.5,0); orbit.enableDamping=true; orbit.dampingFactor=.055; orbit.minDistance=2; orbit.maxDistance=320; orbit.maxPolarAngle=Math.PI*.47;
+    // Svag fyllnad från kameravyn så att detaljer mot kameran inte försvinner i skugga.
+    const cameraFill = new THREE.PointLight(0xeaf4ff, 2.8, 40, 2); camera.add(cameraFill); scene.add(camera);
+    scene.add(new THREE.HemisphereLight(0xd9efff, 0x2d3831, 2.15));
+    const key = new THREE.DirectionalLight(0xfff4df, 3.1); key.position.set(4,11,7); key.castShadow=true; key.shadow.mapSize.set(2048,2048); Object.assign(key.shadow.camera,{left:-16,right:16,top:16,bottom:-16,near:1,far:50}); key.shadow.camera.updateProjectionMatrix(); scene.add(key);
+    const fill = new THREE.DirectionalLight(0xc8e4f2, 1.3); fill.position.set(-8,5,2); scene.add(fill);
+    const rim = new THREE.PointLight(0xc5eaff, 11, 18); rim.position.set(-5,4,-2); scene.add(rim);
+    // Arbetslampa nära ämnet: framhäver den matta råytan och de ljusare svarvade ytorna.
+    const workLight = new THREE.PointLight(0xe8f5ff, 28, 16, 2); workLight.position.set(-3.2,4.2,.8); scene.add(workLight);
+
+    // ---------- Maskinen: manuell dragbänksvarv (stativ, svarvstock, bädd med glidytor, reitstock, spånbehållare) ----------
+    // Lokala koordinater: axeln ligger på y=0 längs z. Chucken sitter vid z≈-4,15, reitstocken i +z, operatören står på −x-sidan.
+    const SC=7.84;                 // maskinens uppskalning: chucken (Ø5,1 i modellen) ska vara Ø400 mm, simens enhet är 10 mm
+    const TZ=-4.05+3.8*SC;         // maskinens z-förskjutning så att chuckens framsida (z=-3,8) möter ämnets början (z=-4,05)
+    const FLOOR=-5.6, WAYTOP=-2.9;  // i maskinens egen skala
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(900,900), new THREE.MeshStandardMaterial({color:0x3a4648, roughness:.86, metalness:.12})); floor.rotation.x=-Math.PI/2; floor.position.y=FLOOR*SC; floor.receiveShadow=true; scene.add(floor);
+    const grid = new THREE.GridHelper(600,60,0x52666c,0x34494f); grid.position.y=FLOOR*SC+.05; scene.add(grid);
+    const lathe = new THREE.Group(); lathe.rotation.y=Math.PI; scene.add(lathe);
+    const machine = new THREE.Group(); machine.scale.setScalar(SC); machine.position.z=TZ; lathe.add(machine);   // allt maskinbyggt hänger här
+    const pm=(c,m=.35,r=.55)=>new THREE.MeshStandardMaterial({color:c,metalness:m,roughness:r});
+    const M={paint:pm(0x8fa9c4,.3,.5),dark:pm(0x22364f,.35,.6),steel:pm(0xaab4bc,.85,.28),black:pm(0x14181b,.5,.45),panel:pm(0x20282d,.4,.5),cream:pm(0xe6dfc4,.1,.8),yellow:pm(0xf2a516,.2,.55),blue:pm(0x2f6a96,.25,.6),tray:pm(0x3b4247,.7,.45),screen:new THREE.MeshStandardMaterial({color:0x061a14,emissive:0x1fd49a,emissiveIntensity:.8,roughness:.4})};
+    const put=(g,parent)=>{g.castShadow=true;g.receiveShadow=true;(parent||machine).add(g);return g;};
+    const box=(w,h,d,x,y,z,m,parent)=>{const g=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);g.position.set(x,y,z);return put(g,parent);};
+    const cyl=(r,len,ax,x,y,z,m,parent)=>{const g=new THREE.Mesh(new THREE.CylinderGeometry(r,r,len,28),m);if(ax==='x')g.rotation.z=Math.PI/2;if(ax==='z')g.rotation.x=Math.PI/2;g.position.set(x,y,z);return put(g,parent);};
+    const ball=(r,x,y,z,m,parent)=>{const g=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),m);g.position.set(x,y,z);return put(g,parent);};
+    function wheel(parent,x,y,z,R,axis,m1,m2){ const g=new THREE.Group(); g.position.set(x,y,z); if(axis==='x')g.rotation.y=Math.PI/2; (parent||machine).add(g);
+      put(new THREE.Mesh(new THREE.TorusGeometry(R,R*.09,10,36),m1),g);
+      for(let k=0;k<3;k++){const sp=new THREE.Mesh(new THREE.BoxGeometry(R*1.9,R*.1,R*.1),m1);sp.rotation.z=k*Math.PI/3;put(sp,g);}
+      const hub=new THREE.Mesh(new THREE.CylinderGeometry(R*.2,R*.2,R*.34,18),m2);hub.rotation.x=Math.PI/2;put(hub,g);
+      const hd=new THREE.Mesh(new THREE.CylinderGeometry(R*.07,R*.07,R*.5,10),m2);hd.rotation.x=Math.PI/2;hd.position.set(R*.85,0,R*.3);put(hd,g);
+      const kb=new THREE.Mesh(new THREE.SphereGeometry(R*.13,12,10),m2);kb.position.set(R*.85,0,R*.58);put(kb,g); return g; }
+    // stativ, bädd, glidytor, spånbehållare, ledskruv
+    box(6,2.55,4,0,-4.325,-6.7,M.dark);                       // vänster stativ under svarvstocken
+    box(3.2,2.55,1.8,0,-4.325,12.6,M.dark);                   // höger ben (flyttat bakåt med bäddens förlängning)
+    box(4.4,.5,18.3,0,-3.3,4.45,M.paint);                     // bädd (förlängd bakåt så att reitstockens fot får plats)
+    box(.9,.15,18.3,1.1,-2.975,4.45,M.steel);                 // bakre glidyta
+    box(.9,.15,18.3,-.4,-2.975,4.45,M.steel);                 // främre glidyta
+    box(.12,3.2,18.3,3.4,-1.45,4.45,M.blue);                  // stänkskydd bakom
+    box(7.6,.12,14.9,-1.2,-3.81,2.75,M.tray);                 // spånbehållare (botten)
+    box(.12,.45,14.9,-5.0,-3.55,2.75,M.tray); box(.12,.45,14.9,2.6,-3.55,2.75,M.tray);
+    box(7.6,.45,.12,-1.2,-3.55,-4.7,M.tray); box(7.6,.45,.12,-1.2,-3.55,10.2,M.tray);
+    cyl(.13,15.4,'z',-2.55,-3.2,3.65,M.steel); cyl(.09,15.4,'z',-2.55,-3.55,3.65,M.steel);   // ledskruv + matarstång
+    box(.5,.8,.4,-2.55,-3.35,-4.5,M.dark); box(.5,.8,.4,-2.55,-3.35,11.6,M.dark);
+    // svarvstock
+    box(6.2,6.05,4,0,-.025,-6.7,M.paint);                     // huvudet (x ±3,1, z −8,7…−4,7)
+    cyl(1.35,.5,'z',0,0,-4.45,M.steel);                       // spindelnos
+    box(5.0,.12,3.0,0,3.04,-6.7,M.black);                     // lock/öppning på toppen
+    box(.1,3.2,3.4,-3.14,-.4,-6.7,M.panel);                   // manöverplatta
+    box(.05,.9,1.5,-3.21,.5,-7.4,M.cream); box(.05,.7,.9,-3.21,.4,-5.6,M.yellow); box(.05,.55,2.4,-3.21,-1.5,-6.7,M.cream);
+    [[-7.6,-.6],[-6.6,-.6],[-5.4,-.6]].forEach(([z,y])=>{cyl(.3,.14,'x',-3.22,y,z,M.black); cyl(.1,.16,'x',-3.24,y,z,M.steel);});
+    cyl(.08,.9,'x',-3.5,1.5,-5.2,M.steel); ball(.17,-3.95,1.5,-5.2,M.black);                  // spakar
+    cyl(.07,.8,'x',-3.5,.9,-7.4,M.steel); ball(.15,-3.9,.9,-7.4,M.black);
+    wheel(null,-3.3,-2.1,-5.6,.42,'x',M.steel,M.black);
+    // gul arm med display bakom maskinen
+    box(.45,3.4,.45,2.6,4.7,-5.2,M.yellow); box(.4,.4,2.6,2.6,6.3,-3.9,M.yellow);
+    box(1.4,1.0,.5,2.6,5.55,-2.5,M.panel); box(1.0,.6,.05,2.6,5.62,-2.24,M.screen);
+    // reitstock (stillastående, utanför verktygets rörelseområde)
+    // Reitstocken: kropp + fot glider i Z (TSG), pinolen glider ut ur kroppen (QG). Pinolens axel ligger exakt på spindelaxeln (x=0, y=0).
+    const ts={off:0,ext:0,locked:false,auto:false,tool:'center',broken:false,centerHole:false};   // off = reitstockens läge (maskinenheter, ≤0 = mot chucken), ext = pinolens utskjut (maskinenheter)
+    const TSG=new THREE.Group(); machine.add(TSG);
+    box(3.4,.5,2.4,0,-2.65,12.4,M.dark,TSG);                  // fot på glidytorna (z 11,2 … 13,6): ligger bakom hylsan, hylsan hänger ut framför
+    cyl(.45,2.2,'z',0,0,11.2,M.paint,TSG);                   // pinolhylsa: smal rund cylinder runt pinolen (z 10,1 … 12,3; framkanten styr kollisionen mot slidens verktyg)
+    cyl(.5,.12,'z',0,0,10.16,M.dark,TSG);                      // krage vid hylsans framkant
+    cyl(.36,.3,'z',0,0,12.45,M.dark,TSG);                     // bakre lock bakom hylsan
+    { const sh=new THREE.Shape(); sh.moveTo(-.38,-.3); sh.lineTo(.38,-.3); sh.lineTo(.38,-1.0); sh.quadraticCurveTo(.43,-2.0,1.7,-2.4); sh.lineTo(-1.7,-2.4); sh.quadraticCurveTo(-.43,-2.0,-.38,-1.0); sh.closePath();   // smal hals som svänger ut mot foten (sedd längs axeln)
+      const pg=new THREE.ExtrudeGeometry(sh,{depth:1.55,bevelEnabled:false,curveSegments:16}); pg.translate(0,0,10.75);
+      { const ps=pg.attributes.position; for(let i=0;i<ps.count;i++){ const t=Math.min(1,Math.max(0,(-.3-ps.getY(i))/2.1)), front=ps.getZ(i)<11.5; ps.setZ(i,ps.getZ(i)+(front?.65*t:1.1*Math.pow(t,1.5))); } ps.needsUpdate=true; pg.computeVertexNormals(); }   // kolonnen lutar upp och fram mot chucken: foten sitter längre bak än hylsan, baksidan svänger ut mot foten
+      put(new THREE.Mesh(pg,M.paint),TSG); }   // sockel under hylsan (z 11,1 … 12,3): hylsan hänger ut ca 1 enhet framför
+    const QG=new THREE.Group(); TSG.add(QG);                   // pinol + verktyg
+    cyl(.319,3.0,'z',0,0,11.1,M.steel,QG);                     // pinol (z 9,6 … 12,6)
+    for(let k=0;k<6;k++)cyl(.33,.03,'z',0,0,9.95+k*.35,M.dark,QG);   // skalstreck
+    const TTG=new THREE.Group(); QG.add(TTG);                  // aktuellt verktyg (byggs om vid verktygsbyte)
+    const tsWheel=wheel(TSG,0,0,12.8,.55,'z',M.black,M.steel);  // handratt på axeln
+    const lockArm=new THREE.Group(); lockArm.position.set(.43,-1.0,11.6); TSG.add(lockArm); box(.14,.14,1.0,0,0,.5,M.steel,lockArm); ball(.16,0,0,1.0,M.black,lockArm);   // låsspak                       // fot på glidytorna
+    /* kroppen ligger nu i reitstockgruppen */                    // kropp
+    /* pinolen ligger nu i reitstockgruppen */                         // pinol
+    /* centrum/borr byggs i verktygslådan */ // dödgång/spets (pekar mot −z)
+    /* handratten ligger nu i reitstockgruppen */            // handratt
+    /* låsspaken ligger nu i reitstockgruppen */  // låsspak
+    const chuck = new THREE.Group(); chuck.position.z=-4.15; machine.add(chuck);
+    const chuckBody = new THREE.Mesh(new THREE.CylinderGeometry(2.55,2.55,.7,48),new THREE.MeshStandardMaterial({color:0x243e47,metalness:.88,roughness:.22})); chuckBody.rotation.x=Math.PI/2; chuck.add(chuckBody);
+    const chuckJaws=[]; let chuckRbody=2.55*SC, chuckRjaw=2.7*SC; const CH_FRONT=SC*-3.53+TZ, CH_BACK=SC*-4.6+TZ, CH_JAW_BACK=SC*-3.8+TZ; // i simens enheter // käftarnas framkant, chuckens bakkant, käftarnas bakkant
+    for(let i=0;i<3;i++){ const jaw=new THREE.Mesh(new THREE.BoxGeometry(1.0,.6,1.02),new THREE.MeshStandardMaterial({color:0x708994,metalness:.9,roughness:.2})); chuck.add(jaw); chuckJaws.push([jaw,i*Math.PI*2/3]); }
+    function setChuck(){ chuckRjaw=initialR+1.0*SC; chuckRbody=2.55*SC;
+      chuckJaws.forEach(([jaw,a])=>{const rr=initialR/SC+.5; jaw.position.set(Math.cos(a)*rr,Math.sin(a)*rr,.1); jaw.rotation.z=a;}); }
+    // Axelpilar: X− går inåt mot centrum, Z− mot chucken
+    function labelSprite(text,color){ const cv=document.createElement('canvas');cv.width=cv.height=128;const g=cv.getContext('2d');g.font='700 64px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillStyle=color;g.strokeStyle='#061017';g.lineWidth=8;g.strokeText(text,64,64);g.fillText(text,64,64);
+      const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true,depthTest:false}));sp.scale.set(.8,.8,1);sp.renderOrder=9;return sp; }
+    function axisArrow(o,d,len,hex,endLabel,startLabel){ const col='#'+hex.toString(16).padStart(6,'0');
+      lathe.add(new THREE.ArrowHelper(new THREE.Vector3(d[0],d[1],d[2]),new THREE.Vector3(o[0],o[1],o[2]),len,hex,.35,.22));
+      const e=labelSprite(endLabel,col);e.position.set(o[0]+d[0]*(len+.55),o[1]+d[1]*(len+.55),o[2]+d[2]*(len+.55));lathe.add(e);
+      if(startLabel){const b=labelSprite(startLabel,col);b.position.set(o[0]-d[0]*.55,o[1]-d[1]*.55,o[2]-d[2]*.55);lathe.add(b);} }
+    axisArrow([-3.4,-1.8,5.4],[1,0,0],2.4,0xff6b6b,'X−','X+');
+    axisArrow([-3.4,-1.8,5.4],[0,0,-1],2.4,0x4aa8ff,'Z−',null);
+
+    const stockGroup = new THREE.Group(); lathe.add(stockGroup);
+    // Råämne: mörkare, matt valsad yta. Nya snittytor får i stället den ljusare svarvade finishen.
+    const stockMat = new THREE.MeshStandardMaterial({color:0x545c61,metalness:.58,roughness:.78,emissive:0x000000,emissiveIntensity:0,transparent:false,opacity:1,depthTest:true,depthWrite:true,side:THREE.DoubleSide});
+    const machinedMat = new THREE.MeshStandardMaterial({color:0xf8fcfd,metalness:.96,roughness:.13,emissive:0x5b686d,emissiveIntensity:.28,transparent:false,opacity:1,depthTest:true,depthWrite:true,side:THREE.DoubleSide});
+    // ---------- Ämnet: skivor i Z × ringar i X (belagt/tomt rutnät, cellstorlek 0,05 mm) ----------
+    const DX=.005, SEG=72, CH=40, NOSE=.015, stockStart=-4.05; // 1 enhet = 10 mm → cell 0,05 mm, spetsradie 0,15 mm (0,3 mm bred)
+    let stockLength=8.1, initialR=2, nz=0, nr=0, solid=null, cnt=null, chunkMeshes=[], nChunks=0, fallingPart=null, fallVelocity=0;
+    const COS=[],SIN=[];for(let k=0;k<=SEG;k++){const a=k/SEG*Math.PI*2;COS.push(Math.cos(a));SIN.push(Math.sin(a));}
+    const S=(i,j)=>(i<0||i>=nz||j<0||j>=nr)?0:solid[i*nr+j];
+    const zOf=i=>stockStart+i*DX;
+    function clearFallenPart(){ if(fallingPart){ fallingPart.traverse(item=>{if(item.isMesh)item.geometry.dispose();});lathe.remove(fallingPart);fallingPart=null;} fallVelocity=0; }
+    // Bygger ytan (roterade band och ringskivor) för skivorna [i0,i1). withTop = ta även med gränsen längst ut vid i1.
+    function buildChunkGeom(i0,i1,withTop){
+      const P=[],N=[],I=[],groups=[];let vc=0;
+      function addFaces(faces,materialIndex){ const start=I.length; I.push(...faces); groups.push({start,count:faces.length,materialIndex}); }
+      function band(r,z0,z1,out,raw){
+        const faces=[];
+        for(let k=0;k<=SEG;k++){const c=COS[k],s=SIN[k],nx=out?c:-c,ny=out?s:-s;P.push(r*c,r*s,z0,r*c,r*s,z1);N.push(nx,ny,0,nx,ny,0);}
+        for(let k=0;k<SEG;k++){const a=vc+2*k,b=a+1,a1=a+2,b1=a+3;if(out)faces.push(a,a1,b,b,a1,b1);else faces.push(a,b,a1,b,b1,a1);}
+        addFaces(faces,raw?0:1);
+        vc+=2*(SEG+1);
+      }
+      function annulus(z,rA,rB,plus,raw){
+        const faces=[];
+        const nzv=plus?1:-1;
+        for(let k=0;k<=SEG;k++){const c=COS[k],s=SIN[k];P.push(rA*c,rA*s,z,rB*c,rB*s,z);N.push(0,0,nzv,0,0,nzv);}
+        for(let k=0;k<SEG;k++){const a=vc+2*k,o=a+1,a1=a+2,o1=a+3;if(plus)faces.push(a,o,a1,o,o1,a1);else faces.push(a,a1,o,o,a1,o1);}
+        addFaces(faces,raw?0:1);
+        vc+=2*(SEG+1);
+      }
+      // cylindriska band (gräns mellan cell j-1 och j i samma skiva)
+      for(let j=1;j<=nr;j++){
+        let run=0,start=0;
+        for(let i=i0;i<=i1;i++){
+          let o=0;
+          if(i<i1){const a=S(i,j-1),b=S(i,j);o=(a&&!b)?1:(!a&&b)?-1:0;}
+          if(o!==run){ if(run!==0)band(j*DX,zOf(start),zOf(i),run===1,j===nr); run=o;start=i; }
+        }
+      }
+      // plana ringytor (gräns mellan skiva b-1 och b)
+      const bEnd=withTop?i1:i1-1;
+      for(let b=i0;b<=bEnd;b++){
+        let run=0,start=0;
+        for(let j=0;j<=nr;j++){
+          let o=0;
+          if(j<nr){const a=S(b-1,j),c=S(b,j);o=(a&&!c)?1:(!a&&c)?-1:0;}
+          if(o!==run){ if(run!==0)annulus(zOf(b),start*DX,j*DX,run===1,b===0||b===nz); run=o;start=j; }
+        }
+      }
+      if(!I.length)return null;
+      const g=new THREE.BufferGeometry();
+      g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(N,3));g.setIndex(I); groups.forEach(x=>g.addGroup(x.start,x.count,x.materialIndex));
+      return g;
+    }
+    function rebuildChunk(c){ const m=chunkMeshes[c],i0=c*CH,i1=Math.min(nz,i0+CH),g=buildChunkGeom(i0,i1,i1===nz);
+      m.geometry.dispose(); if(g){m.geometry=g;m.visible=true;}else{m.geometry=new THREE.BufferGeometry();m.visible=false;} }
+    function resetStock(){ clearFallenPart();
+      chunkMeshes.forEach(m=>{stockGroup.remove(m);m.geometry.dispose();});chunkMeshes=[];
+      nz=Math.round(stockLength/DX);nr=Math.round(initialR/DX);solid=new Uint8Array(nz*nr).fill(1);cnt=new Int32Array(nz).fill(nr);nChunks=Math.ceil(nz/CH);
+      for(let c=0;c<nChunks;c++){const m=new THREE.Mesh(new THREE.BufferGeometry(),[stockMat,machinedMat]);m.castShadow=true;m.receiveShadow=true;m.frustumCulled=false;chunkMeshes.push(m);stockGroup.add(m);rebuildChunk(c);}
+      document.querySelector('#removed').textContent='0.0 cm³ avverkat'; setChuck(); }
+    function anySolidAbove(i0){ for(let i=i0+1;i<nz;i++)if(cnt[i]>0)return true; return false; }
+    function detachFrom(iCut){ // allt på +Z-sidan om en helt tom skiva lossnar från chucken
+      fallingPart=new THREE.Group();fallingPart.position.z=.07;
+      for(let c=Math.floor((iCut+1)/CH);c<nChunks;c++){const i0=Math.max(c*CH,iCut+1),i1=Math.min(nz,c*CH+CH),g=buildChunkGeom(i0,i1,i1===nz);
+        if(g){const m=new THREE.Mesh(g,[stockMat,machinedMat]);m.castShadow=true;m.receiveShadow=true;fallingPart.add(m);}}
+      lathe.add(fallingPart);fallVelocity=.35;
+      for(let i=iCut+1;i<nz;i++){solid.fill(0,i*nr,(i+1)*nr);cnt[i]=0;}
+      for(let c=Math.floor(iCut/CH);c<nChunks;c++)rebuildChunk(c);
+      document.querySelector('#mode').textContent='AVSTICKNING • DETALJ FALLER'; }
+    resetStock();
+
+    // ---------- Verktyg: hållare + skär sedda uppifrån (plan i X–Z), spetsen är origo ----------
+    // Lokala koordinater: -X = utåt (bort från centrum, mot skaftet), +Z = bort från chucken. Matning mot chuck = -Z.
+    const carriage = new THREE.Group(); lathe.add(carriage);
+    const tool = new THREE.Group(); carriage.add(tool);          // origo = skärspetsen
+    // sadel, planslid och sidoslid i maskinens skala (följer verktygets Z och X)
+    const mCarriage=new THREE.Group(); machine.add(mCarriage);
+    box(5.0,.3,3.8,-.4,-2.75,.9,M.paint,mCarriage);               // sadel
+    box(.55,1.2,3.0,-2.95,-3.2,.9,M.paint,mCarriage);             // förkläde framför bädden
+    wheel(mCarriage,-3.45,-3.25,.3,.5,'x',M.steel,M.black);       // längsmatningsratt
+    cyl(.07,.7,'x',-3.4,-3.55,1.9,M.steel,mCarriage); ball(.14,-3.8,-3.55,1.9,M.black,mCarriage);
+    box(5.6,.3,2.4,-2.0,-2.45,.5,M.paint,mCarriage);              // fast del av planslidens styrning
+    const crossSlide=new THREE.Group(); mCarriage.add(crossSlide);
+    box(3.6,.35,2.3,-1.9,-2.125,.5,M.paint,crossSlide);          // planslid (rörlig del)
+    box(2.0,.45,1.9,-1.1,-1.725,.5,M.paint,crossSlide);          // sidoslid
+    cyl(.32,.45,'x',-3.95,-2.125,.5,M.black,crossSlide); cyl(.1,.5,'x',-4.2,-2.125,.5,M.steel,crossSlide); ball(.13,-4.4,-2.125,.5,M.black,crossSlide);
+    // Fästet: block + rund tapp med hålring (fast på sidoslidens ovansida) och en röd C-platta som läggs över tappen
+    // och skruvas fast med två skruvar i hålringens hål (16 hål = 22,5° steg). Plattan bär verktygshållaren.
+    const RG=.45, BCX=-1.1, BCZ=.5, PXC=-.9, PLT_BOT=-.30, PLT_TOP=-.0077; let mT=[0,0];
+    const plateMat=new THREE.MeshStandardMaterial({color:0xc4262e,metalness:.35,roughness:.42,side:THREE.DoubleSide});
+    const mBase=new THREE.Group(); mBase.position.set(BCX,0,BCZ); crossSlide.add(mBase);
+    const BLOCK_TOP=-.62, CMIN=-.3, CMAX=.9; let D0=[PXC,0], comp=0, swivG=null;   // comp = överslidens läge (maskinenheter) längs sin egen riktning
+    box(3.2*RG,BLOCK_TOP+1.5,3.2*RG,0,(-1.5+BLOCK_TOP)/2,0,M.paint,mBase);     // fast underdel (sitter på sidosliden)
+    const mRed=new THREE.MeshStandardMaterial({color:0xe03030,emissive:0x601010,roughness:.5});
+    for(let k=0;k<72;k++){ const a=k*Math.PI/36, major=k%3===0, len=major?.09:.05, r=1.32*RG+len/2;   // gradskiva: streck var 5°, långa var 15°
+      const t=box(k===0?.03:.012,.006,len,r*Math.sin(a),BLOCK_TOP+.003,r*Math.cos(a),mRed,mBase); t.rotation.y=a; }
+    const mPost=new THREE.Group(); crossSlide.add(mPost);          // C-platta + hållare (vrids kring tappen med hålstegen)
+    const toolBody = new THREE.Group(); tool.add(toolBody);
+    const holderMat=new THREE.MeshStandardMaterial({color:0x2b3236,metalness:.5,roughness:.5,side:THREE.DoubleSide});
+    const screwMat=new THREE.MeshStandardMaterial({color:0x1b1f21,metalness:.85,roughness:.24});
+    const postMat=new THREE.MeshStandardMaterial({color:0x8d99a3,metalness:.6,roughness:.4});
+    const barMat=new THREE.MeshStandardMaterial({color:0xaeb7bd,metalness:.85,roughness:.3,side:THREE.DoubleSide}), clampMat=new THREE.MeshStandardMaterial({color:0x2b3236,metalness:.55,roughness:.45});
+
+    function prism(pts,y0,y1,mat){ // pts: [x,z]; höjd y0..y1
+      const s=new THREE.Shape(pts.map(([x,z])=>new THREE.Vector2(x,-z)));
+      const g=new THREE.ExtrudeGeometry(s,{depth:y1-y0,bevelEnabled:false});
+      g.rotateX(-Math.PI/2); g.translate(0,y0,0);
+      const m=new THREE.Mesh(g,mat); m.castShadow=true; return m;
+    }
+    // Konvex polygon minus konvex polygon (H utan I) som en lista av konvexa bitar: används för hållarens fickkanter runt skäret
+    function clipHalf(poly,A,B,keepLeft){ const f=p=>(B[0]-A[0])*(p[1]-A[1])-(B[1]-A[1])*(p[0]-A[0]), sg=keepLeft?1:-1, out=[];
+      for(let k=0;k<poly.length;k++){ const P=poly[k],Q=poly[(k+1)%poly.length], fp=f(P)*sg, fq=f(Q)*sg;
+        if(fp>=0)out.push(P);
+        if((fp>=0)!==(fq>=0)){ const t=fp/(fp-fq); out.push([P[0]+(Q[0]-P[0])*t,P[1]+(Q[1]-P[1])*t]); } }
+      return out; }
+    function areaPoly(p){ let a=0; for(let i=0;i<p.length;i++){ const q=p[(i+1)%p.length]; a+=p[i][0]*q[1]-q[0]*p[i][1]; } return a/2; }
+    function diffConvex(H,I){ const inside=areaPoly(I)>=0, out=[]; let rest=H.slice();
+      for(let k=0;k<I.length&&rest.length>2;k++){ const A=I[k],B=I[(k+1)%I.length], o=clipHalf(rest,A,B,!inside);
+        if(o.length>2&&Math.abs(areaPoly(o))>1e-5)out.push(o);
+        rest=clipHalf(rest,A,B,inside); }
+      return out; }
+    function hull(P){
+      P=P.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+      const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
+      const lo=[];for(const p of P){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p);}
+      const up=[];for(const p of P.slice().reverse()){while(up.length>=2&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p);}
+      up.pop();lo.pop();return lo.concat(up);
+    }
+    // k = ingreppsvinkel (lead angle) enligt bilden, zL = hållarens vänstra kant relativt spetsen, W = skaftbredd
+    let toolBroken=false, toolRear=2.6, noseSide=1;   // toolRear = hur långt bakom spetsen (Z+) verktyget + fästet når; noseSide = åt vilket håll nosradiens centrum ligger (1 = utåt, −1 = inåt)
+    const toolSpecs={ // Fmax = skärkraft (N) som 35°-skäret tål innan det går sönder
+      SVJBR:{k:93,  color:0xd6aa42, zL:0,  Fmax:1000},
+      SVVCN:{k:72.5,color:0xb9bfc1, zL:-1, Fmax:900},
+      SVUBR:{k:95,  color:0xc79aa8, zL:0,  Fmax:1000},
+      SVQBR:{k:117.5,color:0xd6aa42, zL:0, Fmax:900},
+      MGMN:{k:90,color:0xcfd6d9, zL:0, Fmax:1300, part:true, W:.3},
+      BSCLCR:{k:95,eps:80,color:0xd6aa42,zL:0,F0:1400,bore:true},   // invändigt: stång i Z-led, 80° C-skär, ingreppsvinkel 95°
+      BSDUCR:{k:93,eps:55,color:0xb9bfc1,zL:0,F0:1200,bore:true},   // 55° D-skär, 93°
+      BSVUBR:{k:93,eps:35,color:0xc79aa8,zL:0,F0:1000,bore:true}    // 35° V-skär, 93°   // avstickningsstål: rak 3 mm bred egg, 29 mm utstick
+    };
+    const toolType=document.querySelector('#toolType'),holderAngle=document.querySelector('#holderAngle'),toolTypeRead=document.querySelector('#toolTypeRead');
+    const barD=document.querySelector('#barD'), barL=document.querySelector('#barL');
+    function showBarRows(){ const b=!!toolSpecs[toolType.value].bore; document.querySelector('#barRow1').style.display=b?'':'none'; document.querySelector('#barRow2').style.display=b?'':'none'; }
+    function curFmax(){ const sp=toolSpecs[toolType.value]; if(!sp.bore)return sp.Fmax; const D=Number(barD.value),L=Number(barL.value); return Math.max(40,Math.round(sp.F0*(D/16)**2*Math.min(1,4*D/L))); }   // stången böjer: tunn/lång stång tål mindre
+    // ---- Kollisionsmodell + skärgeometri. Origo = nosradiens innersta punkt i X; nosens centrum ligger NOSE utåt i X, Z=0. ----
+    const TIPZ=.035; let toolTheta=0, holderSamples=new Float32Array(0), insSamples=new Float32Array(0), noseSamples=new Float32Array(0), insLocal=[[0,0],[0,0],[0,0],[0,0]];
+    function pointInPoly(pts,x,z){ let ins=false; for(let a=0,b=pts.length-1;a<pts.length;b=a++){const [xa,za]=pts[a],[xb,zb]=pts[b]; if((za>z)!==(zb>z)&&x<(xb-xa)*(z-za)/(zb-za)+xa)ins=!ins;} return ins; }
+    function distPoly(pts,x,z){ if(pointInPoly(pts,x,z))return 0; let d=1e9; for(let k=0;k<pts.length;k++){const A=pts[k],B=pts[(k+1)%pts.length],dx=B[0]-A[0],dz=B[1]-A[1],t=Math.max(0,Math.min(1,((x-A[0])*dx+(z-A[1])*dz)/(dx*dx+dz*dz||1)));d=Math.min(d,Math.hypot(x-A[0]-t*dx,z-A[1]-t*dz));} return d; }
+    function roundPoly(pts,r,m){ // rundar alla hörn (konvext polygon) med radie r
+      const out=[],cent=[],n=pts.length;
+      for(let k=0;k<n;k++){ const V=pts[k],A=pts[(k+n-1)%n],B=pts[(k+1)%n];
+        let ux=A[0]-V[0],uz=A[1]-V[1],vx=B[0]-V[0],vz=B[1]-V[1]; const lu=Math.hypot(ux,uz),lv=Math.hypot(vx,vz); ux/=lu;uz/=lu;vx/=lv;vz/=lv;
+        const th=Math.acos(Math.max(-1,Math.min(1,ux*vx+uz*vz))); let bx=ux+vx,bz=uz+vz; const lb=Math.hypot(bx,bz); bx/=lb;bz/=lb;
+        const d=r/Math.sin(th/2), t=r/Math.tan(th/2), C=[V[0]+bx*d,V[1]+bz*d], T1=[V[0]+ux*t,V[1]+uz*t], T2=[V[0]+vx*t,V[1]+vz*t];
+        const a1=Math.atan2(T1[1]-C[1],T1[0]-C[0]); let dl=Math.atan2(T2[1]-C[1],T2[0]-C[0])-a1; while(dl>Math.PI)dl-=2*Math.PI; while(dl<-Math.PI)dl+=2*Math.PI;
+        for(let q=0;q<=m;q++){const a=a1+dl*q/m;out.push([C[0]+r*Math.cos(a),C[1]+r*Math.sin(a)]);} cent.push(C); }
+      return {poly:out,cent}; }
+    function buildToolSamples(headPts,insPts,extraH){
+      insLocal=insPts; const H=[],I=[],T=[],step=.03;
+      const bb=pts=>{let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;pts.forEach(([x,z])=>{x0=Math.min(x0,x);x1=Math.max(x1,x);z0=Math.min(z0,z);z1=Math.max(z1,z);});return [x0,x1,z0,z1];};
+      let [x0,x1,z0,z1]=headPts?bb(headPts):[0,-1,0,-1];
+      for(let x=x0;x<=x1;x+=(x<-6?.1:step))for(let z=z0;z<=z1;z+=(x<-6?.1:step))if(pointInPoly(headPts,x,z)){ const near=distPoly(insPts,x,z)<.06; if(near)continue; for(const y of [-.6,-.33,-.1])H.push(x,y,z); }
+      const addI=(x,z,ys)=>{ const tip=x*x+z*z<TIPZ*TIPZ; for(const y of ys)(tip?T:I).push(x,y,z); };
+      [x0,x1,z0,z1]=bb(insPts); for(let x=x0;x<=x1;x+=step/2)for(let z=z0;z<=z1;z+=step/2)if(pointInPoly(insPts,x,z))addI(x,z,[-.04,.04]);
+      for(let k=0;k<insPts.length;k++){const A=insPts[k],B=insPts[(k+1)%insPts.length],L=Math.hypot(B[0]-A[0],B[1]-A[1]),n=Math.max(1,Math.ceil(L/.008));for(let m=0;m<=n;m++){const t=m/n;addI(A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t,[-.04,0,.04]);}}
+      holderSamples=new Float32Array(extraH?H.concat(extraH):H); insSamples=new Float32Array(I); noseSamples=new Float32Array(T);
+    }
+    // Kollisionspunkter för borrstången (cylinder längs +Z; huvudet längst fram är avfasat till halv cylinder under skärets plan)
+    function boreSamples(Rb,xc,Hd,Lt,ins){ const out=[], n=Math.max(2,Math.ceil(Rb/.25)), m=Math.max(16,Math.ceil(2*Math.PI*Rb/.12));
+      for(let z=0;z<=Lt;z+=.1){ const half=z<Hd;
+        for(let a=-n;a<=n;a++)for(let b=-n;b<=n;b++){ const x=a/n*Rb,y=b/n*Rb; if(x*x+y*y>Rb*Rb)continue; if(half&&y>-.06)continue; if(distPoly(ins,xc+x,z)<.06)continue; out.push(xc+x,y,z); }
+        for(let k=0;k<m;k++){ const t=2*Math.PI*k/m,x=Rb*Math.cos(t),y=Rb*Math.sin(t); if(half&&y>-.06)continue; if(distPoly(ins,xc+x,z)<.06)continue; out.push(xc+x,y,z); } }
+      return out; }
+    function setToolStyle(){
+      const spec=toolSpecs[toolType.value],angle=Number(holderAngle.value);
+      const bore=!!spec.bore, barDmm=Number(barD.value), barLmm=Number(barL.value), Rb=barDmm/20, Lov=barLmm/10, Lt=Lov+4.2, xc=.08+Rb, BE=Math.min(.9,Math.max(.25,Rb*1.1)), Hd=BE*1.1+.3;   // borrstång: radie, utstick, total längd, stångens axel (spetsen sticker .8 mm utanför), skärstorlek, huvudlängd
+      noseSide=bore?-1:1; toolRear=bore?Lt+5:2.6;
+      toolBody.children.forEach(c=>{c.geometry?.dispose();c.material!==holderMat&&c.material!==screwMat&&c.material!==postMat&&c.material!==barMat&&c.material!==clampMat&&c.material?.dispose();}); toolBody.clear();
+      const E=bore?BE:.9, phiL=THREE.MathUtils.degToRad(spec.k-90), phiT=phiL+THREE.MathUtils.degToRad(35); // 35° V-skär
+      let P0=[0,0], P1=[-E*Math.cos(phiL),E*Math.sin(phiL)], P3=[-E*Math.cos(phiT),E*Math.sin(phiT)], P2=[P1[0]+P3[0],P1[1]+P3[1]];
+      if(spec.part){ P0=[0,0]; P1=[-1,0]; P2=[-1,spec.W]; P3=[0,spec.W]; }
+      if(bore){ const ph=THREE.MathUtils.degToRad(spec.k-90), ep=THREE.MathUtils.degToRad(spec.eps); P1=[E*Math.sin(ph),E*Math.cos(ph)]; P3=[E*Math.sin(ph+ep),E*Math.cos(ph+ep)]; P2=[P1[0]+P3[0],P1[1]+P3[1]]; }   // invändigt: skäret pekar utåt (−X), stången går bakåt (+Z), spetsen är ytterst   // avstick: rektangulär platta, egg vinkelrät mot X
+      const RR=roundPoly([P0,P1,P2,P3],NOSE,8), C0=RR.cent[0], sx=(bore?NOSE:-NOSE)-C0[0], sz=-C0[1], sh=p=>[p[0]+sx,p[1]+sz];
+      const ins=RR.poly.map(sh);
+      const W=2, zL=spec.zL, zR=zL+W;
+      let headPts=null, extraH=null;
+      if(!bore){
+        headPts=(spec.part?[[-14,zL],[-14,zR],[-2.9,zR],[-2.9,.28],[-.9,.28],[-.9,zL]]:hull([[-14,zL],[-14,zR],[-1.9,zL],[-1.9,zR],...RR.poly])).map(sh);   // avstick: skaft + smalt blad, bladets och skaftets chucksida ligger i linje (kan arbeta nära chucken)
+        toolBody.add(prism(headPts,-.62,-.06,holderMat));
+        if(!spec.part){   // ficka: hållaren reser kanter runt skäret (utom vid skärspetsen), skäret sitter nedsänkt i fickan
+          const cx=ins.reduce((a,p)=>a+p[0],0)/ins.length, cz=ins.reduce((a,p)=>a+p[1],0)/ins.length, pocket=ins.map(p=>[cx+(p[0]-cx)*1.04,cz+(p[1]-cz)*1.04]);
+          diffConvex(headPts,pocket).forEach(pl=>toolBody.add(prism(pl,-.06,.02,holderMat))); }
+      } else {   // borrstång i Z-led: huvud (halv cylinder), rund stång, klackar där stången spänns fast
+        const bg=new THREE.Mesh(new THREE.CylinderGeometry(Rb,Rb,Lt-Hd,32),barMat); bg.rotation.x=Math.PI/2; bg.position.set(xc,0,Hd+(Lt-Hd)/2); bg.castShadow=true; toolBody.add(bg);
+        const hs=new THREE.Shape(); hs.absarc(0,0,Rb,Math.PI,2*Math.PI,false); hs.closePath();
+        const hg=new THREE.Mesh(new THREE.ExtrudeGeometry(hs,{depth:Hd,bevelEnabled:false,curveSegments:20}),barMat); hg.position.set(xc,0,0); hg.castShadow=true; toolBody.add(hg);
+        const jz=(Lov+Lt-.6)/2, jl=Lt-.6-Lov, jw=.35;   // fästklackar runt stångens bakre del
+        [[jw,2*Rb+.4,jl,xc+Rb+jw/2,0],[2*Rb+jw,jw,jl,xc+jw/2,Rb+jw/2]].forEach(([w,h,d,x,y])=>{ const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),clampMat); b.position.set(x,y,jz); b.castShadow=true; toolBody.add(b); });
+        extraH=boreSamples(Rb,xc,Hd,Lt,ins);
+      }
+      buildToolSamples(headPts,ins,extraH);
+      { mPost.children.forEach(c=>c.geometry?.dispose()); mPost.clear();   // verktygsstolen i maskinens skala (rotationen = hållarvinkeln)
+        const zl=bore?0:zL/SC, ze=bore?Lt/SC:(zL+2)/SC; D0=bore?[(xc-Rb)/SC-RG,Lov/SC+1.15*RG]:[PXC,ze+RG];   // D0 = basens centrum relativt spetsen (när överslid=0). Invändigt: plattan ligger på spetsens sida om stången, stången på plattans klämkant
+        const pl=new THREE.Group(); pl.position.set(D0[0],0,D0[1]); mPost.add(pl);   // platta + hållare: följer spetsen
+        if(bore)pl.rotation.y=-Math.PI/2;                                              // invändigt: plattan vriden −90°: klämkanten vänd mot stången, urtaget öppet åt andra hållet
+        const vc=1.8/(SC*RG)-1.15;                                                    // klämskruvarnas mittläge längs plattkanten (mitt för stångens fästdel)
+        const OUT=[[-1.15,-1.15],[.3,-1.15],[.3,-.78],[-.2,-.78],[-.64,-.36],[-.64,.36],[-.2,.78],[.3,.78],[.3,1.15],[-1.15,1.15]].map(([u,v])=>[v*RG,u*RG]);
+        pl.add(prism(OUT,PLT_BOT,PLT_TOP,plateMat));                                   // röda C-plattan
+        cyl(.64*RG,.25,'y',0,PLT_BOT+.125,0,M.steel,pl);                               // rund tapp i plattans urtag
+        if(bore){ const top=-Rb/SC, z0=Lov/SC; box(2*Rb/SC+.1*RG,top-PLT_BOT,ze-z0,xc/SC-.05*RG,(PLT_BOT+top)/2,(z0+ze)/2,plateMat,mPost); }   // smal röd list under stångens fästdel, ansluter till plattan
+        else box(2.3*RG,-.0791-PLT_BOT,ze-zl,PXC,(PLT_BOT-.0791)/2,(zl+ze)/2,plateMat,mPost);  // list under hållaren
+        [-1,1].forEach(s=>{ cyl(.07,.035,'y',s*RG,PLT_TOP+.017,0,M.steel,pl); cyl(.035,.04,'y',s*RG,PLT_TOP+.03,0,M.black,pl); });   // två fästskruvar
+        (bore?[vc-.4,vc,vc+.4]:[-.72,0,.72]).forEach(v=>cyl(.05,.035,'y',v*RG,PLT_TOP+.017,-RG,M.blue,pl));    // klämskruvar mot hållaren
+        swivG=new THREE.Group(); mPost.add(swivG);                                      // svivel + glidbana: fast mot basen, vrids med vinkeln
+        cyl(1.25*RG,.08,'y',0,BLOCK_TOP+.04,0,M.steel,swivG);                           // svivelplatta
+        box(1.8*RG,.24,4.2*RG,0,-.42,.2*RG,M.paint,swivG);                              // glidbana (överslid)
+        box(.03,.012,.12,0,BLOCK_TOP+.086,1.2*RG,M.yellow,swivG);                       // indexmärke mot gradskivan
+        cyl(.05,.2,'z',0,-.42,2.3*RG+.1,M.steel,swivG); wheel(swivG,0,-.42,2.3*RG+.2,.33,'z',M.steel,M.black);   // matarratt
+        swivG.position.set(D0[0],0,D0[1]-comp);
+        const th=THREE.MathUtils.degToRad(angle); mT=calcMT(th);                         // spetsens läge i sidoslidens system så att basen står still
+        mPost.position.set(mT[0],0,mT[1]); mPost.rotation.y=th; }
+      const insertMat=new THREE.MeshStandardMaterial({color:toolBroken?0x2e3133:spec.color,metalness:.72,roughness:.3,side:THREE.DoubleSide});
+      toolBody.add(prism(ins,-.06,.06,insertMat));
+      const sc=sh([(P0[0]+P2[0])/2,(P0[1]+P2[1])/2]);
+      const screw=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.04,6),screwMat); screw.position.set(sc[0],.075,sc[1]); toolBody.add(screw);
+      tool.rotation.y=THREE.MathUtils.degToRad(angle); toolTheta=tool.rotation.y; // + = större ingreppsvinkel
+      renderCtbox(); toolTypeRead.textContent=`${toolType.value}${bore?` Ø${barDmm}×${barLmm}`:''} • hållare ${angle}° • ingrepp ${(spec.k+angle).toFixed(1)}° • max ${curFmax()} N${toolBroken?' • BRUTET':''}`;
+    }
+    // Verktygslista (samma stil som reitstockens låda). Den dolda select#toolType är kvar som värdehållare för resten av koden.
+    function renderCtbox(){ const box=document.querySelector('#ctbox'); if(!box)return; box.textContent='';
+      [...toolType.children].forEach(grp=>{ const h=document.createElement('div'); h.className='grp'; h.textContent=grp.label; box.appendChild(h);
+        [...grp.children].forEach(op=>{ const parts=op.textContent.split(' — '), sp=toolSpecs[op.value], info=(parts[1]||'')+(sp&&!sp.bore?' • max '+sp.Fmax+' N':'');
+          const row=document.createElement('div'); row.className='trw'+(op.value===toolType.value?' cur':''); row.dataset.id=op.value;
+          const wrap=document.createElement('div'), b=document.createElement('b'), br=document.createElement('br'), s=document.createElement('span');
+          b.textContent=parts[0]; s.textContent=info; wrap.append(b,br,s); row.appendChild(wrap); box.appendChild(row); }); }); }
+    document.querySelector('#ctbox').onclick=e=>{ const row=e.target.closest('.trw'); if(!row)return; toolType.value=row.dataset.id; toolType.onchange(); };   // att klicka på det monterade verktyget igen = nytt skär
+    function calcMT(th){ const cs=Math.cos(th),sn=Math.sin(th),dx=D0[0],dz=D0[1]-comp; return [BCX-(dx*cs+dz*sn), BCZ-(-dx*sn+dz*cs)]; }
+    // Överslid (Q/E): plattan med hållaren glider längs den vridna glidbanan; sliden i övrigt står still, spetsen följer riktningen
+    function compoundStep(dt){ const d=(state.keys.e?1:0)-(state.keys.q?1:0); if(!d)return;
+      const rapid=dt*(state.keys.Shift?5:.5), sp=feedStep(dt,rapid), nc=THREE.MathUtils.clamp(comp+d*sp/SC,CMIN,CMAX), dc=nc-comp; if(Math.abs(dc)<1e-9)return;
+      const o=calcMT(toolTheta); comp=nc; const n=calcMT(toolTheta); comp-=dc;
+      const tx=state.x+SC*(o[0]-n[0]), tz=state.z+SC*(n[1]-o[1]), r=pathClear(state.x,state.z,tx,tz), L=Math.hypot(tx-state.x,tz-state.z), f=L>0?Math.hypot(r.x-state.x,r.z-state.z)/L:1;
+      comp+=dc*f; state.x=r.x; state.z=r.z; mT=calcMT(toolTheta); swivG.position.z=D0[1]-comp; mPost.position.set(mT[0],0,mT[1]);   // prev nollställs inte här, så skärningen följer överslidens bana
+      if(r.hit){ sfxThud(); state.crash=1.8; if(state.demo)stopFeed(); document.querySelector('#mode').textContent='KOLLISION — verktyget skulle gå sönder'; } }
+    // Vridning av hållaren: sliden står still och bara plattan med hållaren vrids kring tappen, så spetsen svänger runt tappens centrum.
+    let lastTT=toolType.value, lastAng=Number(holderAngle.value), lastBD=barD.value, lastBL=barL.value;
+    const XMAX=12, ZMAXOFF=8; // spetsen kan hamna långt från sliden när plattan vrids, så gränserna är rymligare än för slidens eget slag
+    function applyHolder(){
+      const ox=state.x,oz=state.z,o=mT.slice(), keepTip=toolType.value!==lastTT||barD.value!==lastBD||barL.value!==lastBL; setToolStyle(); const tsMoved=tsEnforce();   // vid verktygs-/stångbyte ligger spetsen kvar; reitstocken backas om stången behöver plats
+      state.x=THREE.MathUtils.clamp(state.x+(keepTip?0:SC*(o[0]-mT[0])),-initialR,XMAX);
+      state.z=THREE.MathUtils.clamp(state.z+(keepTip?0:SC*(mT[1]-o[1])),stockStart+.12,zMaxTool());
+      let backed=false; while(collisionCount(state.x,state.z,true)>0&&state.x<XMAX){state.x=Math.min(XMAX,state.x+.1);backed=true;} // kör ut sliden (X+) tills hållaren är fri
+      if(collisionCount(state.x,state.z,true)>0){ // går inte att frigöra → ångra
+        toolType.value=lastTT; holderAngle.value=lastAng; barD.value=lastBD; barL.value=lastBL; showBarRows(); state.x=ox; state.z=oz; setToolStyle();
+        const md=document.querySelector('#mode'); md.textContent='KAN INTE VRIDA — hållaren skulle gå in i material'; setTimeout(()=>{if(!state.demo)md.textContent=baseMode();},2200);
+      } else { lastTT=toolType.value; lastAng=Number(holderAngle.value); lastBD=barD.value; lastBL=barL.value;
+        if(backed){const md=document.querySelector('#mode'); md.textContent='SLIDEN KÖRDES UT (X+) FÖR ATT FRIGÖRA HÅLLAREN'; setTimeout(()=>{if(!state.demo)md.textContent=baseMode();},2200);} }
+      prev=null; positionTool(); if(tsMoved)flash('REITSTOCKEN BACKADES — verktyget behöver plats'); }
+    toolType.onchange=()=>{toolBroken=false;showBarRows();applyHolder();}; barD.onchange=barL.onchange=()=>{toolBroken=false;applyHolder();}; holderAngle.oninput=applyHolder; showBarRows(); setToolStyle();
+
+    // ---------- Tillstånd, matningsbegränsning ----------
+    const state={x:3.05,z:1.7,keys:{},cutting:false,demo:false,demoPhase:0,removed:0,rpm:850,feed:.2,crash:0,spindle:true,cutMode:'edge',rpmAct:0,fc:0,fcFrame:0,fcd:0,fcdFrame:0,spinDir:1,dirAct:1}; // spinDir/dirAct: +1 = mot urs, −1 = med urs (sett från reitstocken mot chucken)
+
+    // ---- Spån ----
+    const NCH=500, chipPos=new Float32Array(NCH*3).fill(0), chipVel=new Float32Array(NCH*3), chipLife=new Float32Array(NCH); let chipHead=0;
+    for(let i=0;i<NCH;i++)chipPos[i*3+1]=-100;
+    const chips=new THREE.Points(new THREE.BufferGeometry(),new THREE.PointsMaterial({color:0xffb454,size:.07,transparent:true,opacity:.95}));
+    chips.geometry.setAttribute('position',new THREE.BufferAttribute(chipPos,3)); chips.frustumCulled=false; lathe.add(chips);
+    function emitChips(n,cx=state.x,cz=state.z){ for(let k=0;k<n;k++){ const i=(chipHead++)%NCH,o=i*3; chipPos[o]=-cx+(Math.random()-.5)*.03; chipPos[o+1]=.03; chipPos[o+2]=cz+Math.random()*.1;
+      chipVel[o]=(Math.random()-.5)*1.2; chipVel[o+1]=.8+Math.random()*1.6; chipVel[o+2]=.4+Math.random()*1.2; chipLife[i]=1.6; } }
+    function stepChips(dt){ for(let i=0;i<NCH;i++){ const o=i*3; if(chipLife[i]<=0)continue; chipLife[i]-=dt; chipVel[o+1]-=9*dt; chipPos[o]+=chipVel[o]*dt; chipPos[o+1]+=chipVel[o+1]*dt; chipPos[o+2]+=chipVel[o+2]*dt;
+        if(chipLife[i]<=0||chipPos[o+1]<WAYTOP*SC){chipLife[i]=0;chipPos[o+1]=-100;} } chips.geometry.attributes.position.needsUpdate=true; }
+    const feedIn=document.querySelector('#feed'),lamp=document.querySelector('#lamp');
+    // 1 scenenhet = 10 mm  →  matningshastighet [enh/s] = varv/min × mm/varv / 60 / 10
+    const spinning=()=>state.rpmAct>=20;
+    const feedSpeed=()=>state.feed*850/600;   // enh/s: matningsreglaget ger hastigheten direkt (mm/min = matning × 850), oberoende av varvtalet
+    function updateCutData(){ const ra=(state.feed*state.feed/(32*NOSE*10))*1000; document.querySelector('#cutDataRead').textContent=`S${state.rpm} • F${state.feed.toFixed(2)} mm/v (${(state.feed*850).toFixed(0)} mm/min) • Ra≈${ra.toFixed(1)} µm`; }
+    const fcEl=document.querySelector('#fcRead'), fcBar=document.querySelector('#fcBar'), fcPct=document.querySelector('#fcPct');
+    function updateReadouts(){ document.querySelector('#rpmRead').textContent=Math.round(state.rpmAct); document.querySelector('#fRead').textContent=(state.feed*850).toFixed(0);
+      const tt=curTool(), qd=isTailDrill(tt)?state.fcd/(30*tt.d*tt.d):0, q=Math.max(state.fc/curFmax(),qd), bk=toolBroken||ts.broken; fcEl.textContent=Math.round(Math.max(state.fc,state.fcd))+(bk?' ✕':''); fcEl.className=(bk||q>=1)?'bad':q>.7?'warn':'';
+      fcBar.style.width=Math.min(100,q*100)+'%'; fcBar.style.background=(bk||q>=1)?'var(--red)':q>.7?'var(--amber)':'var(--cyan)'; fcPct.textContent=Math.round(q*100)+' %'; }
+    const baseMode=()=>toolBroken?'SKÄRET BRUTET — byt skär 🔧':ts.broken?'BORREN ÄR BRUTEN — montera ett nytt ur verktygslådan':!state.spindle?'SPINDEL AV — ingen skärning':'MANUELL MATNING';
+    document.querySelector('#newInsert').onclick=()=>{toolBroken=false;state.fc=0;state.crash=0;setToolStyle();if(!state.demo)document.querySelector('#mode').textContent=baseMode();};
+    feedIn.oninput=()=>{state.feed=Number(feedIn.value);updateCutData();};
+    updateCutData();
+    document.querySelector('#cutMode').onchange=e=>{state.cutMode=e.target.value;};
+    document.querySelector('#spinDir').onchange=e=>{state.spinDir=Number(e.target.value);}; // riktningen byts först när spindeln stått still
+
+    // ---------- Växellåda i svarvstocken: vreden C (område), B (grovsteg) och A (finsteg) ställer in varvtalet ----------
+    // Motorn går med nästan konstant varvtal. Remmen och tre kuggstegen (vardera ett par som väljs med ett vred) ger spindelns varvtal.
+    const GB={motor:1440, belt:[125,90], A:[[24,46],[29,41],[35,35]], B:[[21,59],[40,40]], low:[21,59]}; // kuggpar: drivande/drivna tänder; low = ett steg av bakväxeln (två steg i serie)
+    const gear={a:2,b:0,c:1}; // c: 0 = LÅG (bakväxel inkopplad), 1 = HÖG (direkt)
+    const rt=p=>p[0]/p[1], sv=(x,d=2)=>x.toFixed(d).replace('.',','), CLAB=['LÅG','HÖG'];
+    const gbRpm=g=>GB.motor*rt(GB.belt)*rt(GB.A[g.a])*rt(GB.B[g.b])*(g.c===0?rt(GB.low)**2:1);
+    const gEl=id=>document.querySelector(id);
+    const speedRows=[]; for(let c=0;c<2;c++)for(let b=0;b<2;b++)for(let a=0;a<3;a++)speedRows.push({c,b,a,rpm:gbRpm({a,b,c})}); speedRows.sort((x,y)=>x.rpm-y.rpm);
+    const stepA=rt(GB.A[1])/rt(GB.A[0]), stepA2=rt(GB.A[2])/rt(GB.A[1]), stepB=rt(GB.B[1])/rt(GB.B[0]), lowRed=1/(rt(GB.low)**2);
+    gEl('#gExpl').innerHTML=
+      `<li><b>Spindel PÅ/AV (knappen)</b> kopplar in motorn. Spindeln ramper upp till valt varvtal. <b>Växla aldrig med spindeln igång</b> – vreden är låsta tills chucken står still.</li>`+
+      `<li><b>Riktning (rutan Riktning)</b> väljer mot urs (M04) eller med urs (M03). Byte sker först när spindeln stannat.</li>`+
+      `<li><b>C • Område (bakväxeln)</b>: <b>LÅG</b> kopplar in bakväxeln, två reduktionssteg i serie (≈ 1:${sv(lowRed,1)}) → alla varvtal delas med ca ${sv(lowRed,1)}. Ger lågt varv och högt vridmoment: stora diametrar, gängning, borrning, hårda material. <b>HÖG</b> = direktdrift för små diametrar och finbearbetning.</li>`+
+      `<li><b>B • Grovsteg (2 lägen)</b>: väljer ett av två kuggpar (${GB.B[0].join(':')} eller ${GB.B[1].join(':')}). Varvet ändras med faktor ≈ ${sv(stepB,1)}.</li>`+
+      `<li><b>A • Finsteg (3 lägen)</b>: väljer ett av tre kuggpar (${GB.A.map(x=>x.join(':')).join(', ')}). Varje steg ändrar varvet med ≈ ×${sv((stepA+stepA2)/2,2)}.</li>`+
+      `<li><b>Tillsammans</b> ger C × B × A tolv varvtal i en jämn serie (×1,4 per steg). Tabellen visar vilken kombination som ger vilket varvtal.</li>`;
+    gEl('#gHow').innerHTML=
+      `Motorn går med nästan konstant varvtal (här ${GB.motor} varv/min) och driver via en rem (utväxling ×${sv(rt(GB.belt),3)}) en ingående axel. På splinesade axlar sitter glidande kugghjulsblock. Varje vred flyttar ett block med en växelgaffel så att <i>ett</i> kuggpar går i ingrepp medan de andra släpper; spärrar hindrar att två par kopplas samtidigt. `+
+      `Spindelns varvtal blir: <b>n = motorvarv × rem × (A-paret) × (B-paret) × C</b>. Eftersom kuggen ska glida in i ingrepp ställer man alltid om i stillastående och ibland får man vrida chucken lite för hand. `+
+      `<br><br><i>Obs: kuggtalen här är en egen, realistisk uppsättning – en riktig maskin har sin egen varvtalsplatta.</i>`;
+    gEl('#gTable').innerHTML=speedRows.map((r,i)=>`<tr data-c="${r.c}" data-b="${r.b}" data-a="${r.a}"><td>${i+1}</td><td>${Math.round(r.rpm)}</td><td>${CLAB[r.c]}</td><td>${r.b+1}</td><td>${r.a+1}</td></tr>`).join('');
+    let gmT=0; function gmsg(t){ const el=gEl('#gMsg'); el.textContent=t; clearTimeout(gmT); gmT=setTimeout(()=>{el.textContent='';},3200); }
+    const knobs=[['#kC','c',2,CLAB],['#kB','b',2,['1','2']],['#kA','a',3,['1','2','3']]];
+    function renderGear(){
+      knobs.forEach(([id,key,n,labels])=>{ const idx=gear[key]; gEl(id).style.setProperty('--a',(n===2?(idx?40:-40):-60+idx*60)+'deg'); gEl(id+'t').textContent=labels[idx]; });
+      const rpm=gbRpm(gear); gEl('#gRpm').textContent=Math.round(rpm); gEl('#rpmSet').textContent=Math.round(rpm)+' varv/min (växellåda)';
+      gEl('#gChain').innerHTML=`Motor <b>${GB.motor}</b> → rem ×<b>${sv(rt(GB.belt),3)}</b><br>→ A <b>${GB.A[gear.a].join(':')}</b> (×${sv(rt(GB.A[gear.a]),3)})<br>→ B <b>${GB.B[gear.b].join(':')}</b> (×${sv(rt(GB.B[gear.b]),3)})<br>→ C <b>${gear.c===0?`bakväxel ${GB.low.join(':')}·${GB.low.join(':')} (×${sv(rt(GB.low)**2,3)})`:'direkt (×1,000)'}</b><br>= <b>${sv(rpm,0)}</b> varv/min`;
+      gEl('#gTable').querySelectorAll('tr').forEach(tr=>tr.classList.toggle('cur',Number(tr.dataset.c)===gear.c&&Number(tr.dataset.b)===gear.b&&Number(tr.dataset.a)===gear.a));
+      renderVc(); }
+    function renderVc(){ const D=initialR*20, rpm=state.rpm, vc=Math.PI*D*rpm/1000, lo=1000*100/(Math.PI*D), hi=1000*200/(Math.PI*D);
+      gEl('#gVc').innerHTML=`Skärhastighet vid Ø${D.toFixed(0)} mm: <b style="color:var(--ink)">${vc.toFixed(0)} m/min</b>. Tumregel stål + hårdmetall ≈ 100–200 m/min → ${Math.round(lo)}–${Math.round(hi)} varv/min för detta ämne.`;
+      gEl('#gearPanel').classList.toggle('locked',state.rpmAct>20); }
+    function trySetGear(ng){ if(state.rpmAct>20){ gmsg('STOPPA SPINDELN INNAN DU VÄXLAR – kuggarna får inte flyttas när chucken snurrar.'); return false; }
+      gear.a=ng.a;gear.b=ng.b;gear.c=ng.c; state.rpm=Math.round(gbRpm(gear)); updateCutData(); renderGear(); sfxClick(); return true; }
+    knobs.forEach(([id,key,n])=>{ const bump=d=>trySetGear({...gear,[key]:(gear[key]+d+n)%n}), el=gEl(id);
+      el.onclick=()=>bump(1); el.oncontextmenu=e=>{e.preventDefault();bump(-1);}; el.onwheel=e=>{e.preventDefault();bump(e.deltaY>0?1:-1);}; });
+    gEl('#gTable').onclick=e=>{ const tr=e.target.closest('tr'); if(tr)trySetGear({a:Number(tr.dataset.a),b:Number(tr.dataset.b),c:Number(tr.dataset.c)}); };
+    gEl('#gearToggle').onclick=()=>{ const c=gEl('#gearPanel').classList.toggle('collapsed'); gEl('#gearToggle').textContent=c?'▸':'▾'; };
+    if(innerWidth<900){gEl('#gearPanel').classList.add('collapsed');gEl('#gearToggle').textContent='▸';}
+    setInterval(renderVc,300);
+    state.rpm=Math.round(gbRpm(gear)); updateCutData(); renderGear();
+    const spBtn=document.querySelector('#spindle'); spBtn.onclick=()=>{state.spindle=!state.spindle;spBtn.textContent='⏻ Spindel: '+(state.spindle?'PÅ':'AV');if(!state.demo)document.querySelector('#mode').textContent=state.spindle?'MANUELL MATNING':'SPINDEL AV — ingen skärning';};
+    function engaged(){ // skärspetsen är nära material (≈1,5 mm i Z, 3 mm i X) → matningsbegränsat
+      const ci=Math.round((state.z-stockStart)/DX),cj=Math.round(Math.abs(state.x)/DX);
+      const iA=Math.max(0,ci-30),iB=Math.min(nz-1,ci+30),jA=Math.max(0,cj-60),jB=Math.min(nr-1,cj+60);
+      if(iA>iB||jA>jB)return false;
+      for(let i=iA;i<=iB;i++){ if(!cnt[i])continue; const o=i*nr; for(let j=jA;j<=jB;j++)if(solid[o+j])return true; }
+      return false;
+    }
+    let lastEng=null;
+    function setLamp(e){ if(e===lastEng)return; lastEng=e; lamp.classList.toggle('feedlimit',e); }
+
+    let offX=0,offZ=0; const dfmt=v=>{const t=v.toFixed(1);return t==='-0.0'?'0.0':t;};   // nollpunkt (arbetsoffset) för avläsningen
+    function positionTool(){ carriage.position.z=state.z; tool.position.x=-state.x; mCarriage.position.z=(state.z-TZ)/SC-mT[1]; crossSlide.position.x=-state.x/SC-mT[0]; document.querySelector('#xRead').textContent=dfmt(state.x*20-offX); document.querySelector('#zRead').textContent=dfmt((state.z-(stockStart+stockLength))*10-offZ); }
+    positionTool();
+    // Skärning: ett snitt per varv (matning mm/varv → väg). "Hela eggen" = hela skärets rundade plan skär; "Bara spetsen" = bara nosradien.
+    let prev=null, dirtyLo=1e9, dirtyHi=-1, frameCells=0, evCells=0; const newEmpty=[];
+    let KC=2000; // N/mm² (stål, förenklat). En cell är 0,05 × 0,05 mm i snittets tvärsnitt.
+    function removeCell(i,j){ solid[i*nr+j]=0; if(--cnt[i]===0)newEmpty.push(i); state.removed+=Math.PI*(2*j+1)*DX*DX*DX; frameCells++; evCells++; if(i<dirtyLo)dirtyLo=i; if(i>dirtyHi)dirtyHi=i; }
+    function applyCut(sx,z){ // sx = spetsens X (innersta punkten), cirkelcentrum ligger NOSE utåt
+      const ac=Math.abs(sx+NOSE*noseSide), zi=(z-stockStart)/DX-.5, rzN=Math.ceil(NOSE/DX);
+      const iA=Math.max(0,Math.ceil(zi-rzN)),iB=Math.min(nz-1,Math.floor(zi+rzN));
+      const jA=Math.max(0,Math.floor((ac-NOSE)/DX)),jB=Math.min(nr-1,Math.ceil((ac+NOSE)/DX)); let did=false;
+      for(let i=iA;i<=iB;i++){ const dzc=(i-zi)*DX,h2=NOSE*NOSE-dzc*dzc; if(h2<=0)continue; const h=Math.sqrt(h2);
+        for(let j=jA;j<=jB;j++){ const rc=(j+.5)*DX; if(Math.abs(rc-ac)>=h)continue; if(solid[i*nr+j]){removeCell(i,j);did=true;} } }
+      return did; }
+    function applyCutEdge(x,z){ // skärets plan (rundad romb) i verktygets läge och vinkel
+      const c=Math.cos(toolTheta),sn=Math.sin(toolTheta),W=insLocal.map(([lx,lz])=>[-x+lx*c+lz*sn,z+(-lx*sn+lz*c)]),n=W.length;
+      let zmin=1e9,zmax=-1e9;W.forEach(q=>{if(q[1]<zmin)zmin=q[1];if(q[1]>zmax)zmax=q[1];});
+      const iA=Math.max(0,Math.ceil((zmin-stockStart)/DX-.5)),iB=Math.min(nz-1,Math.floor((zmax-stockStart)/DX-.5)); let did=false;
+      for(let i=iA;i<=iB;i++){ if(!cnt[i])continue; const zc=stockStart+(i+.5)*DX; let xa=1e9,xb=-1e9;
+        for(let k=0;k<n;k++){const A=W[k],B=W[(k+1)%n]; if((A[1]<=zc&&zc<B[1])||(B[1]<=zc&&zc<A[1])){const xi=A[0]+(B[0]-A[0])*(zc-A[1])/(B[1]-A[1]); if(xi<xa)xa=xi; if(xi>xb)xb=xi;}}
+        if(xb<xa)continue;
+        const ivs=[]; if(xb>0)ivs.push([Math.max(0,xa),xb]); if(xa<0)ivs.push([Math.max(0,-xb),-xa]);
+        for(const [lo,hi] of ivs){ const jA=Math.max(0,Math.ceil(lo/DX-.5)),jB=Math.min(nr-1,Math.floor(hi/DX-.5)),o=i*nr; for(let j=jA;j<=jB;j++)if(solid[o+j]){removeCell(i,j);did=true;} } }
+      return did; }
+    function breakTool(){ sfxBreak(); toolBroken=true; setToolStyle(); state.crash=3;
+      if(state.demo){state.demo=false;state.demoPhase=0;document.querySelector('#demo').textContent='▶ Starta matning Z−';}
+      document.querySelector('#mode').textContent='VERKTYGSBROTT — skärkraften blev för hög'; }
+    function cutFrame(dt){ const cx=state.x,cz=state.z; if(!prev)prev={x:cx,z:cz,acc:0};
+      if(!spinning()||toolBroken){prev.x=cx;prev.z=cz;prev.acc=0;state.cutting=false;return;}
+      const edge=state.cutMode==='edge', f=edge?applyCutEdge:applyCut, pitch=Math.max(DX,state.feed/10); // ett snitt per varv
+      const L=Math.hypot(cx-prev.x,cz-prev.z); dirtyLo=1e9;dirtyHi=-1;frameCells=0;newEmpty.length=0;let did=false,maxEv=0;
+      if(L>0){ let d=pitch-prev.acc;
+        while(d<=L){ const t=d/L; evCells=0; if(f(prev.x+(cx-prev.x)*t,prev.z+(cz-prev.z)*t)){did=true; if(evCells>maxEv)maxEv=evCells;} d+=pitch; }
+        prev.acc=L-(d-pitch); }
+      prev.x=cx;prev.z=cz;state.cutting=did;
+      if(did){ const c0=Math.floor(dirtyLo/CH),c1=Math.min(nChunks-1,Math.floor((dirtyHi+1)/CH)); for(let c=c0;c<=c1;c++)rebuildChunk(c);
+        document.querySelector('#removed').textContent=state.removed.toFixed(2)+' cm³ avverkat'; emitChips(Math.min(6,Math.ceil(frameCells/30)));
+        for(const i of newEmpty){ if(cnt[i]===0&&anySolidAbove(i)){detachFrom(i);break;} }
+        const Fc=KC*maxEv*.0025; if(Fc>state.fcFrame)state.fcFrame=Fc; if(Fc>curFmax())breakTool(); } }
+    // ---- Kollision: hållare/skär mot ämnet, samt chuck och käftar (alltid fasta) ----
+    function scan(A,x,z,c,sn,R2,early,mat){ let n=0;
+      for(let k=0;k<A.length;k+=3){
+        const lx=A[k],ly=A[k+1],lz=A[k+2], X=-x+lx*c+lz*sn, r2=X*X+ly*ly, zw=z+(-lx*sn+lz*c);
+        if(zw<CH_FRONT&&zw>CH_BACK){ const R=zw<CH_JAW_BACK?chuckRbody:chuckRjaw; if(r2<R*R){n++; if(early)return n; continue;} }
+        if(!mat||r2>=R2)continue;
+        const i=Math.floor((zw-stockStart)/DX); if(i<0||i>=nz||!cnt[i])continue;
+        const j=Math.floor(Math.sqrt(r2)/DX); if(j<nr&&solid[i*nr+j]){n++; if(early)return n;}
+      } return n; }
+    function collisionCount(x,z,early){
+      const R2=(nr*DX)*(nr*DX), c=Math.cos(toolTheta), sn=Math.sin(toolTheta);
+      const insMat=toolBroken||!spinning()||state.cutMode==='tip', noseMat=toolBroken||!spinning();
+      let n=scan(holderSamples,x,z,c,sn,R2,early,true); if(early&&n)return n;
+      n+=scan(insSamples,x,z,c,sn,R2,early,insMat); if(early&&n)return n;
+      n+=scan(noseSamples,x,z,c,sn,R2,early,noseMat); return n; }
+    function pathClear(x0,z0,x1,z1){
+      const c0=collisionCount(x0,z0,false); // redan i kontakt: bara rörelser som inte tränger djupare tillåts
+      const n=Math.max(1,Math.ceil(Math.hypot(x1-x0,z1-z0)/.015)); let lx=x0,lz=z0,lastC=c0;
+      for(let k=1;k<=n;k++){const x=x0+(x1-x0)*k/n,z=z0+(z1-z0)*k/n,cc=collisionCount(x,z,c0===0); if(c0===0?cc>0:cc>lastC)return {x:lx,z:lz,hit:true}; lx=x;lz=z;lastC=cc;}
+      return {x:x1,z:z1,hit:false}; }
+    function resolveCollision(ox,oz){
+      const nx=state.x,nzz=state.z; if(nx===ox&&nzz===oz)return;
+      const a=pathClear(ox,oz,nx,oz), b=pathClear(a.x,oz,a.x,nzz); state.x=b.x; state.z=b.z;
+      if(a.hit||b.hit){ sfxThud(); state.crash=1.8; if(state.demo){state.demo=false;state.demoPhase=0;document.querySelector('#demo').textContent='▶ Starta matning Z−';}
+        document.querySelector('#mode').textContent='KOLLISION — verktyget skulle gå sönder'; } }
+    // Matning nära material följer varvtalet (mm/varv). Står spindeln kan man bara jogga sakta.
+    function feedStep(dt,rapid){ const fs=dt*feedSpeed(); return (!engaged()&&state.keys.Shift)?rapid:fs; }   // Shift = snabbgång, men bara utanför ämnet
+    function processKeys(dt,feedOn){
+      const rapid=dt*(state.keys.Shift?5:.5), sp=feedStep(dt,rapid); // utan Shift: sakta jogg (5 mm/s), med Shift: snabbgång (50 mm/s)
+      if(!feedOn&&(state.keys.a||state.keys.ArrowUp))state.z-=sp;
+      if(!feedOn&&(state.keys.d||state.keys.ArrowDown))state.z+=sp;
+      if(state.keys.w||state.keys.ArrowLeft)state.x-=sp;           // in mot centrum: aldrig snabbare än matningen i ämnet
+      if(state.keys.s||state.keys.ArrowRight)state.x+=sp;          // samma hastighet som övriga axlar
+      state.x=THREE.MathUtils.clamp(state.x,-initialR,XMAX);state.z=THREE.MathUtils.clamp(state.z,stockStart+.12,zMaxTool());
+    }
+    function stopFeed(msg){ state.demo=false; document.querySelector('#demo').textContent='▶ Starta matning Z−'; document.querySelector('#mode').textContent=msg||baseMode(); }
+    function program(dt){ // kraftmatning mot chucken (−Z): varvtal × matning (mm/varv). X styrs fortfarande för hand.
+      processKeys(dt,true);
+      if(state.keys.d||state.keys.ArrowDown){stopFeed();return;}      // Z+ (från chucken) stoppar matningen
+      if(!state.spindle){stopFeed('MATNING STOPPAD — spindeln avstängd');return;}
+      if(!spinning())return;                                          // väntar på varvtal
+      state.z-=dt*feedSpeed();
+      if(state.z<=stockStart+.12){state.z=stockStart+.12;stopFeed('MATNING STOPPAD — ändläge');}
+    }
+    addEventListener('keydown',e=>{if(e.target&&e.target.matches&&e.target.matches('input[type="text"],input[type="number"],textarea'))return; if(['KeyW','KeyA','KeyS','KeyD','KeyQ','KeyE','KeyI','KeyK','KeyJ','KeyL','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight'].includes(e.code)){e.preventDefault();state.keys[e.key.toLowerCase()]=true;if(e.key==='Shift')state.keys.Shift=true;}});addEventListener('keyup',e=>{state.keys[e.key.toLowerCase()]=false;if(e.key==='Shift')state.keys.Shift=false;});
+    function newStock(){ offX=0;offZ=0; state.demo=false;state.x=initialR+1;state.z=stockStart+stockLength+.6;state.removed=0;prev=null;ts.centerHole=false;resetStock();tsEnforce();positionTool();document.querySelector('#mode').textContent='MANUELL MATNING';document.querySelector('#demo').textContent='▶ Starta matning Z−'; }
+    document.querySelector('#reset').onclick=newStock;
+    const dIn=document.querySelector('#diameter'), lIn=document.querySelector('#length'), sNote=document.querySelector('#stockNote'), sNoteTxt=sNote.textContent;
+    function applyStockDims(){ let d=parseFloat(dIn.value), l=parseFloat(lIn.value), clamped=false;
+      if(!(d>=10)){d=10;clamped=true;} if(d>120){d=120;clamped=true;} if(!(l>=30)){l=30;clamped=true;} if(l>300){l=300;clamped=true;}
+      dIn.value=d; lIn.value=l; initialR=d/20; stockLength=l/10+.1; newStock();   // samma +1 mm som de gamla fasta längderna
+      sNote.classList.toggle('warn',clamped); sNote.textContent=clamped?'Måtten justerades till tillåtet intervall (Ø 10–120 mm, längd 30–300 mm).':sNoteTxt; }
+    dIn.onchange=applyStockDims;
+    lIn.onchange=applyStockDims;
+    document.querySelectorAll('.presets [data-d]').forEach(b=>{ b.onclick=()=>{ dIn.value=b.dataset.d; lIn.value=b.dataset.l; applyStockDims(); }; });
+    document.querySelector('#demo').onclick=()=>{
+      if(state.demo){stopFeed();return;}
+      if(!state.spindle){document.querySelector('#mode').textContent='STARTA SPINDELN FÖRST';return;}
+      if(toolBroken){document.querySelector('#mode').textContent='BYT SKÄR FÖRST 🔧';return;}
+      state.demo=true; document.querySelector('#mode').textContent=`MATNING Z− • F${state.feed.toFixed(2)} mm/v`; document.querySelector('#demo').textContent='❚❚ Stoppa matning'; };
+
+    // ---------- Ljud (Web Audio, syntetiserat): spindel, växellåda, slidar och skärning ----------
+    // Skärljudet styrs av: varvtal och diameter (skärhastighet), matning mm/varv, skärkraft, spetsradie och materialgrupp (ISO P/M/K/N/S).
+    const MATS={ P:{kc:2000,cm:1.0,q:1.2,ts:.5,rm:.35,lv:1.0}, M:{kc:2400,cm:.85,q:1.6,ts:.9,rm:.5,lv:1.15}, K:{kc:1100,cm:.7,q:.8,ts:.1,rm:.7,lv:.9}, N:{kc:700,cm:1.6,q:.7,ts:.2,rm:.1,lv:.6}, S:{kc:3000,cm:.6,q:1.8,ts:1.0,rm:.45,lv:1.3} };
+    const A={on:false,ctx:null,mat:'P',cut:0,px:0,pz:0,lastThud:0};
+    const clampN=(v,a,b)=>Math.max(a,Math.min(b,v));
+    function initAudio(){
+      const C=new (window.AudioContext||window.webkitAudioContext)(); A.ctx=C;
+      const comp=C.createDynamicsCompressor(); comp.connect(C.destination); A.master=C.createGain(); A.master.gain.value=0; A.master.connect(comp);
+      const nb=C.createBuffer(1,C.sampleRate*2,C.sampleRate), d=nb.getChannelData(0); for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1; A.noiseBuf=nb;
+      const noise=()=>{const s=C.createBufferSource();s.buffer=nb;s.loop=true;s.start();return s;}, osc=t=>{const o=C.createOscillator();o.type=t;o.start();return o;}, gn=v=>{const g=C.createGain();g.gain.value=v;return g;}, bq=(t,f,q=1)=>{const b=C.createBiquadFilter();b.type=t;b.frequency.value=f;b.Q.value=q;return b;};
+      A.motor=osc('sawtooth'); A.motorG=gn(0); A.motor.connect(bq('lowpass',280)).connect(A.motorG).connect(A.master);       // motorbrum
+      A.gear=osc('triangle'); A.gearG=gn(0); A.gear.connect(bq('lowpass',1100)).connect(A.gearG).connect(A.master);                                      // kuggingrepp (varvtal)
+      A.airG=gn(0); noise().connect(bq('lowpass',450)).connect(A.airG).connect(A.master);                                   // luft från roterande chuck
+      A.slF=bq('lowpass',200); A.slG=gn(0); noise().connect(A.slF).connect(A.slG).connect(A.master);                          // slid i rörelse
+      A.crank=osc('sine'); A.crG=gn(0); A.crank.connect(A.crG).connect(A.master);                                           // matningsskruv
+      A.cutF=bq('bandpass',2000,1); A.cutG=gn(0); noise().connect(A.cutF).connect(A.cutG).connect(A.master);                 // skärbrus
+      A.lfo=osc('sine'); A.lfoG=gn(0); A.lfo.connect(A.lfoG).connect(A.cutG.gain);                                           // varvsmodulering (kornighet)
+      A.sq=osc('sine'); A.sqG=gn(0); A.sq.connect(A.sqG).connect(A.master);                                                   // gnissel vid hög kraft
+    }
+    function burst(dur,freq,q,gain,type){ if(!A.on||!A.ctx)return; const C=A.ctx,t=C.currentTime,s=C.createBufferSource(),f=C.createBiquadFilter(),g=C.createGain();
+      s.buffer=A.noiseBuf; f.type=type||'bandpass'; f.frequency.value=freq; f.Q.value=q; g.gain.setValueAtTime(gain,t); g.gain.exponentialRampToValueAtTime(.001,t+dur); s.connect(f).connect(g).connect(A.master); s.start(t); s.stop(t+dur+.05); }
+    function thump(f0,f1,dur,gain){ if(!A.on||!A.ctx)return; const C=A.ctx,t=C.currentTime,o=C.createOscillator(),g=C.createGain(); o.frequency.setValueAtTime(f0,t); o.frequency.exponentialRampToValueAtTime(f1,t+dur); g.gain.setValueAtTime(gain,t); g.gain.exponentialRampToValueAtTime(.001,t+dur); o.connect(g).connect(A.master); o.start(t); o.stop(t+dur+.05); }
+    function sfxClick(){ burst(.05,2600,3,.35); thump(220,110,.06,.2); }
+    function sfxThud(){ const n=performance.now(); if(n-A.lastThud<400)return; A.lastThud=n; thump(140,35,.35,.9); burst(.25,900,.8,.6); }
+    function sfxBreak(){ burst(.18,4200,1.5,.9); burst(.5,1800,.6,.5); thump(200,50,.3,.7); }
+    function updateAudio(dt){ if(!A.on||!A.ctx)return;
+      const C=A.ctx,t=C.currentTime,T=.06,rpm=state.rpmAct,rf=rpm/60,Fmax=curFmax(),q=Math.min(1.5,state.fc/Fmax),mat=MATS[A.mat];
+      const sp=Math.min(3,Math.hypot(state.x-A.px,state.z-A.pz)/Math.max(dt,1e-3)); A.px=state.x; A.pz=state.z;           // verktygets hastighet i enh/s (1 enh = 10 mm)
+      A.cut+=((state.cutting?1:0)-A.cut)*Math.min(1,dt*(state.cutting?18:6)); const load=A.cut*q, mot=(rpm>5||state.spindle)?1:0;
+      A.motor.frequency.setTargetAtTime(85-load*6,t,T); A.motorG.gain.setTargetAtTime(mot*(.03+.03*Math.min(1,rpm/1500))+.04*load,t,T);
+      A.gear.frequency.setTargetAtTime(clampN(rpm/3,50,2000),t,T); A.gearG.gain.setTargetAtTime(.04*Math.min(1,rpm/800),t,T);
+      A.airG.gain.setTargetAtTime(rpm>5?.012+.05*Math.min(1,rpm/3000):0,t,T);
+      const mv=Math.min(1,sp/.5); A.slF.frequency.setTargetAtTime(120+sp*300,t,T); A.slG.gain.setTargetAtTime(mv*.06,t,T); A.crank.frequency.setTargetAtTime(55+sp*180,t,T); A.crG.gain.setTargetAtTime(mv*.012,t,T);
+      const D=Math.max(5,Math.abs(state.x)*20), vc=Math.PI*D*rpm/1000, noseF=Math.pow(.15/(NOSE*10),.3);                  // spetsradie: liten radie = skarpare/ljusare ljud
+      const f=clampN((500+vc*14)*mat.cm*noseF/(1+state.feed*1.5),250,7500);
+      A.cutF.frequency.setTargetAtTime(f,t,T); A.cutF.Q.setTargetAtTime(mat.q*(1+q),t,T);
+      const lvl=A.cut*Math.min(1,.2+.8*q)*mat.lv*(.5+Math.min(1,state.feed*2))*.5;
+      A.cutG.gain.setTargetAtTime(lvl*(1-mat.rm*.5),t,T); A.lfoG.gain.setTargetAtTime(lvl*mat.rm*.5,t,T); A.lfo.frequency.setTargetAtTime(Math.max(1,rf),t,.1);
+      const sq=A.cut*Math.max(0,(q-.5)/.5)*mat.ts; A.sqG.gain.setTargetAtTime(.1*Math.min(1,sq),t,T); A.sq.frequency.setTargetAtTime(clampN((1400+vc*7)*noseF*mat.cm,900,5000),t,.1); }
+    const sndBtn=document.querySelector('#sound');
+    sndBtn.onclick=()=>{ A.on=!A.on;
+      if(A.on){ if(!A.ctx)initAudio(); A.ctx.resume(); A.px=state.x; A.pz=state.z; A.master.gain.setTargetAtTime(.7,A.ctx.currentTime,.05); }
+      else if(A.ctx)A.master.gain.setTargetAtTime(0,A.ctx.currentTime,.05);
+      sndBtn.textContent='🔊 Ljud: '+(A.on?'PÅ':'AV'); };
+    document.querySelector('#material').onchange=e=>{ A.mat=e.target.value; KC=MATS[A.mat].kc; };
+    { const note=t=>{ if(state.demo)return; const md=document.querySelector('#mode'); md.textContent=t; setTimeout(()=>{if(!state.demo&&md.textContent===t)md.textContent=baseMode();},1800); };
+      const curZ=()=>(state.z-(stockStart+stockLength))*10;
+      document.querySelector('#zeroX').onclick=()=>{offX=state.x*20;positionTool();note('X NOLLSTÄLLD');};
+      document.querySelector('#zeroZ').onclick=()=>{offZ=curZ();positionTool();note('Z NOLLSTÄLLD');};
+      document.querySelector('#zeroXZ').onclick=()=>{offX=state.x*20;offZ=curZ();positionTool();note('X OCH Z NOLLSTÄLLDA');};
+      document.querySelector('#zeroClr').onclick=()=>{offX=0;offZ=0;positionTool();note('NOLLPUNKT ÅTERSTÄLLD');}; }
+    // ---------- Reitstock: verktygslåda (centrum + borrar), pinolrörelse och borrning ----------
+    // Pinolen ligger exakt på spindelaxeln (x=0, y=0), samma axel som chuck och ämne, så borren hamnar alltid i ämnets mitt.
+    const TS_NOSE0=9.6, ADAPT=.45, CEN_LEN=.50, CEN_R=.29*SC, EXTMAX=1.6;   // maskinenheter (CEN_R i sim-enheter); pinolens framkant ligger på z=9,6
+    // Dubbhålsborr: pilot Ø2,5 leder borren, därefter skär den ett 60° centrumhål till Ø8.
+    const CENTER_DRILL={id:'cd25_8',name:'Dubbhålsborr A 2,5/8',kind:'centerdrill',d:8,pilot:2.5,pilotLen:6,len:24,pt:60,pilotPt:118};
+    const DEFAULT_TOOLS=[{id:'center',name:'Dödgångscentrum 60°',kind:'center',d:0,len:0,pt:60},CENTER_DRILL].concat([3,4,5,6,8,10,12,16,20,25].map(d=>({id:'d'+d,name:'Spiralborr Ø'+d,kind:'drill',d,len:Math.min(200,Math.max(30,Math.round(d*8))),pt:118})));
+    const LS_KEY='svarv_tailtools_v1';
+    let customTools=[]; try{ customTools=(JSON.parse(localStorage.getItem(LS_KEY)||'[]')||[]).filter(t=>t&&t.kind==='drill'&&t.d>0&&t.len>0&&t.pt>=60&&t.pt<=170&&typeof t.id==='string').map(t=>({...t,custom:true})); }catch(e){ customTools=[]; }
+    const saveTools=()=>{ try{localStorage.setItem(LS_KEY,JSON.stringify(customTools));}catch(e){} };
+    const allTools=()=>DEFAULT_TOOLS.concat(customTools), curTool=()=>allTools().find(t=>t.id===ts.tool)||DEFAULT_TOOLS[0];
+    // geometri i sim-enheter (1 enhet = 10 mm); borrens spets pekar mot chucken (−Z)
+    const isTailDrill=t=>t.kind==='drill'||t.kind==='centerdrill';
+    const toolR=t=>t.kind==='center'?CEN_R:t.d/20, toolTn=t=>Math.tan(t.pt*Math.PI/360), tsAd=t=>t.kind==='center'?0:ADAPT*SC;
+    const tailRadiusAt=(t,z)=>{ // radie z mm bakom spetsen: dubbhålsborren har pilot + 60° kon
+      if(t.kind!=='centerdrill')return Math.min(toolR(t),z*toolTn(t));
+      const rp=t.pilot/20, ptn=Math.tan(t.pilotPt*Math.PI/360), pc=rp/ptn, pl=Math.max(pc,t.pilotLen/10);
+      if(z<=pc)return z*ptn;
+      if(z<=pl)return rp;
+      return Math.min(toolR(t),rp+(z-pl)*toolTn(t));
+    };
+    const tailCutLen=t=>t.kind==='centerdrill'?Math.max(t.pilotLen/10,(t.pilot/20)/Math.tan(t.pilotPt*Math.PI/360))+(toolR(t)-t.pilot/20)/toolTn(t):toolR(t)/toolTn(t);
+    const tsNoseZ=(o=ts.off,e=ts.ext)=>TZ+SC*(TS_NOSE0+o-e), tsExtra=t=>t.kind==='center'?CEN_LEN*SC:ADAPT*SC+t.len/10;
+    const tsTipZ=(o=ts.off,e=ts.ext,t=curTool())=>tsNoseZ(o,e)-tsExtra(t), tsFrontZ=(o=ts.off)=>TZ+SC*(10.1+o);
+    const zMaxTool=()=>Math.min(stockStart+stockLength+ZMAXOFF,tsFrontZ()-toolRear);   // skärslidens verktyg kan inte gå in i reitstocken
+    const tsOffMin=()=>(state.z+toolRear-TZ)/SC-10.1;                                    // reitstocken kan inte köra in i skärslidens verktyg
+    function faceZ(){ let i=nz-1; while(i>=0&&cnt[i]===0)i--; return zOf(i+1); }    // ämnets yttersta planyta (mot reitstocken)
+    const tsSolidAt=(z,r)=>{ const i=Math.floor((z-stockStart)/DX); if(i<0||i>=nz||!cnt[i])return false; const j=Math.floor(r/DX); return j<nr&&solid[i*nr+j]===1; };
+    function tsHit(zTip,t){ const R=toolR(t);   // tränger verktygets framkant in i material?
+      if(t.kind==='center'){
+        if(ts.centerHole)return false; // dubbhålsborren har gjort en korrekt sätesyta för dubben
+        const tn=toolTn(t); for(let r=.02;r<=R;r+=.02)if(tsSolidAt(zTip+r/tn+DX,Math.max(0,r-DX)))return true;
+      } else if(isTailDrill(t)){ const L=tsExtra(t)-ADAPT*SC; for(let z=.02;z<=L;z+=.04){ const r=tailRadiusAt(t,z); if(r>DX*.5&&tsSolidAt(zTip+z+DX,Math.max(0,r-DX)))return true; } }
+      return false; }
+    // Varför får reitstocken/pinolen inte gå dit? null = fritt. s>0 = rörelse bort från chucken (alltid fri).
+    function tsWhy(o,e,s){ if(o>1e-9||e<-1e-9)return 'rear'; if(s>0)return null;
+      const t=curTool();
+      if(e>EXTMAX+1e-9)return 'quill'; if(o<tsOffMin()-1e-9)return 'slide';
+      if(tsNoseZ(o,e)-tsAd(t)<faceZ()-1e-6)return 'face';
+      if(tsTipZ(o,e,t)<CH_FRONT+.05)return 'chuck';
+      if(!(isTailDrill(t)&&!ts.broken&&spinning())&&tsHit(tsTipZ(o,e,t),t))return 'hit';
+      return null; }
+    function tsMoveBy(dz,viaQuill){ if(!dz)return null; let why=null; const n=Math.max(1,Math.ceil(Math.abs(dz)/.015)), s=dz/n;   // dz = önskad ändring av spetsens z
+      for(let k=0;k<n;k++){ const o=ts.off+(viaQuill?0:s/SC), e=ts.ext+(viaQuill?-s/SC:0), w=tsWhy(o,e,s); if(w){why=w;break;} ts.off=o; ts.ext=e; }
+      return why; }
+    const TSMSG={slide:'REITSTOCKEN STANNAR — för nära skärslidens verktyg',quill:'PINOLEN ÄR HELT UTE',face:'PINOLENS FRAMSIDA STANNAR MOT ÄMNET — borren är inte längre',chuck:'STANNAR MOT KÄFTARNA — max borrdjup',hit:'BORRA DUBBHÅL FÖRST — dubben kan inte gå in i ämnet'};
+    let flashT=0; function flash(msg,crash){ const md=document.querySelector('#mode'); md.textContent=msg; if(crash){sfxThud();state.crash=1.8;} clearTimeout(flashT); flashT=setTimeout(()=>{if(!state.demo&&md.textContent===msg)md.textContent=baseMode();},2200); }
+    const tsEngaged=()=>tsHit(tsTipZ()-.1,curTool());                              // material inom ≈1 mm framför spetsen → matningsbegränsat
+    function tsStep(dt){ const k=state.keys, car=(k.k?1:0)-(k.i?1:0); let qq=(k.j?1:0)-(k.l?1:0); if(!qq&&ts.auto)qq=1;
+      if(!car&&!qq)return;
+      const sp=(!tsEngaged()&&k.Shift)?dt*5:dt*feedSpeed();                          // samma hastighetsregler som övriga axlar
+      if(car){ if(ts.locked)flash('REITSTOCKEN ÄR LÅST — lås upp den med knappen 🔓'); else { const w=tsMoveBy(car*sp,false); if(w&&w!=='rear')flash(TSMSG[w],w==='hit'); } }
+      if(qq){ const w=tsMoveBy(-qq*sp,true); if(w){ if(ts.auto&&qq>0){ts.auto=false;renderTsBtns();} if(w!=='rear')flash(TSMSG[w],w==='hit'); } } }
+    function tsApply(){ TSG.position.z=ts.off; QG.position.z=-ts.ext; tsWheel.rotation.z=ts.ext*SC*2; lockArm.rotation.x=ts.locked?0:.9; }
+    function tsEnforce(){ const o0=ts.off,e0=ts.ext; let g=0;   // backa pinol, sedan reitstock, tills verktyget inte kolliderar
+      while(g++<3000&&tsWhy(ts.off,ts.ext,-1)){ if(ts.ext>1e-9)ts.ext=Math.max(0,ts.ext-.01); else if(ts.off<-1e-9)ts.off=Math.min(0,ts.off+.01); else break; }
+      tsApply(); return ts.off!==o0||ts.ext!==e0; }
+    const goldMat=pm(0xc9a24a,.8,.28), brokenMat=pm(0x3a3d3f,.5,.5);
+    function buildTailTool(){ const t=curTool(); TTG.children.slice().forEach(c=>{c.geometry?.dispose();TTG.remove(c);});
+      const mat=ts.broken?brokenMat:goldMat;
+      if(t.kind==='center'){
+        const g=new THREE.Mesh(new THREE.CylinderGeometry(.02,CEN_R/SC,CEN_LEN,28),M.steel); g.rotation.x=-Math.PI/2; g.position.set(0,0,TS_NOSE0-CEN_LEN/2); put(g,TTG);
+        cyl(.31,.1,'z',0,0,TS_NOSE0-.05,M.dark,TTG);
+      } else if(t.kind==='centerdrill') {
+        const R=t.d/20/SC, rp=t.pilot/20/SC, ptn=Math.tan(t.pilotPt*Math.PI/360), pCone=rp/ptn;
+        const pBody=Math.max(pCone,t.pilotLen/10/SC), cs=(R-rp)/toolTn(t), Ltot=t.len/10/SC;
+        const outer=Math.max(.02,Ltot-pCone-pBody-cs), zb=TS_NOSE0-ADAPT;
+        cyl(.26,ADAPT,'z',0,0,TS_NOSE0-ADAPT/2,M.black,TTG);
+        cyl(.30,.08,'z',0,0,TS_NOSE0-.04,M.steel,TTG);
+        const body=new THREE.Mesh(new THREE.CylinderGeometry(R,R,outer,24),mat); body.rotation.x=Math.PI/2; body.position.set(0,0,zb-outer/2); put(body,TTG);
+        const sink=new THREE.Mesh(new THREE.CylinderGeometry(rp,R,cs,24),mat); sink.rotation.x=-Math.PI/2; sink.position.set(0,0,zb-outer-cs/2); put(sink,TTG);
+        const pilot=new THREE.Mesh(new THREE.CylinderGeometry(rp,rp,pBody,20),mat); pilot.rotation.x=Math.PI/2; pilot.position.set(0,0,zb-outer-cs-pBody/2); put(pilot,TTG);
+        const point=new THREE.Mesh(new THREE.CylinderGeometry(.0005,rp,pCone,20),mat); point.rotation.x=-Math.PI/2; point.position.set(0,0,zb-outer-cs-pBody-pCone/2); put(point,TTG);
+      } else {
+        const R=t.d/20/SC, cone=R/toolTn(t), Ltot=t.len/10/SC, Lb=Math.max(.02,Ltot-cone), zb=TS_NOSE0-ADAPT;
+        cyl(.26,ADAPT,'z',0,0,TS_NOSE0-ADAPT/2,M.black,TTG);                           // borrchuck/adapter
+        cyl(.30,.08,'z',0,0,TS_NOSE0-.04,M.steel,TTG);
+        const b=new THREE.Mesh(new THREE.CylinderGeometry(R,R,Lb,24),mat); b.rotation.x=Math.PI/2; b.position.set(0,0,zb-Lb/2); put(b,TTG);
+        const c=new THREE.Mesh(new THREE.CylinderGeometry(.0005,R,cone,24),mat); c.rotation.x=-Math.PI/2; c.position.set(0,0,zb-Lb-cone/2); put(c,TTG);   // spets (118°)
+      } }
+    // ---- Verktygslådan (panel) ----
+    const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function renderTbox(){ gEl('#tbox').innerHTML=allTools().map(t=>{ const info=t.kind==='center'?'60° spets • stödjer ämnet i ett centrumhål':t.kind==='centerdrill'?`pilot Ø${t.pilot} mm • centrumhål 60° till Ø${t.d} mm • L ${t.len} mm • max ${Math.round(30*t.d*t.d)} N`:`Ø${t.d} mm • L ${t.len} mm • ${t.pt}° • max ${Math.round(30*t.d*t.d)} N`;
+      return `<div class="trw${t.id===ts.tool?' cur':''}" data-id="${esc(t.id)}"><div><b>${esc(t.name)}</b><br><span>${info}</span></div>${t.custom?`<button class="del" data-del="${esc(t.id)}" title="Ta bort ur lådan">✕</button>`:''}</div>`; }).join(''); }
+    function renderTsBtns(){ gEl('#tsLock').textContent=ts.locked?'🔒 Reitstock låst':'🔓 Reitstock olåst'; gEl('#tsAuto').textContent=ts.auto?'❚❚ Stoppa borrmatning':'▶ Borrmatning (pinol)'; }
+    let tsLastTip=null;
+    function selectTool(id){ ts.tool=id; ts.broken=false; ts.auto=false; tsLastTip=null; buildTailTool(); const moved=tsEnforce(); renderTbox(); renderTsBtns();
+      flash(moved?`VERKTYG BYTT: ${curTool().name} — pinol/reitstock backades så att det går fritt`:`VERKTYG MONTERAT: ${curTool().name}`); }
+    gEl('#tbox').onclick=e=>{ const del=e.target.closest('[data-del]');
+      if(del){ e.stopPropagation(); const id=del.dataset.del; customTools=customTools.filter(t=>t.id!==id); saveTools(); if(ts.tool===id)selectTool('center'); else renderTbox(); return; }
+      const row=e.target.closest('.trw'); if(row)selectTool(row.dataset.id); };   // att klicka på det monterade verktyget igen = nytt, helt verktyg
+    gEl('#tbAdd').onclick=()=>{ const d=parseFloat(gEl('#tbD').value), len=parseFloat(gEl('#tbL').value), pt=parseFloat(gEl('#tbP').value), nm=gEl('#tbN').value.trim(), msg=gEl('#tbMsg');
+      if(!(d>=.5&&d<=60)){msg.textContent='Diametern måste vara 0,5–60 mm.';return;}
+      if(!(pt>=60&&pt<=170)){msg.textContent='Spetsvinkeln måste vara 60–170°.';return;}
+      const cone=(d/2)/Math.tan(pt*Math.PI/360); if(!(len>=cone+5&&len<=300)){msg.textContent=`Längden måste vara minst ${Math.ceil(cone+5)} mm (spetsen är ${cone.toFixed(1)} mm lång) och högst 300 mm.`;return;}
+      const t={id:'c'+Date.now(),name:nm||`Eget borr Ø${d}`,kind:'drill',d,len,pt,custom:true}; customTools.push(t); saveTools(); msg.textContent=''; gEl('#tbN').value=''; selectTool(t.id); };
+    gEl('#tsLock').onclick=()=>{ ts.locked=!ts.locked; renderTsBtns(); tsApply(); sfxClick(); };
+    gEl('#tsAuto').onclick=()=>{ if(ts.auto){ts.auto=false;renderTsBtns();return;} if(ts.broken){flash('BORREN ÄR BRUTEN — montera ett nytt ur lådan');return;} if(!state.spindle){flash('STARTA SPINDELN FÖRST');return;} ts.auto=true; renderTsBtns(); };
+    const tsSl=gEl('#tsSlider'), qSl=gEl('#qSlider');
+    tsSl.oninput=()=>{ if(ts.locked){flash('REITSTOCKEN ÄR LÅST — lås upp den med knappen 🔓');return;} const w=tsMoveBy((-Number(tsSl.value)/(SC*10)-ts.off)*SC,false); if(w&&w!=='rear')flash(TSMSG[w],w==='hit'); };
+    qSl.oninput=()=>{ const w=tsMoveBy(-(Number(qSl.value)/(SC*10)-ts.ext)*SC,true); if(w&&w!=='rear')flash(TSMSG[w],w==='hit'); };
+    const tsZEl=gEl('#tsZ'), tsQEl=gEl('#tsQ'), tsDEl=gEl('#tsD');
+    function renderTsReadout(){ const t=curTool(), tip=tsTipZ();
+      tsZEl.textContent=dfmt((tip-(stockStart+stockLength))*10-offZ); tsQEl.textContent=(ts.ext*SC*10).toFixed(1);
+      tsDEl.textContent=(isTailDrill(t)?Math.max(0,(faceZ()-tip)*10):0).toFixed(1);
+      const v1=Math.round(-ts.off*SC*10), v2=Math.round(ts.ext*SC*10*2)/2; if(Number(tsSl.value)!==v1)tsSl.value=v1; if(Number(qSl.value)!==v2)qSl.value=v2; }
+    // ---- Borrning: konen (spetsvinkeln) och sedan full diameter tar bort material längs axeln. Spindeln måste gå. ----
+    function breakDrill(){ sfxBreak(); ts.broken=true; ts.auto=false; buildTailTool(); renderTsBtns(); state.crash=3;
+      document.querySelector('#mode').textContent='BORRBROTT — kraften blev för hög (sänk matningen eller välj grövre borr)'; }
+    function drillFrame(dt){ const t=curTool(), tip=tsTipZ();
+      if(!isTailDrill(t)||ts.broken||!spinning()){tsLastTip=tip;return;}
+      if(tsLastTip===null)tsLastTip=tip;
+      const R=toolR(t), cutLen=tailCutLen(t), hiZ=Math.max(tip+cutLen,tsLastTip);
+      const iLo=Math.max(0,Math.ceil((tip-stockStart)/DX-.5)), iHi=Math.min(nz-1,Math.floor((hiZ-stockStart)/DX-.5)); tsLastTip=tip;
+      if(iLo>iHi)return;
+      dirtyLo=1e9;dirtyHi=-1;frameCells=0;newEmpty.length=0;
+      for(let i=iLo;i<=iHi;i++){ if(!cnt[i])continue; const zc=stockStart+(i+.5)*DX, r=tailRadiusAt(t,zc-tip); if(r<=DX*.5)continue;
+        const jm=Math.min(nr-1,Math.ceil(r/DX-.5)-1), o=i*nr; for(let j=0;j<=jm;j++)if(solid[o+j])removeCell(i,j); }
+      if(!frameCells)return;
+      state.cutting=true;
+      const c0=Math.floor(dirtyLo/CH),c1=Math.min(nChunks-1,Math.floor((dirtyHi+1)/CH)); for(let c=c0;c<=c1;c++)rebuildChunk(c);
+      document.querySelector('#removed').textContent=state.removed.toFixed(2)+' cm³ avverkat'; emitChips(Math.min(6,Math.ceil(frameCells/30)),0,faceZ());
+      if(t.kind==='centerdrill'&&faceZ()-tip>=tailCutLen(t)-DX)ts.centerHole=true;
+      for(const i of newEmpty){ if(cnt[i]===0&&anySolidAbove(i)){detachFrom(i);break;} }
+      const Fd=.2*KC*state.feed*t.d; if(Fd>state.fcdFrame)state.fcdFrame=Fd;          // axialkraft ≈ 0,2·kc·f·D
+      if(Fd>30*t.d*t.d)breakDrill(); }                                                // tunna borrar tål lite: 30·D² N
+    buildTailTool(); renderTbox(); renderTsBtns(); tsApply();
+    gEl('#tsToggle').onclick=()=>{ const c=gEl('#tsPanel').classList.toggle('collapsed'); gEl('#tsToggle').textContent=c?'▸':'▾'; };
+    if(innerWidth<900){gEl('#tsPanel').classList.add('collapsed');gEl('#tsToggle').textContent='▸';}
+    let last=performance.now();
+    function animate(now){
+      requestAnimationFrame(animate);
+      let dt=Math.min(.05,(now-last)/1000);last=now;
+      { const tgt=(state.spindle&&state.spinDir===state.dirAct)?state.rpm:0, a=(tgt>state.rpmAct?900:1800)*dt; state.rpmAct=state.rpmAct<tgt?Math.min(tgt,state.rpmAct+a):Math.max(tgt,state.rpmAct-a); if(state.rpmAct===0)state.dirAct=state.spinDir; } // spindelramp (varv/min per s)
+      const ox=state.x,oz=state.z;
+      if(state.demo)program(dt);else processKeys(dt);
+      resolveCollision(ox,oz); compoundStep(dt); tsStep(dt); tsApply();
+      if(state.crash>0){state.crash-=dt;if(state.crash<=0){state.crash=0;if(!state.demo)document.querySelector('#mode').textContent=baseMode();}}
+      stepChips(dt);
+      lamp.classList.toggle('crash',state.crash>0);
+      positionTool();
+      cutFrame(dt); drillFrame(dt); state.fc=Math.max(state.fcFrame,state.fc*Math.exp(-dt*3)); state.fcFrame=0; state.fcd=Math.max(state.fcdFrame,state.fcd*Math.exp(-dt*3)); state.fcdFrame=0; updateReadouts(); renderTsReadout();
+      setLamp(engaged()); updateAudio(dt);
+      if(fallingPart){ const restY=WAYTOP*SC+initialR-.01; if(fallingPart.position.y>restY){fallVelocity+=dt*8;fallingPart.position.y=Math.max(restY,fallingPart.position.y-fallVelocity*dt);fallingPart.rotation.z+=dt*1.35;} } // faller och landar på glidytorna
+      const spin=dt*14*state.rpmAct/850; stockGroup.rotation.z+=state.dirAct*spin; chuck.rotation.z+=state.dirAct*spin;
+      orbit.update(); renderer.render(scene,camera);
+    }
+    animate(performance.now());
+    new ResizeObserver(()=>{ const w=vw(),h=vh(); if(!w||!h)return; camera.aspect=w/h; camera.updateProjectionMatrix(); renderer.setSize(w,h); }).observe(host);
+
+    // ---------- Ikonrail: en meny åt gången, klicka på aktiv ikon för att dölja menyn ----------
+    // Fliken Verktyg rymmer både skärverktyg och reitstock (växlare överst i menyn).
+    { const btns=[...document.querySelectorAll('#rail [data-p]')], pans=[...document.querySelectorAll('#drawer .dp')], dr=document.querySelector('#drawer'),
+        sub=document.querySelector('#subtabs'), sbs=[...sub.querySelectorAll('[data-s]')];
+      let cur=innerWidth<900?null:'verktyg', subCur='verktyg';
+      const render=()=>{ dr.classList.toggle('closed',cur===null); const inTools=cur==='verktyg'; sub.classList.toggle('off',!inTools); const target=inTools?subCur:cur;
+        if(cur!==null)pans.forEach(x=>x.classList.toggle('off',x.dataset.p!==target));
+        btns.forEach(b=>{const on=b.dataset.p===cur; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on?'true':'false');});
+        sbs.forEach(b=>{const on=b.dataset.s===subCur; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on?'true':'false');}); };
+      btns.forEach(b=>{ b.onclick=()=>{ cur=(cur===b.dataset.p)?null:b.dataset.p; render(); }; });
+      sbs.forEach(b=>{ b.onclick=()=>{ subCur=b.dataset.s; render(); }; });
+      render(); }
+
+    // ---------- Matningsreglaget i mätpanelen: visar mm/varv bredvid reglaget ----------
+    { const fi=document.querySelector('#feed'), fv=document.querySelector('#feedVal'); const up=()=>{ fv.textContent=Number(fi.value).toFixed(2).replace('.',',')+' mm/v'; }; fi.addEventListener('input',up); up(); }
+
+    // ---------- Handmatningsplatta: samma som tangenterna W/A/S/D och Shift ----------
+    { document.querySelectorAll('#jog [data-k]').forEach(b=>{ const k=b.dataset.k;
+        const on=e=>{ e.preventDefault(); try{b.setPointerCapture(e.pointerId);}catch(_){} state.keys[k]=true; b.classList.add('act'); };
+        const off=()=>{ state.keys[k]=false; b.classList.remove('act'); };
+        b.addEventListener('pointerdown',on); ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,off)); });
+      const rb=document.querySelector('#jogRapid'); rb.onclick=()=>{ state.keys.Shift=!state.keys.Shift; rb.classList.toggle('act',!!state.keys.Shift); };
+      setInterval(()=>rb.classList.toggle('act',!!state.keys.Shift),150); }
+  </script>
+
+
+
+</body></html>
