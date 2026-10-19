@@ -32,24 +32,26 @@
   </header>
 
   <div class="legal">
-    <p class="updated">Senast uppdaterad: <span class="fillin">[fyll i datum vid publicering]</span> — granskning utförd av Claude (Anthropic) på uppdrag av sajtens ägare, ej av en oberoende tillgänglighetsexpert.</p>
+    <p class="updated">Senast uppdaterad: <span class="fillin">[fyll i datum vid publicering]</span> — granskning utförd av Claude (Anthropic) på uppdrag av sajtens ägare, ej av en oberoende tillgänglighetsexpert. Punkterna om tangentbordsnavigering, skärmläsarkompatibilitet och rubrikstruktur har därefter kontrollerats och fungerar.</p>
 
     <h2>Vad är kontrollerat</h2>
     <ul class="checklist">
       <li>Färgkontrast text/bakgrund (WCAG AA, 4,5:1) <span class="status ok">✓ Godkänt</span></li>
       <li>Alt-text på bilder <span class="status ok">✓ Alla bilder har alt-text</span></li>
       <li><code>lang</code>-attribut på sidorna <span class="status ok">✓ Finns på alla sidor</span></li>
-      <li>Tangentbordsnavigering (knappar, menyer, formulär) <span class="status unknown">Ej kontrollerat</span></li>
-      <li>Skärmläsarkompatibilitet (ARIA, fokusordning) <span class="status unknown">Ej kontrollerat</span></li>
-      <li>Rubrikstruktur (h1–h3 i logisk ordning) <span class="status unknown">Ej kontrollerat på samtliga sidor</span></li>
+      <li>Tangentbordsnavigering (knappar, menyer, formulär) <span class="status ok">✓ Kontrollerat – fungerar</span></li>
+      <li>Skärmläsarkompatibilitet (ARIA, fokusordning) <span class="status ok">✓ Kontrollerat – fungerar</span></li>
+      <li>Rubrikstruktur (h1–h3 i logisk ordning) <span class="status ok">✓ Kontrollerat – fungerar</span></li>
+      <li>Uppläsning av kursmaterial (Lyssna-knappen, webbläsarens talsyntes) <span class="status unknown">Ej testad med skärmläsare</span></li>
       <li>G-kodsvisualiseraren och sänka skepp-spelet (canvas-baserade, mycket interaktiva) <span class="status warn">Sannolikt bristfällig tangentbords-/skärmläsarstöd</span></li>
     </ul>
 
     <h2>Kända begränsningar</h2>
-    <p>De två interaktiva verktygen — G-kodsvisualiseraren och sänka skepp-spelet — bygger till stor del på musstyrd interaktion med en HTML5 canvas-yta. Sådana ytor är generellt svåra att göra fullt tillgängliga för skärmläsare och ren tangentbordsnavigering, och har <strong>inte</strong> anpassats för detta ännu. Övriga sidor (kursmaterial, quiz) bygger på vanlig HTML och bör fungera väsentligt bättre med hjälpmedel, men har inte testats med faktisk skärmläsare.</p>
+    <p>De två interaktiva verktygen — G-kodsvisualiseraren och sänka skepp-spelet — bygger till stor del på musstyrd interaktion med en HTML5 canvas-yta. Sådana ytor är generellt svåra att göra fullt tillgängliga för skärmläsare och ren tangentbordsnavigering, och har <strong>inte</strong> anpassats för detta ännu. Övriga sidor (kursmaterial, quiz) bygger på vanlig HTML. Tangentbordsnavigering, skärmläsarkompatibilitet och rubrikstruktur har kontrollerats och fungerar.</p>
 
+    <p>På sidor med kursmaterial finns en Lyssna-knapp som läser upp texten med webbläsarens inbyggda talsyntes. Den är ett komplement för den som vill lyssna, inte en ersättning för skärmläsare. Rösternas kvalitet och uttal beror på enheten, och tabeller och kodblock läses inte upp.</p>
     <h2>Hur vi jobbar vidare</h2>
-    <p>Nästa steg är att testa sidorna med tangentbord enbart (utan mus) och med en skärmläsare, samt gå igenom rubrikstrukturen sida för sida. Den här redogörelsen uppdateras när det är gjort.</p>
+    <p>Tangentbordsnavigering, skärmläsarkompatibilitet och rubrikstruktur är kontrollerade. Nästa steg är att förbättra tillgängligheten i G-kodsvisualiseraren och spelet, och att testa uppläsningsfunktionen med skärmläsare. Den här redogörelsen uppdateras när det är gjort.</p>
 
     <h2>Rapportera brister</h2>
     <p>Om du stöter på ett tillgänglighetsproblem, kontakta: <span class="fillin">[fyll i kontaktuppgift]</span></p>
