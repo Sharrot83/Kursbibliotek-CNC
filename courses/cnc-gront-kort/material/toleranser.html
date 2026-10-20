@@ -267,6 +267,12 @@
   .isosym .lbl{display:block; font-size:11px; font-family:"IBM Plex Mono",monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:6px 0 8px;}
   article.reading .isosym p{font-size:13px; line-height:1.5; margin:0;}
   @media (max-width:560px){ .isosym{grid-template-columns:1fr;} }
+  .ittable{font-size:12.5px;}
+  article.reading table.ittable td, article.reading table.ittable th{padding:5px 7px; text-align:right;}
+  article.reading table.ittable th.unit{text-align:center; color:var(--muted);}
+  article.reading table.ittable td:first-child, article.reading table.ittable thead tr:first-child th:first-child{position:sticky; left:0; background:var(--panel); text-align:left; z-index:1;}
+  article.reading table.ittable td.mm, article.reading table.ittable th.unit.mm{background:color-mix(in srgb, var(--accent,#4fb3a5) 9%, transparent);}
+  .tscroll table.ittable{min-width:980px;}
   .tscroll{overflow-x:auto; margin:14px 0 6px;}
   .tscroll table.ref-table{margin:0; min-width:520px;}
   article.reading table.ref-table.num td, article.reading table.ref-table.num th{white-space:nowrap; font-variant-numeric:tabular-nums;}
@@ -276,16 +282,6 @@
   article.reading ol.steps{margin:0 0 16px; padding-left:0; list-style:none; counter-reset:st;}
   article.reading ol.steps li{counter-increment:st; position:relative; padding-left:34px; margin-bottom:9px; font-size:14.6px; line-height:1.6;}
   article.reading ol.steps li::before{content:counter(st); position:absolute; left:0; top:1px; width:22px; height:22px; border-radius:50%; background:var(--accent,#4fb3a5); color:#0f1115; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center;}
-  .audio-box{
-    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
-    margin:6px 0 22px; padding:12px 16px; border:1px solid var(--line); border-radius:8px;
-    background:var(--panel);
-  }
-  .audio-box .audio-label{
-    font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; text-transform:uppercase;
-    letter-spacing:.08em; color:var(--accent,var(--amber)); white-space:nowrap; display:flex; align-items:center; gap:6px;
-  }
-  .audio-box audio{ flex:1; min-width:220px; height:34px; accent-color:var(--accent,var(--amber)); }
 </style>
 </head>
 <body>
@@ -308,8 +304,6 @@
   </header>
   <div class="dim">TILL INNEHÅLLET</div>
   <article class="reading" style="--accent:#4fb3a5">
-
-<div class="audio-box"><span class="audio-label">🔊 Lyssna</span><audio controls preload="none" src="audio/toleranser.mp3"></audio></div>
 
     <div class="callout"><b>Läs detta först</b>Dimensionstoleranser handlar ofta om mycket små mått — några tusendels millimeter. I figurerna här är toleranserna därför ritade kraftigt förstorade, och toleransområdena är markerade med kursens accentfärg. Alla mått anges i millimeter om inget annat sägs, precis som på en verkstadsritning. Det här materialet handlar om <strong>dimensionstoleranser</strong> (och passningar); när det står "tolerans" menas alltså dimensionstolerans.</div>
 
@@ -616,25 +610,52 @@
 
     <!-- 12 -->
     <h2 id="grad"><span class="num">12</span>Toleransgrad — siffran</h2>
-    <p>Toleransgraden representerar en viss toleransvidd, alltså noggrannheten vid tillverkningen. Det finns 18 grader för allmänt bruk, numrerade 1–18 (plus de mycket fina 01 och 0). Ibland står <strong>IT</strong> framför numret — IT betyder Internationell Tolerans.</p>
+    <p>Toleransgraden representerar en viss toleransvidd, alltså noggrannheten vid tillverkningen. Det finns 18 grader för allmänt bruk, IT1–IT18 (plus de mycket fina IT01 och IT0). Ibland står <strong>IT</strong> framför numret — IT betyder Internationell Tolerans.</p>
     <div class="formula-grid two">
       <div class="formula"><span class="f-h">Låg toleransgrad (1, 2, 3 …)</span>liten toleransvidd<br><span class="f-sum">= stor noggrannhet</span></div>
       <div class="formula"><span class="f-h">Hög toleransgrad (… 16, 17, 18)</span>stor toleransvidd<br><span class="f-sum">= mindre noggrannhet</span></div>
     </div>
-    <div class="tscroll"><table class="ref-table num">
-      <thead><tr><th>Basmått mm</th><th>IT5</th><th>IT6</th><th>IT7</th><th>IT8</th><th>IT9</th><th>IT10</th><th>IT11</th><th>IT12</th><th>IT13</th><th>IT14</th></tr></thead>
+    <div class="tscroll"><table class="ref-table num ittable">
+      <thead>
+        <tr><th rowspan="2">Basmått mm</th><th colspan="11" class="unit">Toleransvidd i µm</th><th colspan="7" class="unit mm">Toleransvidd i mm</th></tr>
+        <tr><th>IT1</th><th>IT2</th><th>IT3</th><th>IT4</th><th>IT5</th><th>IT6</th><th>IT7</th><th>IT8</th><th>IT9</th><th>IT10</th><th>IT11</th><th>IT12</th><th>IT13</th><th>IT14</th><th>IT15</th><th>IT16</th><th>IT17</th><th>IT18</th></tr>
+      </thead>
       <tbody>
-        <tr><td>t.o.m. 3</td><td>4</td><td>6</td><td>10</td><td>14</td><td>25</td><td>40</td><td>60</td><td>0,10</td><td>0,14</td><td>0,25</td></tr>
-        <tr><td>&gt;3–6</td><td>5</td><td>8</td><td>12</td><td>18</td><td>30</td><td>48</td><td>75</td><td>0,12</td><td>0,18</td><td>0,30</td></tr>
-        <tr><td>&gt;6–10</td><td>6</td><td>9</td><td>15</td><td>22</td><td>36</td><td>58</td><td>90</td><td>0,15</td><td>0,22</td><td>0,36</td></tr>
-        <tr><td>&gt;10–18</td><td>8</td><td>11</td><td>18</td><td>27</td><td>43</td><td>70</td><td>110</td><td>0,18</td><td>0,27</td><td>0,43</td></tr>
-        <tr><td>&gt;18–30</td><td>9</td><td>13</td><td>21</td><td>33</td><td>52</td><td>84</td><td>130</td><td>0,21</td><td>0,33</td><td>0,52</td></tr>
-        <tr><td>&gt;30–50</td><td>11</td><td>16</td><td>25</td><td>39</td><td>62</td><td>100</td><td>160</td><td>0,25</td><td>0,39</td><td>0,62</td></tr>
-        <tr><td>&gt;50–80</td><td>13</td><td>19</td><td>30</td><td>46</td><td>74</td><td>120</td><td>190</td><td>0,30</td><td>0,46</td><td>0,74</td></tr>
-        <tr><td>&gt;80–120</td><td>15</td><td>22</td><td>35</td><td>54</td><td>87</td><td>140</td><td>220</td><td>0,35</td><td>0,54</td><td>0,87</td></tr>
+        <tr><td>t.o.m. 3</td><td>0,8</td><td>1,2</td><td>2</td><td>3</td><td>4</td><td>6</td><td>10</td><td>14</td><td>25</td><td>40</td><td>60</td><td class="mm">0,1</td><td class="mm">0,14</td><td class="mm">0,25</td><td class="mm">0,4</td><td class="mm">0,6</td><td class="mm">1</td><td class="mm">1,4</td></tr>
+        <tr><td>&gt;3–6</td><td>1</td><td>1,5</td><td>2,5</td><td>4</td><td>5</td><td>8</td><td>12</td><td>18</td><td>30</td><td>48</td><td>75</td><td class="mm">0,12</td><td class="mm">0,18</td><td class="mm">0,3</td><td class="mm">0,48</td><td class="mm">0,75</td><td class="mm">1,2</td><td class="mm">1,8</td></tr>
+        <tr><td>&gt;6–10</td><td>1</td><td>1,5</td><td>2,5</td><td>4</td><td>6</td><td>9</td><td>15</td><td>22</td><td>36</td><td>58</td><td>90</td><td class="mm">0,15</td><td class="mm">0,22</td><td class="mm">0,36</td><td class="mm">0,58</td><td class="mm">0,9</td><td class="mm">1,5</td><td class="mm">2,2</td></tr>
+        <tr><td>&gt;10–18</td><td>1,2</td><td>2</td><td>3</td><td>5</td><td>8</td><td>11</td><td>18</td><td>27</td><td>43</td><td>70</td><td>110</td><td class="mm">0,18</td><td class="mm">0,27</td><td class="mm">0,43</td><td class="mm">0,7</td><td class="mm">1,1</td><td class="mm">1,8</td><td class="mm">2,7</td></tr>
+        <tr><td>&gt;18–30</td><td>1,5</td><td>2,5</td><td>4</td><td>6</td><td>9</td><td>13</td><td>21</td><td>33</td><td>52</td><td>84</td><td>130</td><td class="mm">0,21</td><td class="mm">0,33</td><td class="mm">0,52</td><td class="mm">0,84</td><td class="mm">1,3</td><td class="mm">2,1</td><td class="mm">3,3</td></tr>
+        <tr><td>&gt;30–50</td><td>1,5</td><td>2,5</td><td>4</td><td>7</td><td>11</td><td>16</td><td>25</td><td>39</td><td>62</td><td>100</td><td>160</td><td class="mm">0,25</td><td class="mm">0,39</td><td class="mm">0,62</td><td class="mm">1</td><td class="mm">1,6</td><td class="mm">2,5</td><td class="mm">3,9</td></tr>
+        <tr><td>&gt;50–80</td><td>2</td><td>3</td><td>5</td><td>8</td><td>13</td><td>19</td><td>30</td><td>46</td><td>74</td><td>120</td><td>190</td><td class="mm">0,3</td><td class="mm">0,46</td><td class="mm">0,74</td><td class="mm">1,2</td><td class="mm">1,9</td><td class="mm">3</td><td class="mm">4,6</td></tr>
+        <tr><td>&gt;80–120</td><td>2,5</td><td>4</td><td>6</td><td>10</td><td>15</td><td>22</td><td>35</td><td>54</td><td>87</td><td>140</td><td>220</td><td class="mm">0,35</td><td class="mm">0,54</td><td class="mm">0,87</td><td class="mm">1,4</td><td class="mm">2,2</td><td class="mm">3,5</td><td class="mm">5,4</td></tr>
+        <tr><td>&gt;120–180</td><td>3,5</td><td>5</td><td>8</td><td>12</td><td>18</td><td>25</td><td>40</td><td>63</td><td>100</td><td>160</td><td>250</td><td class="mm">0,4</td><td class="mm">0,63</td><td class="mm">1</td><td class="mm">1,6</td><td class="mm">2,5</td><td class="mm">4</td><td class="mm">6,3</td></tr>
+        <tr><td>&gt;180–250</td><td>4,5</td><td>7</td><td>10</td><td>14</td><td>20</td><td>29</td><td>46</td><td>72</td><td>115</td><td>185</td><td>290</td><td class="mm">0,46</td><td class="mm">0,72</td><td class="mm">1,15</td><td class="mm">1,85</td><td class="mm">2,9</td><td class="mm">4,6</td><td class="mm">7,2</td></tr>
+        <tr><td>&gt;250–315</td><td>6</td><td>8</td><td>12</td><td>16</td><td>23</td><td>32</td><td>52</td><td>81</td><td>130</td><td>210</td><td>320</td><td class="mm">0,52</td><td class="mm">0,81</td><td class="mm">1,3</td><td class="mm">2,1</td><td class="mm">3,2</td><td class="mm">5,2</td><td class="mm">8,1</td></tr>
+        <tr><td>&gt;315–400</td><td>7</td><td>9</td><td>13</td><td>18</td><td>25</td><td>36</td><td>57</td><td>89</td><td>140</td><td>230</td><td>360</td><td class="mm">0,57</td><td class="mm">0,89</td><td class="mm">1,4</td><td class="mm">2,3</td><td class="mm">3,6</td><td class="mm">5,7</td><td class="mm">8,9</td></tr>
+        <tr><td>&gt;400–500</td><td>8</td><td>10</td><td>15</td><td>20</td><td>27</td><td>40</td><td>63</td><td>97</td><td>155</td><td>250</td><td>400</td><td class="mm">0,63</td><td class="mm">0,97</td><td class="mm">1,55</td><td class="mm">2,5</td><td class="mm">4</td><td class="mm">6,3</td><td class="mm">9,7</td></tr>
+        <tr><td>&gt;500–630</td><td>9</td><td>11</td><td>16</td><td>22</td><td>32</td><td>44</td><td>70</td><td>110</td><td>175</td><td>280</td><td>440</td><td class="mm">0,7</td><td class="mm">1,1</td><td class="mm">1,75</td><td class="mm">2,8</td><td class="mm">4,4</td><td class="mm">7</td><td class="mm">11</td></tr>
+        <tr><td>&gt;630–800</td><td>10</td><td>13</td><td>18</td><td>25</td><td>36</td><td>50</td><td>80</td><td>125</td><td>200</td><td>320</td><td>500</td><td class="mm">0,8</td><td class="mm">1,25</td><td class="mm">2</td><td class="mm">3,2</td><td class="mm">5</td><td class="mm">8</td><td class="mm">12,5</td></tr>
+        <tr><td>&gt;800–1000</td><td>11</td><td>15</td><td>21</td><td>28</td><td>40</td><td>56</td><td>90</td><td>140</td><td>230</td><td>360</td><td>560</td><td class="mm">0,9</td><td class="mm">1,4</td><td class="mm">2,3</td><td class="mm">3,6</td><td class="mm">5,6</td><td class="mm">9</td><td class="mm">14</td></tr>
+        <tr><td>&gt;1000–1250</td><td>13</td><td>18</td><td>24</td><td>33</td><td>47</td><td>66</td><td>105</td><td>165</td><td>260</td><td>420</td><td>660</td><td class="mm">1,05</td><td class="mm">1,65</td><td class="mm">2,6</td><td class="mm">4,2</td><td class="mm">6,6</td><td class="mm">10,5</td><td class="mm">16,5</td></tr>
+        <tr><td>&gt;1250–1600</td><td>15</td><td>21</td><td>29</td><td>39</td><td>55</td><td>78</td><td>125</td><td>195</td><td>310</td><td>500</td><td>780</td><td class="mm">1,25</td><td class="mm">1,95</td><td class="mm">3,1</td><td class="mm">5</td><td class="mm">7,8</td><td class="mm">12,5</td><td class="mm">19,5</td></tr>
+        <tr><td>&gt;1600–2000</td><td>18</td><td>25</td><td>35</td><td>46</td><td>65</td><td>92</td><td>150</td><td>230</td><td>370</td><td>600</td><td>920</td><td class="mm">1,5</td><td class="mm">2,3</td><td class="mm">3,7</td><td class="mm">6</td><td class="mm">9,2</td><td class="mm">15</td><td class="mm">23</td></tr>
+        <tr><td>&gt;2000–2500</td><td>22</td><td>30</td><td>41</td><td>55</td><td>78</td><td>110</td><td>175</td><td>280</td><td>440</td><td>700</td><td>1100</td><td class="mm">1,75</td><td class="mm">2,8</td><td class="mm">4,4</td><td class="mm">7</td><td class="mm">11</td><td class="mm">17,5</td><td class="mm">28</td></tr>
+        <tr><td>&gt;2500–3150</td><td>26</td><td>36</td><td>50</td><td>68</td><td>96</td><td>135</td><td>210</td><td>330</td><td>540</td><td>860</td><td>1350</td><td class="mm">2,1</td><td class="mm">3,3</td><td class="mm">5,4</td><td class="mm">8,6</td><td class="mm">13,5</td><td class="mm">21</td><td class="mm">33</td></tr>
       </tbody>
     </table></div>
-    <p class="tnote">Grundtoleranser (toleransvidder), utdrag. IT5–IT11 i µm, IT12–IT14 i mm. Ungefärlig användning: IT1–IT4 mätdon och mycket höga krav, IT5–IT7 kullager och vanliga passningar, IT8–IT11 svarvning, fräsning, borrning, IT12 och uppåt låga krav på noggrannhet.</p>
+    <p class="tnote">Grundtoleranser (toleransvidder) för basmått upp till 3150 mm. <strong>Obs!</strong> IT1–IT11 anges i µm och IT12–IT18 i mm. Toleransvidden är minst för låga toleransgrader och små basmått. Rulla tabellen i sidled på smala skärmar.</p>
+    <table class="ref-table">
+      <thead><tr><th>Toleransgrad</th><th>Exempel på användning</th><th>Exempel på bearbetning</th></tr></thead>
+      <tbody>
+        <tr><td><strong>IT1–IT4</strong></td><td>Mätdon</td><td>Måttjusteringsoperationer</td></tr>
+        <tr><td><strong>IT5–IT7</strong></td><td>Glidlager, kullager, pressförband</td><td>Slipning</td></tr>
+        <tr><td><strong>IT8–IT9</strong></td><td>Vanliga passningar</td><td>Svarvning, brotschning</td></tr>
+        <tr><td><strong>IT10–IT11</strong></td><td>Ej känsliga passningar</td><td>Revolversvarvning</td></tr>
+        <tr><td><strong>IT12–IT18</strong></td><td>Vid låga krav på noggrannhet</td><td></td></tr>
+      </tbody>
+    </table>
+    <p class="tnote">Gränserna mellan grupperna är ungefärliga.</p>
 
     <h3>Toleransvidd och bearbetningskostnad</h3>
     <p>En rätt vald toleransgrad ger lagom måttnoggrannhet: inte så stor toleransvidd att funktionen blir lidande, och inte så snäv tolerans att den inte kan utnyttjas. Hög precision kräver ofta dyrare bearbetning — det är svårare och mer tidsödande att träffa en liten toleransvidd än en stor. Ger inte den extra insatsen några fördelar kan samma funktion tillverkas billigare med ett lägre toleranskrav.</p>
