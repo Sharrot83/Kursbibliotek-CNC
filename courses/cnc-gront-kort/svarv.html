@@ -105,6 +105,28 @@
     .addf input[type="text"], .addf input[type="number"] { width:100%; border:1px solid #416571; border-radius:6px; background:#112932; color:var(--ink); padding:6px 8px; font:600 11px inherit; }
     #tbMsg { min-height:14px; color:var(--red); font-size:11px; margin-top:5px; }
     @media (max-width:720px) { #hud { padding:12px; } .top { flex-direction:column; } .readout { min-width:0; width:100%; } .bottom { align-items:flex-end; } .controls { width:250px; } .keygrid { grid-template-columns:1fr; } .legend { display:none; } }
+  
+    #drawer.wide { flex-basis:480px; }
+    .gkp { padding:12px; }
+    .gkbar { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:8px 0; }
+    .gkbar button:disabled { opacity:.4; cursor:default; }
+    .gkbar label.chk { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); cursor:pointer; }
+    .gked { position:relative; display:flex; height:320px; border:1px solid var(--line); border-radius:8px; background:#06121a; overflow:hidden; font:12px/18px "SFMono-Regular",Consolas,monospace; }
+    #gkGut { flex:0 0 40px; padding:8px 7px 8px 0; text-align:right; color:#58727e; background:#08141b; border-right:1px solid var(--line); white-space:pre; overflow:hidden; user-select:none; }
+    #gkBand { position:absolute; left:41px; right:0; height:18px; background:rgba(53,226,210,.2); border-left:2px solid var(--cyan); pointer-events:none; display:none; z-index:0; }
+    .gkcode { position:relative; flex:1; min-width:0; z-index:1; }
+    #gkHi, #gkTxt { position:absolute; inset:0; width:100%; height:100%; margin:0; padding:8px; border:0; outline:0; font:inherit; white-space:pre; tab-size:2; box-sizing:border-box; }
+    #gkHi { overflow:hidden; pointer-events:none; color:#c9d4da; }
+    #gkTxt { resize:none; overflow:auto; background:transparent; color:transparent; caret-color:#fff; z-index:2; }
+    #gkTxt::selection { background:rgba(80,140,255,.35); color:transparent; }
+    #gkHi .g, #gkHi .m { color:#ffb454; font-weight:700; } #gkHi .ax { color:#6cb6ff; font-weight:700; } #gkHi .f { color:#7ee787; font-weight:700; }
+    #gkHi .s { color:#f2cc60; font-weight:700; } #gkHi .t { color:#7ee787; font-weight:700; } #gkHi .o { color:#d2a8ff; font-weight:700; }
+    #gkHi .n { color:#6e7f8a; } #gkHi .c { color:#6e7f8a; font-style:italic; } #gkHi .x { color:#c9d4da; }
+    #gkGut .gl { height:18px; padding-right:2px; } #gkGut .gl.cur { color:#e6edf3; background:#1e3a52; border-radius:4px; }
+    #gkLog { margin-top:8px; max-height:120px; overflow-y:auto; font:11px/1.5 "SFMono-Regular",Consolas,monospace; color:#cbd7dd; background:#0a171e; border:1px solid var(--line); border-radius:8px; padding:6px 8px; }
+    #gkLog .warn { color:var(--amber); } #gkLog .err { color:var(--red); } #gkLog:empty { display:none; }
+    .gkref summary { cursor:pointer; color:var(--muted); font-size:11px; margin-top:8px; }
+    .gkref table { width:100%; border-collapse:collapse; font-size:11px; margin-top:6px; } .gkref td { padding:3px 5px; border-top:1px solid var(--line); vertical-align:top; } .gkref td:first-child { white-space:nowrap; color:var(--cyan); font-family:"SFMono-Regular",Consolas,monospace; }
   </style>
 <style id="layoutB">
     /* Layout B: ikonrail + utfällbar meny + vy + mätpanel */
@@ -192,10 +214,57 @@
   .angctl input[type="range"] { width:92px; }
   #drawer .stock .angctl input[type="number"] { width:62px; padding:5px 6px; }
   .angctl .deg { color:var(--muted); font-size:12px; letter-spacing:0; }
-</style>
+
+    #machines { flex:0 0 46px; display:flex; flex-direction:column; align-items:stretch; gap:0; padding:8px 0 0; background:#050e14; border-right:1px solid var(--line); z-index:40; }
+    #machines .mt { writing-mode:vertical-rl; transform:rotate(180deg); flex:0 0 auto; width:100%; min-height:170px; padding:14px 0; margin:0 0 -10px; border:0; border-radius:0; color:#9fb4be; font:700 12px inherit; letter-spacing:.16em; cursor:pointer; clip-path:polygon(0 0,100% 10%,100% 90%,0 100%); transition:.18s; }
+    #machines .mt[data-m="support"] { background:#4a1b1f; } #machines .mt[data-m="cnc"] { background:#12402a; }
+    #machines .mt:hover { color:#fff; filter:brightness(1.25); }
+    #machines .mt[data-m="support"][aria-pressed="true"] { background:#d93a3f; color:#fff; box-shadow:inset 3px 0 0 #ff9a9d; }
+    #machines .mt[data-m="cnc"][aria-pressed="true"] { background:#1fae5f; color:#fff; box-shadow:inset 3px 0 0 #8bf0b4; }
+    #railCnc { flex:0 0 72px; display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px; background:#08141b; border-right:1px solid var(--line); overflow-y:auto; z-index:30; }
+    #railCnc button { width:60px; display:flex; flex-direction:column; align-items:center; gap:4px; padding:9px 0 7px; border:1px solid transparent; border-radius:10px; background:transparent; color:var(--muted); font-size:10px; letter-spacing:.04em; }
+    #railCnc button:hover { border-color:#3ddc84; background:#173743; color:var(--ink); }
+    #railCnc button.on { background:#0b6b3f; border-color:#3ddc84; color:#fff; }
+    #railCnc svg { width:22px; height:22px; }
+    #drawerCnc { flex:0 0 330px; background:#0a171e; border-right:1px solid var(--line); overflow-y:auto; z-index:25; }
+    #drawerCnc .dp.off { display:none; }
+    #drawerCnc.closed { display:none; } #drawerCnc.wide { flex-basis:480px; }
+    body.m-support #railCnc, body.m-support #drawerCnc, body.m-cnc #rail, body.m-cnc #drawer { display:none !important; }
+  
+    .tbar2 { flex:0 0 auto; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; padding:10px 16px; background:#08141b; border-bottom:1px solid var(--line); }
+    #centerCnc { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; }
+    #app #cScene { position:relative; flex:1 1 auto; min-height:0; overflow:hidden; }
+    #cDock { flex:0 0 auto; display:flex; flex-wrap:wrap; align-items:stretch; gap:14px; padding:12px 16px; background:#08141b; border-top:1px solid var(--line); }
+    body.m-cnc #center, body.m-support #centerCnc { display:none !important; }
+    .trw.empty { opacity:.45; cursor:default; } .trw i { width:14px; height:14px; border-radius:3px; flex:0 0 auto; }
+    #drawerCnc .gkp input[type="number"] { width:100%; border:1px solid #416571; border-radius:6px; background:#112932; color:var(--ink); padding:6px 8px; font:600 12px inherit; margin-top:4px; }
+  
+    #drawerCnc { position:relative; }
+    #cResize { flex:0 0 10px; margin-left:-5px; position:relative; z-index:45; cursor:col-resize; display:none; align-items:center; justify-content:center; touch-action:none; }
+    #cResize i { width:4px; height:56px; border-radius:3px; background:#3b5663; transition:.15s; }
+    #cResize:hover i, #cResize.drag i { background:var(--cyan); height:84px; }
+    body.m-cnc.gk-open #cResize { display:flex; }
+    .gkhead { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+    .gknorm { padding:6px 12px; font-size:12px; border-color:var(--cyan); color:#dff9f6; }
+    .gkp > :not(.gked):not(.gkhead) { max-width:456px; }
+    body.m-cnc.gk-drag { user-select:none; cursor:col-resize; }
+      #cDock .cdro { grid-template-columns:repeat(auto-fit,minmax(92px,1fr)); } #cDock .cdro strong { font-size:clamp(17px,1.9vw,26px); white-space:nowrap; }
+  
+    .gkparts { max-width:none !important; margin-top:14px; border:1px solid var(--line); border-radius:10px; background:#0a171e; padding:10px 12px; transition:box-shadow .3s,border-color .3s; }
+    .gkparts.new { border-color:var(--cyan); box-shadow:0 0 0 2px #35e2d255; }
+    .gkphead { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+    .gkphead select { max-width:260px; }
+    .ptabs { display:flex; gap:6px; align-items:center; margin:8px 0; } .ptabs .sp { flex:1; }
+    .ptabs button { padding:6px 12px; } .ptabs button.on { background:#0b716b; border-color:#36cfc3; color:#fff; }
+    .pview { position:relative; height:300px; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#0d1a22; }
+    #p3d { position:absolute; inset:0; } #pDrw { position:absolute; inset:0; overflow:auto; padding:0; background:#fff; } #pDrw svg { width:100%; height:100%; min-width:0; }
+    .pinfo { margin-top:8px; font-size:11px; line-height:1.5; color:#cbd7dd; }
+    .gkparts:not(.has) .pview { height:60px; opacity:.4; }
+  </style>
 </head>
 <body>
   <div id="app">
+    <nav id="machines" aria-label="Maskintyp"><button class="mt" data-m="support" aria-pressed="true">SUPPORTSVARV</button><button class="mt" data-m="cnc" aria-pressed="false">CNC-SVARV</button></nav>
     <nav id="rail" aria-label="Menyer">
       <button data-p="amne" aria-label="Ämne" title="Ämne" aria-pressed="false" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7l8-4 8 4v10l-8 4-8-4z M4 7l8 4 8-4 M12 11v10"></path></svg><span>Ämne</span></button>
       <button data-p="verktyg" aria-label="Verktyg" title="Verktyg" class="on" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l7-7 M14 4l6 6-4 4-6-6z M9 9l-5 11"></path></svg><span>Verktyg</span></button>
@@ -249,6 +318,58 @@
   </section>
     <section class="card controls dp off" data-p="hjalp"><h2>Styrning</h2><div class="keygrid"><div><kbd>A</kbd> mot chuck (Z−)</div><div><kbd>D</kbd> från chuck (Z+)</div><div><kbd>W</kbd> inåt mot centrum (X−)</div><div><kbd>S</kbd> utåt från centrum (X+)</div><div><kbd>←</kbd> <kbd>→</kbd> X− / X+</div><div><kbd>↑</kbd> <kbd>↓</kbd> Z− / Z+</div><div><kbd>Q</kbd> <kbd>E</kbd> överslid (längs vinkeln)</div><div><kbd>I</kbd> <kbd>K</kbd> reitstock Z− / Z+</div><div><kbd>J</kbd> <kbd>L</kbd> pinol ut / in</div><div><kbd>Shift</kbd> snabbgång (utanför ämnet)</div></div><p class="hint">Alla axlar rör sig med den hastighet som matningsreglaget anger (mm/min = matning × 850), oberoende av varvtalet. Utanför ämnet ger <kbd>Shift</kbd> snabbgång (50 mm/s). Bara den yttersta skärspetsen skär (spetsradie 0,15 mm = 0,3 mm bred skåra). X− går inåt mot centrum, X+ utåt. Skäret tar bort material med eggen; hållaren får inte gå in i material (kollision). Utan spindel kan inget skäras, och spindeln ramper upp och ner. Chuck och käftar är fasta. Skärkraften räknas som kc·snittarea per varv; blir den för stor går skäret sönder (byt med 🔧). Starta matning Z− kör kraftmatning mot chucken (matningsreglagets hastighet) tills du stoppar; X styr du fortfarande för hand, och Z+ stoppar matningen.</p></section>
     </aside>
+    <nav id="railCnc" aria-label="CNC-menyer">
+      <button data-p="gkod" aria-label="G-kod" title="G-kod" aria-pressed="true" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z M15 3v4h4 M9 12h7 M9 15h7 M9 18h4"></path></svg><span>G-kod</span></button>
+      <button data-p="c_maskin" aria-label="Maskin" title="Maskin" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17h18 M5 17V9h6v8 M11 12h8 M16 12v5 M7 6h2"></path></svg><span>Maskin</span></button>
+      <button data-p="c_noll" aria-label="Nollpunkt" title="Nollpunkt" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18 M3 12h18 M12 9a3 3 0 100 6 3 3 0 000-6z"></path></svg><span>Nollpunkt</span></button>
+      <button data-p="c_verktyg" aria-label="Revolver" title="Revolver" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4a8 8 0 100 16 8 8 0 000-16z M12 8v8 M8 12h8"></path></svg><span>Revolver</span></button>
+      <button data-p="c_hjalp" aria-label="Hjälp" title="Hjälp" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 100 18 9 9 0 000-18z M9.5 9.5a2.5 2.5 0 115 0c0 1.6-2.5 2-2.5 3.6 M12 17h.01"></path></svg><span>Hjälp</span></button>
+    </nav>
+    <aside id="drawerCnc" aria-label="CNC-meny">
+    <section class="card gkp dp off" data-p="gkod"><div class="gkhead"><div class="eyebrow">G-KOD • PROGRAM (FANUC-STIL SVARV)</div><button id="gkNormal" class="gknorm" hidden title="Tillbaka till normal bredd">⇤ Normal storlek</button></div>
+      <div class="gkbar"><select id="gkEx" aria-label="Exempelprogram"></select></div>
+      <div class="gked"><div id="gkGut"></div><div id="gkBand"></div><div class="gkcode"><pre id="gkHi" aria-hidden="true"></pre><textarea id="gkTxt" spellcheck="false" wrap="off" aria-label="G-kod" autocomplete="off" autocapitalize="off"></textarea></div></div>
+      <div class="gkbar"><button class="primary" id="gkRun">▶ Kör</button><button id="gkPause">⏸ Paus</button><button id="gkStop">■ Stopp</button><label class="chk"><input type="checkbox" id="gkSingle"> Enkelblock</label><button id="gkNew" title="Nytt ämne och verktyget till startläge">↻ Nytt ämne</button></div>
+      <div id="gkLog"></div>
+      <details class="gkref"><summary>Kodreferens — vad simulatorn förstår</summary><table>
+        <tr><td>X / Z</td><td>X = diameter (mm), Z0 = ämnets framsida, minus mot chucken. U / W = inkrementellt.</td></tr>
+        <tr><td>G00 / G01</td><td>Snabbgång / linjär matning</td></tr>
+        <tr><td>G02 / G03</td><td>Cirkelbåge medurs / moturs, med R eller I (radie i X) och K (Z)</td></tr>
+        <tr><td>G90 X Z F R</td><td>Längdsvarvningscykel (R = konisk), modal: nästa rad med bara X upprepar</td></tr>
+        <tr><td>G94 X Z F</td><td>Plansvarvningscykel</td></tr>
+        <tr><td>G71 / G70</td><td>Skrubbning längs Z (U d R e, sedan P Q U W F) och slutskär. Förenklad typ I.</td></tr>
+        <tr><td>G94 / G95</td><td>Matning mm/min / mm/varv (även G98 / G99). Standard mm/varv. Utan F används matningsreglaget.</td></tr>
+        <tr><td>G50 X Z</td><td>Sätt nollpunkt så att nuvarande position får värdena X, Z</td></tr>
+        <tr><td>G04 P / X</td><td>Dröjsmål (P i ms, X i s)</td></tr>
+        <tr><td>G28</td><td>Hem (säker position)</td></tr>
+        <tr><td>G20 / G21</td><td>Tum / mm</td></tr>
+        <tr><td>M03 / M04 / M05</td><td>Spindel medurs / moturs / av. Skärande rörelser väntar på varvtal.</td></tr>
+        <tr><td>M00 / M01 / M30</td><td>Paus / paus / programslut</td></tr>
+        <tr><td>G96 / G97, S, T</td><td>Läses men varvtalet styrs av växellådan, verktyg byts för hand (🔧)</td></tr>
+        <tr><td>Ej stöd</td><td>G32, G76, G92 (gängor), G72–G75, G41/G42 ignoreras med varning</td></tr>
+      </table><p class="hint">Kollision eller brutet skär stoppar programmet. Kommentarer i ( ) eller efter ;</p></details>
+      <div class="gkparts" id="gkParts">
+        <div class="gkphead"><div class="eyebrow">AVSTICKADE DETALJER</div><select id="pSel" aria-label="Välj detalj"></select></div>
+        <div class="ptabs"><button data-t="3d" class="on">⟲ 3D-vy</button><button data-t="drw">📐 Ritning</button><span class="sp"></span><button id="pDl" title="Spara ritningen som SVG">⤓ SVG</button><button id="pClear" title="Ta bort alla detaljer">🗑</button></div>
+        <div class="pview"><div id="p3d"></div><div id="pDrw" hidden></div></div>
+        <div id="pInfo" class="pinfo"></div>
+      </div>
+    </section>
+    <section class="card gkp dp off" data-p="c_maskin"><div class="eyebrow">MASKIN • ÄMNE</div>
+      <div class="gkbar" style="flex-direction:column;align-items:stretch;gap:8px">
+        <label>DIAMETER mm <input id="cDia" type="number" min="10" max="100" step="1" value="40"></label>
+        <label>LÄNGD UR CHUCK mm <input id="cLen" type="number" min="40" max="200" step="1" value="80"></label>
+        <button class="primary" id="cApply">↻ Lägg in nytt ämne</button>
+        <button id="cDoor">🚪 Dörr: STÄNGD</button></div>
+      <p class="hint">Maskinen kör bara med stängd dörr. Öppnas dörren under körning pausas programmet. Z0 = ämnets framsida, X = diameter. Ämnet sitter fast i chucken vid Z = −längd.</p></section>
+    <section class="card gkp dp off" data-p="c_noll"><div class="eyebrow">NOLLPUNKT • OFFSET</div><p class="hint" style="border:0;padding:0;margin-top:8px">Under uppbyggnad. Här planerar vi:</p><ul class="hint" style="margin:6px 0 0 16px;padding:0;border:0"><li>Arbetsoffset G54–G59</li><li>Verktygsoffset (geometri och slitage)</li><li>Sätta nollpunkt med G50</li></ul></section>
+    <section class="card gkp dp off" data-p="c_verktyg"><div class="eyebrow">REVOLVER • VERKTYGSUPPSÄTTNING</div>
+      <p class="hint" style="border:0;padding:0;margin:8px 0">12 platser. Klicka på ett verktyg för att indexera revolvern (X måste vara utkört), eller välj det i programmet med T0101, T0202 …</p>
+      <div id="cTools" style="display:flex;flex-direction:column;gap:5px"></div>
+      <p class="hint">Spårstål och avstickare har bredd 3 mm (referenspunkt = vänster hörn). Gängstål är med men gängor simuleras inte.</p></section>
+    <section class="card gkp dp off" data-p="c_hjalp"><div class="eyebrow">HJÄLP • CNC</div><p class="hint" style="border:0;padding:0;margin-top:8px">Under uppbyggnad. Här planerar vi:</p><ul class="hint" style="margin:6px 0 0 16px;padding:0;border:0"><li>Lathe G-kodsreferens</li><li>Programexempel</li><li>Felkoder</li></ul></section>
+    </aside>
+    <div id="cResize" role="separator" aria-orientation="vertical" aria-label="Ändra bredd på kodfönstret" title="Dra för att ändra bredd • dubbelklicka = normal storlek"><i></i></div>
     <div id="center">
       <header id="topbar">
         <div class="tb-l">
@@ -323,6 +444,32 @@
             <div class="dk-wide"><span class="kk"><kbd>Shift</kbd></span> + axeltangent = snabbgång (utanför ämnet)</div>
           </div>
         </section>
+      </footer>
+    </div>
+    <div id="centerCnc">
+      <header class="tbar2">
+        <div class="tb-l">
+          <a class="pill backlink" href="material.html">← Tillbaka till CNC-Grönt kort</a>
+          <div class="eyebrow">CNC-SVARV • SLANT-BED • SIMULERING</div>
+          <div class="pill"><i class="lamp" id="cLamp"></i><span id="cMode">REDO</span></div>
+        </div>
+        <div class="tb-r"><button id="cNew">↺ Nytt ämne</button></div>
+      </header>
+      <div id="cScene"><div class="vhint">Dra = rotera • scrolla = zooma • skriv programmet under <b>G-kod</b> i menyn och tryck <b>Kör</b></div></div>
+      <footer id="cDock">
+        <section class="dpanel dleft">
+          <div class="dro cdro">
+            <div><span>X Ø mm</span><strong id="cX">100.00</strong></div>
+            <div><span>Z mm</span><strong id="cZ">50.00</strong></div>
+            <div><span>S • VARV/MIN</span><strong id="cS">0</strong></div>
+            <div><span>F • MM/MIN</span><strong id="cF">0</strong></div>
+            <div><span>VERKTYG</span><strong id="cT">T01</strong></div>
+          </div>
+          <div class="fd"><span class="lbl">MATNING %</span><input id="cFeedOv" type="range" min="0" max="150" step="10" value="100" aria-label="Matningsoverride"><strong id="cFeedOvVal">100 %</strong></div>
+          <div class="zr"><span class="lbl">BLOCK</span><code id="cLine" style="color:var(--ink);font:12px monospace">—</code><span class="rem" id="cRem">0.00 cm³ avverkat</span></div>
+        </section>
+        <section class="dpanel"><div class="lbl">CYKEL</div>
+          <div class="runbtns"><button class="primary" id="cRun">▶ Kör</button><button id="cPause">⏸ Paus</button><button id="cStop">■ Stopp</button></div></section>
       </footer>
     </div>
   </div>
@@ -1064,13 +1211,388 @@
     buildTailTool(); renderTbox(); renderTsBtns(); tsApply();
     gEl('#tsToggle').onclick=()=>{ const c=gEl('#tsPanel').classList.toggle('collapsed'); gEl('#tsToggle').textContent=c?'▸':'▾'; };
     if(innerWidth<900){gEl('#tsPanel').classList.add('collapsed');gEl('#tsToggle').textContent='▸';}
+    // ---------- G-kod (Fanuc-stil svarv): kompilator → lista med enkla operationer ----------
+    // X = diameter i mm, Z = mm (Z0 = ämnets framsida, minus in mot chucken). Allt i programkoordinater.
+    const GC=(function(){
+      const TAU=Math.PI*2, hyp=Math.hypot;
+      function words(raw){                                   // "N10 G01 X20. Z-5 F.2 (kommentar)" → [{c,v}]
+        let s=raw.replace(/\([^)]*\)/g,' ').replace(/;.*$/,'').toUpperCase().trim(); const out=[], re=/([A-Z])\s*([-+]?(?:\d+\.?\d*|\.\d+))/g; let m;
+        if(!s||s[0]==='%'||/^O\d+\s*$/.test(s))return out;
+        while((m=re.exec(s)))out.push({c:m[1],v:parseFloat(m[2])}); return out; }
+      function parse(text){ const blocks=[]; text.split(/\r?\n/).forEach((raw,ln)=>{ const w=words(raw); if(!w.length)return;
+          const b={ln,w,n:null}; const nw=w.find(x=>x.c==='N'); if(nw)b.n=nw.v; b.get=c=>{let r;for(const x of w)if(x.c===c)r=x.v;return r;}; b.gs=w.filter(x=>x.c==='G').map(x=>x.v); b.ms=w.filter(x=>x.c==='M').map(x=>x.v); blocks.push(b); }); return blocks; }
+      function arcPts(st,x1,z1,cw,w){ const r0=st.x/2,r1=x1/2,z0=st.z; let cz,cr;
+        if(w.R!==undefined){ const R=Math.abs(w.R), dz=z1-z0, dr=r1-r0, d=hyp(dz,dr);
+          if(d<1e-9||R<d/2-1e-6)return null; const h=Math.sqrt(Math.max(0,R*R-d*d/4)), mz=(z0+z1)/2, mr=(r0+r1)/2, pz=-dr/d, pr=dz/d; let best=null;
+          for(const sg of[1,-1]){ const c={z:mz+sg*h*pz,r:mr+sg*h*pr}; const a0=Math.atan2(r0-c.r,z0-c.z),a1=Math.atan2(r1-c.r,z1-c.z); let s=cw?a0-a1:a1-a0; s=((s%TAU)+TAU)%TAU;
+            if(w.R>0?s<=Math.PI+1e-9:s>=Math.PI-1e-9){best=c;break;} } if(!best)return null; cz=best.z;cr=best.r; }
+        else { cz=z0+(w.K||0); cr=r0+(w.I||0); }
+        const rad=hyp(r0-cr,z0-cz); if(rad<1e-9)return null; const a0=Math.atan2(r0-cr,z0-cz),a1=Math.atan2(r1-cr,z1-cz); let s=cw?a0-a1:a1-a0; s=((s%TAU)+TAU)%TAU; if(s<1e-9)s=TAU;
+        const n=Math.max(4,Math.ceil(rad*s/.2)), pts=[]; for(let k=1;k<=n;k++){ const a=cw?a0-s*k/n:a0+s*k/n; pts.push({x:2*(cr+rad*Math.sin(a)),z:cz+rad*Math.cos(a)}); }
+        pts[n-1]={x:x1,z:z1}; return pts; }
+
+      function compile(text,ctx){
+        const blocks=parse(text), ops=[], warns=[], st={x:ctx.x,z:ctx.z,mode:0,inc:false,fmode:'rev',f:null,cycle:null,cp:null,g71:null,inch:false,css:false};
+        const byN=new Map(); blocks.forEach((b,i)=>{ if(b.n!==null&&!byN.has(b.n))byN.set(b.n,i); });
+        const warn=(b,m)=>warns.push({ln:b.ln,msg:m}); const U=()=>st.inch?25.4:1;
+        const feedObj=()=>st.f===null?null:{mode:st.fmode,v:st.f*(st.fmode==='min'?U():U())};
+        const mv=(b,pts,rapid,fo)=>{ if(!pts.length)return; ops.push({t:'mv',rapid,pts:pts.map(p=>({x:p.x,z:p.z})),f:rapid?null:(fo===undefined?feedObj():fo),ln:b.ln}); const l=pts[pts.length-1]; st.x=l.x; st.z=l.z; };
+        const tgt=b=>{ const k=U(); let x=st.x,z=st.z; const X=b.get('X'),Uu=b.get('U'),Z=b.get('Z'),W=b.get('W');
+          if(X!==undefined)x=st.inc?st.x+X*k:X*k; else if(Uu!==undefined)x=st.x+Uu*k; if(Z!==undefined)z=st.inc?st.z+Z*k:Z*k; else if(W!==undefined)z=st.z+W*k;
+          return {x,z,has:X!==undefined||Uu!==undefined||Z!==undefined||W!==undefined,hasX:X!==undefined||Uu!==undefined,hasZ:Z!==undefined||W!==undefined}; };
+        function runCycle(b,cyc,t){ const k=U(), a={x:st.x,z:st.z}, f=b.get('F'); if(f!==undefined)st.f=f; const R=(b.get('R')!==undefined?b.get('R'):(st.cp&&st.cp.R)||0)*k;
+          const x=t.hasX?t.x:(st.cp?st.cp.x:a.x), z=t.hasZ?t.z:(st.cp?st.cp.z:a.z); st.cp={x,z,R};
+          if(cyc==='G90'){ mv(b,[{x:x-2*R,z:a.z}],true); mv(b,[{x,z}],false); mv(b,[{x:a.x,z}],false); mv(b,[{x:a.x,z:a.z}],true); }
+          else { mv(b,[{x:a.x,z}],true); mv(b,[{x,z}],false); mv(b,[{x,z:a.z}],false); mv(b,[{x:a.x,z:a.z}],true); } }
+        function profile(P,Q,b){ if(!byN.has(P)||!byN.has(Q)){warn(b,'P/Q: blocknummer saknas (N'+P+' / N'+Q+')');return null;}
+          const i0=byN.get(P), i1=byN.get(Q); if(i1<i0){warn(b,'Q ligger före P');return null;} return {i0,i1}; }
+        function g71(b,t){ const k=U(); const P=b.get('P'),Q=b.get('Q'); const pr=profile(P,Q,b); if(!pr)return -1; const cfg=st.g71||{d:1,e:.5};
+          const uA=(b.get('U')||0)*k, wA=(b.get('W')||0)*k, f=b.get('F'); if(f!==undefined)st.f=f;
+          const A={x:st.x,z:st.z}, save={x:st.x,z:st.z,mode:st.mode,inc:st.inc,fmode:st.fmode,f:st.f,cp:st.cp}, mark=ops.length;
+          for(let i=pr.i0;i<=pr.i1;i++)block(blocks[i],i,true); const sub=ops.splice(mark); Object.assign(st,save);
+          const pts=[]; let first=true; for(const o of sub)if(o.t==='mv'){ for(const p of o.pts){ if(first){ first=false; pts.push({x:p.x,z:p.z}); } else pts.push({x:p.x,z:p.z}); } }
+          if(pts.length<2){warn(b,'G71: profilen är för kort');return pr.i1;}
+          const prof=pts; let minD=1e9,maxD=-1e9; for(const p of prof){minD=Math.min(minD,p.x);maxD=Math.max(maxD,p.x);}
+          const zStop=D=>{ const lim=D-uA; for(let i=0;i<prof.length-1;i++){ const p=prof[i],q=prof[i+1]; if(p.x>=lim)return p.z+wA; if(q.x>=lim&&q.x!==p.x){ const u=(lim-p.x)/(q.x-p.x); return p.z+(q.z-p.z)*u+wA; } }
+            const l=prof[prof.length-1]; return l.x>=lim?l.z+wA:l.z+wA; };
+          const step=2*cfg.d*k, e=cfg.e*k, dMin=minD+uA; let D=A.x-step; const Ds=[]; while(D>dMin+1e-6){Ds.push(D);D-=step;} Ds.push(dMin);
+          let any=false;
+          for(const d of Ds){ const zs=zStop(d); if(zs>=A.z-1e-6)continue; any=true; mv(b,[{x:d,z:A.z}],true); mv(b,[{x:d,z:zs}],false); mv(b,[{x:d+2*e,z:zs+e}],true); mv(b,[{x:d+2*e,z:A.z}],true); }
+          mv(b,[{x:prof[0].x+uA,z:A.z}],true); mv(b,prof.map(p=>({x:p.x+uA,z:p.z+wA})),false); mv(b,[{x:A.x,z:st.z}],true); mv(b,[{x:A.x,z:A.z}],true);
+          if(!any)warn(b,'G71: inget material att skruppa (kontrollera startpunkt/profil)'); return pr.i1; }
+        function g70(b){ const P=b.get('P'),Q=b.get('Q'); const pr=profile(P,Q,b); if(!pr)return; const f=b.get('F'); if(f!==undefined)st.f=f;
+          const sv={mode:st.mode,cp:st.cp,cycle:st.cycle}; for(let i=pr.i0;i<=pr.i1;i++)block(blocks[i],i,true); Object.assign(st,sv); }
+
+        function block(b,i,sub){
+          const gs=b.gs, ms=b.ms; let motion=null, cycle=null;
+          for(const g of gs){ switch(g){
+            case 0:case 1:case 2:case 3: motion=g; break;
+            case 20: st.inch=true; break; case 21: st.inch=false; break;
+            case 91: st.inc=true; break;
+            case 90: if(b.get('X')!==undefined||b.get('Z')!==undefined||b.get('U')!==undefined||b.get('W')!==undefined)cycle='G90'; else st.inc=false; break;
+            case 94: if(b.get('X')!==undefined||b.get('Z')!==undefined)cycle='G94'; else st.fmode='min'; break;
+            case 98: st.fmode='min'; break; case 95: case 99: st.fmode='rev'; break;
+            case 96: case 97: case 40: case 54: case 55: case 56: case 57: case 58: case 59: case 18: case 28: case 4: case 50: case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 32: case 92: case 41: case 42: break;
+            default: warn(b,'G'+g+' stöds inte i simulatorn (ignoreras)'); } }
+          const f=b.get('F'); if(f!==undefined&&!gs.includes(71)&&!gs.includes(70))st.f=f;
+          { const S=b.get('S'), T=b.get('T');
+            if(T!==undefined)ops.push({t:'tool',n:T>=100?Math.floor(T/100):T,ln:b.ln});
+            if(gs.includes(50)&&S!==undefined&&b.get('X')===undefined&&b.get('Z')===undefined)ops.push({t:'maxrpm',v:S,ln:b.ln});
+            else if(gs.includes(96)){ st.css=true; ops.push({t:'css',on:true,v:S,ln:b.ln}); }
+            else if(gs.includes(97)){ st.css=false; ops.push({t:'css',on:false,ln:b.ln}); if(S!==undefined)ops.push({t:'rpm',v:S,ln:b.ln}); }
+            else if(S!==undefined){ if(st.css)ops.push({t:'css',on:true,v:S,ln:b.ln}); else ops.push({t:'rpm',v:S,ln:b.ln}); } }
+          for(const m of ms){ if(m===3)ops.push({t:'spin',dir:-1,ln:b.ln}); else if(m===4)ops.push({t:'spin',dir:1,ln:b.ln}); else if(m===5)ops.push({t:'spin',dir:0,ln:b.ln});
+            else if(m===0||m===1)ops.push({t:'pause',ln:b.ln}); else if(m===2||m===30)ops.push({t:'end',ln:b.ln}); else if(![6,7,8,9,10,11,98,99].includes(m))warn(b,'M'+m+' stöds inte (ignoreras)'); }
+          if(gs.includes(4)){ const p=b.get('P'),x=b.get('X'),u=b.get('U'); const s=x!==undefined?x:(u!==undefined?u:(p!==undefined?p/1000:0)); ops.push({t:'dwell',s:Math.max(0,s),ln:b.ln}); }
+          if(gs.includes(28)){ ops.push({t:'home',ln:b.ln}); st.x=ctx.homeX; st.z=ctx.homeZ; return; }
+          if(gs.includes(50)&&(b.get('X')!==undefined||b.get('Z')!==undefined)){ const x=b.get('X')!==undefined?b.get('X')*U():st.x, z=b.get('Z')!==undefined?b.get('Z')*U():st.z; ops.push({t:'g50',x,z,ln:b.ln}); st.x=x; st.z=z; return; }
+          const t=tgt(b);
+          if(gs.includes(71)){ if(b.get('P')===undefined){ const d=b.get('U'),e=b.get('R'); st.g71={d:d!==undefined?d:1,e:e!==undefined?e:.5}; return; } if(sub){warn(b,'G71 inuti G71/G70 stöds inte');return;} return g71(b,t); }
+          if(gs.includes(70)){ if(sub){warn(b,'G70 inuti G70/G71 stöds inte');return;} g70(b); return; }
+          for(const g of[72,73,74,75,76,32,92])if(gs.includes(g)){ warn(b,'G'+g+' stöds inte i simulatorn (gängor/övriga cykler saknar modell)'); return; }
+          if(gs.includes(41)||gs.includes(42))warn(b,'G41/G42 skärradiekompensation simuleras inte');
+          if(cycle){ st.cycle=cycle; st.mode=null; runCycle(b,cycle,t); return; }
+          if(motion!==null){ st.mode=motion; st.cycle=null; }
+          if(!t.has)return;
+          if(motion===null&&st.cycle){ runCycle(b,st.cycle,t); return; }
+          const m=st.mode; if(m===null||m===undefined){ warn(b,'Rörelse utan G00/G01/G02/G03 aktiv'); return; }
+          if(m===0)mv(b,[{x:t.x,z:t.z}],true);
+          else if(m===1){ mv(b,[{x:t.x,z:t.z}],false); }
+          else { const k=U(); const w={R:b.get('R')!==undefined?b.get('R')*k:undefined,I:b.get('I')!==undefined?b.get('I')*k:undefined,K:b.get('K')!==undefined?b.get('K')*k:undefined};
+            if(w.R===undefined&&w.I===undefined&&w.K===undefined){ warn(b,'G02/G03 kräver R eller I/K'); return; }
+            const p=arcPts(st,t.x,t.z,m===2,w); if(!p){ warn(b,'Ogiltig cirkelbåge (kontrollera R/I/K och slutpunkt)'); return; } mv(b,p,false); } }
+
+        for(let i=0;i<blocks.length;i++){ const r=block(blocks[i],i,false); if(typeof r==='number'&&r>=0)i=r; }
+        if(!ops.length||ops[ops.length-1].t!=='end')ops.push({t:'end',ln:blocks.length?blocks[blocks.length-1].ln:0});
+        return {ops,warns}; }
+      return {compile,parse};
+    })();
+    // ---------- CNC-svarv: egen 3D-scen, maskin, verktygsrevolver och skärmodell (helt fristående från supportsvarven) ----------
+    // Koordinater: 1 enhet = 10 mm. Spindelaxeln ligger längs världens x-axel (Z i programmet, chuck till vänster, Z+ mot reitstocken).
+    // X-axeln går diagonalt uppåt/bakåt (slant-bed, revolver bakom axeln) genom spindelaxeln.
+    const cnc={ x:100,z:50, offX:0,offZ:0, spindle:false,dir:-1, rpmCmd:0,rpmAct:0,css:false,vc:0,maxRpm:4000,
+      tool:1, turRot:0, feedOv:1, door:false, alarm:'', removed:0, dia:40, len:80, parted:false };
+    const CTOOLS=[null,
+      {n:1,name:'T01 Skrubb CNMG 80°',kind:'turn',nose:.8,w:Infinity,col:0xf2a43a},
+      {n:2,name:'T02 Slutskär VNMG 35°',kind:'turn',nose:.4,w:Infinity,col:0x4fc3f7},
+      {n:3,name:'T03 Spårstål 3 mm',kind:'groove',nose:.05,w:3,col:0xe57373},
+      {n:4,name:'T04 Avstickare 3 mm',kind:'part',nose:.05,w:3,col:0xff8a65},
+      {n:5,name:'T05 Gängstål 60° (ej simulerad)',kind:'thread',nose:.1,w:Infinity,col:0xba68c8},
+      {n:6,name:'T06 Finskär DCMT 55°',kind:'turn',nose:.2,w:Infinity,col:0x81c784},
+      null,null,null,null,null,null];
+    const CN3={}; window.__cnc=cnc;
+    { const host=document.querySelector('#cScene'), PHI=50*Math.PI/180, sP=Math.sin(PHI), cP=Math.cos(PHI);
+      const XA=new THREE.Vector3(1,0,0), UA=new THREE.Vector3(0,sP,-cP), NA_=new THREE.Vector3(0,cP,sP);
+      const sc=new THREE.Scene(); sc.background=new THREE.Color(0x0a1319); sc.fog=new THREE.Fog(0x0a1319,60,140);
+      const cam=new THREE.PerspectiveCamera(38,1,.1,400); cam.position.set(20,12,44);
+      const rd=new THREE.WebGLRenderer({antialias:true}); rd.setPixelRatio(Math.min(devicePixelRatio||1,2)); host.appendChild(rd.domElement);
+      rd.domElement.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;display:block';
+      const ctl=new OrbitControls(cam,rd.domElement); ctl.target.set(-1,0,-2); ctl.enableDamping=true; ctl.dampingFactor=.06; ctl.minDistance=6; ctl.maxDistance=90; ctl.maxPolarAngle=Math.PI*.55;
+      sc.add(new THREE.HemisphereLight(0xdfeaf2,0x1a2630,.9)); const dl=new THREE.DirectionalLight(0xffffff,1.1); dl.position.set(12,24,18); sc.add(dl);
+      const pl=new THREE.PointLight(0xfff2d8,.9,60); pl.position.set(0,8,6); sc.add(pl);
+      const MAT=(c,m=.35,r=.55,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,metalness:m,roughness:r},o));
+      const mBody=MAT(0xdde4e8,.25,.5), mDark=MAT(0x1c2a33,.4,.6), mSteel=MAT(0x8d99a2,.8,.35), mGreen=MAT(0x1fae5f,.3,.5), mBlack=MAT(0x0d1418,.3,.7);
+      const bx=(w,h,d,mat,x,y,z,par)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat); m.position.set(x,y,z); (par||sc).add(m); return m; };
+      const cyl=(r,l,mat,x,y,z,par,seg)=>{ const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,l,seg||40),mat); m.rotation.z=Math.PI/2; m.position.set(x,y,z); (par||sc).add(m); return m; };
+      const basis=new THREE.Matrix4().makeBasis(XA,UA,NA_), bq=new THREE.Quaternion().setFromRotationMatrix(basis);
+      // golv och bas
+      const floor=new THREE.Mesh(new THREE.PlaneGeometry(200,200),MAT(0x0f1b22,.1,.9)); floor.rotation.x=-Math.PI/2; floor.position.y=-16.01; sc.add(floor);
+      const grid=new THREE.GridHelper(120,60,0x1d3340,0x13222b); grid.position.y=-16; sc.add(grid);
+      bx(54,9,30,mDark,0,-11.5,0); bx(54,.6,30.4,mGreen,0,-6.8,0);                    // underrede med grön list
+      bx(32,1,19,MAT(0x6f7c85,.7,.45),1,-6.2,0);                                   // spånbricka
+      // spindelstock + chuck
+      bx(15,16,18,mBody,-18.5,.5,0); bx(15.2,1.2,18.2,mGreen,-18.5,8.6,0); bx(6,5,.4,mBlack,-20,3,9.1);
+      const spin=new THREE.Group(); sc.add(spin); CN3.spin=spin;
+      const chuckG=new THREE.Group(); spin.add(chuckG); CN3.chuckG=chuckG;
+      cyl(7.2,3.4,MAT(0x2b3942,.7,.4),-9.7,0,0,chuckG); cyl(5.4,.4,MAT(0x56646d,.8,.35),-7.95,0,0,chuckG);
+      CN3.jaws=[]; for(let k=0;k<3;k++){ const j=bx(2.2,3.6,1.8,MAT(0x707d86,.8,.35),-9.1,0,0,chuckG); CN3.jaws.push(j); }
+      // bakre gjutgods + lutande slid (X-axeln)
+      const cast=new THREE.Mesh(new THREE.BoxGeometry(40,26,8),MAT(0xc5ced4,.25,.55)); cast.quaternion.copy(bq); cast.position.copy(UA.clone().multiplyScalar(11.5)).addScaledVector(NA_,-13); sc.add(cast);
+      const slab=new THREE.Mesh(new THREE.BoxGeometry(40,24,2.4),MAT(0x3a4a55,.7,.4)); slab.quaternion.copy(bq); slab.position.copy(UA.clone().multiplyScalar(11)).addScaledVector(NA_,-8.5); sc.add(slab);
+      const way=(o)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(40,1.2,.6),mSteel); m.quaternion.copy(bq); m.position.copy(UA.clone().multiplyScalar(11+o)).addScaledVector(NA_,-7.0); sc.add(m); }; way(6); way(-6);
+      // reitstock (parkerad) och manöverpanel
+      bx(8,9,8,mBody,20,-2.5,0); cyl(1.6,5,mSteel,15.2,0,0); const cc=new THREE.Mesh(new THREE.ConeGeometry(.9,1.4,24),mSteel); cc.rotation.z=Math.PI/2; cc.position.set(12.1,0,0); sc.add(cc);
+      const pend=bx(8.4,7.4,.7,mBody,27,2.5,10); pend.rotation.y=-.3; const screenC=document.createElement('canvas'); screenC.width=320; screenC.height=200; const screenT=new THREE.CanvasTexture(screenC); CN3.screenC=screenC; CN3.screenT=screenT;
+      const scr=new THREE.Mesh(new THREE.PlaneGeometry(6.6,4.1),new THREE.MeshBasicMaterial({map:screenT})); scr.position.set(26.9,3.4,10.4); scr.rotation.y=-.3; sc.add(scr);
+      // dörr (genomskinlig, glider åt vänster)
+      const door=new THREE.Group(); sc.add(door); CN3.door=door;
+      const glass=new THREE.Mesh(new THREE.BoxGeometry(40,18,.3),MAT(0x9fd4e6,.1,.1,{transparent:true,opacity:.16})); glass.position.set(1,2,12.5); door.add(glass);
+      bx(40.4,.8,.5,mGreen,1,11.4,12.5,door); bx(40.4,.8,.5,mDark,1,-7.4,12.5,door); bx(.8,18.6,.5,mDark,-19.2,2,12.5,door); bx(.8,18.6,.5,mDark,21.2,2,12.5,door); bx(.6,5,.8,mSteel,19,2,12.9,door);
+      // revolver (ritas om varje frame) + sadel
+      const turret=new THREE.Group(); sc.add(turret); CN3.turret=turret;
+      const saddle=bx(5.4,13,16,MAT(0xc9d2d8,.3,.5),0,0,0); saddle.quaternion.copy(bq); const xcov=bx(5.4,13,3,mDark,0,0,0); xcov.quaternion.copy(bq);
+      cyl(6.4,4.6,MAT(0x56646d,.75,.4),0,0,0,turret,48); cyl(3.0,5,MAT(0x2b3942,.7,.4),0,0,0,turret,32); cyl(6.45,.5,mGreen,-2.0,0,0,turret,48);
+      CN3.stations=[];
+      for(let k=0;k<12;k++){ const g=new THREE.Group(); const a=k*Math.PI/6; g.rotation.x=a; turret.add(g); const ct=CTOOLS[k+1];
+        if(ct){ bx(3.4,1.2,1.7,MAT(0x6b7882,.8,.35),-3.8,6.9,0,g); const ins=bx(1.0,.38,1.0,MAT(ct.col,.5,.35),-5.3,7.7,0,g); ins.rotation.y=.5; bx(2.2,1.0,1.7,MAT(0x2b3942,.6,.5),-1.8,6.6,0,g); }
+        else bx(2.0,1.0,1.7,MAT(0x2b3942,.6,.6),-1.6,6.7,0,g);
+        CN3.stations.push(g); }
+      // ämnet: rotationssymmetrisk profil (radie per Z-prov)
+      const DZ=.25, NAZ=48; let NS=0,ZS0=0,rad=null,stockMesh=null,pos=null,col=null,dirty=true;
+      CN3.buildStock=()=>{ if(stockMesh){ spin.remove(stockMesh); stockMesh.geometry.dispose(); }
+        ZS0=-(cnc.len+30); NS=Math.round(-ZS0/DZ)+1; rad=new Float32Array(NS+1); rad.fill(cnc.dia/2,0,NS); rad[NS]=0; const W=NAZ+1, tot=(NS+1)*W;
+        pos=new Float32Array(tot*3); col=new Float32Array(tot*3); const idx=new Uint32Array(NS*NAZ*6); let p=0;
+        for(let i=0;i<NS;i++)for(let j=0;j<NAZ;j++){ const a=i*W+j,b=a+1,c=a+W,d=c+1; idx[p++]=a;idx[p++]=c;idx[p++]=b; idx[p++]=b;idx[p++]=c;idx[p++]=d; }
+        for(let i=0;i<=NS;i++)for(let j=0;j<=NAZ;j++){ const sh=(Math.floor(j/4)%2)?.80:1, o=(i*W+j)*3; col[o]=col[o+1]=col[o+2]=sh; }
+        const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3)); g.setIndex(new THREE.BufferAttribute(idx,1));
+        stockMesh=new THREE.Mesh(g,MAT(0xc4ccd2,.75,.3,{vertexColors:true,side:THREE.DoubleSide})); spin.add(stockMesh); dirty=true; cnc.removed=0; cnc.parted=false;
+        chuckG.position.x=-cnc.len/10+8; CN3.jaws.forEach((j,k)=>{ const a=k*2*Math.PI/3, rr=cnc.dia/20+1.8; j.position.set(-9.1,rr*Math.cos(a),rr*Math.sin(a)); j.rotation.x=a; j.scale.set(1,1,1); }); };
+      const zS=i=>ZS0+i*DZ;
+      CN3.maxRad=()=>{ let m=0; for(let i=0;i<NS;i++)if(rad[i]>m)m=rad[i]; return m; };
+      CN3.cut=(zt,xt,rapid)=>{ const T=CTOOLS[cnc.tool]; if(!T)return 0; const n=T.nose, rt=Math.max(0,xt/2), zHi=T.w===Infinity?1e9:zt+T.w;
+        let i0=Math.max(0,Math.ceil((zt-ZS0)/DZ)), i1=Math.min(NS-1,Math.floor((zHi-ZS0)/DZ)), worst=0;
+        for(let i=i0;i<=i1;i++){ const dz=zS(i)-zt; if(dz<.002)continue; const h=dz<n?(n-Math.sqrt(Math.max(0,n*n-(n-dz)*(n-dz)))):0, lim=rt+h, r=rad[i]; if(r>lim){ const dv=r-lim; if(dv>worst)worst=dv; cnc.removed+=Math.PI*(r*r-lim*lim)*DZ/1000; rad[i]=lim; dirty=true; } }
+        if(T.kind==='part'&&xt<=.4&&!cnc.parted){ const pr=[]; for(let i=0;i<NS;i++)if(zS(i)>zt+T.w&&rad[i]>0){ pr.push({z:zS(i),r:rad[i]}); rad[i]=0; } if(pr.length){ cnc.parted=true; dirty=true; CN3.onParted&&CN3.onParted({pts:pr,zLeft:zt+T.w}); } }
+        return worst; };
+      const refreshStock=()=>{ if(!dirty)return; dirty=false; const W=NAZ+1;
+        for(let i=0;i<=NS;i++){ const x=(i<NS?zS(i):.02)/10, r=rad[i]/10; for(let j=0;j<=NAZ;j++){ const a=j/NAZ*2*Math.PI, o=(i*W+j)*3; pos[o]=x; pos[o+1]=r*Math.cos(a); pos[o+2]=r*Math.sin(a); } }
+        stockMesh.geometry.attributes.position.needsUpdate=true; stockMesh.geometry.computeVertexNormals(); };
+      CN3.reset=()=>{ cnc.x=100; cnc.z=50; cnc.offX=0; cnc.offZ=0; cnc.alarm=''; cnc.tool=1; CN3.buildStock(); };
+      // placering av verktyg/revolver varje frame
+      const tipP=new THREE.Vector3(), cP_=new THREE.Vector3();
+      CN3.place=()=>{ const r=cnc.x/20; tipP.set(cnc.z/10,r*UA.y,r*UA.z); cP_.copy(tipP).addScaledVector(UA,7.6).addScaledVector(XA,5.5); turret.position.copy(cP_); turret.rotation.x=cnc.turRot;
+        saddle.position.copy(cP_).addScaledVector(XA,5.2).addScaledVector(NA_,-.5); xcov.position.copy(cP_).addScaledVector(XA,5.2).addScaledVector(NA_,-8.0); };
+      CN3.turTarget=()=>(Math.PI/2+PHI)-(cnc.tool-1)*Math.PI/6;
+      CN3.screen=txt=>{ const c=CN3.screenC.getContext('2d'); c.fillStyle='#06141a'; c.fillRect(0,0,320,200); c.fillStyle='#35e2d2'; c.font='bold 15px monospace'; c.fillText('CNC TURN  ',10,20);
+        txt.forEach((t,i)=>{ c.fillStyle=t.c||'#cfe'; c.fillText(t.s,10,48+i*24); }); CN3.screenT.needsUpdate=true; };
+      CN3.render=()=>{ refreshStock(); ctl.update(); rd.render(sc,cam); };
+      CN3.resize=()=>{ const w=host.clientWidth,h=host.clientHeight; if(!w||!h)return; if(CN3.w===w&&CN3.h===h)return; CN3.w=w;CN3.h=h; cam.aspect=w/h; cam.updateProjectionMatrix(); rd.setSize(w,h,false); };
+      CN3.zChuck=()=>-cnc.len; CN3.refresh=()=>{ dirty=true; };
+      cnc.turRot=CN3.turTarget(); CN3.buildStock(); CN3.place();
+    }
+    // ---------- G-kod: körning i CNC-svarven ----------
+    const gc={ops:[],i:0,run:false,paused:false,single:false,ln:-1,pi:0,wait:0,lines:[],once:new Set()};
+    const GK_EX={
+      'Planing + längdsvarvning (G90)':['O0001 (PLANING OCH LÄNGDSVARVNING)','G21 G99','G50 S3000','T0101','G96 S180 M03','G00 X44 Z-0.5','G01 X0 F0.1 (plana 0,5 mm)','G00 X44 Z2','G90 X38 Z-40 F0.2 (cykel, grovsteg)','X36','X34','X32','G00 X100 Z50','T0202 (slutskär)','G00 X30 Z2','G01 Z-40 F0.1 (finsteg)','G00 X44','G00 X100 Z50','M05','M30'],
+      'Fas, steg och radie (G01/G02)':['O0002 (FAS OCH RADIE)','G21 G99','T0202','G97 S1500 M03','G00 X44 Z2','G00 X30 Z0','G01 X32 Z-1 F0.1 (fas)','G01 Z-20 (cylinder Ø32)','G02 X40 Z-24 R4 (radie)','G00 X44 Z2','G00 X100 Z50','M05','M30'],
+      'Skrubb + slut (G71/G70)':['O0003 (G71 SKRUBB OCH G70 SLUT)','G21 G99','G50 S3000','T0101','G96 S200 M03','G00 X42 Z2','G71 U1.5 R0.5','G71 P10 Q40 U0.4 W0.1 F0.2','N10 G00 X20','N20 G01 Z-15 F0.1','N30 G02 X32 Z-21 R6','N40 G01 Z-40','G00 X100 Z50','T0202','G70 P10 Q40','G00 X100 Z50','M05','M30'],
+      'Spår + avstickning (T03/T04)':['O0004 (SPAR OCH AVSTICKNING)','G21 G99','T0101','G97 S1200 M03','G00 X44 Z2','G90 X36 Z-50 F0.2','G00 X100 Z50','T0303','G00 X44 Z-30','G01 X30 F0.05 (spår 3 mm)','G00 X44','G00 X100 Z50','T0404','G00 X44 Z-52 (vänster hörn)','G01 X-1 F0.04 (avstick)','G00 X44','G00 X100 Z50','M05','M30']};
+    { const $=s=>document.querySelector(s), ta=$('#gkTxt'), gut=$('#gkGut'), band=$('#gkBand'), log=$('#gkLog'), sel=$('#gkEx'), LH=18, PAD=8;
+      const say=(m,cls)=>{ const d=document.createElement('div'); if(cls)d.className=cls; d.textContent=m; log.appendChild(d); log.scrollTop=log.scrollHeight; while(log.children.length>80)log.removeChild(log.firstChild); };
+      const nLines=()=>ta.value.split('\n').length;
+      const hi=$('#gkHi'), esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;'), CL={G:'g',M:'m',X:'ax',Y:'ax',Z:'ax',U:'ax',W:'ax',I:'ax',J:'ax',K:'ax',R:'ax',A:'ax',B:'ax',C:'ax',H:'ax',D:'ax',P:'ax',Q:'ax',F:'f',S:'s',T:'t',O:'o',N:'n'};
+      const hiLine=l=>l.replace(/(\([^)]*\)?|;.*$|%.*$)|([A-Za-z])(\s*[-+]?(?:\d+\.?\d*|\.\d+))|([\s\S])/g,(m,c,L,num,o)=>c?'<span class="c">'+esc(c)+'</span>':L?'<span class="'+(CL[L.toUpperCase()]||'x')+'">'+esc(L+num)+'</span>':esc(o));
+      const curLine=()=>ta.value.slice(0,ta.selectionStart).split('\n').length;
+      const paint=()=>{ hi.innerHTML=ta.value.split('\n').map(hiLine).join('\n')+'\n '; hi.scrollTop=ta.scrollTop; hi.scrollLeft=ta.scrollLeft; };
+      const gutter=()=>{ const cl=curLine(); gut.innerHTML=Array.from({length:nLines()},(_,i)=>'<div class="gl'+(i+1===cl?' cur':'')+'">'+(i+1)+'</div>').join(''); gut.scrollTop=ta.scrollTop; paint(); mark(); };
+      const mark=()=>{ if(gc.ln<0){band.style.display='none';return;} band.style.display='block'; band.style.top=(PAD+gc.ln*LH-ta.scrollTop)+'px'; };
+      const mode=t=>{ $('#cMode').textContent=t; };
+      const setLn=ln=>{ if(ln===gc.ln)return; gc.ln=ln; mark(); const t=(gc.lines[ln]||'').trim().slice(0,46); mode('G-KOD • rad '+(ln+1)+': '+t); $('#cLine').textContent=(gc.lines[ln]||'').trim();
+        const top=PAD+ln*LH; if(top<ta.scrollTop||top>ta.scrollTop+ta.clientHeight-LH*2)ta.scrollTop=Math.max(0,top-ta.clientHeight/2); };
+      const ui=()=>{ const lbl=gc.run&&gc.paused?'▶ Fortsätt':'▶ Kör'; $('#gkRun').textContent=lbl; $('#cRun').textContent=lbl; for(const id of['#gkPause','#cPause'])$(id).disabled=!gc.run||gc.paused; for(const id of['#gkStop','#cStop'])$(id).disabled=!gc.run; };
+      const finish=(msg,cls)=>{ gc.run=false;gc.paused=false;gc.ln=-1;mark();ui(); say(msg,cls); mode(msg); $('#cLine').textContent='—'; };
+      gc.stop=(msg,alarm)=>{ if(alarm){cnc.alarm=msg; $('#cLamp').classList.add('crash');} if(gc.run)finish(msg||'G-KOD STOPPAD','err'); else if(alarm){say(msg,'err');mode(msg);} };
+      const D2R=Math.PI/180;
+      function start(){ if(gc.run&&gc.paused){ if(cnc.door){say('Stäng dörren först.','warn');return;} gc.paused=false;ui();return;} if(gc.run)return;
+        if(cnc.door){ say('Stäng dörren innan cykelstart.','err'); mode('DÖRREN ÄR ÖPPEN'); return; }
+        cnc.alarm=''; $('#cLamp').classList.remove('crash'); gc.lines=ta.value.split('\n'); log.textContent='';
+        const r=GC.compile(ta.value,{x:cnc.x-cnc.offX,z:cnc.z-cnc.offZ,homeX:100-cnc.offX,homeZ:50-cnc.offZ});
+        r.warns.forEach(w=>say('Rad '+(w.ln+1)+': '+w.msg,'warn')); gc.ops=r.ops; gc.i=0;gc.pi=0;gc.wait=0;gc.ln=-1; gc.run=true;gc.paused=false; gc.once=new Set();
+        say('Kör program ('+gc.ops.length+' operationer)…'); ui(); }
+      function adv(o){ gc.i++;gc.pi=0; if(gc.single&&gc.ops[gc.i]&&gc.ops[gc.i].ln!==o.ln){gc.paused=true;ui();} }
+      const rpmNow=()=>cnc.rpmAct;
+      function move(o,dt){ let sp;
+        if(o.rapid)sp=200; else { const f=o.f; const spinOk=cnc.rpmAct>=Math.max(20,.9*(cnc.rpmTarget||0));
+          if(!cnc.spindle||cnc.rpmAct<20){ if(!cnc.spindle&&(!f||f.mode==='rev'||CN3.nearMat())){gc.stop('LARM — spindeln går inte (M03 saknas)',true);return false;} }
+          if(cnc.spindle&&!spinOk)return false;
+          sp=(!f?(.2*Math.max(cnc.rpmAct,0)/60):(f.mode==='min'?f.v/60:f.v*cnc.rpmAct/60))*cnc.feedOv; if(sp<=1e-6)return false; }
+        let b=sp*dt;
+        for(;;){ const p=o.pts[gc.pi]; const tx=Math.min(170,Math.max(-1,p.x+cnc.offX)), tz=Math.min(160,Math.max(CN3.zChuck()+.6,p.z+cnc.offZ));
+          const d=Math.hypot((tx-cnc.x)/2,tz-cnc.z), step=o.rapid?.4:.15;
+          const go=len=>{ const n=Math.max(1,Math.ceil(len/step)), x0=cnc.x,z0=cnc.z,fx=(tx-x0)*(len/d),fz=(tz-z0)*(len/d); // delsteg: skär längs vägen
+            for(let k=1;k<=n;k++){ cnc.x=x0+fx*k/n; cnc.z=z0+fz*k/n; const w=CN3.cut(cnc.z,cnc.x,o.rapid); if(w>.05&&o.rapid){ gc.stop('KRASCH — snabbgång in i material',true); return false; }
+              if(cnc.z<CN3.zChuck()+.5&&cnc.x<150){ gc.stop('KRASCH — verktyget nådde chucken',true); return false; } } return true; };
+          if(d<=b+1e-9){ if(d>1e-9){ if(!go(d))return false; } cnc.x=tx;cnc.z=tz; b-=d;gc.pi++; if(gc.pi>=o.pts.length)return true; continue; }
+          if(!go(b))return false; return false; } }
+      gc.step=dt=>{
+        if(cnc.alarm){ if(gc.run)gc.stop(cnc.alarm,true); return; }
+        if(cnc.door&&gc.run&&!gc.paused){ gc.paused=true; ui(); say('Dörren öppnades — programmet pausat.','warn'); return; }
+        for(let g=0;g<60;g++){ const o=gc.ops[gc.i]; if(!o){finish('PROGRAM KLART');return;} setLn(o.ln);
+          if(o.t==='mv'){ if(move(o,dt))adv(o); return; }
+          if(o.t==='dwell'){ gc.wait+=dt; if(gc.wait<o.s)return; gc.wait=0; }
+          else if(o.t==='spin'){ if(o.dir===0)cnc.spindle=false; else {cnc.spindle=true;cnc.dir=o.dir;} }
+          else if(o.t==='rpm'){ cnc.rpmCmd=Math.min(cnc.maxRpm,Math.max(0,o.v)); cnc.css=false; }
+          else if(o.t==='css'){ cnc.css=!!o.on; if(o.on&&o.v!==undefined)cnc.vc=o.v; }
+          else if(o.t==='maxrpm'){ cnc.maxRpm=Math.max(50,o.v); }
+          else if(o.t==='tool'){ const T=CTOOLS[o.n]; if(!T){ gc.stop('LARM — T'+String(o.n).padStart(2,'0')+' saknas i revolvern',true); return; }
+            if(o.n!==cnc.tool){ if(!(cnc.tool===o.n)){ if(CN3.maxRad()*2+6>cnc.x&&cnc.z<10){ gc.stop('LARM — verktygsbyte för nära ämnet (kör X ut först)',true); return; } cnc.tool=o.n; say('Verktygsbyte → '+T.name); } }
+            if(Math.abs(angDiff(cnc.turRot,CN3.turTarget()))>.01)return; }
+          else if(o.t==='g50'){ cnc.offX=cnc.x-o.x; cnc.offZ=cnc.z-o.z; }
+          else if(o.t==='home'){ gc.ops.splice(gc.i,1,{t:'mv',rapid:true,pts:[{x:100-cnc.offX,z:cnc.z-cnc.offZ},{x:100-cnc.offX,z:50-cnc.offZ}],ln:o.ln}); continue; }
+          else if(o.t==='pause'){ adv(o); gc.paused=true; ui(); say('M00/M01 – tryck Fortsätt','warn'); return; }
+          else if(o.t==='end'){ cnc.spindle=false; finish('PROGRAM KLART'); return; }
+          adv(o); if(gc.paused)return; } };
+      const angDiff=(c,t)=>((t-c+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;
+      CN3.nearMat=()=>cnc.z<=2&&cnc.x/2<=CN3.maxRad()+2;
+      CN3.onParted=()=>say('Detaljen är avskild (avstickning klar).');
+      // ---- maskinens egen styrning varje frame ----
+      let tick=0, lastT=performance.now();
+      const screenUpd=()=>CN3.screen([{s:'X '+(cnc.x-cnc.offX).toFixed(2)},{s:'Z '+(cnc.z-cnc.offZ).toFixed(2)},{s:'S '+Math.round(cnc.rpmAct)+' rpm'},{s:'T'+String(cnc.tool).padStart(2,'0')+(gc.run?'  CYKEL':'  STOPP'),c:gc.run?'#7dffb0':'#ffd479'},{s:cnc.alarm?'ALARM':(cnc.door?'DORR OPPEN':''),c:'#ff6b6b'}]);
+      function loop(now){ requestAnimationFrame(loop); if(!document.body.classList.contains('m-cnc')){lastT=now;return;}
+        const dt=Math.min(.05,(now-lastT)/1000); lastT=now; CN3.resize();
+        // spindelvarvtal (G96 = konstant skärhastighet)
+        let tgt=0; if(cnc.spindle){ tgt=cnc.css?Math.min(cnc.maxRpm,cnc.vc*1000/(Math.PI*Math.max(cnc.x-cnc.offX,6))):cnc.rpmCmd; tgt=Math.min(tgt,cnc.maxRpm); } cnc.rpmTarget=tgt;
+        const a=1800*dt; cnc.rpmAct=cnc.rpmAct<tgt?Math.min(tgt,cnc.rpmAct+a):Math.max(tgt,cnc.rpmAct-a);
+        if(gc.run&&!gc.paused)gc.step(dt); else if(cnc.alarm&&gc.run)gc.stop(cnc.alarm,true);
+        const td=angDiff(cnc.turRot,CN3.turTarget()); cnc.turRot+=Math.max(-6*dt,Math.min(6*dt,td));
+        CN3.spin.rotation.x+=cnc.dir*cnc.rpmAct/60*2*Math.PI*.04*dt*10; CN3.place(); CN3.door.position.x=cnc.door?-21:0;
+        if((tick++%6)===0){ $('#cX').textContent=(cnc.x-cnc.offX).toFixed(2); $('#cZ').textContent=(cnc.z-cnc.offZ).toFixed(2); $('#cS').textContent=Math.round(cnc.rpmAct); const T=CTOOLS[cnc.tool];
+          $('#cT').textContent='T'+String(cnc.tool).padStart(2,'0'); $('#cRem').textContent=cnc.removed.toFixed(2)+' cm³ avverkat'; $('#cF').textContent=Math.round(cnc.rpmAct*.2*cnc.feedOv); screenUpd(); }
+        CN3.render(); }
+      requestAnimationFrame(loop);
+      // ---- editor och knappar ----
+      ta.addEventListener('input',()=>{ gutter(); try{localStorage.setItem('gkProg2',ta.value);}catch(_){} });
+      ta.addEventListener('scroll',()=>{ gut.scrollTop=ta.scrollTop; hi.scrollTop=ta.scrollTop; hi.scrollLeft=ta.scrollLeft; mark(); });
+      ['keyup','click','focus'].forEach(ev=>ta.addEventListener(ev,()=>{ const cl=curLine(); gut.querySelectorAll('.gl').forEach((d,i)=>d.classList.toggle('cur',i+1===cl)); }));
+      ta.addEventListener('keydown',e=>{ if(e.key==='Tab'){ e.preventDefault(); const s=ta.selectionStart; ta.setRangeText('  ',s,ta.selectionEnd,'end'); ta.dispatchEvent(new Event('input')); } e.stopPropagation(); });
+      ta.addEventListener('keyup',e=>e.stopPropagation());
+      const pause=()=>{ if(gc.run){gc.paused=true;ui();} }, stop=()=>gc.stop('G-KOD STOPPAD'); 
+      $('#gkRun').onclick=start; $('#cRun').onclick=start; $('#gkPause').onclick=pause; $('#cPause').onclick=pause; $('#gkStop').onclick=stop; $('#cStop').onclick=stop;
+      $('#gkSingle').onchange=e=>{gc.single=e.target.checked;};
+      const newPart=()=>{ if(gc.run)gc.stop('G-KOD STOPPAD'); const d=parseFloat($('#cDia').value), l=parseFloat($('#cLen').value); cnc.dia=Math.min(100,Math.max(10,d||40)); cnc.len=Math.min(200,Math.max(40,l||80)); $('#cDia').value=cnc.dia; $('#cLen').value=cnc.len; cnc.rpmAct=0;cnc.spindle=false;cnc.rpmCmd=0;cnc.css=false; $('#cLamp').classList.remove('crash'); CN3.reset(); gc.ln=-1; mark(); mode('NYTT ÄMNE Ø'+cnc.dia+' × '+cnc.len+' mm'); say('Nytt ämne Ø'+cnc.dia+' × '+cnc.len+' mm inlagt.'); };
+      $('#gkNew').onclick=newPart; $('#cNew').onclick=newPart; $('#cApply').onclick=newPart;
+      const doorBtns=[$('#cDoor')]; doorBtns.forEach(b=>b.onclick=()=>{ cnc.door=!cnc.door; b.textContent=cnc.door?'🚪 Dörr: ÖPPEN':'🚪 Dörr: STÄNGD'; });
+      $('#cFeedOv').oninput=e=>{ cnc.feedOv=e.target.value/100; $('#cFeedOvVal').textContent=e.target.value+' %'; };
+      Object.keys(GK_EX).forEach(k=>{ const op=document.createElement('option'); op.textContent=k; sel.appendChild(op); });
+      sel.onchange=()=>{ if(gc.run)gc.stop('G-KOD STOPPAD'); ta.value=GK_EX[sel.value].join('\n'); ta.dispatchEvent(new Event('input')); };
+      let saved=null; try{saved=localStorage.getItem('gkProg2');}catch(_){} ta.value=saved||GK_EX[Object.keys(GK_EX)[0]].join('\n'); gutter(); ui();
+      // revolverlista
+      const rv=$('#cTools'); rv.innerHTML=''; for(let k=1;k<=12;k++){ const T=CTOOLS[k]; const r=document.createElement('div'); r.className='trw'+(T?'':' empty'); r.dataset.k=k;
+        r.innerHTML=T?'<div><b>'+T.name+'</b><br><span>spetsradie '+T.nose+' mm'+(T.w!==Infinity?' • bredd '+T.w+' mm':'')+'</span></div><i style="background:#'+T.col.toString(16).padStart(6,'0')+'"></i>':'<div><b>T'+String(k).padStart(2,'0')+' — tom plats</b></div>';
+        if(T)r.onclick=()=>{ if(gc.run){say('Stoppa programmet innan manuellt verktygsbyte.','warn');return;} if(CN3.maxRad()*2+6>cnc.x&&cnc.z<10){say('Kör X ut före verktygsbyte (verktyget är för nära ämnet).','err');return;} cnc.tool=k; say('Verktyg → '+T.name); rv.querySelectorAll('.trw').forEach(x=>x.classList.toggle('cur',+x.dataset.k===k)); };
+        if(k===1)r.classList.add('cur'); rv.appendChild(r); }
+      setInterval(()=>rv.querySelectorAll('.trw').forEach(x=>x.classList.toggle('cur',+x.dataset.k===cnc.tool)),400);
+    }
+
+    // ---------- Avstickade detaljer: 3D-vy (vridbar) och ritning ----------
+    { const $=s=>document.querySelector(s), host=$('#p3d'), svgHost=$('#pDrw'), sel=$('#pSel'), info=$('#pInfo'), wrap=$('#gkParts');
+      const parts=[]; let curP=-1, tab='3d';
+      // förenkla profilen (Douglas–Peucker på (z,r) i mm)
+      const dp=(pts,eps)=>{ if(pts.length<3)return pts.slice(); const keep=new Uint8Array(pts.length); keep[0]=keep[pts.length-1]=1; const st=[[0,pts.length-1]];
+        while(st.length){ const [a,b]=st.pop(); let md=0,mi=-1; const A=pts[a],B=pts[b],dx=B.z-A.z,dy=B.r-A.r,L=Math.hypot(dx,dy)||1;
+          for(let i=a+1;i<b;i++){ const d=Math.abs(dy*(pts[i].z-A.z)-dx*(pts[i].r-A.r))/L; if(d>md){md=d;mi=i;} } if(md>eps){keep[mi]=1;st.push([a,mi],[mi,b]);} }
+        return pts.filter((_,i)=>keep[i]); };
+      function analyse(d){ const raw=d.pts, zL=d.zLeft, zR=raw[raw.length-1].z; const prof=[{z:zL,r:raw[0].r},...raw.map(p=>({z:p.z,r:p.r}))];
+        const simp=dp(prof,.02); let V=0; for(let i=0;i<prof.length-1;i++){ const dz=prof[i+1].z-prof[i].z; V+=Math.PI*Math.pow((prof[i].r+prof[i+1].r)/2,2)*dz; }
+        const secs=[]; for(let i=0;i<simp.length-1;i++){ const a=simp[i],b=simp[i+1]; if(Math.abs(a.r-b.r)<.03&&b.z-a.z>.4){ const r=(a.r+b.r)/2, last=secs[secs.length-1]; if(last&&Math.abs(last.r-r)<.03&&Math.abs(last.z1-a.z)<1e-6)last.z1=b.z; else secs.push({z0:a.z,z1:b.z,r}); } }
+        let maxR=0; prof.forEach(p=>{if(p.r>maxR)maxR=p.r;});
+        return {prof,simp,secs,L:zR-zL,zL,zR,maxR,vol:V/1000,mass:V/1000*7.85}; }
+      const f2=v=>v.toFixed(2);
+      // ---------- ritning (SVG, ljust papper) ----------
+      function drawing(p,a,idx){ const W=640,H=360, mx=70, top=70, scaleL=(W-mx*2-130)/Math.max(a.L,1), scaleD=135/Math.max(a.maxR*2,1), s=Math.min(scaleL,scaleD,9), x0=mx, cy=top+75;
+        const X=z=>x0+(z-a.zL)*s, Y=r=>cy-r*s; const ink='#111', dim='#0a5aa8';
+        let g='', pts=a.simp.map(q=>[X(q.z),Y(q.r)]), pts2=a.simp.slice().reverse().map(q=>[X(q.z),Y(-q.r)]);
+        g+='<polygon points="'+pts.concat(pts2).map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')+'" fill="#f1f4f6" stroke="'+ink+'" stroke-width="1.6" stroke-linejoin="round"/>';
+        // gränslinjer mellan sektioner (kanter)
+        a.simp.forEach((q,i)=>{ if(i>0&&i<a.simp.length-1)g+='<line x1="'+X(q.z)+'" y1="'+Y(q.r)+'" x2="'+X(q.z)+'" y2="'+Y(-q.r)+'" stroke="'+ink+'" stroke-width=".5"/>'; });
+        g+='<line x1="'+(x0-14)+'" y1="'+cy+'" x2="'+(X(a.zR)+14)+'" y2="'+cy+'" stroke="#c0392b" stroke-width=".8" stroke-dasharray="14 3 2 3"/>';
+        const arrow=(x1,y1,x2,y2)=>{ const dx=x2-x1,dy=y2-y1,l=Math.hypot(dx,dy)||1,ux=dx/l,uy=dy/l,nx=-uy,ny=ux,k=6,w=2;
+          const h=(x,y,sg)=>'<polygon points="'+x+','+y+' '+(x-sg*ux*k+nx*w)+','+(y-sg*uy*k+ny*w)+' '+(x-sg*ux*k-nx*w)+','+(y-sg*uy*k-ny*w)+'" fill="'+dim+'"/>';
+          return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+dim+'" stroke-width=".8"/>'+h(x1,y1,-1)+h(x2,y2,1); };
+        const txt=(x,y,t,anc,rot)=>'<text x="'+x+'" y="'+y+'" font-size="11" font-family="Arial,sans-serif" fill="'+dim+'" text-anchor="'+(anc||'middle')+'"'+(rot?' transform="rotate('+rot+' '+x+' '+y+')"':'')+'>'+t+'</text>';
+        // diametrar: lodrät måttlinje i varje cylindrisk sektion
+        a.secs.filter(q=>q.z1-q.z0>=.8).forEach((q,i)=>{ const xm=X((q.z0+q.z1)/2)+((i%2)?6:-6)*0, yt=Y(q.r), yb=Y(-q.r); g+=arrow(xm,yt,xm,yb); const ly=top-8-(i%2)*14; g+='<line x1="'+xm+'" y1="'+yt+'" x2="'+xm+'" y2="'+(ly+4)+'" stroke="'+dim+'" stroke-width=".4" stroke-dasharray="2 2"/>'+txt(xm,ly,'⌀'+f2(q.r*2)); });
+        // längdmått (kedja + total)
+        const by=Y(-a.maxR)+26; const xs=[a.zL]; a.secs.filter(q=>q.z1-q.z0>=.8).forEach(q=>{ xs.push(q.z0,q.z1); }); const u=[...new Set(xs.map(v=>+v.toFixed(3)))].sort((m,n)=>m-n);
+        for(let i=0;i<u.length-1;i++){ if(u[i+1]-u[i]<.8)continue; const x1=X(u[i]),x2=X(u[i+1]); g+='<line x1="'+x1+'" y1="'+(Y(-a.maxR)+4)+'" x2="'+x1+'" y2="'+(by+4)+'" stroke="'+dim+'" stroke-width=".4"/><line x1="'+x2+'" y1="'+(Y(-a.maxR)+4)+'" x2="'+x2+'" y2="'+(by+4)+'" stroke="'+dim+'" stroke-width=".4"/>'+arrow(x1,by,x2,by)+txt((x1+x2)/2,by-4,f2(u[i+1]-u[i])); }
+        const ty=by+24; g+='<line x1="'+X(a.zL)+'" y1="'+(by)+'" x2="'+X(a.zL)+'" y2="'+(ty+4)+'" stroke="'+dim+'" stroke-width=".4"/><line x1="'+X(a.zR)+'" y1="'+(Y(-a.maxR)+4)+'" x2="'+X(a.zR)+'" y2="'+(ty+4)+'" stroke="'+dim+'" stroke-width=".4"/>'+arrow(X(a.zL),ty,X(a.zR),ty)+txt((X(a.zL)+X(a.zR))/2,ty-4,'L = '+f2(a.L)+' mm');
+        // ändvy
+        const ex=W-70, er=Math.min(a.maxR*s,44); g+='<circle cx="'+ex+'" cy="'+cy+'" r="'+er+'" fill="#f1f4f6" stroke="'+ink+'" stroke-width="1.6"/><line x1="'+(ex-er-8)+'" y1="'+cy+'" x2="'+(ex+er+8)+'" y2="'+cy+'" stroke="#c0392b" stroke-width=".7" stroke-dasharray="10 3 2 3"/><line x1="'+ex+'" y1="'+(cy-er-8)+'" x2="'+ex+'" y2="'+(cy+er+8)+'" stroke="#c0392b" stroke-width=".7" stroke-dasharray="10 3 2 3"/>'+txt(ex,cy+er+22,'⌀'+f2(a.maxR*2)+' (ändvy)');
+        // titelruta
+        const tb='<g font-family="Arial,sans-serif" font-size="10" fill="'+ink+'"><rect x="'+(W-250)+'" y="'+(H-62)+'" width="244" height="56" fill="#fff" stroke="'+ink+'"/><line x1="'+(W-250)+'" y1="'+(H-44)+'" x2="'+(W-6)+'" y2="'+(H-44)+'" stroke="'+ink+'"/><text x="'+(W-244)+'" y="'+(H-48)+'" font-size="12" font-weight="bold">DETALJ '+idx+' — CNC-SVARV</text><text x="'+(W-244)+'" y="'+(H-30)+'">Material: stål (7,85 g/cm³)   Volym: '+f2(a.vol)+' cm³</text><text x="'+(W-244)+'" y="'+(H-16)+'">Massa ≈ '+f2(a.mass)+' g   Mått i mm   Skala ≈ '+s.toFixed(1)+':1</text></g>';
+        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="100%" style="background:#fff;border-radius:6px;display:block"><rect width="'+W+'" height="'+H+'" fill="#fff"/>'+g+tb+'</svg>'; }
+      // ---------- 3D-vy ----------
+      const sc=new THREE.Scene(); sc.background=new THREE.Color(0x0d1a22); const cam=new THREE.PerspectiveCamera(35,1,.1,200);
+      const rd=new THREE.WebGLRenderer({antialias:true}); rd.setPixelRatio(Math.min(devicePixelRatio||1,2)); host.appendChild(rd.domElement); rd.domElement.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;display:block';
+      const ctl=new OrbitControls(cam,rd.domElement); ctl.enableDamping=true; ctl.dampingFactor=.08; ctl.autoRotate=true; ctl.autoRotateSpeed=2.2; ctl.addEventListener('start',()=>{ctl.autoRotate=false;});
+      sc.add(new THREE.HemisphereLight(0xdfeaf2,0x1a2630,1.0)); const dl=new THREE.DirectionalLight(0xffffff,1.2); dl.position.set(4,6,5); sc.add(dl); const dl2=new THREE.DirectionalLight(0x9fd8ff,.5); dl2.position.set(-5,-2,-4); sc.add(dl2);
+      let mesh=null; const mat=new THREE.MeshStandardMaterial({color:0xc4ccd2,metalness:.75,roughness:.3,side:THREE.DoubleSide});
+      function show3d(a){ if(mesh){sc.remove(mesh);mesh.geometry.dispose();mesh=null;} const pts=[new THREE.Vector2(.0001,0)]; a.simp.forEach(q=>pts.push(new THREE.Vector2(Math.max(.0001,q.r/10),(q.z-a.zL)/10))); pts.push(new THREE.Vector2(.0001,a.L/10));
+        mesh=new THREE.Mesh(new THREE.LatheGeometry(pts,72),mat); mesh.position.y=-a.L/20; mesh.rotation.z=Math.PI/2.6; sc.add(mesh);
+        const R=Math.max(a.L/10,a.maxR/5,1)*1.25; cam.position.set(R*1.3,R*.8,R*1.6); ctl.target.set(0,0,0); ctl.autoRotate=true; ctl.update(); }
+      const fit=()=>{ const w=host.clientWidth,h=host.clientHeight; if(!w||!h||(fit.w===w&&fit.h===h))return; fit.w=w;fit.h=h; cam.aspect=w/h; cam.updateProjectionMatrix(); rd.setSize(w,h,false); };
+      (function loop(){ requestAnimationFrame(loop); if(tab!=='3d'||curP<0||!document.body.classList.contains('m-cnc')||!host.offsetParent)return; fit(); ctl.update(); rd.render(sc,cam); })();
+      // ---------- lista, flikar, info ----------
+      const render=()=>{ sel.innerHTML=''; parts.forEach((q,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent='Detalj '+(i+1)+' — ⌀'+f2(q.a.maxR*2)+' × '+f2(q.a.L)+' mm'; sel.appendChild(o); }); if(curP>=0)sel.value=curP;
+        wrap.classList.toggle('has',curP>=0); if(curP<0){ info.textContent='Inga detaljer ännu — kör ett program som sticker av med T04 (se exemplet "Spår + avstickning").'; svgHost.innerHTML=''; return; }
+        const q=parts[curP], a=q.a; fit.w=0; if(tab==='3d')show3d(a);
+        svgHost.innerHTML=drawing(q,a,curP+1);
+        const cyl=a.secs.filter(s=>s.z1-s.z0>=.8).map(s=>'⌀'+f2(s.r*2)+' × '+f2(s.z1-s.z0)).join(',  ');
+        info.innerHTML='<b>Längd '+f2(a.L)+' mm</b> • största ⌀'+f2(a.maxR*2)+' mm • volym '+f2(a.vol)+' cm³ • ≈ '+f2(a.mass)+' g (stål)'+(cyl?'<br>Cylindriska partier: '+cyl:''); };
+      const setTab=t=>{ tab=t; wrap.querySelectorAll('.ptabs [data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t)); host.hidden=t!=='3d'; svgHost.hidden=t!=='drw'; if(t==='3d'&&curP>=0){fit.w=0;show3d(parts[curP].a);} };
+      wrap.querySelectorAll('.ptabs [data-t]').forEach(b=>b.onclick=()=>setTab(b.dataset.t)); sel.onchange=()=>{ curP=+sel.value; render(); };
+      $('#pDl').onclick=()=>{ if(curP<0)return; const blob=new Blob([svgHost.innerHTML],{type:'image/svg+xml'}), u=URL.createObjectURL(blob), a=document.createElement('a'); a.href=u; a.download='detalj-'+(curP+1)+'.svg'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),2000); };
+      $('#pClear').onclick=()=>{ parts.length=0; curP=-1; render(); };
+      const prev=CN3.onParted; CN3.onParted=d=>{ prev&&prev(d); const a=analyse(d); parts.push({a}); curP=parts.length-1; render(); wrap.classList.add('new'); setTimeout(()=>wrap.classList.remove('new'),2500); try{wrap.scrollIntoView({block:'nearest',behavior:'smooth'});}catch(_){} };
+      setTab('3d'); render(); window.__parts={parts,analyse}; }
+
+    // ---------- Maskinflikar: supportsvarv / CNC-svarv (länkas med #support / #cnc) ----------
+    { const tabs=[...document.querySelectorAll('#machines [data-m]')], rail=document.querySelector('#railCnc'), dr=document.querySelector('#drawerCnc'), pans=[...dr.querySelectorAll('.dp')], btns=[...rail.querySelectorAll('[data-p]')];
+      let cur=innerWidth<900?null:'gkod';
+      const DEF=480; let gkW=DEF; try{ const v=parseInt(localStorage.getItem('gkW'),10); if(v>=380)gkW=v; }catch(_){}
+      const maxW=()=>Math.max(DEF,innerWidth-42-72-320), nb=document.querySelector('#gkNormal'), rz=document.querySelector('#cResize');
+      const applyW=()=>{ gkW=Math.min(maxW(),Math.max(380,Math.round(gkW))); const open=cur==='gkod'; dr.style.flexBasis=open?gkW+'px':''; document.body.classList.toggle('gk-open',open); nb.hidden=!(open&&Math.abs(gkW-DEF)>2); };
+      const renderC=()=>{ dr.classList.toggle('closed',cur===null); applyW(); pans.forEach(x=>x.classList.toggle('off',x.dataset.p!==cur)); btns.forEach(b=>{const on=b.dataset.p===cur; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on?'true':'false');}); };
+      btns.forEach(b=>b.onclick=()=>{ cur=(cur===b.dataset.p)?null:b.dataset.p; renderC(); });
+      const setMode=m=>{ if(m!=='cnc')m='support'; if(m==='support'&&gc.run)gc.stop('G-KOD STOPPAD'); document.body.classList.toggle('m-cnc',m==='cnc'); document.body.classList.toggle('m-support',m==='support');
+        tabs.forEach(t=>t.setAttribute('aria-pressed',t.dataset.m===m?'true':'false')); document.title=m==='cnc'?'Virtuell CNC-svarv':'Virtuell supportsvarv'; };
+      tabs.forEach(t=>t.onclick=()=>{ try{history.replaceState(null,'','#'+t.dataset.m);}catch(_){ location.hash=t.dataset.m; } setMode(t.dataset.m); });
+      addEventListener('hashchange',()=>setMode(location.hash.replace('#','')));
+      let drag=null; rz.addEventListener('pointerdown',e=>{ drag={x:e.clientX,w:gkW}; rz.setPointerCapture(e.pointerId); rz.classList.add('drag'); document.body.classList.add('gk-drag'); e.preventDefault(); });
+      rz.addEventListener('pointermove',e=>{ if(!drag)return; gkW=drag.w+(e.clientX-drag.x); applyW(); });
+      const endDrag=()=>{ if(!drag)return; drag=null; rz.classList.remove('drag'); document.body.classList.remove('gk-drag'); try{localStorage.setItem('gkW',String(Math.round(gkW)));}catch(_){} };
+      rz.addEventListener('pointerup',endDrag); rz.addEventListener('pointercancel',endDrag);
+      const resetW=()=>{ gkW=DEF; applyW(); try{localStorage.setItem('gkW',String(DEF));}catch(_){} };
+      rz.addEventListener('dblclick',resetW); nb.onclick=resetW; addEventListener('resize',applyW);
+      renderC(); setMode(location.hash.replace('#','')); }
+
     let last=performance.now();
     function animate(now){
       requestAnimationFrame(animate);
       let dt=Math.min(.05,(now-last)/1000);last=now;
       { const tgt=(state.spindle&&state.spinDir===state.dirAct)?state.rpm:0, a=(tgt>state.rpmAct?900:1800)*dt; state.rpmAct=state.rpmAct<tgt?Math.min(tgt,state.rpmAct+a):Math.max(tgt,state.rpmAct-a); if(state.rpmAct===0)state.dirAct=state.spinDir; } // spindelramp (varv/min per s)
       const ox=state.x,oz=state.z;
-      if(state.demo)program(dt);else processKeys(dt);
+      if(gc.run){ if(!gc.paused){state.demo=false;gc.step(dt);} }else if(state.demo)program(dt);else processKeys(dt);
       resolveCollision(ox,oz); compoundStep(dt); tsStep(dt); tsApply();
       if(state.crash>0){state.crash-=dt;if(state.crash<=0){state.crash=0;if(!state.demo)document.querySelector('#mode').textContent=baseMode();}}
       stepChips(dt);
@@ -1080,7 +1602,7 @@
       setLamp(engaged()); updateAudio(dt);
       if(fallingPart){ const restY=WAYTOP*SC+initialR-.01; if(fallingPart.position.y>restY){fallVelocity+=dt*8;fallingPart.position.y=Math.max(restY,fallingPart.position.y-fallVelocity*dt);fallingPart.rotation.z+=dt*1.35;} } // faller och landar på glidytorna
       const spin=dt*14*state.rpmAct/850; stockGroup.rotation.z+=state.dirAct*spin; chuck.rotation.z+=state.dirAct*spin;
-      orbit.update(); renderer.render(scene,camera);
+      if(!document.body.classList.contains("m-cnc")){ orbit.update(); renderer.render(scene,camera); }
     }
     animate(performance.now());
     new ResizeObserver(()=>{ const w=vw(),h=vh(); if(!w||!h)return; camera.aspect=w/h; camera.updateProjectionMatrix(); renderer.setSize(w,h); }).observe(host);
