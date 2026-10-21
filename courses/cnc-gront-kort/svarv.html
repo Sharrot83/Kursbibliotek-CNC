@@ -260,7 +260,8 @@
     #p3d { position:absolute; inset:0; } #pDrw { position:absolute; inset:0; overflow:auto; padding:0; background:#fff; } #pDrw svg { width:100%; height:100%; min-width:0; }
     .pinfo { margin-top:8px; font-size:11px; line-height:1.5; color:#cbd7dd; }
     .gkparts:not(.has) .pview { height:60px; opacity:.4; }
-  </style>
+      #gkTxt::placeholder { color:#58727e; opacity:1; font-style:italic; }
+</style>
 </head>
 <body>
   <div id="app">
@@ -328,7 +329,7 @@
     <aside id="drawerCnc" aria-label="CNC-meny">
     <section class="card gkp dp off" data-p="gkod"><div class="gkhead"><div class="eyebrow">G-KOD • PROGRAM (FANUC-STIL SVARV)</div><button id="gkNormal" class="gknorm" hidden title="Tillbaka till normal bredd">⇤ Normal storlek</button></div>
       <div class="gkbar"><select id="gkEx" aria-label="Exempelprogram"></select></div>
-      <div class="gked"><div id="gkGut"></div><div id="gkBand"></div><div class="gkcode"><pre id="gkHi" aria-hidden="true"></pre><textarea id="gkTxt" spellcheck="false" wrap="off" aria-label="G-kod" autocomplete="off" autocapitalize="off"></textarea></div></div>
+      <div class="gked"><div id="gkGut"></div><div id="gkBand"></div><div class="gkcode"><pre id="gkHi" aria-hidden="true"></pre><textarea id="gkTxt" spellcheck="false" wrap="off" aria-label="G-kod" placeholder="Skriv ditt program här&#10;eller välj ett exempelprogram ovan" autocomplete="off" autocapitalize="off"></textarea></div></div>
       <div class="gkbar"><button class="primary" id="gkRun">▶ Kör</button><button id="gkPause">⏸ Paus</button><button id="gkStop">■ Stopp</button><label class="chk"><input type="checkbox" id="gkSingle"> Enkelblock</label><button id="gkNew" title="Nytt ämne och verktyget till startläge">↻ Nytt ämne</button></div>
       <div id="gkLog"></div>
       <details class="gkref"><summary>Kodreferens — vad simulatorn förstår</summary><table>
@@ -1425,6 +1426,7 @@
       const D2R=Math.PI/180;
       function start(){ if(gc.run&&gc.paused){ if(cnc.door){say('Stäng dörren först.','warn');return;} gc.paused=false;ui();return;} if(gc.run)return;
         if(cnc.door){ say('Stäng dörren innan cykelstart.','err'); mode('DÖRREN ÄR ÖPPEN'); return; }
+        if(!ta.value.trim()){ log.textContent=''; say('Programmet är tomt — skriv ett G-kodsprogram eller välj ett exempelprogram i listan.','warn'); mode('INGET PROGRAM'); return; }
         cnc.alarm=''; $('#cLamp').classList.remove('crash'); gc.lines=ta.value.split('\n'); log.textContent='';
         const r=GC.compile(ta.value,{x:cnc.x-cnc.offX,z:cnc.z-cnc.offZ,homeX:100-cnc.offX,homeZ:50-cnc.offZ});
         r.warns.forEach(w=>say('Rad '+(w.ln+1)+': '+w.msg,'warn')); gc.ops=r.ops; gc.i=0;gc.pi=0;gc.wait=0;gc.ln=-1; gc.run=true;gc.paused=false; gc.once=new Set();
@@ -1493,9 +1495,13 @@
       $('#gkNew').onclick=newPart; $('#cNew').onclick=newPart; $('#cApply').onclick=newPart;
       const doorBtns=[$('#cDoor')]; doorBtns.forEach(b=>b.onclick=()=>{ cnc.door=!cnc.door; b.textContent=cnc.door?'🚪 Dörr: ÖPPEN':'🚪 Dörr: STÄNGD'; });
       $('#cFeedOv').oninput=e=>{ cnc.feedOv=e.target.value/100; $('#cFeedOvVal').textContent=e.target.value+' %'; };
+      { const ph=document.createElement('option'); ph.value=''; ph.textContent='Exempelprogram…'; sel.appendChild(ph); }
       Object.keys(GK_EX).forEach(k=>{ const op=document.createElement('option'); op.textContent=k; sel.appendChild(op); });
-      sel.onchange=()=>{ if(gc.run)gc.stop('G-KOD STOPPAD'); ta.value=GK_EX[sel.value].join('\n'); ta.dispatchEvent(new Event('input')); };
-      let saved=null; try{saved=localStorage.getItem('gkProg2');}catch(_){} ta.value=saved||GK_EX[Object.keys(GK_EX)[0]].join('\n'); gutter(); ui();
+      sel.onchange=()=>{ if(!sel.value)return; if(gc.run)gc.stop('G-KOD STOPPAD'); ta.value=GK_EX[sel.value].join('\n'); sel.value=''; ta.dispatchEvent(new Event('input')); };
+      let saved=null; try{saved=localStorage.getItem('gkProg2');}catch(_){}
+      const exTexts=new Set(Object.values(GK_EX).map(a=>a.join('\n')));
+      ta.value=(saved&&!exTexts.has(saved))?saved:'';   // editorn startar tom; bara ett eget (ändrat) program återställs, inte ett oförändrat exempel
+      gutter(); ui();
       // revolverlista
       const rv=$('#cTools'); rv.innerHTML=''; for(let k=1;k<=12;k++){ const T=CTOOLS[k]; const r=document.createElement('div'); r.className='trw'+(T?'':' empty'); r.dataset.k=k;
         r.innerHTML=T?'<div><b>'+T.name+'</b><br><span>spetsradie '+T.nose+' mm'+(T.w!==Infinity?' • bredd '+T.w+' mm':'')+'</span></div><i style="background:#'+T.col.toString(16).padStart(6,'0')+'"></i>':'<div><b>T'+String(k).padStart(2,'0')+' — tom plats</b></div>';
