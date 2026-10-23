@@ -414,6 +414,60 @@
   .sk-tablewrap table.tool-table th, .sk-tablewrap table.tool-table td { text-align:center; padding:5px 9px; }
   .sk-tablewrap table.tool-table th:first-child, .sk-tablewrap table.tool-table td:first-child { text-align:left; }
 
+  /* ---- Ritningar: övningsritningar (raden högst upp + flyttbart ritningsfönster) ---- */
+  #drwBar {
+    display:none; position:relative; z-index:150;
+    background:#12171d; border-bottom:1px solid var(--border); padding:10px 22px 12px;
+  }
+  #drwBar.open { display:block; }
+  .drw-bar-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px; }
+  .drw-bar-head p { margin:0; color:var(--muted); font-size:13px; }
+  .drw-cards { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }
+  .drw-card {
+    flex:0 0 172px; text-align:left; background:var(--panel2); border:1px solid var(--border);
+    border-radius:8px; padding:8px; font-weight:500; font-family:inherit;
+  }
+  .drw-card:hover { border-color:var(--accent); filter:none; }
+  .drw-card.active { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
+  .drw-card .thumb {
+    background:#f5f2ea; border-radius:5px; height:86px; padding:4px;
+    display:flex; align-items:center; justify-content:center; margin-bottom:7px;
+  }
+  .drw-card .thumb svg { max-width:100%; max-height:78px; }
+  .drw-card b { display:block; font-size:12.5px; margin-bottom:2px; }
+  .drw-card span { display:block; font-size:11.5px; color:var(--muted); line-height:1.35; }
+
+  #drwWin {
+    display:none; position:fixed; z-index:350; /* över allt utom felmeddelanden (toast) */
+    left:0; top:0; width:min(560px, calc(100vw - 16px)); min-width:280px; min-height:44px;
+    max-width:calc(100vw - 8px); max-height:calc(100vh - 8px);
+    flex-direction:column; background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    box-shadow:0 16px 44px rgba(0,0,0,.6); resize:both; overflow:hidden;
+  }
+  #drwWin.open { display:flex; }
+  #drwWin.min { resize:none; height:auto !important; min-height:0; }
+  #drwWin.min .drw-body { display:none; }
+  .drw-head {
+    display:flex; align-items:center; gap:6px; padding:7px 8px 7px 12px;
+    background:var(--panel2); border-bottom:1px solid var(--border);
+    cursor:move; user-select:none; touch-action:none;
+  }
+  .drw-head:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+  .drw-title { flex:1; min-width:0; font-weight:700; font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .drw-title small { font-weight:500; color:var(--muted); margin-left:6px; }
+  .drw-head button { padding:5px 9px; font-size:12.5px; }
+  .drw-head button.drw-icon { background:transparent; border:none; color:var(--muted); padding:5px 7px; font-size:14px; }
+  .drw-head button.drw-icon:hover { color:var(--text); filter:none; }
+  .drw-head button.confirm { background:var(--danger); border-color:var(--danger); color:#fff; }
+  .drw-body { flex:1; overflow:auto; padding:10px 12px 12px; }
+  .drw-paper { background:#f5f2ea; border-radius:6px; padding:6px; }
+  .drw-paper svg { display:block; width:100%; height:auto; }
+  .drw-legend { color:var(--muted); font-size:11.5px; margin:6px 2px 0; line-height:1.5; }
+  .drw-task { font-size:13px; line-height:1.55; margin:10px 2px 8px; }
+  .drw-task b { color:var(--accent); }
+  .drw-block { width:100%; border-collapse:collapse; font-size:12px; }
+  .drw-block td { border:1px solid var(--border); padding:4px 7px; vertical-align:top; }
+  .drw-block td.k { color:var(--muted); width:38%; white-space:nowrap; }
   @media (max-width: 900px) {
     .app { grid-template-columns:1fr; }
     .left { border-right:none; border-bottom:1px solid var(--border); }
@@ -446,6 +500,14 @@
   </div>
 </header>
 
+<div id="drwBar" role="region" aria-label="Ritningar att öva på">
+  <div class="drw-bar-head">
+    <p>Välj en ritning och skriv G-koden själv. Ritningen öppnas i ett eget fönster som ligger överst och som du kan flytta.</p>
+    <button class="ghost" id="drwBarClose" aria-label="Stäng raden med ritningar">✕</button>
+  </div>
+  <div class="drw-cards" id="drwCards"></div>
+</div>
+
 <div class="app">
   <section class="left">
     <div class="buttons">
@@ -456,6 +518,7 @@
         <button class="ghost" id="exampleBtn">Exempelprogram ▾</button>
         <div class="example-menu" id="exampleMenu"></div>
       </div>
+      <button class="ghost" id="drawingsBtn" aria-controls="drwBar" title="Öva: skriv G-kod efter en ritning">Ritningar</button>
       <button class="ghost" id="toolLibraryBtn">Verktygslåda</button>
       <button class="ghost" id="cheatsheetBtn">Lathund G/M</button>
       <button class="ghost" id="skardataBtn">Lathund Skärdata</button>
@@ -932,6 +995,22 @@ V X-90        (vält tillbaka)</pre>
       </div>
       <p class="hint">Förvalda värden (Vc 16, M8) är riktvärde för materialgrupp 2, 3, 5, 8 med skärande gängtapp, obelagd. Välj en gänga i listan så fylls diameter och stigning i (standardgängor med grov stigning), eller skriv egna värden.</p>
     </div>
+  </div>
+</div>
+
+<div id="drwWin" role="dialog" aria-labelledby="drwTitle">
+  <div class="drw-head" id="drwHead" tabindex="0" title="Dra för att flytta (eller piltangenterna)">
+    <div class="drw-title" id="drwTitle"></div>
+    <button class="small" id="drwStockBtn" title="Ställ in CNC-Fräs-ämnet (storlek och nollpunkt) som på ritningen">Ämne</button>
+    <button class="small" id="drwFacitBtn" title="Ladda ett lösningsförslag i editorn (ersätter din kod)">Facit</button>
+    <button class="drw-icon" id="drwMinBtn" aria-label="Minimera ritningen" title="Minimera">▁</button>
+    <button class="drw-icon" id="drwCloseBtn" aria-label="Stäng ritningen" title="Stäng">✕</button>
+  </div>
+  <div class="drw-body">
+    <div class="drw-paper" id="drwPaper"></div>
+    <p class="drw-legend">Mått i mm. ◕ = nollpunkt (X0 Y0). X ökar åt höger och Y uppåt i vyn ovanifrån. Tunn streckad linje = ämnet. Streckprickad linje = mittlinje.</p>
+    <p class="drw-task" id="drwTask"></p>
+    <table class="drw-block" id="drwBlock"></table>
   </div>
 </div>
 
@@ -4313,6 +4392,633 @@ exampleBtn.addEventListener('click', (e)=>{
   exampleMenu.classList.toggle('open');
 });
 document.addEventListener('click', ()=>exampleMenu.classList.remove('open'));
+
+// --- Ritningar: övningsritningar att skriva G-kod efter ---
+// Varje ritning beskrivs med data (ämne, detaljens geometri och mått) och ritas
+// som SVG av drawingSVG() nedan. Koordinaterna är maskinkoordinater i mm med
+// nollpunkten (X0 Y0) där ritningen visar den. Facit är ett lösningsförslag.
+const DRAWINGS = [
+  {
+    id:'R-01', name:'Rektangelspår', level:'Nivå 1 · G0/G1 · absoluta mått',
+    stock:{w:100, d:60, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
+    tool:'T1 Pinnfräs Ø6',
+    task:'Fräs spåret med <b>T1</b> (pinnfräs Ø6). Spåret är lika brett som fräsen, så verktygets centrum ska följa spårets mittlinje (streckprickad) och du behöver ingen radiekompensering. Spårdjup 2 mm. Använd absoluta mått (G90).',
+    features:[
+      {k:'groove', w:6, depth:2, start:[10,10], segs:[['L',90,10],['L',90,50],['L',10,50],['L',10,10]]}
+    ],
+    dims:[
+      {k:'dx', a:0, b:10, y:-7, ya:0, yb:10},
+      {k:'dx', a:0, b:90, y:-14, ya:0, yb:10},
+      {k:'dx', a:0, b:100, y:68, ya:60, yb:60},
+      {k:'dy', a:0, b:10, x:-7, xa:0, xb:10},
+      {k:'dy', a:0, b:50, x:-14, xa:0, xb:10},
+      {k:'dy', a:0, b:60, x:108, xa:100, xb:100},
+      {k:'note', p:[50,53], t:[42,56.5], text:'Spår: b = 6, djup 2'}
+    ],
+    facit:`O1001
+(R-01 REKTANGELSPAR)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T1 M6
+G90
+G54 X10 Y10 S3000 M3
+G43 Z5 H1
+G1 Z-2 F150
+G1 X90 F300
+G1 Y50
+G1 X10
+G1 Y10
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-02', name:'Sicksackspår', level:'Nivå 1 · G91 inkrementella mått',
+    stock:{w:100, d:60, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
+    tool:'T1 Pinnfräs Ø6',
+    task:'Måtten är <b>kedjemått</b>: varje mått räknas från förra punkten. Gå ner i startpunkten X10 Y10 och skriv sedan spåret med <b>G91</b> (inkrementellt). Byt tillbaka till G90 innan du kör upp och avslutar. Verktyg T1 (pinnfräs Ø6), spårdjup 2 mm, verktygets centrum följer mittlinjen.',
+    features:[
+      {k:'groove', w:6, depth:2, start:[10,10], segs:[['L',25,50],['L',40,10],['L',55,50],['L',70,10],['L',85,50]]}
+    ],
+    dims:[
+      {k:'dx', a:0, b:10, y:-7, ya:0, yb:10},
+      {k:'dx', a:10, b:25, y:-7, ya:10, yb:50},
+      {k:'dx', a:25, b:40, y:-7, ya:50, yb:10},
+      {k:'dx', a:40, b:55, y:-7, ya:10, yb:50},
+      {k:'dx', a:55, b:70, y:-7, ya:50, yb:10},
+      {k:'dx', a:70, b:85, y:-7, ya:10, yb:50},
+      {k:'dx', a:0, b:100, y:70, ya:60, yb:60},
+      {k:'dy', a:0, b:10, x:-7, xa:0, xb:10},
+      {k:'dy', a:10, b:50, x:-7, xa:10, xb:25},
+      {k:'dy', a:0, b:60, x:108, xa:100, xb:100},
+      {k:'note', p:[55,53.2], t:[62,57.5], text:'Spår: b = 6, djup 2'}
+    ],
+    facit:`O1002
+(R-02 SICKSACKSPAR)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T1 M6
+G90
+G54 X10 Y10 S3000 M3
+G43 Z5 H1
+G1 Z-2 F150
+G91
+G1 X15 Y40 F300
+X15 Y-40
+X15 Y40
+X15 Y-40
+X15 Y40
+G90
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-03', name:'Ovalt spår', level:'Nivå 2 · G2/G3 cirkelbågar',
+    stock:{w:100, d:60, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
+    tool:'T1 Pinnfräs Ø6',
+    task:'Spåret består av två raka delar och två halvcirklar <b>R15</b> (radien gäller mittlinjen). Använd G2/G3 med I/J eller R. G2 går medurs och G3 moturs, sett ovanifrån. Verktyg T1 (pinnfräs Ø6), spårdjup 3 mm.',
+    features:[
+      {k:'groove', w:6, depth:3, start:[30,15], segs:[['L',70,15],['A',70,45,15,false],['L',30,45],['A',30,15,15,false]]},
+      {k:'cm', x:30, y:30, s:4}, {k:'cm', x:70, y:30, s:4}
+    ],
+    dims:[
+      {k:'dx', a:0, b:30, y:-7, ya:0, yb:30},
+      {k:'dx', a:0, b:70, y:-14, ya:0, yb:30},
+      {k:'dx', a:0, b:100, y:68, ya:60, yb:60},
+      {k:'dy', a:0, b:30, x:-7, xa:0, xb:30},
+      {k:'dy', a:0, b:60, x:108, xa:100, xb:100},
+      {k:'r', c:[70,30], r:15, ang:35, len:10, text:'R15'},
+      {k:'note', p:[50,48], t:[42,53], text:'Spår: b = 6, djup 3'}
+    ],
+    facit:`O1003
+(R-03 OVALT SPAR)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T1 M6
+G90
+G54 X30 Y15 S3000 M3
+G43 Z5 H1
+G1 Z-3 F150
+G1 X70 F300
+G3 X70 Y45 I0 J15
+G1 X30
+G3 X30 Y15 I0 J-15
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-04', name:'Hålbild', level:'Nivå 2 · borrcykler G81/G83',
+    stock:{w:100, d:60, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
+    tool:'T9 Borr Ø6, T13 Borr Ø10',
+    task:'Måtten är <b>koordinatmått</b>, alla räknade från nollpunkten. Borra de fyra Ø6-hålen med T9 och en G81-cykel, och mitthålet Ø10 med T13 och G83 (stegborrning). Genomgående hål: borra till Z-22 så att borren kommer igenom ämnet.',
+    features:[
+      {k:'hole', x:15, y:15, d:6, depth:12}, {k:'hole', x:85, y:15, d:6, depth:12},
+      {k:'hole', x:85, y:45, d:6, depth:12}, {k:'hole', x:15, y:45, d:6, depth:12},
+      {k:'hole', x:50, y:30, d:10, depth:20}
+    ],
+    dims:[
+      {k:'ox', y:-6, items:[[0,0],[15,15],[50,30],[85,15],[100,0]]},
+      {k:'oy', x:-6, items:[[0,0],[15,15],[30,50],[45,15],[60,0]]},
+      {k:'note', p:[87.12,47.12], t:[91,53], text:'4× Ø6 djup 12'},
+      {k:'note', p:[53.54,26.46], t:[60,21], text:'Ø10 genomgående'}
+    ],
+    facit:`O1004
+(R-04 HALBILD)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T9 M6
+G90
+G54 X15 Y15 S1500 M3
+G43 Z5 H9
+G99 G81 X15 Y15 Z-12 R2 F150
+X85
+Y45
+X15
+G80
+G0 Z5
+G91 G28 Z0
+T13 M6
+G90
+G54 X50 Y30 S900 M3
+G43 Z5 H13
+G98 G83 X50 Y30 Z-22 R2 Q5 F100
+G80
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-05', name:'Rundad platta', level:'Nivå 3 · G41 · nollpunkt i mitten',
+    stock:{w:90, d:60, t:20, q:'center-origin'}, origin:'Mitt på detaljen',
+    tool:'T3 Pinnfräs Ø15 (HM)',
+    task:'Fräs ytterkonturen 5 mm ner med <b>T3</b> (pinnfräs Ø15) och radiekompensering <b>G41 D3</b>. Programmera detaljens kontur: kompenseringen flyttar verktyget ut en halv diameter. Börja utanför ämnet och slå på G41 på en rak inkörning. Nollpunkten ligger mitt på detaljen, så måtten är symmetriska.',
+    features:[
+      {k:'boss', h:5, start:[-40,-17], segs:[['L',-40,17],['A',-32,25,8,true],['L',32,25],['A',40,17,8,true],['L',40,-17],['A',32,-25,8,true],['L',-32,-25],['A',-40,-17,8,true]]},
+      {k:'cl', a:[-51,0], b:[51,0]}, {k:'cl', a:[0,-33], b:[0,33]}
+    ],
+    dims:[
+      {k:'dx', a:-40, b:40, y:-36, ya:-25, yb:-25},
+      {k:'dy', a:-25, b:25, x:53, xa:40, xb:40},
+      {k:'r', c:[32,17], r:8, ang:45, len:9, text:'4× R8'}
+    ],
+    facit:`O1005
+(R-05 RUNDAD PLATTA)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T3 M6
+G90
+G54 X-60 Y0 S4000 M3
+G43 Z5 H3
+G1 Z-5 F200
+G1 G41 X-40 Y0 D3 F600
+G1 Y17
+G2 X-32 Y25 R8
+G1 X32
+G2 X40 Y17 R8
+G1 Y-17
+G2 X32 Y-25 R8
+G1 X-32
+G2 X-40 Y-17 R8
+G1 Y5
+G1 G40 X-60
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-06', name:'Fäste', level:'Nivå 3 · kontur, fas, båge och hål',
+    stock:{w:70, d:45, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
+    tool:'T3 Pinnfräs Ø15 (HM), T11 Borr Ø8',
+    task:'Fräs konturen 5 mm ner med <b>T3</b> och <b>G41 D3</b>. Rundningen är R15 och fasen 10 × 45°. Borra sedan hålet Ø8, djup 15, med <b>T11</b> (G81 eller G83). Måtten är koordinatmått från nollpunkten i ämnets nedre vänstra hörn.',
+    features:[
+      {k:'boss', h:5, start:[5,5], segs:[['L',5,25],['A',20,40,15,true],['L',55,40],['L',65,30],['L',65,5],['L',5,5]]},
+      {k:'cm', x:20, y:25, s:3},
+      {k:'hole', x:40, y:20, d:8, depth:15}
+    ],
+    dims:[
+      {k:'ox', y:-6, items:[[0,0],[5,5],[20,25],[40,20],[65,5]]},
+      {k:'ox', y:51, items:[[55,40]]},
+      {k:'oy', x:-6, items:[[0,0],[5,5],[20,40],[25,20]]},
+      {k:'oy', x:76, items:[[30,65],[40,55]]},
+      {k:'r', c:[20,25], r:15, ang:135, len:6, text:'R15'},
+      {k:'note', p:[37.17,17.17], t:[46,10], text:'Ø8 djup 15'}
+    ],
+    facit:`O1006
+(R-06 FASTE)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T3 M6
+G90
+G54 X-15 Y15 S4000 M3
+G43 Z5 H3
+G1 Z-5 F200
+G1 G41 X5 Y15 D3 F600
+G1 Y25
+G2 X20 Y40 R15
+G1 X55
+G1 X65 Y30
+G1 Y5
+G1 X5
+G1 Y15
+G1 G40 X-15
+G0 Z5
+G91 G28 Z0
+T11 M6
+G90
+G54 X40 Y20 S1100 M3
+G43 Z5 H11
+G98 G83 X40 Y20 Z-15 R2 Q5 F120
+G80
+G0 Z5
+G91 G28 Z0
+M30`
+  }
+];
+
+function drawingStockRect(st) {
+  // Ämnets utbredning i X/Y, samma regler som CNC-Fräs-inställningen "Var ligger origo".
+  const {w, d} = st;
+  switch (st.q) {
+    case 'q1': return {x0:0, x1:w, y0:0, y1:d};
+    case 'q2': return {x0:-w, x1:0, y0:0, y1:d};
+    case 'q3': return {x0:-w, x1:0, y0:-d, y1:0};
+    case 'q4': return {x0:0, x1:w, y0:-d, y1:0};
+    default:   return {x0:-w/2, x1:w/2, y0:-d/2, y1:d/2};
+  }
+}
+
+function drawingSVG(D, thumb=false) {
+  const out = [];
+  const bb = {x0:Infinity, y0:Infinity, x1:-Infinity, y1:-Infinity};
+  const grow = (sx, sy, m=0) => {
+    bb.x0 = Math.min(bb.x0, sx-m); bb.x1 = Math.max(bb.x1, sx+m);
+    bb.y0 = Math.min(bb.y0, sy-m); bb.y1 = Math.max(bb.y1, sy+m);
+  };
+  const f = v => (Math.round(v*100)/100).toString();
+  const INK = '#151515', DIM = '#2b2b2b', THIN = 0.22, THICK = 0.6;
+  const FS = 3.5, NFS = 3.2;
+  const tw = (s, size) => 0.56*size*String(s).length; // ungefärlig textbredd
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const line = (a, b, w=THIN, extra='') => {
+    out.push(`<line x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke="${INK}" stroke-width="${w}" ${extra}/>`);
+    grow(a[0], a[1]); grow(b[0], b[1]);
+  };
+  const arrow = (tip, from) => {
+    const dx = tip[0]-from[0], dy = tip[1]-from[1], L = Math.hypot(dx, dy) || 1;
+    const ux = dx/L, uy = dy/L, len = 2.4, hw = 0.75;
+    const bx = tip[0]-ux*len, by = tip[1]-uy*len;
+    out.push(`<path d="M${f(tip[0])} ${f(tip[1])}L${f(bx-uy*hw)} ${f(by+ux*hw)}L${f(bx+uy*hw)} ${f(by-ux*hw)}Z" fill="${DIM}"/>`);
+  };
+  const text = (p, s, {anchor='middle', rot=0, size=FS}={}) => {
+    const tr = rot ? ` transform="rotate(${rot} ${f(p[0])} ${f(p[1])})"` : '';
+    out.push(`<text x="${f(p[0])}" y="${f(p[1])}" font-size="${size}" text-anchor="${anchor}" fill="${INK}"${tr}>${esc(s)}</text>`);
+    const w = tw(s, size);
+    // grov textruta för vyns gränser
+    if (rot) {
+      const ext = anchor==='middle' ? [-w/2, w/2] : anchor==='end' ? [0, w] : [-w, 0];
+      grow(p[0]-size, p[1]+ext[0]); grow(p[0]+1, p[1]+ext[1]);
+    } else {
+      const ext = anchor==='middle' ? [-w/2, w/2] : anchor==='end' ? [-w, 0] : [0, w];
+      grow(p[0]+ext[0], p[1]-size); grow(p[0]+ext[1], p[1]+1);
+    }
+  };
+  // Vyn ovanifrån: maskinens Y uppåt blir SVG:ns y nedåt.
+  const T = (x, y) => [x, -y];
+  const pathD = (start, segs, close) => {
+    let d = `M${f(start[0])} ${f(-start[1])}`, cur = start;
+    const pts = [start];
+    segs.forEach(s => {
+      if (s[0]==='L') { d += `L${f(s[1])} ${f(-s[2])}`; }
+      else { // ['A', x, y, r, medurs]
+        const r = s[3];
+        d += `A${f(r)} ${f(r)} 0 0 ${s[4]?1:0} ${f(s[1])} ${f(-s[2])}`;
+        pts.push([s[1]-r, s[2]-r], [s[1]+r, s[2]+r], [cur[0]-r, cur[1]-r], [cur[0]+r, cur[1]+r]);
+      }
+      cur = [s[1], s[2]]; pts.push(cur);
+    });
+    return {d: d + (close ? 'Z' : ''), pts};
+  };
+  const CENTER_DASH = 'stroke-dasharray="6 1.2 1 1.2"';
+  // Måttlinje mellan A och B (SVG-koordinater). Korta mått får pilarna utanför.
+  const dimLine = (A, B, label, vertical) => {
+    const L = Math.hypot(B[0]-A[0], B[1]-A[1]);
+    if (L >= 8) {
+      line(A, B); arrow(A, B); arrow(B, A);
+    } else {
+      const ux = (B[0]-A[0])/L, uy = (B[1]-A[1])/L, o = 5;
+      const A2 = [A[0]-ux*o, A[1]-uy*o], B2 = [B[0]+ux*o, B[1]+uy*o];
+      line(A2, B2); arrow(A, A2); arrow(B, B2);
+    }
+    if (vertical) text([A[0]-0.8, (A[1]+B[1])/2], label, {rot:-90});
+    else text([(A[0]+B[0])/2, A[1]-0.8], label);
+  };
+
+  // Ämnet (tunn streckad linje)
+  const sr = drawingStockRect(D.stock);
+  out.push(`<rect x="${f(sr.x0)}" y="${f(-sr.y1)}" width="${f(sr.x1-sr.x0)}" height="${f(sr.y1-sr.y0)}" fill="#fffdf7" stroke="#6f6f6f" stroke-width="0.3" stroke-dasharray="3 1.5"/>`);
+  grow(sr.x0, -sr.y1); grow(sr.x1, -sr.y0);
+
+  // Detaljens geometri
+  D.features.forEach(ft => {
+    if (ft.k === 'groove') {
+      const {d, pts} = pathD(ft.start, ft.segs, false);
+      // Ytterkant = tjock linje i full spårbredd, sedan "papper" i mitten:
+      // ger spårets kanter med rundade ändar, precis som en pinnfräs lämnar dem.
+      out.push(`<path d="${d}" fill="none" stroke="${INK}" stroke-width="${ft.w}" stroke-linecap="round" stroke-linejoin="round"/>`);
+      out.push(`<path d="${d}" fill="none" stroke="#fffdf7" stroke-width="${ft.w-2*THICK}" stroke-linecap="round" stroke-linejoin="round"/>`);
+      if (!thumb) out.push(`<path d="${d}" fill="none" stroke="#555" stroke-width="${THIN}" ${CENTER_DASH}/>`);
+      pts.forEach(p => grow(p[0], -p[1], ft.w/2));
+    } else if (ft.k === 'boss') {
+      const {d, pts} = pathD(ft.start, ft.segs, true);
+      out.push(`<path d="${d}" fill="#ebe6d9" stroke="${INK}" stroke-width="${THICK}" stroke-linejoin="round"/>`);
+      pts.forEach(p => grow(p[0], -p[1]));
+    } else if (ft.k === 'hole') {
+      const r = ft.d/2;
+      out.push(`<circle cx="${f(ft.x)}" cy="${f(-ft.y)}" r="${f(r)}" fill="#fffdf7" stroke="${INK}" stroke-width="${THICK}"/>`);
+      if (!thumb) {
+        const s = r + 2.2;
+        line(T(ft.x-s, ft.y), T(ft.x+s, ft.y), THIN, CENTER_DASH);
+        line(T(ft.x, ft.y-s), T(ft.x, ft.y+s), THIN, CENTER_DASH);
+      }
+      grow(ft.x, -ft.y, r);
+    } else if (ft.k === 'cm' && !thumb) {
+      line(T(ft.x-ft.s, ft.y), T(ft.x+ft.s, ft.y), THIN);
+      line(T(ft.x, ft.y-ft.s), T(ft.x, ft.y+ft.s), THIN);
+    } else if (ft.k === 'cl' && !thumb) {
+      line(T(ft.a[0], ft.a[1]), T(ft.b[0], ft.b[1]), THIN, CENTER_DASH);
+    }
+  });
+
+  // Nollpunkten (X0 Y0)
+  const oR = thumb ? 3 : 2.2;
+  out.push(`<g stroke="${INK}" stroke-width="0.3"><circle cx="0" cy="0" r="${oR}" fill="#fffdf7"/>`
+    + `<path d="M0 0L${oR} 0A${oR} ${oR} 0 0 0 0 ${-oR}Z" fill="${INK}"/>`
+    + `<path d="M0 0L${-oR} 0A${oR} ${oR} 0 0 0 0 ${oR}Z" fill="${INK}"/></g>`);
+  grow(0, 0, oR);
+
+  if (!thumb) {
+    const GAP = 1, OVER = 1.5;
+    // Måttsättning
+    D.dims.forEach(dm => {
+      if (dm.k === 'dx') {
+        const ends = [[dm.a, dm.ya], [dm.b, dm.yb]];
+        ends.forEach(([x, y0]) => {
+          const dir = Math.sign(dm.y - y0) || 1;
+          line(T(x, y0 + GAP*dir), T(x, dm.y + OVER*dir));
+        });
+        dimLine(T(dm.a, dm.y), T(dm.b, dm.y), dm.text ?? f(Math.abs(dm.b-dm.a)).replace('.', ','), false);
+      } else if (dm.k === 'dy') {
+        const ends = [[dm.a, dm.xa], [dm.b, dm.xb]];
+        ends.forEach(([y, x0]) => {
+          const dir = Math.sign(dm.x - x0) || 1;
+          line(T(x0 + GAP*dir, y), T(dm.x + OVER*dir, y));
+        });
+        dimLine(T(dm.x, dm.a), T(dm.x, dm.b), dm.text ?? f(Math.abs(dm.b-dm.a)).replace('.', ','), true);
+      } else if (dm.k === 'ox') { // koordinatmått i X, ändpunkt på en baslinje
+        dm.items.forEach(([x, y0]) => {
+          const dir = Math.sign(dm.y - y0) || -1;
+          line(T(x, y0 + GAP*dir), T(x, dm.y));
+          const p = T(x, dm.y + dir*0.8);
+          // roterad text: läses nedifrån och upp, centrerad på linjen
+          text([p[0] + FS*0.35, p[1]], f(x).replace('.', ','), {rot:-90, anchor: dir < 0 ? 'end' : 'start'});
+        });
+      } else if (dm.k === 'oy') { // koordinatmått i Y
+        dm.items.forEach(([y, x0]) => {
+          const dir = Math.sign(dm.x - x0) || -1;
+          line(T(x0 + GAP*dir, y), T(dm.x, y));
+          const p = T(dm.x + dir*0.8, y);
+          text([p[0], p[1] + FS*0.35], f(y).replace('.', ','), {anchor: dir < 0 ? 'end' : 'start'});
+        });
+      } else if (dm.k === 'r' || dm.k === 'note') {
+        let P, Q;
+        if (dm.k === 'r') {
+          const a = dm.ang*Math.PI/180;
+          P = T(dm.c[0] + dm.r*Math.cos(a), dm.c[1] + dm.r*Math.sin(a));
+          Q = T(dm.c[0] + (dm.r+dm.len)*Math.cos(a), dm.c[1] + (dm.r+dm.len)*Math.sin(a));
+        } else {
+          P = T(dm.p[0], dm.p[1]); Q = T(dm.t[0], dm.t[1]);
+        }
+        line(Q, P); arrow(P, Q);
+        const sgn = Q[0] >= P[0] ? 1 : -1, w = tw(dm.text, NFS) + 1;
+        line(Q, [Q[0] + sgn*w, Q[1]]);
+        text([Q[0] + sgn*0.5, Q[1] - 0.8], dm.text, {anchor: sgn > 0 ? 'start' : 'end', size:NFS});
+      }
+    });
+    text([sr.x0, -sr.y1 - 3.2], 'Ovanifrån', {anchor:'start', size:2.8});
+
+    // Vyn framifrån (X åt höger, Z uppåt), under vyn ovanifrån
+    const z0 = bb.y1 + 14, S = (x, z) => [x, z0 - z];
+    const t = D.stock.t, HID = 'stroke-dasharray="2 1"';
+    const boss = D.features.find(ft => ft.k === 'boss');
+    if (boss) {
+      const xs = [boss.start[0], ...boss.segs.map(s => s[1])];
+      const bx0 = Math.min(...xs), bx1 = Math.max(...xs), h = boss.h;
+      const pts = [[sr.x0,-t],[sr.x0,-h],[bx0,-h],[bx0,0],[bx1,0],[bx1,-h],[sr.x1,-h],[sr.x1,-t]].map(p => S(p[0], p[1]));
+      out.push(`<path d="M${pts.map(p => f(p[0])+' '+f(p[1])).join('L')}Z" fill="#ebe6d9" stroke="${INK}" stroke-width="${THICK}" stroke-linejoin="round"/>`);
+      pts.forEach(p => grow(p[0], p[1]));
+      // höjd på ansatsen
+      line(S(sr.x0 - GAP, -h), S(sr.x0 - 8 - OVER, -h));
+      line(S(bx0 - GAP, 0), S(sr.x0 - 8 - OVER, 0));
+      dimLine(S(sr.x0 - 8, -h), S(sr.x0 - 8, 0), String(h), true);
+    } else {
+      out.push(`<rect x="${f(sr.x0)}" y="${f(z0)}" width="${f(sr.x1-sr.x0)}" height="${f(t)}" fill="#fffdf7" stroke="${INK}" stroke-width="${THICK}"/>`);
+      grow(sr.x0, z0); grow(sr.x1, z0 + t);
+    }
+    D.features.forEach(ft => {
+      if (ft.k === 'groove') {
+        const {pts} = pathD(ft.start, ft.segs, false);
+        const xs = pts.map(p => p[0]);
+        const gx0 = Math.min(...xs) - ft.w/2, gx1 = Math.max(...xs) + ft.w/2, dd = ft.depth;
+        line(S(gx0, 0), S(gx0, -dd), 0.35, HID); line(S(gx0, -dd), S(gx1, -dd), 0.35, HID); line(S(gx1, -dd), S(gx1, 0), 0.35, HID);
+        // spårdjup
+        line(S(sr.x0 - GAP, 0), S(sr.x0 - 8 - OVER, 0));
+        line(S(gx0 - GAP, -dd), S(sr.x0 - 8 - OVER, -dd));
+        dimLine(S(sr.x0 - 8, -dd), S(sr.x0 - 8, 0), String(dd).replace('.', ','), true);
+      } else if (ft.k === 'hole') {
+        const r = ft.d/2, dd = Math.min(ft.depth, t);
+        line(S(ft.x-r, 0), S(ft.x-r, -dd), 0.35, HID); line(S(ft.x+r, 0), S(ft.x+r, -dd), 0.35, HID);
+        if (dd < t) line(S(ft.x-r, -dd), S(ft.x+r, -dd), 0.35, HID);
+        line(S(ft.x, 2), S(ft.x, -dd-2), THIN, CENTER_DASH);
+      }
+    });
+    // ämnets tjocklek
+    line(S(sr.x1 + GAP, 0), S(sr.x1 + 8 + OVER, 0));
+    line(S(sr.x1 + GAP, -t), S(sr.x1 + 8 + OVER, -t));
+    dimLine(S(sr.x1 + 8, -t), S(sr.x1 + 8, 0), String(t), true);
+    text([sr.x0, z0 - 3.2], 'Framifrån', {anchor:'start', size:2.8});
+  }
+
+  const m = thumb ? 3 : 4;
+  const vb = [bb.x0-m, bb.y0-m, bb.x1-bb.x0+2*m, bb.y1-bb.y0+2*m].map(f).join(' ');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" font-family="Arial Narrow, Arial, Helvetica, sans-serif" role="img" aria-label="Ritning ${D.id} ${esc(D.name)}">${out.join('')}</svg>`;
+}
+
+(function setupDrawings() {
+  const bar = document.getElementById('drwBar');
+  const cards = document.getElementById('drwCards');
+  const win = document.getElementById('drwWin');
+  const head = document.getElementById('drwHead');
+  const facitBtn = document.getElementById('drwFacitBtn');
+  const minBtn = document.getElementById('drwMinBtn');
+  let current = null, placed = false, facitTimer = null;
+
+  const QUAD_TEXT = {
+    'q1':'nere till vänster', 'q2':'nere till höger', 'q3':'uppe till höger', 'q4':'uppe till vänster',
+    'center-origin':'centrerad på origo'
+  };
+
+  DRAWINGS.forEach(D => {
+    const b = document.createElement('button');
+    b.className = 'drw-card';
+    b.dataset.id = D.id;
+    b.setAttribute('aria-label', `Öppna ritning ${D.id}, ${D.name}, ${D.level}`);
+    b.innerHTML = `<div class="thumb">${drawingSVG(D, true)}</div><b>${D.id} · ${D.name}</b><span>${D.level}</span>`;
+    b.addEventListener('click', () => { openDrawing(D); bar.classList.remove('open'); });
+    cards.appendChild(b);
+  });
+
+  document.getElementById('drawingsBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = !bar.classList.contains('open');
+    bar.classList.toggle('open', open);
+    if (open) { window.scrollTo({top:0, behavior:'smooth'}); (cards.querySelector('.active') || cards.firstChild).focus({preventScroll:true}); }
+  });
+  document.getElementById('drwBarClose').addEventListener('click', () => bar.classList.remove('open'));
+
+  function clamp() {
+    if (!win.classList.contains('open')) return;
+    const r = win.getBoundingClientRect();
+    const left = Math.min(Math.max(r.left, 80 - r.width), window.innerWidth - 80);
+    const top = Math.min(Math.max(r.top, 0), window.innerHeight - 40);
+    win.style.left = left + 'px'; win.style.top = top + 'px';
+  }
+  // Hela fönstret synligt (vid öppning och när webbläsarfönstret ändrar storlek).
+  function fit() {
+    if (!win.classList.contains('open')) return;
+    let r = win.getBoundingClientRect();
+    const left = Math.min(Math.max(r.left, 0), Math.max(0, window.innerWidth - r.width));
+    let top = Math.min(Math.max(r.top, 0), Math.max(0, window.innerHeight - 120));
+    win.style.left = left + 'px'; win.style.top = top + 'px';
+    if (!win.classList.contains('min')) {
+      const avail = window.innerHeight - top - 8;
+      if (r.height > avail) win.style.height = Math.max(200, avail) + 'px';
+      r = win.getBoundingClientRect();
+      if (r.bottom > window.innerHeight) win.style.top = Math.max(0, window.innerHeight - r.height - 4) + 'px';
+    }
+  }
+  function resetFacit() {
+    clearTimeout(facitTimer);
+    facitBtn.classList.remove('confirm'); facitBtn.textContent = 'Facit';
+  }
+
+  function openDrawing(D) {
+    current = D;
+    resetFacit();
+    cards.querySelectorAll('.drw-card').forEach(c => c.classList.toggle('active', c.dataset.id === D.id));
+    document.getElementById('drwTitle').innerHTML = `${D.id} · ${D.name}<small>${D.level}</small>`;
+    document.getElementById('drwPaper').innerHTML = drawingSVG(D);
+    document.getElementById('drwTask').innerHTML = `<b>Uppgift:</b> ${D.task}`;
+    const s = D.stock;
+    const rows = [
+      ['Ritningsnummer', D.id], ['Benämning', D.name], ['Material', 'Aluminium EN AW-6082'],
+      ['Ämne', `${s.w} × ${s.d} × ${s.t} mm`], ['Nollpunkt (X0 Y0 Z0)', `${D.origin}, Z0 på ämnets ovansida`],
+      ['Verktyg', D.tool + ' (T-nummer enligt standardverktygslådan)'],
+      ['Generella toleranser', 'ISO 2768-m'], ['Skala', 'Ej skalenlig, läs måtten']
+    ];
+    document.getElementById('drwBlock').innerHTML = rows.map(([k, v]) => `<tr><td class="k">${k}</td><td>${v}</td></tr>`).join('');
+    win.classList.add('open');
+    win.classList.remove('min');
+    minBtn.textContent = '▁'; minBtn.setAttribute('aria-label', 'Minimera ritningen'); minBtn.title = 'Minimera';
+    win.style.height = '';
+    if (!placed) {
+      const w = win.offsetWidth;
+      win.style.left = Math.max(8, window.innerWidth - w - 24) + 'px';
+      win.style.top = Math.min(110, Math.max(8, window.innerHeight - 200)) + 'px';
+      placed = true;
+    }
+    fit();
+    head.focus({preventScroll:true});
+  }
+
+  function closeDrawing() {
+    win.classList.remove('open');
+    resetFacit();
+    cards.querySelectorAll('.drw-card').forEach(c => c.classList.remove('active'));
+    document.getElementById('drawingsBtn').focus({preventScroll:true});
+  }
+  document.getElementById('drwCloseBtn').addEventListener('click', closeDrawing);
+
+  let savedHeight = '';
+  minBtn.addEventListener('click', () => {
+    const min = !win.classList.contains('min');
+    if (min) savedHeight = win.style.height; else win.style.height = savedHeight;
+    win.classList.toggle('min', min);
+    minBtn.textContent = min ? '▢' : '▁';
+    minBtn.title = min ? 'Visa ritningen igen' : 'Minimera';
+    minBtn.setAttribute('aria-label', min ? 'Visa ritningen igen' : 'Minimera ritningen');
+  });
+
+  document.getElementById('drwStockBtn').addEventListener('click', () => {
+    if (!current) return;
+    const s = current.stock;
+    Object.assign(stockSize, {auto:false, shape:'square', width:s.w, depth:s.d, thickness:s.t, quadrant:s.q});
+    saveJSON('gkodviz_stocksize_v1', stockSize);
+    if (stockMode) { buildStockGrid(); resweepStock(playModel ? playModel.total : 0); render(); }
+    statusEl.textContent = `Ämnet är inställt som på ritning ${current.id}: ${s.w} × ${s.d} × ${s.t} mm, origo ${QUAD_TEXT[s.q]}.`
+      + (stockMode ? '' : ' Slå på CNC-Fräs för att se det.');
+  });
+
+  facitBtn.addEventListener('click', () => {
+    if (!current) return;
+    if (!facitBtn.classList.contains('confirm')) {
+      facitBtn.classList.add('confirm'); facitBtn.textContent = 'Ersätt din kod?';
+      facitTimer = setTimeout(resetFacit, 4000);
+      return;
+    }
+    resetFacit();
+    loadTextIntoEditor(current.facit);
+    statusEl.textContent = `Facit för ${current.id} är laddat. Det är ett lösningsförslag – det finns fler sätt att skriva programmet.`;
+  });
+
+  // Flytta fönstret: dra i titelraden (mus, penna eller finger) …
+  let drag = null;
+  head.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0 || e.target.closest('button')) return;
+    const r = win.getBoundingClientRect();
+    drag = {dx: e.clientX - r.left, dy: e.clientY - r.top, id: e.pointerId};
+    head.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  head.addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    win.style.left = (e.clientX - drag.dx) + 'px';
+    win.style.top = (e.clientY - drag.dy) + 'px';
+    clamp();
+  });
+  const endDrag = (e) => { if (drag && e.pointerId === drag.id) { drag = null; } };
+  head.addEventListener('pointerup', endDrag);
+  head.addEventListener('pointercancel', endDrag);
+  // … eller med piltangenterna när titelraden har fokus (Shift = större steg).
+  head.addEventListener('keydown', (e) => {
+    const step = e.shiftKey ? 60 : 20;
+    const mv = {ArrowLeft:[-step,0], ArrowRight:[step,0], ArrowUp:[0,-step], ArrowDown:[0,step]}[e.key];
+    if (!mv) return;
+    e.preventDefault();
+    const r = win.getBoundingClientRect();
+    win.style.left = (r.left + mv[0]) + 'px'; win.style.top = (r.top + mv[1]) + 'px';
+    clamp();
+  });
+  win.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawing(); });
+  window.addEventListener('resize', fit);
+})();
 
 resizeCanvas();
 drawFromText(true);
