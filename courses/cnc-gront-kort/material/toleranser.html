@@ -282,6 +282,16 @@
   article.reading ol.steps{margin:0 0 16px; padding-left:0; list-style:none; counter-reset:st;}
   article.reading ol.steps li{counter-increment:st; position:relative; padding-left:34px; margin-bottom:9px; font-size:14.6px; line-height:1.6;}
   article.reading ol.steps li::before{content:counter(st); position:absolute; left:0; top:1px; width:22px; height:22px; border-radius:50%; background:var(--accent,#4fb3a5); color:#0f1115; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center;}
+  .audio-box{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    margin:6px 0 22px; padding:12px 16px; border:1px solid var(--line); border-radius:8px;
+    background:var(--panel);
+  }
+  .audio-box .audio-label{
+    font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--accent,var(--amber)); white-space:nowrap; display:flex; align-items:center; gap:6px;
+  }
+  .audio-box audio{ flex:1; min-width:220px; height:34px; accent-color:var(--accent,var(--amber)); }
 </style>
 </head>
 <body>
@@ -304,6 +314,8 @@
   </header>
   <div class="dim">TILL INNEHÅLLET</div>
   <article class="reading" style="--accent:#4fb3a5">
+
+    <div class="audio-box"><span class="audio-label">🔊 Lyssna</span><audio controls preload="none" src="audio/toleranser.mp3"></audio></div>
 
     <div class="callout"><b>Läs detta först</b>Dimensionstoleranser handlar ofta om mycket små mått — några tusendels millimeter. I figurerna här är toleranserna därför ritade kraftigt förstorade, och toleransområdena är markerade med kursens accentfärg. Alla mått anges i millimeter om inget annat sägs, precis som på en verkstadsritning. Det här materialet handlar om <strong>dimensionstoleranser</strong> (och passningar); när det står "tolerans" menas alltså dimensionstolerans.</div>
 
