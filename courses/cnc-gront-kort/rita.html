@@ -422,6 +422,10 @@
   #drwBar.open { display:block; }
   .drw-bar-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px; }
   .drw-bar-head p { margin:0; color:var(--muted); font-size:13px; }
+  .drw-filter { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:9px; }
+  .drw-chip { padding:5px 11px; font-size:12px; font-weight:600; border-radius:999px; background:transparent; color:var(--muted); }
+  .drw-chip.active { background:var(--panel2); color:var(--text); border-color:var(--accent); }
+  .drw-chip:hover { color:var(--text); filter:none; }
   .drw-cards { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }
   .drw-card {
     flex:0 0 172px; text-align:left; background:var(--panel2); border:1px solid var(--border);
@@ -505,6 +509,7 @@
     <p>Välj en ritning och skriv G-koden själv. Ritningen öppnas i ett eget fönster som ligger överst och som du kan flytta.</p>
     <button class="ghost" id="drwBarClose" aria-label="Stäng raden med ritningar">✕</button>
   </div>
+  <div class="drw-filter" id="drwFilter" role="group" aria-label="Visa nivå"></div>
   <div class="drw-cards" id="drwCards"></div>
 </div>
 
@@ -4394,18 +4399,48 @@ exampleBtn.addEventListener('click', (e)=>{
 document.addEventListener('click', ()=>exampleMenu.classList.remove('open'));
 
 // --- Ritningar: övningsritningar att skriva G-kod efter ---
+// 20 ritningar i fyra nivåer: 1 raka linjer, 2 bågar och hål,
+// 3 konturer med radiekompensering, 4 fickor och hela detaljer.
 // Varje ritning beskrivs med data (ämne, detaljens geometri och mått) och ritas
 // som SVG av drawingSVG() nedan. Koordinaterna är maskinkoordinater i mm med
 // nollpunkten (X0 Y0) där ritningen visar den. Facit är ett lösningsförslag.
 const DRAWINGS = [
+  // ---------- Nivå 1: raka linjer, G0/G1 ----------
   {
-    id:'R-01', name:'Rektangelspår', level:'Nivå 1 · G0/G1 · absoluta mått',
+    id:'R-01', name:'Rakt spår', lvl:1, topic:'G0/G1 · första programmet',
     stock:{w:100, d:60, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
     tool:'T1 Pinnfräs Ø6',
-    task:'Fräs spåret med <b>T1</b> (pinnfräs Ø6). Spåret är lika brett som fräsen, så verktygets centrum ska följa spårets mittlinje (streckprickad) och du behöver ingen radiekompensering. Spårdjup 2 mm. Använd absoluta mått (G90).',
-    features:[
-      {k:'groove', w:6, depth:2, start:[10,10], segs:[['L',90,10],['L',90,50],['L',10,50],['L',10,10]]}
+    task:'Ditt första program: fräs ett rakt spår med <b>T1</b> (pinnfräs Ø6). Spåret är lika brett som fräsen, så verktygets centrum följer spårets mittlinje (streckprickad). Gå snabbt (G0) till startpunkten, ner 2 mm med G1, fräs till slutpunkten och kör upp igen.',
+    features:[ {k:'groove', w:6, depth:2, start:[10,30], segs:[['L',90,30]]} ],
+    dims:[
+      {k:'dx', a:0, b:10, y:-7, ya:0, yb:30},
+      {k:'dx', a:0, b:90, y:-14, ya:0, yb:30},
+      {k:'dx', a:0, b:100, y:68, ya:60, yb:60},
+      {k:'dy', a:0, b:30, x:-7, xa:0, xb:10},
+      {k:'dy', a:0, b:60, x:108, xa:100, xb:100},
+      {k:'note', p:[50,33], t:[42,41], text:'Spår: b = 6, djup 2'}
     ],
+    facit:`O1001
+(R-01 RAKT SPAR)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T1 M6
+G90
+G54 X10 Y30 S3000 M3
+G43 Z5 H1
+G1 Z-2 F150
+G1 X90 F300
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-02', name:'Rektangelspår', lvl:1, topic:'G1 · absoluta mått (G90)',
+    stock:{w:100, d:60, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
+    tool:'T1 Pinnfräs Ø6',
+    task:'Fräs spåret med <b>T1</b> (pinnfräs Ø6). Verktygets centrum följer spårets mittlinje, så du behöver ingen radiekompensering. Spårdjup 2 mm. Använd absoluta mått (G90): alla koordinater räknas från nollpunkten.',
+    features:[ {k:'groove', w:6, depth:2, start:[10,10], segs:[['L',90,10],['L',90,50],['L',10,50],['L',10,10]]} ],
     dims:[
       {k:'dx', a:0, b:10, y:-7, ya:0, yb:10},
       {k:'dx', a:0, b:90, y:-14, ya:0, yb:10},
@@ -4415,8 +4450,8 @@ const DRAWINGS = [
       {k:'dy', a:0, b:60, x:108, xa:100, xb:100},
       {k:'note', p:[50,53], t:[42,56.5], text:'Spår: b = 6, djup 2'}
     ],
-    facit:`O1001
-(R-01 REKTANGELSPAR)
+    facit:`O1002
+(R-02 REKTANGELSPAR)
 G21
 G90 G80 G40 G0
 G91 G28 Z0
@@ -4434,13 +4469,69 @@ G91 G28 Z0
 M30`
   },
   {
-    id:'R-02', name:'Sicksackspår', level:'Nivå 1 · G91 inkrementella mått',
+    id:'R-03', name:'Trappspår', lvl:1, topic:'G1 · koordinatmått',
     stock:{w:100, d:60, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
     tool:'T1 Pinnfräs Ø6',
-    task:'Måtten är <b>kedjemått</b>: varje mått räknas från förra punkten. Gå ner i startpunkten X10 Y10 och skriv sedan spåret med <b>G91</b> (inkrementellt). Byt tillbaka till G90 innan du kör upp och avslutar. Verktyg T1 (pinnfräs Ø6), spårdjup 2 mm, verktygets centrum följer mittlinjen.',
-    features:[
-      {k:'groove', w:6, depth:2, start:[10,10], segs:[['L',25,50],['L',40,10],['L',55,50],['L',70,10],['L',85,50]]}
+    task:'Måtten är <b>koordinatmått</b>: siffran vid varje linje är avståndet från nollpunkten, alltså precis den X eller Y du skriver i programmet. Fräs trappan med <b>T1</b>, spårdjup 2 mm. Tips: när bara X eller bara Y ändras räcker det att skriva den axeln.',
+    features:[ {k:'groove', w:6, depth:2, start:[10,10], segs:[['L',35,10],['L',35,25],['L',60,25],['L',60,40],['L',90,40]]} ],
+    dims:[
+      {k:'ox', y:-6, items:[[0,0],[10,10],[35,10],[60,25],[90,40],[100,0]]},
+      {k:'oy', x:-6, items:[[0,0],[10,10],[25,35],[40,60],[60,0]]},
+      {k:'note', p:[75,43], t:[78,50], text:'Spår: b = 6, djup 2'}
     ],
+    facit:`O1003
+(R-03 TRAPPSPAR)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T1 M6
+G90
+G54 X10 Y10 S3000 M3
+G43 Z5 H1
+G1 Z-2 F150
+G1 X35 F300
+G1 Y25
+G1 X60
+G1 Y40
+G1 X90
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-04', name:'Triangelspår', lvl:1, topic:'G1 · sneda linjer',
+    stock:{w:100, d:60, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
+    tool:'T1 Pinnfräs Ø6',
+    task:'En sned linje får du när både X och Y ändras på samma rad, till exempel <b>G1 X50 Y50</b>. Fräs triangeln med T1, spårdjup 2 mm, och avsluta i startpunkten.',
+    features:[ {k:'groove', w:6, depth:2, start:[15,10], segs:[['L',85,10],['L',50,50],['L',15,10]]} ],
+    dims:[
+      {k:'ox', y:-6, items:[[0,0],[15,10],[50,50],[85,10],[100,0]]},
+      {k:'oy', x:-6, items:[[0,0],[10,15],[50,50],[60,0]]},
+      {k:'note', p:[51.5,53.5], t:[58,57], text:'Spår: b = 6, djup 2'}
+    ],
+    facit:`O1004
+(R-04 TRIANGELSPAR)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T1 M6
+G90
+G54 X15 Y10 S3000 M3
+G43 Z5 H1
+G1 Z-2 F150
+G1 X85 F300
+G1 X50 Y50
+G1 X15 Y10
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-05', name:'Sicksackspår', lvl:1, topic:'G91 · inkrementella mått',
+    stock:{w:100, d:60, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
+    tool:'T1 Pinnfräs Ø6',
+    task:'Måtten är <b>kedjemått</b>: varje mått räknas från förra punkten. Gå ner i startpunkten X10 Y10 och skriv sedan spåret med <b>G91</b> (inkrementellt). Byt tillbaka till G90 innan du kör upp och avslutar. Verktyg T1, spårdjup 2 mm.',
+    features:[ {k:'groove', w:6, depth:2, start:[10,10], segs:[['L',25,50],['L',40,10],['L',55,50],['L',70,10],['L',85,50]]} ],
     dims:[
       {k:'dx', a:0, b:10, y:-7, ya:0, yb:10},
       {k:'dx', a:10, b:25, y:-7, ya:10, yb:50},
@@ -4454,8 +4545,8 @@ M30`
       {k:'dy', a:0, b:60, x:108, xa:100, xb:100},
       {k:'note', p:[55,53.2], t:[62,57.5], text:'Spår: b = 6, djup 2'}
     ],
-    facit:`O1002
-(R-02 SICKSACKSPAR)
+    facit:`O1005
+(R-05 SICKSACKSPAR)
 G21
 G90 G80 G40 G0
 G91 G28 Z0
@@ -4475,11 +4566,49 @@ G0 Z5
 G91 G28 Z0
 M30`
   },
+  // ---------- Nivå 2: bågar och hål ----------
   {
-    id:'R-03', name:'Ovalt spår', level:'Nivå 2 · G2/G3 cirkelbågar',
+    id:'R-06', name:'Hörnspår', lvl:2, topic:'G2 · en båge',
     stock:{w:100, d:60, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
     tool:'T1 Pinnfräs Ø6',
-    task:'Spåret består av två raka delar och två halvcirklar <b>R15</b> (radien gäller mittlinjen). Använd G2/G3 med I/J eller R. G2 går medurs och G3 moturs, sett ovanifrån. Verktyg T1 (pinnfräs Ø6), spårdjup 3 mm.',
+    task:'Spåret har en båge <b>R15</b> (radien gäller mittlinjen). Bågen går medurs, alltså <b>G2</b>. Skriv slutpunkten och antingen R15 eller I/J (avståndet från bågens startpunkt till centrum). T1, spårdjup 2 mm.',
+    features:[
+      {k:'groove', w:6, depth:2, start:[10,10], segs:[['L',10,35],['A',25,50,15,true],['L',90,50]]},
+      {k:'cm', x:25, y:35, s:3}
+    ],
+    dims:[
+      {k:'dx', a:0, b:10, y:-7, ya:0, yb:10},
+      {k:'dx', a:0, b:25, y:-14, ya:0, yb:35},
+      {k:'dx', a:0, b:90, y:-21, ya:0, yb:50},
+      {k:'dx', a:0, b:100, y:68, ya:60, yb:60},
+      {k:'dy', a:0, b:10, x:-7, xa:0, xb:10},
+      {k:'dy', a:0, b:35, x:-14, xa:0, xb:25},
+      {k:'dy', a:0, b:60, x:108, xa:100, xb:100},
+      {k:'r', c:[25,35], r:15, ang:135, len:8, text:'R15'},
+      {k:'note', p:[60,47], t:[54,38], text:'Spår: b = 6, djup 2'}
+    ],
+    facit:`O1006
+(R-06 HORNSPAR)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T1 M6
+G90
+G54 X10 Y10 S3000 M3
+G43 Z5 H1
+G1 Z-2 F150
+G1 Y35 F300
+G2 X25 Y50 R15
+G1 X90
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-07', name:'Ovalt spår', lvl:2, topic:'G3 · två halvcirklar',
+    stock:{w:100, d:60, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
+    tool:'T1 Pinnfräs Ø6',
+    task:'Spåret består av två raka delar och två halvcirklar <b>R15</b> (radien gäller mittlinjen). Använd G2/G3 med I/J eller R. G2 går medurs och G3 moturs, sett ovanifrån. T1, spårdjup 3 mm.',
     features:[
       {k:'groove', w:6, depth:3, start:[30,15], segs:[['L',70,15],['A',70,45,15,false],['L',30,45],['A',30,15,15,false]]},
       {k:'cm', x:30, y:30, s:4}, {k:'cm', x:70, y:30, s:4}
@@ -4493,8 +4622,8 @@ M30`
       {k:'r', c:[70,30], r:15, ang:35, len:10, text:'R15'},
       {k:'note', p:[50,48], t:[42,53], text:'Spår: b = 6, djup 3'}
     ],
-    facit:`O1003
-(R-03 OVALT SPAR)
+    facit:`O1007
+(R-07 OVALT SPAR)
 G21
 G90 G80 G40 G0
 G91 G28 Z0
@@ -4512,10 +4641,38 @@ G91 G28 Z0
 M30`
   },
   {
-    id:'R-04', name:'Hålbild', level:'Nivå 2 · borrcykler G81/G83',
+    id:'R-08', name:'Cirkelspår', lvl:2, topic:'Hel cirkel · nollpunkt i mitten',
+    stock:{w:80, d:60, t:20, q:'center-origin'}, origin:'Mitt på detaljen',
+    tool:'T1 Pinnfräs Ø6',
+    task:'Nollpunkten ligger nu <b>mitt i cirkeln</b>, så vänster om och under centrum blir koordinaterna negativa. En hel cirkel kan skrivas på en enda rad: slutpunkten är samma som startpunkten, och I/J pekar på centrum (R fungerar inte för en hel cirkel). T1, spårdjup 2 mm.',
+    features:[
+      {k:'groove', w:6, depth:2, start:[20,0], segs:[['A',-20,0,20,false],['A',20,0,20,false]]},
+      {k:'cl', a:[-32,0], b:[32,0]}, {k:'cl', a:[0,-27], b:[0,27]}
+    ],
+    dims:[
+      {k:'note', p:[14.14,14.14], t:[24,22], text:'Ø40'},
+      {k:'note', p:[0,-23], t:[8,-27], text:'Spår: b = 6, djup 2'}
+    ],
+    facit:`O1008
+(R-08 CIRKELSPAR)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T1 M6
+G90
+G54 X20 Y0 S3000 M3
+G43 Z5 H1
+G1 Z-2 F150
+G3 X20 Y0 I-20 J0 F300
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-09', name:'Hålbild', lvl:2, topic:'Borrcykler G81/G83',
     stock:{w:100, d:60, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
     tool:'T9 Borr Ø6, T13 Borr Ø10',
-    task:'Måtten är <b>koordinatmått</b>, alla räknade från nollpunkten. Borra de fyra Ø6-hålen med T9 och en G81-cykel, och mitthålet Ø10 med T13 och G83 (stegborrning). Genomgående hål: borra till Z-22 så att borren kommer igenom ämnet.',
+    task:'Borra de fyra Ø6-hålen med <b>T9</b> och en G81-cykel. Med G99 går borren tillbaka till R-planet mellan hålen, och nästa hål behöver bara den nya X- eller Y-koordinaten. Borra mitthålet Ø10 med <b>T13</b> och G83 (stegborrning). Genomgående hål: borra till Z-22 så att borren kommer igenom ämnet.',
     features:[
       {k:'hole', x:15, y:15, d:6, depth:12}, {k:'hole', x:85, y:15, d:6, depth:12},
       {k:'hole', x:85, y:45, d:6, depth:12}, {k:'hole', x:15, y:45, d:6, depth:12},
@@ -4527,8 +4684,8 @@ M30`
       {k:'note', p:[87.12,47.12], t:[91,53], text:'4× Ø6 djup 12'},
       {k:'note', p:[53.54,26.46], t:[60,21], text:'Ø10 genomgående'}
     ],
-    facit:`O1004
-(R-04 HALBILD)
+    facit:`O1009
+(R-09 HALBILD)
 G21
 G90 G80 G40 G0
 G91 G28 Z0
@@ -4554,10 +4711,79 @@ G91 G28 Z0
 M30`
   },
   {
-    id:'R-05', name:'Rundad platta', level:'Nivå 3 · G41 · nollpunkt i mitten',
+    id:'R-10', name:'Bultcirkel', lvl:2, topic:'Räkna ut koordinater',
+    stock:{w:80, d:60, t:20, q:'center-origin'}, origin:'Mitt på detaljen',
+    tool:'T8 Borr Ø5',
+    task:'Sex hål sitter jämnt fördelade på en delningscirkel Ø40, alltså 60° mellan hålen. Räkna ut varje håls koordinater: <b>X = 20 · cos v</b> och <b>Y = 20 · sin v</b>, där v är vinkeln från X-axeln (0°, 60°, 120° …). Avrunda till två decimaler. Borra med <b>T8</b> och G81, djup 10.',
+    features:[
+      {k:'pcd', x:0, y:0, r:20},
+      {k:'hole', x:20, y:0, d:5, depth:10}, {k:'hole', x:10, y:17.32, d:5, depth:10},
+      {k:'hole', x:-10, y:17.32, d:5, depth:10}, {k:'hole', x:-20, y:0, d:5, depth:10},
+      {k:'hole', x:-10, y:-17.32, d:5, depth:10}, {k:'hole', x:10, y:-17.32, d:5, depth:10},
+      {k:'cl', a:[-34,0], b:[34,0]}, {k:'cl', a:[0,-26], b:[0,25]}
+    ],
+    dims:[
+      {k:'ang', c:[0,0], r:27, rin:23, a0:60, a1:120, text:'60°'},
+      {k:'note', p:[17.32,-10], t:[25,-19], text:'Ø40'},
+      {k:'note', p:[-11.77,-19.09], t:[-19,-25], text:'6× Ø5 djup 10'}
+    ],
+    facit:`O1010
+(R-10 BULTCIRKEL)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T8 M6
+G90
+G54 X20 Y0 S1600 M3
+G43 Z5 H8
+G99 G81 X20 Y0 Z-10 R2 F150
+X10 Y17.32
+X-10
+X-20 Y0
+X-10 Y-17.32
+X10
+G80
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  // ---------- Nivå 3: konturer med radiekompensering ----------
+  {
+    id:'R-11', name:'Rektangulär ansats', lvl:3, topic:'G41 · första konturen',
+    stock:{w:70, d:50, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
+    tool:'T3 Pinnfräs Ø15 (HM)',
+    task:'Nu programmerar du <b>detaljens kontur</b> i stället för verktygets centrum. Med <b>G41 D3</b> lägger styrningen själv verktyget en halv diameter (7,5 mm) utanför konturen, till vänster om rörelseriktningen. Börja utanför ämnet, slå på G41 på en rak inkörning, gå runt medurs och stäng av med G40 på väg ut. T3, djup 5 mm.',
+    features:[ {k:'boss', h:5, start:[5,5], segs:[['L',5,45],['L',65,45],['L',65,5],['L',5,5]]} ],
+    dims:[
+      {k:'ox', y:-6, items:[[0,0],[5,5],[65,5],[70,0]]},
+      {k:'oy', x:-6, items:[[0,0],[5,5],[45,5],[50,0]]}
+    ],
+    facit:`O1011
+(R-11 REKTANGULAR ANSATS)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T3 M6
+G90
+G54 X-15 Y15 S4000 M3
+G43 Z5 H3
+G1 Z-5 F200
+G1 G41 X5 Y15 D3 F600
+G1 Y45
+G1 X65
+G1 Y5
+G1 X5
+G1 Y35
+G1 G40 X-15
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-12', name:'Rundad platta', lvl:3, topic:'G41 · rundade hörn',
     stock:{w:90, d:60, t:20, q:'center-origin'}, origin:'Mitt på detaljen',
     tool:'T3 Pinnfräs Ø15 (HM)',
-    task:'Fräs ytterkonturen 5 mm ner med <b>T3</b> (pinnfräs Ø15) och radiekompensering <b>G41 D3</b>. Programmera detaljens kontur: kompenseringen flyttar verktyget ut en halv diameter. Börja utanför ämnet och slå på G41 på en rak inkörning. Nollpunkten ligger mitt på detaljen, så måtten är symmetriska.',
+    task:'Fräs ytterkonturen 5 mm ner med <b>T3</b> och <b>G41 D3</b>. Hörnen är R8: varje hörn blir en G2-båge när du går runt medurs. Nollpunkten ligger mitt på detaljen, så måtten är symmetriska.',
     features:[
       {k:'boss', h:5, start:[-40,-17], segs:[['L',-40,17],['A',-32,25,8,true],['L',32,25],['A',40,17,8,true],['L',40,-17],['A',32,-25,8,true],['L',-32,-25],['A',-40,-17,8,true]]},
       {k:'cl', a:[-51,0], b:[51,0]}, {k:'cl', a:[0,-33], b:[0,33]}
@@ -4567,8 +4793,8 @@ M30`
       {k:'dy', a:-25, b:25, x:53, xa:40, xb:40},
       {k:'r', c:[32,17], r:8, ang:45, len:9, text:'4× R8'}
     ],
-    facit:`O1005
-(R-05 RUNDAD PLATTA)
+    facit:`O1012
+(R-12 RUNDAD PLATTA)
 G21
 G90 G80 G40 G0
 G91 G28 Z0
@@ -4586,17 +4812,56 @@ G1 Y-17
 G2 X32 Y-25 R8
 G1 X-32
 G2 X-40 Y-17 R8
-G1 Y5
+G1 Y17
 G1 G40 X-60
 G0 Z5
 G91 G28 Z0
 M30`
   },
   {
-    id:'R-06', name:'Fäste', level:'Nivå 3 · kontur, fas, båge och hål',
+    id:'R-13', name:'Fasad platta', lvl:3, topic:'G41 · fasade hörn',
+    stock:{w:80, d:60, t:20, q:'center-origin'}, origin:'Mitt på detaljen',
+    tool:'T3 Pinnfräs Ø15 (HM)',
+    task:'Hörnen har fasen <b>8 × 45°</b>: varje fas är en sned G1-rörelse. Räkna ut fasernas start- och slutpunkter från yttermåtten 70 × 50 (till exempel börjar fasen uppe till höger i X27 Y25). Fräs konturen 5 mm ner med T3 och G41 D3.',
+    features:[
+      {k:'boss', h:5, start:[-35,-17], segs:[['L',-35,17],['L',-27,25],['L',27,25],['L',35,17],['L',35,-17],['L',27,-25],['L',-27,-25],['L',-35,-17]]},
+      {k:'cl', a:[-46,0], b:[46,0]}, {k:'cl', a:[0,-33], b:[0,33]}
+    ],
+    dims:[
+      {k:'dx', a:-35, b:35, y:-36, ya:-25, yb:-25},
+      {k:'dy', a:-25, b:25, x:48, xa:35, xb:35},
+      {k:'note', p:[31,21], t:[35,33], text:'4× 8 × 45°'}
+    ],
+    facit:`O1013
+(R-13 FASAD PLATTA)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T3 M6
+G90
+G54 X-50 Y0 S4000 M3
+G43 Z5 H3
+G1 Z-5 F200
+G1 G41 X-35 Y0 D3 F600
+G1 Y17
+G1 X-27 Y25
+G1 X27
+G1 X35 Y17
+G1 Y-17
+G1 X27 Y-25
+G1 X-27
+G1 X-35 Y-17
+G1 Y17
+G1 G40 X-50
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-14', name:'Fäste', lvl:3, topic:'Kontur med båge och fas + hål',
     stock:{w:70, d:45, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
     tool:'T3 Pinnfräs Ø15 (HM), T11 Borr Ø8',
-    task:'Fräs konturen 5 mm ner med <b>T3</b> och <b>G41 D3</b>. Rundningen är R15 och fasen 10 × 45°. Borra sedan hålet Ø8, djup 15, med <b>T11</b> (G81 eller G83). Måtten är koordinatmått från nollpunkten i ämnets nedre vänstra hörn.',
+    task:'Fräs konturen 5 mm ner med <b>T3</b> och <b>G41 D3</b>. Rundningen är R15 och fasen 10 × 45°. Borra sedan hålet Ø8, djup 15, med <b>T11</b> (G81 eller G83). Två verktyg betyder verktygsbyte mitt i programmet.',
     features:[
       {k:'boss', h:5, start:[5,5], segs:[['L',5,25],['A',20,40,15,true],['L',55,40],['L',65,30],['L',65,5],['L',5,5]]},
       {k:'cm', x:20, y:25, s:3},
@@ -4610,8 +4875,55 @@ M30`
       {k:'r', c:[20,25], r:15, ang:135, len:6, text:'R15'},
       {k:'note', p:[37.17,17.17], t:[46,10], text:'Ø8 djup 15'}
     ],
-    facit:`O1006
-(R-06 FASTE)
+    facit:`O1014
+(R-14 FASTE)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T3 M6
+G90
+G54 X-15 Y10 S4000 M3
+G43 Z5 H3
+G1 Z-5 F200
+G1 G41 X5 Y10 D3 F600
+G1 Y25
+G2 X20 Y40 R15
+G1 X55
+G1 X65 Y30
+G1 Y5
+G1 X5
+G1 Y25
+G1 G40 X-15
+G0 Z5
+G91 G28 Z0
+T11 M6
+G90
+G54 X40 Y20 S1100 M3
+G43 Z5 H11
+G98 G83 X40 Y20 Z-15 R2 Q5 F120
+G80
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-15', name:'Platta med urtag', lvl:3, topic:'Inåtgående båge (G3) + hål',
+    stock:{w:70, d:50, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
+    tool:'T3 Pinnfräs Ø15 (HM), T9 Borr Ø6',
+    task:'Urtaget R10 är en <b>inåtgående</b> båge. Fast du går runt detaljen medurs blir urtaget en <b>G3</b>-båge (moturs). Det fungerar med G41 eftersom radien (10) är större än fräsens radie (7,5). Fräs konturen 5 mm ner med T3 och G41 D3, och borra sedan de två hålen med T9.',
+    features:[
+      {k:'boss', h:5, start:[5,5], segs:[['L',5,45],['L',25,45],['A',45,45,10,false],['L',65,45],['L',65,5],['L',5,5]]},
+      {k:'cm', x:35, y:45, s:3},
+      {k:'hole', x:15, y:25, d:6, depth:10}, {k:'hole', x:55, y:25, d:6, depth:10}
+    ],
+    dims:[
+      {k:'ox', y:-6, items:[[0,0],[5,5],[15,25],[35,45],[55,25],[65,5]]},
+      {k:'oy', x:-6, items:[[0,0],[5,5],[25,15],[45,5]]},
+      {k:'r', c:[35,45], r:10, ang:300, len:-6, text:'R10'},
+      {k:'note', p:[57.12,27.12], t:[60,33.5], text:'2× Ø6 djup 10'}
+    ],
+    facit:`O1015
+(R-15 PLATTA MED URTAG)
 G21
 G90 G80 G40 G0
 G91 G28 Z0
@@ -4621,21 +4933,246 @@ G54 X-15 Y15 S4000 M3
 G43 Z5 H3
 G1 Z-5 F200
 G1 G41 X5 Y15 D3 F600
-G1 Y25
-G2 X20 Y40 R15
-G1 X55
-G1 X65 Y30
+G1 Y45
+G1 X25
+G3 X45 Y45 R10
+G1 X65
 G1 Y5
 G1 X5
-G1 Y15
+G1 Y35
 G1 G40 X-15
+G0 Z5
+G91 G28 Z0
+T9 M6
+G90
+G54 X15 Y25 S1500 M3
+G43 Z5 H9
+G99 G81 X15 Y25 Z-10 R2 F150
+X55
+G80
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  // ---------- Nivå 4: fickor och hela detaljer ----------
+  {
+    id:'R-16', name:'Rektangulär ficka', lvl:4, topic:'Ficka · räkna verktygsbanan',
+    stock:{w:80, d:60, t:20, q:'center-origin'}, origin:'Mitt på detaljen',
+    tool:'T2 Pinnfräs Ø10',
+    task:'En ficka ska tömmas helt. Fräs den med <b>T2</b> (Ø10) utan radiekompensering: verktygets centrum måste då hålla sig 5 mm (halva diametern) innanför fickans kant, alltså X−15…15 och Y−7…7. Gå först längs mitten och sedan ett varv runt. Hörnradien R5 blir då lika med fräsens radie. Djup 4 mm.',
+    features:[
+      {k:'pocket', depth:4, start:[-20,-7], segs:[['L',-20,7],['A',-15,12,5,true],['L',15,12],['A',20,7,5,true],['L',20,-7],['A',15,-12,5,true],['L',-15,-12],['A',-20,-7,5,true]]},
+      {k:'cl', a:[-36,0], b:[36,0]}, {k:'cl', a:[0,-27], b:[0,27]}
+    ],
+    dims:[
+      {k:'dx', a:-20, b:20, y:-36, ya:-12, yb:-12},
+      {k:'dy', a:-12, b:12, x:48, xa:20, xb:20},
+      {k:'r', c:[15,7], r:5, ang:45, len:8, text:'4× R5'},
+      {k:'note', p:[-10,12], t:[-16,20], text:'Ficka, djup 4'}
+    ],
+    facit:`O1016
+(R-16 REKTANGULAR FICKA)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T2 M6
+G90
+G54 X-15 Y0 S2500 M3
+G43 Z5 H2
+G1 Z-4 F100
+G1 X15 F400
+G1 Y-7
+G1 X-15
+G1 Y7
+G1 X15
+G1 Y0
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-17', name:'Cirkulär ficka', lvl:4, topic:'Ficka · cirkelvarv',
+    stock:{w:60, d:60, t:20, q:'center-origin'}, origin:'Mitt på detaljen',
+    tool:'T2 Pinnfräs Ø10',
+    task:'Töm fickan Ø30 med <b>T2</b> (Ø10). Gå ner i centrum och fräs sedan hela cirkelvarv utåt. Verktygets centrum får gå högst 10 mm från centrum (15 − 5). Ett varv med radie 5 och ett med radie 10 räcker för att ta bort allt. Djup 5 mm.',
+    features:[
+      {k:'pocket', depth:5, start:[15,0], segs:[['A',-15,0,15,false],['A',15,0,15,false]]},
+      {k:'cl', a:[-26,0], b:[26,0]}, {k:'cl', a:[0,-26], b:[0,26]}
+    ],
+    dims:[ {k:'note', p:[10.61,10.61], t:[16,22], text:'Ficka Ø30, djup 5'} ],
+    facit:`O1017
+(R-17 CIRKULAR FICKA)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T2 M6
+G90
+G54 X0 Y0 S2500 M3
+G43 Z5 H2
+G1 Z-5 F100
+G1 X5 F400
+G3 X5 Y0 I-5 J0
+G1 X10
+G3 X10 Y0 I-10 J0
+G1 X0
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-18', name:'Hållare med ficka', lvl:4, topic:'Ficka + hålbild',
+    stock:{w:100, d:60, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
+    tool:'T2 Pinnfräs Ø10, T9 Borr Ø6',
+    task:'Töm fickan 50 × 30 med <b>T2</b> (Ø10) på samma sätt som i R-16: verktygets centrum håller sig 5 mm innanför kanten. Djup 5 mm. Byt sedan till <b>T9</b> och borra de fyra hörnhålen med G81.',
+    features:[
+      {k:'pocket', depth:5, start:[25,20], segs:[['L',25,40],['A',30,45,5,true],['L',70,45],['A',75,40,5,true],['L',75,20],['A',70,15,5,true],['L',30,15],['A',25,20,5,true]]},
+      {k:'hole', x:10, y:10, d:6, depth:12}, {k:'hole', x:90, y:10, d:6, depth:12},
+      {k:'hole', x:90, y:50, d:6, depth:12}, {k:'hole', x:10, y:50, d:6, depth:12}
+    ],
+    dims:[
+      {k:'ox', y:-6, items:[[0,0],[10,10],[25,20],[75,20],[90,10],[100,0]]},
+      {k:'oy', x:-6, items:[[0,0],[10,10],[15,25],[45,25],[50,10],[60,0]]},
+      {k:'r', c:[70,40], r:5, ang:45, len:-9, text:'4× R5'},
+      {k:'note', p:[40,15], t:[34,24], text:'Ficka, djup 5'},
+      {k:'note', p:[87.88,52.12], t:[80,56], text:'4× Ø6 djup 12'}
+    ],
+    facit:`O1018
+(R-18 HALLARE MED FICKA)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T2 M6
+G90
+G54 X30 Y30 S2500 M3
+G43 Z5 H2
+G1 Z-5 F100
+G1 X70 F400
+G1 Y20
+G1 X30
+G1 Y40
+G1 X70
+G1 Y30
+G0 Z5
+G91 G28 Z0
+T9 M6
+G90
+G54 X10 Y10 S1500 M3
+G43 Z5 H9
+G99 G81 X10 Y10 Z-12 R2 F150
+X90
+Y50
+X10
+G80
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-19', name:'Flans', lvl:4, topic:'Runt ämne · säte + bultcirkel 45°',
+    stock:{w:80, d:80, t:15, q:'center-origin', shape:'cyl'}, origin:'Flansens centrum',
+    tool:'T2 Pinnfräs Ø10, T9 Borr Ø6',
+    task:'Ämnet är <b>runt</b> (Ø80, 15 tjockt). Fräs sätet Ø20, djup 5, med <b>T2</b>: ett cirkelvarv med radie 5 runt centrum. Borra sedan fyra genomgående hål Ø6 på delningscirkeln Ø60, vid 45°, 135°, 225° och 315°. Räkna ut koordinaterna (30 · cos 45° ≈ 21,21) och borra med <b>T9</b> och G83 till Z-17.',
+    features:[
+      {k:'pocket', depth:5, start:[10,0], segs:[['A',-10,0,10,false],['A',10,0,10,false]]},
+      {k:'pcd', x:0, y:0, r:30},
+      {k:'hole', x:21.21, y:21.21, d:6, depth:15}, {k:'hole', x:-21.21, y:21.21, d:6, depth:15},
+      {k:'hole', x:-21.21, y:-21.21, d:6, depth:15}, {k:'hole', x:21.21, y:-21.21, d:6, depth:15},
+      {k:'cl', a:[-44,0], b:[44,0]}, {k:'cl', a:[0,-44], b:[0,44]}
+    ],
+    dims:[
+      {k:'ang', c:[0,0], r:36, rin:31, a0:0, a1:45, text:'45°'},
+      {k:'note', p:[25.98,-15], t:[34,-28], text:'Ø60'},
+      {k:'note', p:[23.33,23.33], t:[30,32], text:'4× Ø6 genomgående'},
+      {k:'note', p:[-7.07,-7.07], t:[-18,-30], text:'Ø20 djup 5'}
+    ],
+    facit:`O1019
+(R-19 FLANS)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T2 M6
+G90
+G54 X0 Y0 S2500 M3
+G43 Z5 H2
+G1 Z-5 F100
+G1 X5 F400
+G3 X5 Y0 I-5 J0
+G1 X0
+G0 Z5
+G91 G28 Z0
+T9 M6
+G90
+G54 X21.21 Y21.21 S1500 M3
+G43 Z5 H9
+G99 G83 X21.21 Y21.21 Z-17 R2 Q5 F150
+X-21.21
+Y-21.21
+X21.21
+G80
+G0 Z5
+G91 G28 Z0
+M30`
+  },
+  {
+    id:'R-20', name:'Slutprov: Hållare', lvl:4, topic:'Kontur + ficka + hål',
+    stock:{w:100, d:70, t:20, q:'q1'}, origin:'Ämnets nedre vänstra hörn',
+    tool:'T3 Pinnfräs Ø15 (HM), T2 Pinnfräs Ø10, T11 Borr Ø8',
+    task:'Hela detaljen i ett program med tre verktyg. 1) Fräs ytterkonturen 5 mm ner med <b>T3</b> och G41 D3 (hörnen R10). 2) Töm fickan 40 × 20, djup 4, med <b>T2</b>. 3) Borra de två hålen Ø8, djup 15, med <b>T11</b>. Kontrollera resultatet med CNC-Fräs.',
+    features:[
+      {k:'boss', h:5, start:[5,15], segs:[['L',5,55],['A',15,65,10,true],['L',85,65],['A',95,55,10,true],['L',95,15],['A',85,5,10,true],['L',15,5],['A',5,15,10,true]]},
+      {k:'pocket', depth:4, start:[30,30], segs:[['L',30,40],['A',35,45,5,true],['L',65,45],['A',70,40,5,true],['L',70,30],['A',65,25,5,true],['L',35,25],['A',30,30,5,true]]},
+      {k:'hole', x:20, y:35, d:8, depth:15}, {k:'hole', x:80, y:35, d:8, depth:15}
+    ],
+    dims:[
+      {k:'ox', y:-6, items:[[0,0],[5,5],[20,35],[30,25],[70,25],[80,35],[95,5],[100,0]]},
+      {k:'oy', x:-6, items:[[0,0],[5,5],[25,30],[35,20],[45,30],[65,5],[70,0]]},
+      {k:'r', c:[85,55], r:10, ang:45, len:6, text:'4× R10'},
+      {k:'r', c:[65,40], r:5, ang:45, len:-9, text:'4× R5'},
+      {k:'note', p:[40,25], t:[44,30.5], text:'Ficka, djup 4'},
+      {k:'note', p:[82.83,37.83], t:[86,46], text:'2× Ø8 djup 15'}
+    ],
+    facit:`O1020
+(R-20 HALLARE)
+G21
+G90 G80 G40 G0
+G91 G28 Z0
+T3 M6
+G90
+G54 X-15 Y35 S4000 M3
+G43 Z5 H3
+G1 Z-5 F200
+G1 G41 X5 Y35 D3 F600
+G1 Y55
+G2 X15 Y65 R10
+G1 X85
+G2 X95 Y55 R10
+G1 Y15
+G2 X85 Y5 R10
+G1 X15
+G2 X5 Y15 R10
+G1 Y55
+G1 G40 X-15
+G0 Z5
+G91 G28 Z0
+T2 M6
+G90
+G54 X35 Y35 S2500 M3
+G43 Z5 H2
+G1 Z-4 F100
+G1 X65 F400
+G1 Y30
+G1 X35
+G1 Y40
+G1 X65
+G1 Y35
 G0 Z5
 G91 G28 Z0
 T11 M6
 G90
-G54 X40 Y20 S1100 M3
+G54 X20 Y35 S1100 M3
 G43 Z5 H11
-G98 G83 X40 Y20 Z-15 R2 Q5 F120
+G98 G83 X20 Y35 Z-15 R2 Q5 F120
+X80
 G80
 G0 Z5
 G91 G28 Z0
@@ -4692,15 +5229,25 @@ function drawingSVG(D, thumb=false) {
   };
   // Vyn ovanifrån: maskinens Y uppåt blir SVG:ns y nedåt.
   const T = (x, y) => [x, -y];
+  // Bågens centrum (kortaste bågen åt angivet håll; halvcirkel = mittpunkten).
+  const arcCenter = (a, b, r, cw) => {
+    const mx = (a[0]+b[0])/2, my = (a[1]+b[1])/2, dx = b[0]-a[0], dy = b[1]-a[1], q = Math.hypot(dx, dy);
+    const h = Math.sqrt(Math.max(0, r*r - q*q/4));
+    const c1 = [mx - dy/q*h, my + dx/q*h], c2 = [mx + dy/q*h, my - dx/q*h];
+    const cr = c => (a[0]-c[0])*(b[1]-c[1]) - (a[1]-c[1])*(b[0]-c[0]);
+    return (cw ? cr(c1) < 0 : cr(c1) > 0) ? c1 : c2;
+  };
   const pathD = (start, segs, close) => {
     let d = `M${f(start[0])} ${f(-start[1])}`, cur = start;
     const pts = [start];
     segs.forEach(s => {
       if (s[0]==='L') { d += `L${f(s[1])} ${f(-s[2])}`; }
       else { // ['A', x, y, r, medurs]
-        const r = s[3];
+        const r = s[3], end = [s[1], s[2]], c = arcCenter(cur, end, r, s[4]);
         d += `A${f(r)} ${f(r)} 0 0 ${s[4]?1:0} ${f(s[1])} ${f(-s[2])}`;
-        pts.push([s[1]-r, s[2]-r], [s[1]+r, s[2]+r], [cur[0]-r, cur[1]-r], [cur[0]+r, cur[1]+r]);
+        let a0 = Math.atan2(cur[1]-c[1], cur[0]-c[0]), a1 = Math.atan2(end[1]-c[1], end[0]-c[0]);
+        if (s[4]) { while (a1 >= a0) a1 -= 2*Math.PI; } else { while (a1 <= a0) a1 += 2*Math.PI; }
+        for (let i = 1; i < 16; i++) { const t = a0 + (a1-a0)*i/16; pts.push([c[0]+r*Math.cos(t), c[1]+r*Math.sin(t)]); }
       }
       cur = [s[1], s[2]]; pts.push(cur);
     });
@@ -4723,7 +5270,11 @@ function drawingSVG(D, thumb=false) {
 
   // Ämnet (tunn streckad linje)
   const sr = drawingStockRect(D.stock);
-  out.push(`<rect x="${f(sr.x0)}" y="${f(-sr.y1)}" width="${f(sr.x1-sr.x0)}" height="${f(sr.y1-sr.y0)}" fill="#fffdf7" stroke="#6f6f6f" stroke-width="0.3" stroke-dasharray="3 1.5"/>`);
+  if (D.stock.shape === 'cyl') {
+    out.push(`<circle cx="${f((sr.x0+sr.x1)/2)}" cy="${f(-(sr.y0+sr.y1)/2)}" r="${f(D.stock.w/2)}" fill="#fffdf7" stroke="#6f6f6f" stroke-width="0.3" stroke-dasharray="3 1.5"/>`);
+  } else {
+    out.push(`<rect x="${f(sr.x0)}" y="${f(-sr.y1)}" width="${f(sr.x1-sr.x0)}" height="${f(sr.y1-sr.y0)}" fill="#fffdf7" stroke="#6f6f6f" stroke-width="0.3" stroke-dasharray="3 1.5"/>`);
+  }
   grow(sr.x0, -sr.y1); grow(sr.x1, -sr.y0);
 
   // Detaljens geometri
@@ -4740,6 +5291,13 @@ function drawingSVG(D, thumb=false) {
       const {d, pts} = pathD(ft.start, ft.segs, true);
       out.push(`<path d="${d}" fill="#ebe6d9" stroke="${INK}" stroke-width="${THICK}" stroke-linejoin="round"/>`);
       pts.forEach(p => grow(p[0], -p[1]));
+    } else if (ft.k === 'pocket') { // nedsänkt ficka: mörkare yta
+      const {d, pts} = pathD(ft.start, ft.segs, true);
+      out.push(`<path d="${d}" fill="#d9d1be" stroke="${INK}" stroke-width="${THICK}" stroke-linejoin="round"/>`);
+      pts.forEach(p => grow(p[0], -p[1]));
+    } else if (ft.k === 'pcd' && !thumb) { // delningscirkel
+      out.push(`<circle cx="${f(ft.x)}" cy="${f(-ft.y)}" r="${f(ft.r)}" fill="none" stroke="${INK}" stroke-width="${THIN}" ${CENTER_DASH}/>`);
+      grow(ft.x, -ft.y, ft.r);
     } else if (ft.k === 'hole') {
       const r = ft.d/2;
       out.push(`<circle cx="${f(ft.x)}" cy="${f(-ft.y)}" r="${f(r)}" fill="#fffdf7" stroke="${INK}" stroke-width="${THICK}"/>`);
@@ -4797,6 +5355,15 @@ function drawingSVG(D, thumb=false) {
           const p = T(dm.x + dir*0.8, y);
           text([p[0], p[1] + FS*0.35], f(y).replace('.', ','), {anchor: dir < 0 ? 'end' : 'start'});
         });
+      } else if (dm.k === 'ang') { // vinkelmått mellan två riktningar från centrum
+        const rad = a => a*Math.PI/180;
+        const pol = (a, r) => T(dm.c[0] + r*Math.cos(rad(a)), dm.c[1] + r*Math.sin(rad(a)));
+        [dm.a0, dm.a1].forEach(a => line(pol(a, dm.rin), pol(a, dm.r + OVER)));
+        const P0 = pol(dm.a0, dm.r), P1 = pol(dm.a1, dm.r);
+        out.push(`<path d="M${f(P0[0])} ${f(P0[1])}A${f(dm.r)} ${f(dm.r)} 0 0 0 ${f(P1[0])} ${f(P1[1])}" fill="none" stroke="${INK}" stroke-width="${THIN}"/>`);
+        arrow(P0, pol(dm.a0 + 8, dm.r)); arrow(P1, pol(dm.a1 - 8, dm.r));
+        const Pt = pol((dm.a0 + dm.a1)/2, dm.r + 3.6);
+        text([Pt[0], Pt[1] + FS*0.35], dm.text);
       } else if (dm.k === 'r' || dm.k === 'note') {
         let P, Q;
         if (dm.k === 'r') {
@@ -4842,6 +5409,10 @@ function drawingSVG(D, thumb=false) {
         line(S(sr.x0 - GAP, 0), S(sr.x0 - 8 - OVER, 0));
         line(S(gx0 - GAP, -dd), S(sr.x0 - 8 - OVER, -dd));
         dimLine(S(sr.x0 - 8, -dd), S(sr.x0 - 8, 0), String(dd).replace('.', ','), true);
+      } else if (ft.k === 'pocket') {
+        const xs = pathD(ft.start, ft.segs, true).pts.map(p => p[0]);
+        const px0 = Math.min(...xs), px1 = Math.max(...xs), dd = ft.depth;
+        line(S(px0, 0), S(px0, -dd), 0.35, HID); line(S(px0, -dd), S(px1, -dd), 0.35, HID); line(S(px1, -dd), S(px1, 0), 0.35, HID);
       } else if (ft.k === 'hole') {
         const r = ft.d/2, dd = Math.min(ft.depth, t);
         line(S(ft.x-r, 0), S(ft.x-r, -dd), 0.35, HID); line(S(ft.x+r, 0), S(ft.x+r, -dd), 0.35, HID);
@@ -4872,17 +5443,34 @@ function drawingSVG(D, thumb=false) {
 
   const QUAD_TEXT = {
     'q1':'nere till vänster', 'q2':'nere till höger', 'q3':'uppe till höger', 'q4':'uppe till vänster',
-    'center-origin':'centrerad på origo'
+    'center-origin':'i mitten'
   };
 
   DRAWINGS.forEach(D => {
     const b = document.createElement('button');
     b.className = 'drw-card';
     b.dataset.id = D.id;
-    b.setAttribute('aria-label', `Öppna ritning ${D.id}, ${D.name}, ${D.level}`);
-    b.innerHTML = `<div class="thumb">${drawingSVG(D, true)}</div><b>${D.id} · ${D.name}</b><span>${D.level}</span>`;
+    b.dataset.lvl = D.lvl;
+    b.setAttribute('aria-label', `Öppna ritning ${D.id}, ${D.name}, nivå ${D.lvl}, ${D.topic}`);
+    b.innerHTML = `<div class="thumb">${drawingSVG(D, true)}</div><b>${D.id} · ${D.name}</b><span>Nivå ${D.lvl} · ${D.topic}</span>`;
     b.addEventListener('click', () => { openDrawing(D); bar.classList.remove('open'); });
     cards.appendChild(b);
+  });
+
+  // Filter per nivå
+  const filter = document.getElementById('drwFilter');
+  const LEVELS = [['alla','Alla'],['1','Nivå 1 · raka linjer'],['2','Nivå 2 · bågar och hål'],['3','Nivå 3 · konturer (G41)'],['4','Nivå 4 · fickor och hela detaljer']];
+  LEVELS.forEach(([v, label]) => {
+    const fb = document.createElement('button');
+    fb.className = 'drw-chip' + (v === 'alla' ? ' active' : '');
+    fb.textContent = label;
+    fb.setAttribute('aria-pressed', v === 'alla' ? 'true' : 'false');
+    fb.addEventListener('click', () => {
+      filter.querySelectorAll('.drw-chip').forEach(c => { c.classList.toggle('active', c === fb); c.setAttribute('aria-pressed', c === fb ? 'true' : 'false'); });
+      cards.querySelectorAll('.drw-card').forEach(c => { c.hidden = !(v === 'alla' || c.dataset.lvl === v); });
+      cards.scrollLeft = 0;
+    });
+    filter.appendChild(fb);
   });
 
   document.getElementById('drawingsBtn').addEventListener('click', (e) => {
@@ -4923,13 +5511,13 @@ function drawingSVG(D, thumb=false) {
     current = D;
     resetFacit();
     cards.querySelectorAll('.drw-card').forEach(c => c.classList.toggle('active', c.dataset.id === D.id));
-    document.getElementById('drwTitle').innerHTML = `${D.id} · ${D.name}<small>${D.level}</small>`;
+    document.getElementById('drwTitle').innerHTML = `${D.id} · ${D.name}<small>Nivå ${D.lvl} · ${D.topic}</small>`;
     document.getElementById('drwPaper').innerHTML = drawingSVG(D);
     document.getElementById('drwTask').innerHTML = `<b>Uppgift:</b> ${D.task}`;
     const s = D.stock;
     const rows = [
       ['Ritningsnummer', D.id], ['Benämning', D.name], ['Material', 'Aluminium EN AW-6082'],
-      ['Ämne', `${s.w} × ${s.d} × ${s.t} mm`], ['Nollpunkt (X0 Y0 Z0)', `${D.origin}, Z0 på ämnets ovansida`],
+      ['Ämne', s.shape === 'cyl' ? `Rund, Ø${s.w} × ${s.t} mm` : `${s.w} × ${s.d} × ${s.t} mm`], ['Nollpunkt (X0 Y0 Z0)', `${D.origin}, Z0 på ämnets ovansida`],
       ['Verktyg', D.tool + ' (T-nummer enligt standardverktygslådan)'],
       ['Generella toleranser', 'ISO 2768-m'], ['Skala', 'Ej skalenlig, läs måtten']
     ];
@@ -4969,10 +5557,12 @@ function drawingSVG(D, thumb=false) {
   document.getElementById('drwStockBtn').addEventListener('click', () => {
     if (!current) return;
     const s = current.stock;
-    Object.assign(stockSize, {auto:false, shape:'square', width:s.w, depth:s.d, thickness:s.t, quadrant:s.q});
+    if (s.shape === 'cyl') Object.assign(stockSize, {auto:false, shape:'cylinder', diameter:s.w, cylHeight:s.t, quadrant:s.q});
+    else Object.assign(stockSize, {auto:false, shape:'square', width:s.w, depth:s.d, thickness:s.t, quadrant:s.q});
     saveJSON('gkodviz_stocksize_v1', stockSize);
     if (stockMode) { buildStockGrid(); resweepStock(playModel ? playModel.total : 0); render(); }
-    statusEl.textContent = `Ämnet är inställt som på ritning ${current.id}: ${s.w} × ${s.d} × ${s.t} mm, origo ${QUAD_TEXT[s.q]}.`
+    const size = s.shape === 'cyl' ? `runt, Ø${s.w} × ${s.t} mm` : `${s.w} × ${s.d} × ${s.t} mm`;
+    statusEl.textContent = `Ämnet är inställt som på ritning ${current.id}: ${size}, origo ${QUAD_TEXT[s.q]}.`
       + (stockMode ? '' : ' Slå på CNC-Fräs för att se det.');
   });
 
