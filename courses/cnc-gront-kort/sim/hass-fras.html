@@ -184,10 +184,6 @@ body{margin:0}
     <span class="unit">Enhet: mm (G21)</span>
   </div>
   <p class="mobile-note"><b>Skärmen är för liten.</b> Simulatorn är gjord för dator med mus. På surfplatta fungerar den bäst i liggande läge.</p>
-  <header>
-    <h1>Hass fräs</h1>
-    <p class="sub">Övningsmodell av en vertikal CNC-fräs. Allt på panelen är klickbart och ratten snurrar du med musen. Kör egna program och se ämnet bearbetas i maskinen.</p>
-  </header>
 
   <div class="simgrid">
   <section class="model" aria-label="Maskinen">
@@ -306,7 +302,7 @@ body{margin:0}
       <div class="prow"><button type="button" class="mbtn" id="stNew">Nytt ämne</button></div>
       <p class="pmsg">Ett nytt ämne spänns fast i skruvstycket och G54 sätts på ämnets ovansida. Verktygslängderna är redan inmätta, men du kan mäta om dem under OFFSET.</p>
       <h2>Verktyg</h2>
-      <p class="pmsg">T-numren är desamma som i Ritas verktygslåda: T1 pinnfräs Ø6, T2 Ø10, T3 Ø15, T4–T15 borr Ø1–Ø12, T16 planfräs Ø50, T19–T25 centrumborr, T29 fasfräs. Radiekompensering (G41/G42) finns inte i simulatorn ännu.</p>
+      <p class="pmsg">T-numren är desamma som i Ritas verktygslåda: T1 pinnfräs Ø6, T2 Ø10, T3 Ø15, T4–T15 borr Ø1–Ø12, T16 planfräs Ø50, T19–T25 centrumborr, T29 fasfräs. Radiekompensering G41/G42 använder radien i D-registret under OFFSET (D3 = T3:s radie 7,5).</p>
     </div>
   </section>
 
@@ -580,7 +576,8 @@ const RAPID=25000;           // snabbtransport, mm/min
 let simSpeed=1;              // simuleringstakt (1 = verklig tid)
 const run={ops:[],op:null,kind:null,src:null,pc:0,blockEnded:false};
 let cutRate=0;               // mm³/s, för spindelbelastningen
-st.m={motion:0,abs:true,work:0,F:0,cyc:0,ret:98,R:null,Z:null,Q:null,P:0,initZ:null};
+st.m={motion:0,abs:true,work:0,F:0,cyc:0,ret:98,R:null,Z:null,Q:null,P:0,initZ:null,comp:0,compR:0,compOn:false};
+st.prg={X:0,Y:0,Z:0};
 st.hold=false;st.door=false;st.crash=false;
 const busy=()=>!!(run.op||run.ops.length);
 function alarmStop(msg){
@@ -643,7 +640,7 @@ function startOp(op){
     case 'call':op.fn();return null;
     case 'tool':return {k:'wait',t:1800,tool:true,after:()=>{st.atool=op.t;st.row=op.t;}};
     case 'stop':st.running=false;say(op.msg||'PROGRAM STOP',3000);return null;
-    case 'end':st.running=false;st.spin=0;st.cool=false;st.pc=0;run.pc=0;say('PROGRAM COMPLETE');return null;
+    case 'end':st.running=false;st.spin=0;st.cool=false;st.pc=0;run.pc=0;st.m.comp=0;st.m.compOn=false;st.m.cyc=0;say('PROGRAM COMPLETE');return null;
   }
   return op;
 }
@@ -689,6 +686,91 @@ function goHome(then){
   if(then)run.ops.push({k:'call',fn:then});
 }
 
+/* ---------- radiekompensering (G41/G42) ----------
+   Verktyget läggs en radie (D-registrets radie i OFFSET) till vänster (G41)
+   eller höger (G42) om den programmerade banan. Varje rörelse räknas fram till
+   skarven mot nästa rörelse: inåtgående hörn klipps där de förskjutna banorna
+   skär varandra, utåtgående hörn får en båge runt hörnet. */
+const V={sub:(a,b)=>[a[0]-b[0],a[1]-b[1]],add:(a,b)=>[a[0]+b[0],a[1]+b[1]],mul:(a,k)=>[a[0]*k,a[1]*k],
+  dot:(a,b)=>a[0]*b[0]+a[1]*b[1],cross:(a,b)=>a[0]*b[1]-a[1]*b[0],len:a=>Math.hypot(a[0],a[1]),
+  unit:a=>{const l=Math.hypot(a[0],a[1])||1;return [a[0]/l,a[1]/l];}};
+function arcCenterXY(p0,p1,cw,R,I,J){
+  if(R!==undefined){
+    const r=Math.abs(R),dx=p1[0]-p0[0],dy=p1[1]-p0[1],q=Math.hypot(dx,dy);
+    if(q<1e-6||q>2*r+1e-4)return null;
+    const h=Math.sqrt(Math.max(0,r*r-q*q/4)),mx=(p0[0]+p1[0])/2,my=(p0[1]+p1[1])/2;
+    const left=[mx-dy/q*h,my+dx/q*h],right=[mx+dy/q*h,my-dx/q*h];
+    return (cw!==(R<0))?right:left;
+  }
+  return [p0[0]+(I||0),p0[1]+(J||0)];
+}
+// Tangentriktning i början eller slutet av en sträcka/båge
+function tangent(seg,atEnd){
+  if(seg.type==='line')return V.unit(V.sub(seg.p1,seg.p0));
+  const rad=V.unit(V.sub(atEnd?seg.p1:seg.p0,seg.c));
+  return seg.cw?[rad[1],-rad[0]]:[-rad[1],rad[0]];
+}
+const sideN=(t,side)=>side===41?[-t[1],t[0]]:[t[1],-t[0]];
+function offsetGeom(seg,side,r){
+  if(seg.type==='line'){const n=sideN(tangent(seg,false),side);return {type:'line',p:V.add(seg.p0,V.mul(n,r)),d:tangent(seg,false)};}
+  const R=V.len(V.sub(seg.p0,seg.c));
+  const toward=(side===41)!==seg.cw;           // G41 + moturs: kompenseringen ligger mot centrum
+  return {type:'circle',c:seg.c,R:toward?R-r:R+r};
+}
+function intersect(a,b){
+  if(a.type==='line'&&b.type==='line'){
+    const den=V.cross(a.d,b.d);if(Math.abs(den)<1e-12)return [];
+    const t=V.cross(V.sub(b.p,a.p),b.d)/den;return [V.add(a.p,V.mul(a.d,t))];
+  }
+  if(a.type==='circle'&&b.type==='line')return intersect(b,a);
+  if(a.type==='line'){
+    const f=V.sub(a.p,b.c),B=V.dot(f,a.d),C=V.dot(f,f)-b.R*b.R,disc=B*B-C;
+    if(disc<-1e-9)return [];const s=Math.sqrt(Math.max(0,disc));
+    return [V.add(a.p,V.mul(a.d,-B-s)),V.add(a.p,V.mul(a.d,-B+s))];
+  }
+  const d=V.sub(b.c,a.c),D=V.len(d);
+  if(D<1e-9||D>a.R+b.R+1e-9||D<Math.abs(a.R-b.R)-1e-9)return [];
+  const x=(a.R*a.R-b.R*b.R+D*D)/(2*D),h=Math.sqrt(Math.max(0,a.R*a.R-x*x)),u=V.unit(d),pm=V.add(a.c,V.mul(u,x));
+  return [V.add(pm,[-u[1]*h,u[0]*h]),V.add(pm,[u[1]*h,-u[0]*h])];
+}
+// Skarven i slutet av sträckan A, mot B (eller null = sista rörelsen med kompensering)
+function junction(A,B,side,r){
+  const P=A.p1,tA=tangent(A,true),nA=sideN(tA,side);
+  if(!B)return {end:V.add(P,V.mul(nA,r))};
+  const tB=tangent(B,false),nB=sideN(tB,side),cr=V.cross(tA,tB),dt=V.dot(tA,tB);
+  if(Math.abs(cr)<1e-7&&dt>0)return {end:V.add(P,V.mul(nA,r))};          // tangent övergång
+  const inside=Math.abs(cr)>=1e-7&&(side===41?cr>0:cr<0);
+  if(inside){
+    const pts=intersect(offsetGeom(A,side,r),offsetGeom(B,side,r));
+    if(pts.length){let best=pts[0];for(const q of pts)if(V.len(V.sub(q,P))<V.len(V.sub(best,P)))best=q;
+      if(V.len(V.sub(best,P))<r*20)return {end:best};}
+  }
+  return {end:V.add(P,V.mul(nA,r)),corner:{to:V.add(P,V.mul(nB,r)),c:P,cw:side===41}};
+}
+// Titta framåt i programmet efter nästa rörelse i XY (för att kunna räkna skarven)
+function peekNext(fromXY){
+  const m=st.m;let abs=m.abs,work=m.work,motion=m.motion;
+  for(let i=run.pc,n=0;i<run.src.length&&n<10;i++,n++){
+    let line=String(run.src[i]).toUpperCase().replace(/\(.*?\)/g,'').replace(/;.*$/,'').trim();
+    if(!line||line==='%')continue;
+    if(line[0]==='/'){if(st.bdel)continue;line=line.slice(1);}
+    line=line.replace(/^O\d+/,'').replace(/^N\d+/,'').trim();
+    const W=parseWords(line),G=W.filter(w=>w[0]==='G').map(w=>w[1]),M=W.filter(w=>w[0]==='M').map(w=>w[1]);
+    const val=l=>{const w=W.find(x=>x[0]===l);return w?w[1]:undefined;};
+    if(G.some(g=>[4,28,53,73,81,82,83,85].includes(g))||M.some(c=>[0,1,2,6,30].includes(c)))return null;
+    let cancel=false;
+    for(const g of G){if(g===90)abs=true;else if(g===91)abs=false;else if(g>=54&&g<=59)work=g-54;else if(g>=0&&g<=3)motion=g;else if(g===40)cancel=true;}
+    const hx=val('X')!==undefined,hy=val('Y')!==undefined;
+    if(!hx&&!hy)continue;
+    const w=st.work[work];
+    const p1=[hx?(abs?w[0]+val('X'):fromXY[0]+val('X')):fromXY[0],hy?(abs?w[1]+val('Y'):fromXY[1]+val('Y')):fromXY[1]];
+    if(cancel||motion<2)return {type:'line',p0:fromXY,p1};
+    const c=arcCenterXY(fromXY,p1,motion===2,val('R'),val('I'),val('J'));
+    return c?{type:'arc',p0:fromXY,p1,c,cw:motion===2}:null;
+  }
+  return null;
+}
+
 /* G-kodstolk: en rad i taget blir en lista med moment. */
 function parseWords(line){
   const out=[];const re=/([A-Z])\s*([+-]?(?:\d+\.?\d*|\.\d+))?/g;let m;
@@ -715,7 +797,8 @@ function compileBlock(raw){
   const G=W.filter(w=>w[0]==='G').map(w=>w[1]),M=W.filter(w=>w[0]==='M').map(w=>w[1]);
   const val=l=>{const w=W.find(x=>x[0]===l);return w?w[1]:undefined;};
   const m=st.m,ops=[];
-  let g53=false,g28=false,g4=false,cycleNow=false;
+  let g53=false,g28=false,g4=false,cycleNow=false,cancelNow=false;
+  if(!m.compOn)st.prg={...st.pos};
   for(const g of G){
     switch(g){
       case 0:case 1:case 2:case 3:m.motion=g;m.cyc=0;break;
@@ -724,8 +807,11 @@ function compileBlock(raw){
       case 20:alarmStop('INCH MODE (G20) NOT SUPPORTED - USE G21');return false;
       case 21:break;
       case 28:g28=true;break;
-      case 40:break;
-      case 41:case 42:alarmStop('G41/G42 CUTTER COMP NOT SUPPORTED IN THIS SIMULATOR');return false;
+      case 40:cancelNow=true;break;
+      case 41:case 42:{
+        const d=val('D'),dn=d===undefined?st.atool:Math.round(d);
+        if(dn<0||dn>NT){alarmStop('INVALID D VALUE D'+dn);return false;}
+        m.comp=g;m.compR=dn?Math.max(0,st.tl[dn][2]+st.tl[dn][3]):0;break;}
       case 43:{const h=val('H');st.g43=clamp(h===undefined?st.atool:Math.round(h),1,NT);break;}
       case 49:st.g43=0;break;
       case 53:g53=true;break;
@@ -744,6 +830,7 @@ function compileBlock(raw){
   const T=val('T');
   for(const mc of M){if(![0,1,2,3,4,5,6,8,9,30].includes(mc)){alarmStop('INVALID M CODE M'+mc);return false;}}
   // M före rörelsen
+  if(m.compOn&&!cancelNow&&(M.includes(6)||g28||g53||G.some(g=>[73,81,82,83,85].includes(g)))){alarmStop('CANCEL CUTTER COMP (G40) FIRST');return false;}
   if(M.includes(6)){
     const t=T===undefined?st.atool:Math.round(T);
     if(t<1||t>NT){alarmStop('INVALID TOOL NUMBER T'+t);return false;}
@@ -793,33 +880,56 @@ function compileBlock(raw){
     if(m.cyc===85)ops.push({k:'move',to:{Z:Rm},rapid:false,F:m.F});
     ops.push({k:'move',to:{Z:Math.max(ret,Rm)},rapid:true});
   }else if(has('X')||has('Y')||has('Z')){
-    const wp=workPos(p0),to={...p0};
+    const base=m.compOn?{...st.prg}:p0;           // programmerad startpunkt
+    const wp=workPos(base),to={...base};
     ['X','Y','Z'].forEach(a=>{if(has(a)){const v=val(a);to[a]=toMachine(a,m.abs?v:wp[a]+v);}});
-    if(m.motion===0)ops.push({k:'move',to,rapid:true});
-    else{
-      if(!m.F){alarmStop('NO FEED RATE (F) PROGRAMMED');return false;}
-      if(m.motion===1)ops.push({k:'move',to,rapid:false,F:m.F});
-      else{
-        const cw=m.motion===2;let c;
-        const dx=to.X-p0.X,dy=to.Y-p0.Y,q=Math.hypot(dx,dy);
-        if(has('R')){
-          const R=val('R'),r=Math.abs(R);
-          if(q<1e-6||q>2*r+1e-4){alarmStop('INVALID ARC - CHECK R');return false;}
-          const h=Math.sqrt(Math.max(0,r*r-q*q/4)),mx=(p0.X+to.X)/2,my=(p0.Y+to.Y)/2;
-          const left={X:mx-dy/q*h,Y:my+dx/q*h},right={X:mx+dy/q*h,Y:my-dx/q*h};
-          // kort båge medurs: centrum till höger om kordan; negativt R ger lång båge
-          c=(cw!==(R<0))?right:left;
-        }else{
-          const I=val('I')||0,J=val('J')||0;
-          if(!has('I')&&!has('J')){alarmStop('ARC NEEDS I/J OR R');return false;}
-          c={X:p0.X+I,Y:p0.Y+J};
-        }
-        const r0=Math.hypot(p0.X-c.X,p0.Y-c.Y),r1=Math.hypot(to.X-c.X,to.Y-c.Y);
-        if(Math.abs(r0-r1)>0.05||r0<1e-6){alarmStop('INVALID ARC - END POINT NOT ON CIRCLE');return false;}
-        ops.push({k:'arc',to,c,r:r0,cw,F:m.F});
-      }
+    if(m.motion!==0&&!m.F){alarmStop('NO FEED RATE (F) PROGRAMMED');return false;}
+    const xy=has('X')||has('Y');
+    let c=null;
+    if(m.motion>=2){
+      if(!has('R')&&!has('I')&&!has('J')){alarmStop('ARC NEEDS I/J OR R');return false;}
+      const cc=arcCenterXY([base.X,base.Y],[to.X,to.Y],m.motion===2,has('R')?val('R'):undefined,val('I'),val('J'));
+      if(!cc){alarmStop('INVALID ARC - CHECK R');return false;}
+      c={X:cc[0],Y:cc[1]};
+      const r0=Math.hypot(base.X-c.X,base.Y-c.Y),r1=Math.hypot(to.X-c.X,to.Y-c.Y);
+      if(Math.abs(r0-r1)>0.05||r0<1e-6){alarmStop('INVALID ARC - END POINT NOT ON CIRCLE');return false;}
     }
+    const rapid=m.motion===0;
+    if(cancelNow&&m.compOn){                          // G40: raka vägen tillbaka till programmerad punkt
+      if(m.motion>=2){alarmStop('G40 MUST BE ON A G00/G01 MOVE');return false;}
+      ops.push({k:'move',to,rapid,F:m.F});m.compOn=false;m.comp=0;
+    }else if(m.comp&&!cancelNow&&xy&&m.compR>0){
+      if(!m.compOn&&m.motion>=2){alarmStop('G41/G42 MUST START ON A G00/G01 MOVE');return false;}
+      const A=m.motion>=2?{type:'arc',p0:[base.X,base.Y],p1:[to.X,to.Y],c:[c.X,c.Y],cw:m.motion===2}:{type:'line',p0:[base.X,base.Y],p1:[to.X,to.Y]};
+      if(A.type==='line'&&V.len(V.sub(A.p1,A.p0))<1e-6){ops.push({k:'move',to:{...st.pos,Z:to.Z},rapid,F:m.F});}
+      else{
+        const B=peekNext(A.p1);
+        if(B&&B.type==='arc'&&offsetGeom(B,m.comp,m.compR).R<=1e-6){alarmStop('CUTTER COMP INTERFERENCE - ARC RADIUS TOO SMALL');return false;}
+        const Jn=junction(A,B,m.comp,m.compR);
+        const end={X:Jn.end[0],Y:Jn.end[1],Z:to.Z};
+        if(A.type==='line'){
+          if(m.compOn&&V.dot(V.sub(Jn.end,[st.pos.X,st.pos.Y]),tangent(A,false))<-1e-6){alarmStop('CUTTER COMP INTERFERENCE');return false;}
+          ops.push({k:'move',to:end,rapid,F:m.F});
+        }else{
+          const og=offsetGeom(A,m.comp,m.compR);
+          if(og.R<=1e-6){alarmStop('CUTTER COMP INTERFERENCE - ARC RADIUS TOO SMALL');return false;}
+          ops.push({k:'arc',to:end,c,r:og.R,cw:A.cw,F:m.F,rapid});
+        }
+        if(Jn.corner)ops.push({k:'arc',to:{X:Jn.corner.to[0],Y:Jn.corner.to[1],Z:to.Z},c:{X:Jn.corner.c[0],Y:Jn.corner.c[1]},r:m.compR,cw:Jn.corner.cw,F:m.F,rapid});
+        m.compOn=true;
+      }
+    }else if(m.compOn&&!xy){
+      ops.push({k:'move',to:{...st.pos,Z:to.Z},rapid,F:m.F});
+    }else{
+      if(cancelNow){m.comp=0;}
+      if(m.motion===0)ops.push({k:'move',to,rapid:true});
+      else if(m.motion===1)ops.push({k:'move',to,rapid:false,F:m.F});
+      else ops.push({k:'arc',to,c,r:Math.hypot(p0.X-c.X,p0.Y-c.Y),cw:m.motion===2,F:m.F});
+    }
+    st.prg={...to};
   }
+  if(cancelNow&&m.compOn&&!(has('X')||has('Y'))){ops.push({k:'move',to:{...st.prg,Z:st.pos.Z},rapid:m.motion===0,F:m.F||RAPID});m.compOn=false;m.comp=0;}
+  else if(cancelNow&&!m.compOn)m.comp=0;
   // M efter rörelsen
   if(M.includes(5))ops.push({k:'spin',dir:0});
   if(M.includes(9))ops.push({k:'cool',on:false});
@@ -843,7 +953,7 @@ function compileBlock(raw){
       const full=Math.hypot(o.to.X-p.X,o.to.Y-p.Y)<1e-6;
       if(!full&&Math.abs(da)>2*Math.PI-1e-6)da=0;
       const len=Math.hypot(Math.abs(da)*o.r,o.to.Z-p.Z);
-      run.ops.push({k:'arc',from:{...p},to:{...o.to},c:o.c,r:o.r,a0,da,rapid:false,F:o.F,len,s:0});p={...o.to};
+      run.ops.push({k:'arc',from:{...p},to:{...o.to},c:o.c,r:o.r,a0,da,rapid:!!o.rapid,F:o.F,len,s:0});p={...o.to};
     }else run.ops.push(o);
   }
   return true;
@@ -872,7 +982,7 @@ function powerOff(){
 function reset(){
   if(st.pwr==='off'||st.pwr==='boot')return;
   clearTimeout(runTimer);st.running=false;st.pc=0;st.buf='';
-  run.ops=[];run.op=null;run.kind=null;st.hold=false;st.spin=0;st.spinMem=0;st.cool=false;st.crash=false;st.mdi=[];
+  run.ops=[];run.op=null;run.kind=null;st.hold=false;st.spin=0;st.spinMem=0;st.cool=false;st.crash=false;st.mdi=[];st.m.comp=0;st.m.compOn=false;st.m.cyc=0;
   if(st.estop){say('RELEASE E-STOP FIRST');return;}
   if(st.pwr==='servo'){st.alarms=[];st.pwr='unhomed';}
   else st.alarms=[];
@@ -1306,7 +1416,7 @@ function loop(t){
 }
 
 /* ---------- maskinkortet, program och ämne ---------- */
-const EXAMPLES=[{"name": "Planfräsning (T16, Ø50)", "stock": [100, 60, 20, "hörn"], "code": "O80001 (PLANFRASNING)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT16 M06\nG90 G54 G00 X-30. Y15.\nS1300 M03\nG43 H16 Z25.\nG01 Z-0.5 F600.\nG01 X130.\nG00 Z5.\nX-30. Y45.\nG01 Z-0.5\nG01 X130.\nG00 Z25.\nM05\nG91 G28 Z0\nM30"}, {"name": "R-02 Rektangelspår (T1)", "stock": [100, 60, 20, "hörn"], "code": "O1002\n(R-02 REKTANGELSPAR)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT1 M6\nG90\nG54 X10 Y10 S3000 M3\nG43 Z5 H1\nG1 Z-2 F150\nG1 X90 F300\nG1 Y50\nG1 X10\nG1 Y10\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-07 Ovalt spår, G3 (T1)", "stock": [100, 60, 20, "hörn"], "code": "O1007\n(R-07 OVALT SPAR)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT1 M6\nG90\nG54 X30 Y15 S3000 M3\nG43 Z5 H1\nG1 Z-3 F150\nG1 X70 F300\nG3 X70 Y45 I0 J15\nG1 X30\nG3 X30 Y15 I0 J-15\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-09 Hålbild, G81/G83 (T9, T13)", "stock": [100, 60, 20, "hörn"], "code": "O1009\n(R-09 HALBILD)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT9 M6\nG90\nG54 X15 Y15 S1500 M3\nG43 Z5 H9\nG99 G81 X15 Y15 Z-12 R2 F150\nX85\nY45\nX15\nG80\nG0 Z5\nG91 G28 Z0\nT13 M6\nG90\nG54 X50 Y30 S900 M3\nG43 Z5 H13\nG98 G83 X50 Y30 Z-22 R2 Q5 F100\nG80\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-16 Rektangulär ficka (T2)", "stock": [80, 60, 20, "mitt"], "code": "O1016\n(R-16 REKTANGULAR FICKA)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT2 M6\nG90\nG54 X-15 Y0 S2500 M3\nG43 Z5 H2\nG1 Z-4 F100\nG1 X15 F400\nG1 Y-7\nG1 X-15\nG1 Y7\nG1 X15\nG1 Y0\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-18 Hållare med ficka (T2, T9)", "stock": [100, 60, 20, "hörn"], "code": "O1018\n(R-18 HALLARE MED FICKA)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT2 M6\nG90\nG54 X30 Y30 S2500 M3\nG43 Z5 H2\nG1 Z-5 F100\nG1 X70 F400\nG1 Y20\nG1 X30\nG1 Y40\nG1 X70\nG1 Y30\nG0 Z5\nG91 G28 Z0\nT9 M6\nG90\nG54 X10 Y10 S1500 M3\nG43 Z5 H9\nG99 G81 X10 Y10 Z-12 R2 F150\nX90\nY50\nX10\nG80\nG0 Z5\nG91 G28 Z0\nM30"}];
+const EXAMPLES=[{"name": "Planfräsning (T16, Ø50)", "stock": [100, 60, 20, "hörn"], "code": "O80001 (PLANFRASNING)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT16 M06\nG90 G54 G00 X-30. Y15.\nS1300 M03\nG43 H16 Z25.\nG01 Z-0.5 F600.\nG01 X130.\nG00 Z5.\nX-30. Y45.\nG01 Z-0.5\nG01 X130.\nG00 Z25.\nM05\nG91 G28 Z0\nM30"}, {"name": "R-02 Rektangelspår (T1)", "stock": [100, 60, 20, "hörn"], "code": "O1002\n(R-02 REKTANGELSPAR)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT1 M6\nG90\nG54 X10 Y10 S3000 M3\nG43 Z5 H1\nG1 Z-2 F150\nG1 X90 F300\nG1 Y50\nG1 X10\nG1 Y10\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-07 Ovalt spår, G3 (T1)", "stock": [100, 60, 20, "hörn"], "code": "O1007\n(R-07 OVALT SPAR)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT1 M6\nG90\nG54 X30 Y15 S3000 M3\nG43 Z5 H1\nG1 Z-3 F150\nG1 X70 F300\nG3 X70 Y45 I0 J15\nG1 X30\nG3 X30 Y15 I0 J-15\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-09 Hålbild, G81/G83 (T9, T13)", "stock": [100, 60, 20, "hörn"], "code": "O1009\n(R-09 HALBILD)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT9 M6\nG90\nG54 X15 Y15 S1500 M3\nG43 Z5 H9\nG99 G81 X15 Y15 Z-12 R2 F150\nX85\nY45\nX15\nG80\nG0 Z5\nG91 G28 Z0\nT13 M6\nG90\nG54 X50 Y30 S900 M3\nG43 Z5 H13\nG98 G83 X50 Y30 Z-22 R2 Q5 F100\nG80\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-12 Rundad platta, G41 (T3)", "stock": [90, 60, 20, "mitt"], "code": "O1012\n(R-12 RUNDAD PLATTA)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT3 M6\nG90\nG54 X-60 Y0 S4000 M3\nG43 Z5 H3\nG1 Z-5 F200\nG1 G41 X-40 Y0 D3 F600\nG1 Y17\nG2 X-32 Y25 R8\nG1 X32\nG2 X40 Y17 R8\nG1 Y-17\nG2 X32 Y-25 R8\nG1 X-32\nG2 X-40 Y-17 R8\nG1 Y17\nG1 G40 X-60\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-14 Fäste, G41 + hål (T3, T11)", "stock": [70, 45, 20, "hörn"], "code": "O1014\n(R-14 FASTE)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT3 M6\nG90\nG54 X-15 Y10 S4000 M3\nG43 Z5 H3\nG1 Z-5 F200\nG1 G41 X5 Y10 D3 F600\nG1 Y25\nG2 X20 Y40 R15\nG1 X55\nG1 X65 Y30\nG1 Y5\nG1 X5\nG1 Y25\nG1 G40 X-15\nG0 Z5\nG91 G28 Z0\nT11 M6\nG90\nG54 X40 Y20 S1100 M3\nG43 Z5 H11\nG98 G83 X40 Y20 Z-15 R2 Q5 F120\nG80\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-16 Rektangulär ficka (T2)", "stock": [80, 60, 20, "mitt"], "code": "O1016\n(R-16 REKTANGULAR FICKA)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT2 M6\nG90\nG54 X-15 Y0 S2500 M3\nG43 Z5 H2\nG1 Z-4 F100\nG1 X15 F400\nG1 Y-7\nG1 X-15\nG1 Y7\nG1 X15\nG1 Y0\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-18 Hållare med ficka (T2, T9)", "stock": [100, 60, 20, "hörn"], "code": "O1018\n(R-18 HALLARE MED FICKA)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT2 M6\nG90\nG54 X30 Y30 S2500 M3\nG43 Z5 H2\nG1 Z-5 F100\nG1 X70 F400\nG1 Y20\nG1 X30\nG1 Y40\nG1 X70\nG1 Y30\nG0 Z5\nG91 G28 Z0\nT9 M6\nG90\nG54 X10 Y10 S1500 M3\nG43 Z5 H9\nG99 G81 X10 Y10 Z-12 R2 F150\nX90\nY50\nX10\nG80\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-20 Slutprov: Hållare (T3, T2, T11)", "stock": [100, 70, 20, "hörn"], "code": "O1020\n(R-20 HALLARE)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT3 M6\nG90\nG54 X-15 Y35 S4000 M3\nG43 Z5 H3\nG1 Z-5 F200\nG1 G41 X5 Y35 D3 F600\nG1 Y55\nG2 X15 Y65 R10\nG1 X85\nG2 X95 Y55 R10\nG1 Y15\nG2 X85 Y5 R10\nG1 X15\nG2 X5 Y15 R10\nG1 Y55\nG1 G40 X-15\nG0 Z5\nG91 G28 Z0\nT2 M6\nG90\nG54 X35 Y35 S2500 M3\nG43 Z5 H2\nG1 Z-4 F100\nG1 X65 F400\nG1 Y30\nG1 X35\nG1 Y40\nG1 X65\nG1 Y35\nG0 Z5\nG91 G28 Z0\nT11 M6\nG90\nG54 X20 Y35 S1100 M3\nG43 Z5 H11\nG98 G83 X20 Y35 Z-15 R2 Q5 F120\nX80\nG80\nG0 Z5\nG91 G28 Z0\nM30"}];
 const exSel=$('#exSel'),progText=$('#progText'),progMsg=$('#progMsg');
 EXAMPLES.forEach((e,i)=>{const o=document.createElement('option');o.value=i;o.textContent=e.name;exSel.appendChild(o);});
 function setProgMsg(t,bad){progMsg.textContent=t;progMsg.classList.toggle('bad',!!bad);}
