@@ -42,16 +42,17 @@
       <li>Tangentbordsnavigering (knappar, menyer, formulär) <span class="status ok">✓ Kontrollerat – fungerar</span></li>
       <li>Skärmläsarkompatibilitet (ARIA, fokusordning) <span class="status ok">✓ Kontrollerat – fungerar</span></li>
       <li>Rubrikstruktur (h1–h3 i logisk ordning) <span class="status ok">✓ Kontrollerat – fungerar</span></li>
-      <li>Uppläsning av kursmaterial (Lyssna-knappen, webbläsarens talsyntes) <span class="status unknown">Ej testad med skärmläsare</span></li>
-      <li>G-kodsvisualiseraren, svarvsimulatorn och sänka skepp-spelet (canvas-/3D-baserade, mycket interaktiva) <span class="status warn">Sannolikt bristfällig tangentbords-/skärmläsarstöd</span></li>
+      <li>Uppläsning av kursmaterial (Lyssna-knappen, webbläsarens talsyntes) <span class="status ok">✓ Testad tillsammans med skärmläsare</span></li>
+      <li>Simulatorerna (Hass fräs, CNC-svarv, supportsvarv), G-kodsvisualiseraren och sänka skepp-spelet <span class="status warn">Ej anpassade för skärmläsare</span></li>
     </ul>
 
     <h2>Kända begränsningar</h2>
-    <p>De tre interaktiva verktygen — G-kodsvisualiseraren, svarvsimulatorn och sänka skepp-spelet — bygger till stor del på musstyrd interaktion med en canvas-yta (HTML5 canvas eller 3D). Sådana ytor är generellt svåra att göra fullt tillgängliga för skärmläsare och ren tangentbordsnavigering, och har <strong>inte</strong> anpassats för detta ännu. Övriga sidor (kursmaterial, quiz) bygger på vanlig HTML. Tangentbordsnavigering, skärmläsarkompatibilitet och rubrikstruktur har kontrollerats och fungerar.</p>
+    <p>Simulatorerna, G-kodsvisualiseraren och sänka skepp-spelet är praktiska övningsverktyg. De efterliknar riktiga maskinpaneler med många knappar, en handratt och en 3D-vy, och styrs med mus eller pekskärm. De är medvetet <strong>inte</strong> anpassade för skärmläsare, eftersom en uppläsning av alla knappar och mätvärden skulle bli svår att följa och inte ge samma övning. Svarvsimulatorn går att styra med tangentbordet. Simulatorerna är gjorda för dator och fungerar även på surfplatta i liggande läge, men inte på mobil.</p>
+    <p>Samma kunskap som verktygen övar finns i kursmaterialet och quizen, som bygger på vanlig HTML. Där har tangentbordsnavigering, skärmläsarkompatibilitet och rubrikstruktur kontrollerats och fungerar.</p>
 
     <p>På sidor med kursmaterial finns en Lyssna-knapp som läser upp texten med webbläsarens inbyggda talsyntes. Den är ett komplement för den som vill lyssna, inte en ersättning för skärmläsare. Rösternas kvalitet och uttal beror på enheten, och tabeller och kodblock läses inte upp.</p>
     <h2>Hur vi jobbar vidare</h2>
-    <p>Tangentbordsnavigering, skärmläsarkompatibilitet och rubrikstruktur är kontrollerade. Nästa steg är att förbättra tillgängligheten i G-kodsvisualiseraren och spelet, och att testa uppläsningsfunktionen med skärmläsare. Den här redogörelsen uppdateras när det är gjort.</p>
+    <p>Tangentbordsnavigering, skärmläsarkompatibilitet och rubrikstruktur är kontrollerade för kursmaterialet och quizen. Den här redogörelsen uppdateras när nya sidor eller verktyg läggs till.</p>
 
     <h2>Rapportera brister</h2>
     <p>Om du stöter på ett tillgänglighetsproblem, kontakta: <span class="fillin">[fyll i kontaktuppgift]</span></p>

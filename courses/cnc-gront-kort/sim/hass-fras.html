@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hass fräs — Simulator</title>
+<style>
+/* Typsnitt från sajtens egna filer (SIL Open Font License, se assets/fonts/README.txt) */
+@font-face{font-family:'Barlow';font-weight:500;font-display:swap;src:url(../../../assets/fonts/barlow-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-weight:600;font-display:swap;src:url(../../../assets/fonts/barlow-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-weight:700;font-display:swap;src:url(../../../assets/fonts/barlow-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-weight:500;font-display:swap;src:url(../../../assets/fonts/barlow-condensed-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-weight:600;font-display:swap;src:url(../../../assets/fonts/barlow-condensed-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-weight:700;font-display:swap;src:url(../../../assets/fonts/barlow-condensed-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'VT323';font-weight:400;font-display:swap;src:url(../../../assets/fonts/vt323-latin-400-normal.woff2) format('woff2')}
+</style>
+<style>
+/* Layout: every block is placed at the coordinates of the reference photo (x2.4), then the whole panel is scaled to fit. */
+:root{
+  --bg:#15171a; --fg:#e8e6df; --muted:#939893; --line:#2a2d31;
+  --panel:#b7b4ae; --frame:#d7d5cf; --kbbg:#bebbb5;
+  --strip:#454743; --strip-ink:#c8cac3;
+  --key-a:#c4c5bb; --key-b:#aeafa5; --key-ink:#2a2c29; --key-edge:#8d8e85;
+  --dk-a:#585a53; --dk-b:#44463f; --dk-ink:#d3d4cc;
+  --teal:#23849b; --teal-dk:#164c59; --teal-ink:#e6f6f9; --tri:#1d5b6c;
+  --red-a:#e24534; --red-b:#c42f22;
+  --amber:#ffb23d; --crt:#070706;
+  --f-key:'Barlow Condensed','Arial Narrow',sans-serif;
+  --f-body:'Barlow',system-ui,sans-serif;
+  --f-crt:'VT323','Courier New',monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);
+  padding-block:20px 28px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1560px;margin:0 auto;display:grid;gap:16px}
+h1{font:700 30px/1 var(--f-key);letter-spacing:.05em;text-transform:uppercase;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:6px 0 0;max-width:65ch;line-height:1.45}
+.scroller{overflow-x:auto;border-radius:12px}
+.stage{position:relative}
+.panel{width:1517px;height:1349px;position:absolute;left:0;top:0;transform-origin:0 0;
+  background:linear-gradient(170deg,#c0bdb7,var(--panel) 40%,#aeaba5);border-radius:14px;
+  box-shadow:inset 0 0 0 2px #fff3,0 14px 40px #000a}
+.abs{position:absolute}
+.screw{position:absolute;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#555,#0a0a0a)}
+
+/* left strip */
+.strip{background:linear-gradient(#4a4c48,#40423e);border-radius:12px;box-shadow:inset 0 0 0 2px #0002,0 2px 0 #fff4}
+.slbl{position:absolute;transform:translate(-50%,-50%);color:var(--strip-ink);font:700 15px/1 var(--f-body);
+  letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;text-shadow:0 1px 0 #0006}
+.sq{appearance:none;border:0;padding:8px;background:#0c0d0c;border-radius:6px;cursor:pointer;box-shadow:0 2px 0 #0007,inset 0 0 0 1px #3b3c3a}
+.sq .face{display:block;width:100%;height:100%;border-radius:3px;transition:transform .08s}
+.sq:active .face{transform:translateY(2px)}
+.face.g{background:linear-gradient(#3aa356,#2a8043);box-shadow:inset 0 0 0 1px #0004,inset 0 2px 0 #fff3}
+.face.r{background:linear-gradient(#e0504a,#bf3a35);box-shadow:inset 0 0 0 1px #0004,inset 0 2px 0 #fff3}
+.sq.lit .face.g{background:linear-gradient(#58e07b,#2fb059);box-shadow:0 0 22px #5dff86bb,inset 0 2px 0 #fff5}
+.meter{background:#101110;border-radius:6px;padding:9px;box-shadow:0 2px 0 #0007,inset 0 0 0 1px #3b3c3a}
+.meter svg{display:block;width:100%;height:100%}
+.estopbase{position:absolute;border-radius:50%;background:radial-gradient(ellipse at 45% 40%,#f6dc2a,#ddb90d 70%,#b89a0a);box-shadow:0 5px 8px #0007}
+.estop{appearance:none;border:0;background:none;padding:0;cursor:pointer}
+.estop .cap{position:absolute;left:5%;top:6%;width:70%;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 38% 30%,#f2685c,#d03a2d 55%,#9b241b);
+  box-shadow:14px 8px 0 #0000001f,0 8px 0 #7a1810,0 12px 14px #0006,inset 0 2px 3px #fff5;transition:transform .12s}
+.estop[aria-pressed="true"] .cap{transform:translateY(7px);box-shadow:10px 4px 0 #0000001f,0 1px 0 #7a1810,0 3px 5px #0006,inset 0 2px 3px #fff4;filter:brightness(.86)}
+.hdir{display:flex;justify-content:space-between;align-items:center;color:var(--strip-ink);font:700 22px/1 var(--f-body);padding:0 6px}
+.hdir svg{width:46px;height:18px;fill:var(--strip-ink)}
+.handle{border-radius:50%;cursor:grab;touch-action:none;
+  background:
+    radial-gradient(circle,transparent 0 63%,#0005 64% 65%,transparent 66%),
+    repeating-conic-gradient(from 0deg,#e6e8ea 0 2.2deg,#8f949a 2.2deg 3.6deg),#bcc0c4;
+  box-shadow:0 7px 0 #2c2e2b,0 14px 20px #0008,inset 0 0 0 4px #f2f3f4,inset 0 0 0 7px #70767b}
+.handle:active{cursor:grabbing}
+.handle .face{position:absolute;inset:12%;border-radius:50%;
+  background:conic-gradient(from 20deg,#f4f5f6,#a8adb2,#eceef0,#8d939a,#f4f5f6,#a8adb2,#eceef0,#8d939a,#f4f5f6);
+  box-shadow:inset 0 0 0 2px #fffb,inset 0 0 16px #0005,0 0 0 3px #5f656a}
+.handle .face::after{content:"HASS";position:absolute;inset:18%;border-radius:50%;display:grid;place-items:center;color:#d4322b;font:italic 700 26px var(--f-key);letter-spacing:.02em;transform:skewX(-8deg);background:radial-gradient(circle at 40% 35%,#ffffff,#b6bbc0 70%,#8c9298);box-shadow:inset 0 0 10px #0004}
+.handle .grip{position:absolute;left:68%;top:73%;width:11%;height:11%;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff,#9ea4aa);box-shadow:0 3px 4px #0008,inset 0 0 0 2px #5d6368}
+.hread{color:var(--strip-ink);font:600 15px/1.2 var(--f-key);letter-spacing:.08em;text-transform:uppercase;text-align:center}
+
+/* screen */
+.brand{font:700 40px/1 var(--f-key);letter-spacing:.35em;color:#4d4f4b;text-align:right}
+.bezel{background:#2e2f2c;border-radius:16px;padding:22px;box-shadow:inset 0 0 0 3px #1b1c1a,inset 0 6px 14px #000a,0 2px 0 #fff5}
+.crt{margin:0;height:100%;overflow:hidden;white-space:pre;position:relative;
+  background:var(--crt);color:var(--amber);font:22px/29px var(--f-crt);letter-spacing:.02em;
+  padding:12px 18px;border-radius:8px;text-shadow:0 0 6px #ff9d1c88;box-shadow:inset 0 0 50px #000}
+.crt::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(transparent 0 2px,#00000030 2px 3px)}
+.crt.off{color:transparent;text-shadow:none;background:#060606}
+.hl{background:var(--amber);color:var(--crt);text-shadow:none}
+.al{color:#ff5f4a;text-shadow:0 0 6px #ff3d2a88}
+.dim{opacity:.7}
+
+/* keyboard */
+.kbframe{border:3px solid var(--frame);border-radius:20px;background:var(--kbbg);box-shadow:inset 0 3px 8px #0003}
+.grid{display:grid;gap:5px;grid-template-columns:repeat(var(--c,4),1fr);grid-auto-rows:1fr}
+.key{appearance:none;border:0;cursor:pointer;position:relative;width:100%;height:100%;min-width:0;padding:2px;
+  font:600 11px/1 var(--f-key);letter-spacing:.02em;text-transform:uppercase;color:var(--key-ink);text-align:center;
+  background:linear-gradient(var(--key-a),var(--key-b));border-radius:4px;
+  box-shadow:0 2px 0 var(--key-edge),inset 0 0 0 1px #e4e4dc99;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.key:active,.key.down{transform:translateY(2px);box-shadow:0 0 0 var(--key-edge),inset 0 0 0 1px #e4e4dc88}
+.key .small{display:block;font-size:10px;font-weight:600;letter-spacing:.02em;line-height:1.05}
+.key.fbig{font:700 28px/1 var(--f-key)}
+.key.dark{background:linear-gradient(var(--dk-a),var(--dk-b));color:var(--dk-ink);box-shadow:0 2px 0 #2a2b26,inset 0 0 0 1px #8d8e8644}
+.key.num{font:600 26px/1 var(--f-key)}
+.key.letter{font:600 25px/1 var(--f-key)}
+.key.red{background:linear-gradient(var(--red-a),var(--red-b));color:#30100c;font-size:17px;font-weight:700;letter-spacing:.06em;box-shadow:0 2px 0 #7d1d14,inset 0 0 0 1px #ff8d7c66}
+.key.tealk{background:linear-gradient(#2b93ab,#1f7a90);color:var(--teal-ink);font-size:12px;box-shadow:0 2px 0 #124a58,inset 0 0 0 1px #8fd5e466}
+.key.chip{background:var(--teal-dk);color:var(--teal-ink);font-size:11.5px;box-shadow:inset 0 0 0 3px #c5e1e6,0 2px 0 #0d2e36;border-radius:7px}
+.key.mode1{border-radius:0;clip-path:polygon(0 8%,76% 8%,100% 50%,76% 92%,0 92%);box-shadow:none;padding-right:14%}
+.key.on::after{content:"";position:absolute;top:4px;right:5px;width:5px;height:5px;border-radius:50%;background:var(--amber);box-shadow:0 0 5px var(--amber)}
+.key.mode1.on::after{right:20%}
+.key:focus-visible,.handle:focus-visible,.estop:focus-visible,.sq:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.bar{background:#4b4d46;color:#d7d8d0;border-radius:6px;font:700 11px/1 var(--f-key);letter-spacing:.2em;text-align:center;display:grid;place-items:center}
+.jogf{background:var(--teal);border-radius:8px;padding:6px;gap:6px;box-shadow:inset 0 0 0 1px #0003}
+.jog{background:linear-gradient(#c8c9bf,#b1b2a8)}
+.jog svg{position:absolute;inset:0;width:100%;height:100%;fill:var(--tri)}
+.jog .t{position:absolute;font:700 11px/1 var(--f-key);color:#2f3a3c}
+.cursor{background:var(--teal);border-radius:8px;padding:8px;gap:8px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);box-shadow:inset 0 0 0 1px #0003}
+.cursor .mid{display:grid;place-items:center;font:700 11px var(--f-key);color:#bfe3ea;letter-spacing:.14em;background:#1d6e82;border-radius:5px}
+.cursor .key.arr{background:linear-gradient(#cdcec4,#b5b6ac)}
+.cursor .key.arr svg{width:70%;height:70%;fill:var(--tri)}
+
+/* topprad och mobilruta */
+body{margin:0}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.backlink{display:inline-block;padding:8px 14px;border:1px solid var(--line);border-radius:8px;color:var(--fg);text-decoration:none;font:600 14px var(--f-body);background:#1d2024}
+.backlink:hover{border-color:var(--amber);color:var(--amber)}
+.unit{color:var(--muted);font:600 13px var(--f-body);letter-spacing:.04em}
+.mobile-note{display:none;background:#2a2116;border:1px solid #6b4a1c;border-radius:10px;padding:12px 14px;line-height:1.5;margin:0}
+@media (max-width:700px){.mobile-note{display:block}}
+/* maskinen (3D) och programrutan */
+.simgrid{display:grid;grid-template-columns:minmax(360px,.8fr) 1.2fr;gap:16px;align-items:start}
+@media (max-width:1100px){.simgrid{grid-template-columns:1fr}}
+.model{background:#1d2024;border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px;min-width:0}
+.mhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.mtitle{font:700 18px/1 var(--f-key);letter-spacing:.08em;text-transform:uppercase}
+.mnote{color:var(--muted);font-size:12.5px}
+.view3d{position:relative;aspect-ratio:1/0.92;background:#0e1013;border-radius:8px;overflow:hidden;touch-action:none}
+.vfail{position:absolute;inset:0;margin:0;display:grid;place-items:center;padding:20px;text-align:center;color:var(--muted)}
+.mbtns,.prow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.mbtn{appearance:none;border:1px solid var(--line);background:#262a2f;color:var(--fg);border-radius:7px;padding:9px 13px;font:700 13px var(--f-key);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.mbtn:hover{border-color:var(--amber);color:var(--amber)}
+.mbtn.pri{background:var(--amber);border-color:var(--amber);color:#1b1206}
+.mbtn.pri:hover{filter:brightness(1.08);color:#1b1206}
+.cells{display:grid;gap:8px}
+.cells.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.cells.c2{grid-template-columns:1fr 2fr}
+.cells>div{background:#16191c;border:1px solid var(--line);border-radius:7px;padding:7px 9px;min-width:0}
+.cells span{display:block;color:var(--muted);font:600 11px var(--f-key);letter-spacing:.1em;text-transform:uppercase}
+.cells b{display:block;color:var(--amber);font:400 20px/1.15 var(--f-crt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cells b.warn{color:#ff6a55}
+.speeds{display:flex!important;gap:6px;margin-top:3px}
+.speeds button{appearance:none;border:1px solid var(--line);background:#262a2f;color:var(--fg);border-radius:6px;padding:3px 10px;font:700 13px var(--f-key);cursor:pointer}
+.speeds button.on{background:var(--amber);border-color:var(--amber);color:#1b1206}
+.progbox{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;background:#1d2024;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+@media (max-width:900px){.progbox{grid-template-columns:1fr}}
+.pcol{display:grid;gap:10px;align-content:start;min-width:0}
+.progbox h2{margin:4px 0 0;font:700 17px/1 var(--f-key);letter-spacing:.08em;text-transform:uppercase}
+.progbox label{color:var(--muted);font:600 13px var(--f-body)}
+.progbox select,.progbox input{background:#121417;color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font:500 14px var(--f-body)}
+#exSel{flex:1;min-width:200px}
+#progText{width:100%;min-height:230px;resize:vertical;background:#0b0c0b;color:var(--amber);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:19px/1.25 var(--f-crt)}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sgrid label{display:grid;gap:5px}
+.pmsg{margin:0;color:var(--muted);font-size:13.5px;line-height:1.5}
+.pmsg.bad{color:#ff8a76}
+/* below the panel */
+.hint{display:flex;gap:12px;align-items:flex-start;background:#1d2024;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.hint .dot{flex:none;width:10px;height:10px;margin-top:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.hint p{margin:0;line-height:1.5;max-width:90ch}
+.hint b{font-weight:600}
+.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;color:var(--muted);font-size:14px;line-height:1.45}
+.tips div{border-top:1px solid var(--line);padding-top:8px;min-width:0}
+.tips b{color:var(--fg);font-weight:600;display:block;margin-bottom:2px}
+@media (prefers-reduced-motion:reduce){.estop .cap,.sq .face{transition:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="toprow">
+    <a class="backlink" href="../simulator.html">&larr; Tillbaka till Simulator</a>
+    <span class="unit">Enhet: mm (G21)</span>
+  </div>
+  <p class="mobile-note"><b>Skärmen är för liten.</b> Simulatorn är gjord för dator med mus. På surfplatta fungerar den bäst i liggande läge.</p>
+  <header>
+    <h1>Hass fräs</h1>
+    <p class="sub">Övningsmodell av en vertikal CNC-fräs. Allt på panelen är klickbart och ratten snurrar du med musen. Kör egna program och se ämnet bearbetas i maskinen.</p>
+  </header>
+
+  <div class="simgrid">
+  <section class="model" aria-label="Maskinen">
+    <div class="mhead"><span class="mtitle">Maskinen</span><span class="mnote">Dra för att vrida · scrolla för att zooma</span></div>
+    <div class="view3d" id="view3d"><p class="vfail" id="vfail" hidden>3D-vyn kunde inte startas i den här webbläsaren. Panelen fungerar ändå.</p></div>
+    <div class="mbtns">
+      <button type="button" class="mbtn" id="bDoor">Öppna dörren</button>
+      <button type="button" class="mbtn" id="bSee">Se genom kåpan</button>
+      <button type="button" class="mbtn" id="bCam">Hela maskinen</button>
+    </div>
+    <div class="cells c3">
+      <div><span>X (G54)</span><b id="iX">0.000</b></div>
+      <div><span>Y (G54)</span><b id="iY">0.000</b></div>
+      <div><span>Z (G54)</span><b id="iZ">0.000</b></div>
+    </div>
+    <div class="cells c3">
+      <div><span>Verktyg</span><b id="iTool">T1</b></div>
+      <div><span>Spindel</span><b id="iSpin">AV</b></div>
+      <div><span>Dörr</span><b id="iDoor">STÄNGD</b></div>
+    </div>
+    <div class="cells c2">
+      <div><span>Kylning</span><b id="iCool">AV</b></div>
+      <div><span>Simuleringstakt</span><span class="speeds"><button type="button" data-speed="1">1×</button><button type="button" data-speed="5">5×</button><button type="button" data-speed="20">20×</button></span></div>
+    </div>
+  </section>
+  <div class="scroller" id="scroller">
+    <div class="stage" id="stage">
+      <div class="panel" id="panel">
+
+        <div class="abs strip" id="strip"></div>
+        <span class="slbl" id="l-pon">Power on</span>
+        <button type="button" class="abs sq" id="k-pon" aria-label="Power on"><i class="face g"></i></button>
+        <span class="slbl" id="l-poff">Power off</span>
+        <button type="button" class="abs sq" id="k-poff" aria-label="Power off"><i class="face r"></i></button>
+
+        <span class="slbl" id="l-spl">Spindle load</span>
+        <div class="abs meter" id="meter">
+          <svg id="gauge" viewBox="0 0 200 112" role="img" aria-label="Spindle load meter">
+            <rect x="0" y="0" width="200" height="112" rx="2" fill="#f1f1ec"/>
+            <g id="gticks"></g>
+            <text x="100" y="90" text-anchor="middle" font-family="Barlow,sans-serif" font-size="12" fill="#222">%</text>
+            <g id="needle"><line x1="100" y1="125" x2="100" y2="38" stroke="#c0281f" stroke-width="2.6" stroke-linecap="round"/></g>
+            <rect x="0" y="96" width="200" height="16" fill="#f1f1ec"/>
+            <circle cx="100" cy="104" r="3" fill="#222"/>
+          </svg>
+        </div>
+
+        <span class="slbl" id="l-es">Emergency stop</span>
+        <div class="estopbase" id="estopbase"></div>
+        <button type="button" class="abs estop" id="estop" aria-pressed="false" aria-label="Emergency stop"><span class="cap"></span></button>
+
+        <span class="slbl" id="l-hd">Handle</span>
+        <div class="abs hdir" id="hdir">
+          <span>&#8722;</span>
+          <svg viewBox="0 0 46 18"><path d="M2 12 L16 4 L16 9 L44 9 L44 11 L16 11 L16 16 Z"/></svg>
+          <svg viewBox="0 0 46 18"><path d="M44 12 L30 4 L30 9 L2 9 L2 11 L30 11 L30 16 Z"/></svg>
+          <span>&#43;</span>
+        </div>
+        <div class="abs handle" id="handle" tabindex="0" role="slider" aria-label="Jog handle (handwheel)" aria-valuemin="0" aria-valuemax="360" aria-valuenow="0">
+          <div class="face"></div><div class="grip"></div>
+        </div>
+        <div class="abs hread" id="hread"></div>
+
+        <span class="slbl" id="l-cyc">Cycle start</span>
+        <button type="button" class="abs sq" id="k-cyc" aria-label="Cycle start"><i class="face g"></i></button>
+        <span class="slbl" id="l-hold">Feed hold</span>
+        <button type="button" class="abs sq" id="k-hold" aria-label="Feed hold"><i class="face r"></i></button>
+
+        <div class="abs brand" id="brand">HASS</div>
+        <div class="abs bezel" id="bezel"><pre class="crt off" id="crt" aria-live="off"></pre></div>
+
+        <div class="abs kbframe" id="kbframe"></div>
+        <div class="abs grid" id="g-top"></div>
+        <div class="abs grid" id="g-f" style="--c:4"></div>
+        <div class="abs grid" id="g-fl" style="--c:4"></div>
+        <div class="abs grid jogf" id="g-jog" style="--c:5"></div>
+        <div class="abs bar" id="g-ovrh">OVERRIDES</div>
+        <div class="abs grid" id="g-ovr" style="--c:4"></div>
+        <div class="abs bar" id="g-disph">DISPLAY</div>
+        <div class="abs grid" id="g-disp" style="--c:4"></div>
+        <div class="abs cursor" id="g-cur"></div>
+        <div class="abs grid" id="g-alpha" style="--c:6"></div>
+        <div class="abs grid" id="g-mode" style="--c:5"></div>
+        <div class="abs grid" id="g-num" style="--c:3"></div>
+        <i class="screw" id="screw1"></i><i class="screw" id="screw2"></i>
+
+      </div>
+    </div>
+  </div>
+
+  </div>
+  <div class="hint"><span class="dot"></span><p id="hint"></p></div>
+
+  <section class="progbox" aria-label="Program och ämne">
+    <div class="pcol">
+      <h2>Program</h2>
+      <div class="prow">
+        <label for="exSel">Exempel</label>
+        <select id="exSel"><option value="">Välj ett exempelprogram …</option></select>
+      </div>
+      <textarea id="progText" spellcheck="false" aria-label="G-kodsprogram"></textarea>
+      <div class="prow">
+        <button type="button" class="mbtn pri" id="progLoad">Ladda in i maskinen</button>
+        <button type="button" class="mbtn" id="progGet">Hämta maskinens program</button>
+      </div>
+      <p class="pmsg" id="progMsg">Skriv eller klistra in G-kod (till exempel från Rita) och ladda in den i maskinen.</p>
+    </div>
+    <div class="pcol">
+      <h2>Ämne</h2>
+      <div class="sgrid">
+        <label>Längd X (mm)<input id="stW" type="number" min="10" max="400" value="100"></label>
+        <label>Bredd Y (mm)<input id="stD" type="number" min="10" max="300" value="60"></label>
+        <label>Höjd Z (mm)<input id="stH" type="number" min="5" max="100" value="20"></label>
+        <label>Nollpunkt (G54)<select id="stO"><option value="hörn">Nedre vänstra hörnet</option><option value="mitt">Mitten</option></select></label>
+      </div>
+      <div class="prow"><button type="button" class="mbtn" id="stNew">Nytt ämne</button></div>
+      <p class="pmsg">Ett nytt ämne spänns fast i skruvstycket och G54 sätts på ämnets ovansida. Verktygslängderna är redan inmätta, men du kan mäta om dem under OFFSET.</p>
+      <h2>Verktyg</h2>
+      <p class="pmsg">T-numren är desamma som i Ritas verktygslåda: T1 pinnfräs Ø6, T2 Ø10, T3 Ø15, T4–T15 borr Ø1–Ø12, T16 planfräs Ø50, T19–T25 centrumborr, T29 fasfräs. Radiekompensering (G41/G42) finns inte i simulatorn ännu.</p>
+    </div>
+  </section>
+
+  <div class="tips">
+    <div><b>Ratten</b>Dra i den i en cirkel. Ett varv är 100 klick. Varje klick flyttar vald axel ett steg (0,001 till 1 mm). Kräver HANDLE JOG.</div>
+    <div><b>Offset</b>OFFSET-tangenten visar verktygstabellen. Flytta med markörtangenterna och tryck F1 på en längdkolumn för att mäta in Z.</div>
+    <div><b>Krock</b>Kör du in i ämnet med snabbtransport eller med spindeln avstängd stannar maskinen med ett larm. Tryck RESET och kör upp verktyget.</div>
+    <div><b>MDI</b>Tryck MDI DNC, skriv till exempel G00 G90 G54 X0 Y0 med panelens tangenter, tryck INSERT och sedan CYCLE START.</div>
+  </div>
+</main>
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const INC=[0.001,0.01,0.1,1];
+const INCLBL=['.001','.01','.1','1.'];
+// Maskinens rörelseområde i mm (maskinkoordinater, hemläget är 0)
+const TRAVEL={X:[-762,0],Y:[-406,0],Z:[-508,0]};
+const lim=(a,v)=>clamp(v,TRAVEL[a][0],TRAVEL[a][1]);
+const DEFAULT_PROG=['O80001 (PLANFRASNING)','G21','G90 G80 G40 G0','G91 G28 Z0','T16 M06','G90 G54 G00 X-30. Y15.','S1300 M03','G43 H16 Z25.','G01 Z-0.5 F600.','G01 X130.','G00 Z5.','X-30. Y45.','G01 Z-0.5','G01 X130.','G00 Z25.','M05','G91 G28 Z0','M30'];
+const SETS=[[1,'AUTO POWER OFF TIMER','0'],[2,'POWER OFF AT M30','OFF'],[4,'GRAPHICS RAPID PATH','OFF'],[8,'PROG CONVRS MEMORY LOCK','OFF'],[51,'DOOR HOLD OVERRIDE','OFF'],[52,'G83 RETRACT OVER R PLANE','0.0000']];
+
+const st={
+  pwr:'off',estop:false,homed:false,mode:'MEM',page:'offset',sub:0,
+  inc:2,axis:'Z',htarget:'jog',
+  pos:{X:-150,Y:-80,Z:-115},
+  atool:1,g43:0,row:1,col:3,wrow:0,wcol:0,setcur:0,
+  tl:Array.from({length:16},(_,i)=>i?[0,0,0,0]:null),
+  work:Array.from({length:6},(_,i)=>i?[0,0,0]:[-400,-200,0]),
+  buf:'',mdi:[],spin:0,rpm:0,lastRpm:1200,
+  feed:100,sov:100,rapid:100,
+  running:false,single:false,dry:false,opt:false,bdel:false,cool:false,
+  pc:0,alarms:[],s51:false,msg:'',load:0,prog:DEFAULT_PROG.slice()
+};
+
+const KEYS=new Map();
+function mkKey(parent,k,label,cls,hold){
+  const b=document.createElement('button');
+  b.type='button';b.className='key '+(cls||'');b.dataset.k=k;
+  const parts=label.split('\n');
+  const big=/^[-+]?[\d.]+%?$/.test(parts[0]);
+  b.innerHTML=big?parts.map((p,i)=>i===0?p:'<span class="small">'+p+'</span>').join(''):parts.join('<br>');
+  b.setAttribute('aria-label',label.replace(/\n/g,' '));
+  if(hold)b.dataset.hold='1';
+  parent.appendChild(b);KEYS.set(k,b);return b;
+}
+function fill(sel,list,cls){
+  const el=$(sel);
+  list.forEach(r=>{
+    if(!r){const d=document.createElement('div');d.className='spacer';el.appendChild(d);return;}
+    mkKey(el,r[0],r[1],r[2]||cls||'',r[3]);
+  });
+}
+function sub(parent,title){
+  const s=document.createElement('div');s.className='sec';
+  s.innerHTML='<span class="lbl">'+title+'</span>';
+  const g=document.createElement('div');g.className='grid';g.style.setProperty('--c',4);
+  s.appendChild(g);parent.appendChild(s);return g;
+}
+
+/* ---------- keyboard, placed at the photo's coordinates ---------- */
+const $$=id=>document.getElementById(id);
+// keyboard-crop coordinates (kb px) -> panel px ; left/screen use original photo px * 2.4
+function kb(id,x1,y1,x2,y2){const e=$$(id);e.style.left=(0.6*x1+516)+'px';e.style.top=(0.6*y1+732)+'px';e.style.width=(0.6*(x2-x1))+'px';e.style.height=(0.6*(y2-y1))+'px';}
+function ph(id,x1,y1,x2,y2){const e=$$(id);e.style.left=(x1*2.4)+'px';e.style.top=(y1*2.4)+'px';e.style.width=((x2-x1)*2.4)+'px';e.style.height=((y2-y1)*2.4)+'px';}
+function lab(id,cx,cy){const e=$$(id);e.style.left=(cx*2.4)+'px';e.style.top=(cy*2.4)+'px';}
+function addAt(parent,k,label,cls,hold){return mkKey(parent,k,label,cls,hold);}
+
+/* left strip, estop, handle */
+ph('strip',14,23,212,530);
+lab('l-pon',69,31);lab('l-poff',146,32);
+ph('k-pon',48,53,90,85);ph('k-poff',127,53,167,85);
+lab('l-spl',112,118);ph('meter',62,131,162,195);
+lab('l-es',115,223);
+ph('estopbase',78,236,157,298);
+ph('estop',78,236,157,298);
+lab('l-hd',118,324);
+ph('hdir',72,331,170,346);
+ph('handle',70,346,170,446);
+lab('l-cyc',83,457);lab('l-hold',158,457);
+ph('k-cyc',63,474,105,510);ph('k-hold',138,474,178,510);
+ph('hread',20,514,206,528);
+ph('brand',400,22,590,50);
+ph('bezel',238,52,598,300);
+$$('crt').parentNode.style.display='block';
+(function(){const b=$$('bezel');b.style.padding='14px';})();
+$$('screw1').style.left=(445*0.6+516-13)+'px';$$('screw1').style.top=(925*0.6+732-13)+'px';
+$$('screw2').style.left=(1065*0.6+516-13)+'px';$$('screw2').style.top=(915*0.6+732-13)+'px';
+$$('crt').style.height='100%';
+
+/* keyboard frame and blocks */
+kb('kbframe',28,22,1597,885);
+kb('g-top',42,48,510,122);
+const top=$$('g-top');top.style.gridTemplateColumns='223fr 105fr 103fr';top.style.gap='';
+(function(){top.style.gridTemplateColumns='223fr 105fr 103fr';})();
+addAt(top,'reset','RESET','red');
+addAt(top,'pwrup','POWER UP/\nRESTART','tealk');
+addAt(top,'tcr','TOOL CHANGER\nRESTORE','tealk');
+top.style.gap='24px 10px';
+
+kb('g-f',45,145,510,205);
+[['f1','F1'],['f2','F2'],['f3','F3'],['f4','F4']].forEach(r=>addAt($$('g-f'),r[0],r[1],'fbig'));
+kb('g-fl',45,208,510,270);
+[['f1','TOOL\nOFFSET\nMEASR'],['f2','NEXT\nTOOL'],['f3','TOOL\nRELEASE'],['f4','PART\nZERO\nSET']].forEach(r=>{
+  const b=document.createElement('button');b.type='button';b.className='key';b.dataset.k=r[0];
+  b.innerHTML=r[1].split('\n').map(x=>'<span class="small">'+x+'</span>').join('');b.setAttribute('aria-label',r[1].replace(/\n/g,' '));
+  $$('g-fl').appendChild(b);
+});
+
+/* jog block (teal) */
+kb('g-jog',48,290,513,520);
+const jg=$$('g-jog');jg.style.gap='4px 4px';jg.style.padding='4px 4px';
+function chip(k,l){const b=addAt(jg,k,l,'chip');return b;}
+function mkJog(k,svg,hold,label){
+  const b=document.createElement('button');b.type='button';b.className='key jog';b.dataset.k=k;if(hold)b.dataset.hold='1';
+  b.setAttribute('aria-label',label);
+  b.innerHTML='<svg viewBox="0 0 60 40" preserveAspectRatio="xMidYMid meet">'+svg+'</svg>';
+  jg.appendChild(b);KEYS.set(k,b);return b;
+}
+const T=(x,y,t,a)=>'<text x="'+x+'" y="'+y+'" text-anchor="'+(a||'middle')+'" font-family="Barlow Condensed,sans-serif" font-size="12" font-weight="700" fill="#2f3a3c">'+t+'</text>';
+chip('chipf','CHIP\nFWD');
+mkJog('pba','<polygon points="8,5 30,5 8,27"/>'+T(14,33,'+B','start')+T(47,34,'+A'),0,'+B +A');
+mkJog('+Z','<polygon points="30,5 46,20 14,20"/>'+T(30,34,'+Z'),1,'plus Z');
+mkJog('-Y','<polygon points="52,5 52,27 30,5"/>'+T(22,30,'-Y'),1,'minus Y');
+chip('clup','CLNT\nUP');
+chip('chips','CHIP\nSTOP');
+mkJog('+X','<polygon points="6,20 26,8 26,32"/>'+T(42,25,'+X'),1,'plus X');
+(function(){const b=document.createElement('button');b.type='button';b.className='key jog';b.dataset.k='jlock';b.setAttribute('aria-label','Jog lock');
+  b.innerHTML='<span>JOG<br>LOCK</span>';jg.appendChild(b);KEYS.set('jlock',b);})();
+mkJog('-X','<polygon points="54,20 34,8 34,32"/>'+T(16,25,'-X'),1,'minus X');
+chip('cldn','CLNT\nDOWN');
+chip('chipr','CHIP\nREV');
+mkJog('+Y','<polygon points="6,35 6,13 28,35"/>'+T(40,17,'+Y'),1,'plus Y');
+mkJog('-Z','<polygon points="30,35 46,20 14,20"/>'+T(30,13,'-Z'),1,'minus Z');
+mkJog('nab','<polygon points="54,35 54,13 32,35"/>'+T(16,15,'-A','end')+T(44,10,'-B'),0,'-A -B');
+chip('auxc','AUX\nCLNT');
+
+/* overrides */
+kb('g-ovrh',50,533,516,557);
+kb('g-ovr',52,568,518,848);
+const og=$$('g-ovr');og.style.gap='6px 4px';
+[['f-','-10\nFEED RATE'],['f100','100%\nFEED RATE'],['f+','+10\nFEED RATE'],['hfeed','HANDLE\nCONTROL\nFEED RATE'],
+ ['s-','-10\nSPINDLE'],['s100','100%\nSPINDLE'],['s+','+10\nSPINDLE'],['hspin','HANDLE\nCONTROL\nSPINDLE'],
+ ['cw','CW'],['stop','STOP'],['ccw','CCW'],['spnd','SPINDLE'],
+ ['r5','5%\nRAPID'],['r25','25%\nRAPID'],['r50','50%\nRAPID'],['r100','100%\nRAPID']].forEach(r=>addAt(og,r[0],r[1],'dark'));
+
+/* display keys + cursor */
+kb('g-disph',538,40,982,66);
+kb('g-disp',538,72,982,216);
+$$('g-disp').style.gap='6px 8px';
+[['prgm','PRGM\nCONVRS'],['posit','POSIT'],['offset','OFSET'],['curnt','CURNT\nCOMDS'],
+ ['alarm','ALARM\nMESGS'],['param','PARAM\nDGNOS'],['setng','SETNG\nGRAPH'],['help','HELP\nCALC']].forEach(r=>addAt($$('g-disp'),r[0],r[1],'dark'));
+
+kb('g-cur',540,235,984,456);
+const cur=$$('g-cur');cur.style.padding='6px 54px 6px 54px';cur.style.gap='5px 8px';
+const AR={up:'<svg viewBox="0 0 40 30"><polygon points="20,4 36,24 4,24"/></svg>',down:'<svg viewBox="0 0 40 30"><polygon points="20,26 36,6 4,6"/></svg>',
+          left:'<svg viewBox="0 0 40 30"><polygon points="6,15 26,3 26,27"/></svg>',right:'<svg viewBox="0 0 40 30"><polygon points="34,15 14,3 14,27"/></svg>'};
+function ck(k,html,cls,label){const b=document.createElement('button');b.type='button';b.className='key '+cls;b.dataset.k=k;b.innerHTML=html;b.setAttribute('aria-label',label);cur.appendChild(b);KEYS.set(k,b);}
+ck('home','HOME','chip','Home');ck('up',AR.up,'arr','Up');ck('pgup','PAGE<br>UP','chip','Page up');
+ck('left',AR.left,'arr','Left');
+(function(){const m=document.createElement('div');m.className='mid';m.textContent='CURSOR';cur.appendChild(m);})();
+ck('right',AR.right,'arr','Right');
+ck('end','END','chip','End');ck('down',AR.down,'arr','Down');ck('pgdn','PAGE<br>DOWN','chip','Page down');
+
+/* alpha */
+kb('g-alpha',543,483,1206,838);
+const ag=$$('g-alpha');ag.style.gap='8px 8px';
+const rows=[['SHIFT','A','B','C','D','E'],['F','G','H','I','J','K'],['L','M','N','O','P','Q'],['R','S','T','U','V','W'],['X','Y','Z','EOB','(',')']];
+rows.flat().forEach(c=>{
+  if(c==='SHIFT')addAt(ag,'shift','SHIFT','');
+  else if(c==='EOB')addAt(ag,'eob','EOB','');
+  else addAt(ag,'c:'+c,c,'letter');
+});
+ag.querySelectorAll('.key').forEach(b=>{if(b.dataset.k==='shift'||b.dataset.k==='eob'){b.style.opacity='.8';b.style.fontSize='11px';}});
+
+/* mode column + keys */
+kb('g-mode',1012,38,1584,452);
+const mg=$$('g-mode');mg.style.gap='6px 8px';mg.style.gridTemplateColumns='1fr 1.02fr 1.02fr 1.02fr 1.02fr';
+const modeRows=[
+ [['edit','EDIT','m'],['insert','INSERT'],['alter','ALTER'],['delete','DELETE'],['undo','UNDO']],
+ [['mem','MEM','m'],['sblk','SINGLE\nBLOCK'],['dry','DRY\nRUN'],['opt','OPT\nSTOP'],['bdel','BLOCK\nDELETE']],
+ [['mdi','MDI\nDNC','m'],['cool','COOLNT'],['orient','ORIENT\nSPINDLE'],['atcf','ATC\nFWD'],['atcr','ATC\nREV']],
+ [['hjog','HANDLE\nJOG','m'],['i0','.0001\n.1'],['i1','.001\n1.'],['i2','.01\n10.'],['i3','.1\n100.']],
+ [['zret','ZERO\nRET','m'],['auto','AUTO\nALL\nAXES'],['origin','ORIGIN'],['zsa','ZERO\nSINGLE\nAXIS'],['home28','HOME\nG28']],
+ [['list','LIST\nPROG','m'],['sel','SELECT\nPROG'],['send','SEND\nRS232'],['recv','RECV\nRS232'],['erase','ERASE\nPROG']]
+];
+modeRows.flat().forEach(r=>{const b=addAt(mg,r[0],r[1],r[2]==='m'?'mode1':'');});
+
+/* numeric */
+kb('g-num',1245,473,1584,820);
+const ng=$$('g-num');ng.style.gap='8px 12px';
+['7','8','9','4','5','6','1','2','3','-','0','.'].forEach(c=>addAt(ng,'c:'+c,c,'dark num'));
+addAt(ng,'cancel','CANCEL','dark');addAt(ng,'space','SPACE','dark');addAt(ng,'enter','WRITE\nENTER','dark');
+
+/* ---------- helpers ---------- */
+let msgTimer=0,runTimer=0,mv=null,audio=null,lastTick=0;
+function say(t,ms){st.msg=t;clearTimeout(msgTimer);msgTimer=setTimeout(()=>{st.msg='';render();},ms||2600);render();}
+function ready(){return st.pwr==='ready'&&!st.estop;}
+function tick(){
+  const now=performance.now();if(now-lastTick<28)return;lastTick=now;
+  try{
+    audio=audio||new (window.AudioContext||window.webkitAudioContext)();
+    const o=audio.createOscillator(),gn=audio.createGain();
+    o.frequency.value=1700;o.type='square';gn.gain.value=0.02;
+    gn.gain.exponentialRampToValueAtTime(0.0001,audio.currentTime+0.02);
+    o.connect(gn);gn.connect(audio.destination);o.start();o.stop(audio.currentTime+0.02);
+  }catch(e){}
+}
+/* ---------- verktyg ----------
+   Samma T-nummer som verktygslådan i G-kodsvisualiseraren (Rita), så att
+   program skrivna där går att köra här. L = verktygets längd från spindelnosen
+   (hållare 75 mm + skärlängd h). */
+const TOOL_SRC=[
+ [1,'PINNFRAS D6',6,50,'end'],[2,'PINNFRAS D10',10,55,'end'],[3,'PINNFRAS D15 HM',15,45,'end'],
+ [4,'BORR D1',1,34,'drill'],[5,'BORR D2',2,49,'drill'],[6,'BORR D3',3,61,'drill'],[7,'BORR D4',4,75,'drill'],
+ [8,'BORR D5',5,60,'drill'],[9,'BORR D6',6,93,'drill'],[10,'BORR D7',7,109,'drill'],[11,'BORR D8',8,117,'drill'],
+ [12,'BORR D9',9,125,'drill'],[13,'BORR D10',10,133,'drill'],[14,'BORR D11',11,142,'drill'],[15,'BORR D12',12,151,'drill'],
+ [16,'PLANFRAS D50 HM',50,45,'face'],[17,'GANGTAPP M6',6,50,'tap'],[18,'GANGFRAS M10',8,40,'end'],
+ [19,'CENTRUMBORR D2',2,40,'spot'],[20,'CENTRUMBORR D3',3,40,'spot'],[21,'CENTRUMBORR D4',4,45,'spot'],
+ [22,'CENTRUMBORR D5',5,50,'spot'],[23,'CENTRUMBORR D6',6,50,'spot'],[24,'CENTRUMBORR D7',7,55,'spot'],
+ [25,'CENTRUMBORR D8',8,60,'spot'],[26,'HORNRADIEFRAS R1 D8',8,50,'end'],[27,'RADIEFRAS R2 D10',10,50,'end'],
+ [28,'HORNRADIEFRAS R2 D10',10,50,'end'],[29,'FASFRAS 45 D12',12,50,'chamfer'],[30,'HORNRADIEFRAS R3 D12',12,50,'end'],
+ [31,'HORNRADIEFRAS R4 D14',14,55,'end'],[32,'HORNRADIEFRAS R5 D16',16,55,'end']];
+const NT=32;
+const TOOLS=[null];
+TOOL_SRC.forEach(([t,name,d,h,type])=>{TOOLS[t]={t,name,d,h,type,L:(type==='face'?60:75)+h};});
+const ZREF=-400;            // ämnets ovansida när verktygslängderna mättes in
+st.tl=Array.from({length:NT+1},(_,i)=>i?[+(ZREF+TOOLS[i].L).toFixed(3),0,TOOLS[i].d/2,0]:null);
+st.tl[1][1]=-0.02;
+const tipZ=()=>st.pos.Z-(TOOLS[st.atool]?TOOLS[st.atool].L:0);
+
+/* ---------- ämnet: höjdkarta i maskinkoordinater ---------- */
+const STK={W:100,D:60,H:20,x0:-430,y0:-230,zb:-420,nx:0,ny:0,cellX:1,cellY:1,h:null,top:0,ver:0,rebuild:0,origin:'hörn'};
+function newStock(W,D,H,origin){
+  W=clamp(+W||100,10,400);D=clamp(+D||60,10,300);H=clamp(+H||20,5,100);
+  const cell=Math.max(0.5,Math.max(W,D)/260);
+  Object.assign(STK,{W,D,H,origin:origin==='mitt'?'mitt':'hörn',nx:Math.max(2,Math.round(W/cell)),ny:Math.max(2,Math.round(D/cell))});
+  STK.cellX=W/STK.nx;STK.cellY=D/STK.ny;STK.top=STK.zb+H;
+  STK.h=new Float32Array(STK.nx*STK.ny).fill(STK.top);STK.ver++;STK.rebuild++;
+  st.work[0]=[STK.origin==='mitt'?STK.x0+W/2:STK.x0,STK.origin==='mitt'?STK.y0+D/2:STK.y0,+(STK.top-ZREF).toFixed(3)];
+}
+newStock(100,60,20,'hörn');
+const CONE={drill:0.6009,spot:1,chamfer:1};   // höjd per mm radie (spetsvinkel 118° resp. 90°)
+// Verktyget med spetsen i (x,y,zt): hur djupt in i materialet går det, och (om apply) ta bort materialet.
+function toolCut(x,y,zt,tool,apply){
+  const r=tool.d/2;
+  if(zt>=STK.top-1e-6)return {vol:0,pen:0};
+  const cx=STK.cellX,cy=STK.cellY;
+  const i0=Math.max(0,Math.floor((x-r-STK.x0)/cx)),i1=Math.min(STK.nx-1,Math.floor((x+r-STK.x0)/cx));
+  const j0=Math.max(0,Math.floor((y-r-STK.y0)/cy)),j1=Math.min(STK.ny-1,Math.floor((y+r-STK.y0)/cy));
+  if(i0>i1||j0>j1)return {vol:0,pen:0};
+  const k=CONE[tool.type]||0;let vol=0,pen=0;
+  for(let j=j0;j<=j1;j++){
+    const py=STK.y0+(j+0.5)*cy-y;
+    for(let i=i0;i<=i1;i++){
+      const px=STK.x0+(i+0.5)*cx-x,rho=Math.hypot(px,py);
+      if(rho>r)continue;
+      const n=j*STK.nx+i,hh=STK.h[n];
+      if(hh<=STK.zb)continue;                       // genomborrat: inget material kvar
+      const z=Math.max(zt+k*rho,STK.zb),d=hh-z;      // materialet finns mellan zb och hh
+      if(d>0){if(d>pen)pen=d;if(apply){vol+=d*cx*cy;STK.h[n]=z>STK.zb?z:STK.zb-0.01;}}
+    }
+  }
+  if(apply&&vol>0)STK.ver++;
+  return {vol,pen};
+}
+
+/* ---------- rörelser och G-kod ---------- */
+const RAPID=25000;           // snabbtransport, mm/min
+let simSpeed=1;              // simuleringstakt (1 = verklig tid)
+const run={ops:[],op:null,kind:null,src:null,pc:0,blockEnded:false};
+let cutRate=0;               // mm³/s, för spindelbelastningen
+st.m={motion:0,abs:true,work:0,F:0,cyc:0,ret:98,R:null,Z:null,Q:null,P:0,initZ:null};
+st.hold=false;st.door=false;st.crash=false;
+const busy=()=>!!(run.op||run.ops.length);
+function alarmStop(msg){
+  if(run.kind==='MDI')st.mdi=[];
+  run.ops=[];run.op=null;st.running=false;st.hold=false;st.spin=0;st.crash=true;
+  st.alarms=[msg];say(msg,4000);
+}
+function inTravel(p){return ['X','Y','Z'].every(a=>p[a]>=TRAVEL[a][0]-1e-6&&p[a]<=TRAVEL[a][1]+1e-6);}
+function opLin(from,to,rapid,F){
+  const len=Math.hypot(to.X-from.X,to.Y-from.Y,to.Z-from.Z);
+  return {k:'lin',from:{...from},to:{...to},rapid,F,len,s:0};
+}
+// Flytta verktyget till p (ett delsteg). Returnerar false om det krockar.
+function placeTool(p,cutting){
+  const tool=TOOLS[st.atool];
+  const zt=p.Z-(tool?tool.L:0);
+  if(tool&&zt<STK.top){
+    const chk=toolCut(p.X,p.Y,zt,tool,false);
+    if(chk.pen>0.02){
+      if(!cutting){alarmStop(st.spin?'TOOL CRASH - RAPID INTO MATERIAL':'TOOL CRASH - SPINDLE NOT RUNNING');return false;}
+      if(!st.spin){alarmStop('TOOL CRASH - SPINDLE NOT RUNNING');return false;}
+      if(STK.top-zt>tool.h+0.5){alarmStop('TOOL HOLDER CRASH - TOOL TOO SHORT');return false;}
+      cutRate+=toolCut(p.X,p.Y,zt,tool,true).vol;
+    }
+  }
+  st.pos.X=p.X;st.pos.Y=p.Y;st.pos.Z=p.Z;
+  return true;
+}
+function rateOf(op){return op.rapid?RAPID*st.rapid/100:(st.dry?5000:op.F)*st.feed/100;}
+const STEP=0.4;
+function pointAt(op,s){
+  if(op.k==='lin'){const f=op.len?s/op.len:1;return {X:op.from.X+(op.to.X-op.from.X)*f,Y:op.from.Y+(op.to.Y-op.from.Y)*f,Z:op.from.Z+(op.to.Z-op.from.Z)*f};}
+  const f=op.len?s/op.len:1,a=op.a0+op.da*f;
+  return {X:op.c.X+op.r*Math.cos(a),Y:op.c.Y+op.r*Math.sin(a),Z:op.from.Z+(op.to.Z-op.from.Z)*f};
+}
+// Kör ett pågående moment i högst 'budget' ms maskintid. Returnerar kvarvarande tid.
+function advance(op,budget){
+  if(op.k==='lin'||op.k==='arc'){
+    const v=Math.max(rateOf(op),1)/60000;      // mm per ms
+    if(v<=1e-9)return 0;
+    const target=Math.min(op.len,op.s+budget*v);
+    const used=(target-op.s)/v;
+    while(op.s<target-1e-9){
+      const ns=Math.min(target,op.s+STEP);
+      if(!placeTool(pointAt(op,ns),!op.rapid))return 0;
+      op.s=ns;
+    }
+    if(op.s>=op.len-1e-9){placeTool(op.to,!op.rapid)&&(op.done=true);return Math.max(0,budget-used);}
+    return 0;
+  }
+  if(op.k==='wait'){op.t-=budget;if(op.t>0)return 0;op.done=true;if(op.after)op.after();return -op.t;}
+  op.done=true;return budget;
+}
+function startOp(op){
+  switch(op.k){
+    case 'spin':
+      if(op.dir&&st.door&&!st.s51){alarmStop('DOOR OPEN - SPINDLE CANNOT START');return null;}
+      st.spin=op.dir;if(op.dir&&op.rpm)st.rpm=op.rpm;return null;
+    case 'cool':st.cool=op.on;return null;
+    case 'call':op.fn();return null;
+    case 'tool':return {k:'wait',t:1800,tool:true,after:()=>{st.atool=op.t;st.row=op.t;}};
+    case 'stop':st.running=false;say(op.msg||'PROGRAM STOP',3000);return null;
+    case 'end':st.running=false;st.spin=0;st.cool=false;st.pc=0;run.pc=0;say('PROGRAM COMPLETE');return null;
+  }
+  return op;
+}
+function nextBlock(){
+  if(run.kind==='MAN'||!st.running)return false;
+  if(run.blockEnded&&st.single){st.running=false;run.blockEnded=false;if(run.kind==='MEM')st.pc=Math.min(run.pc,run.src.length-1);return false;}
+  if(run.pc>=run.src.length){
+    st.running=false;
+    if(run.kind==='MDI'){st.mdi=[];say('MDI DONE');}else{st.pc=0;run.pc=0;say('END OF PROGRAM - NO M30');}
+    return false;
+  }
+  const line=run.src[run.pc];
+  if(run.kind==='MEM')st.pc=run.pc;
+  run.pc++;
+  const ok=compileBlock(line);
+  run.blockEnded=true;
+  return ok;
+}
+function stepRun(dt){
+  if(st.hold||!(ready()||st.pwr==='homing'))return;
+  let budget=dt*simSpeed,guard=0;
+  while(budget>0&&guard++<400){
+    if(!run.op){
+      if(!run.ops.length){if(!nextBlock())break;continue;}
+      run.op=startOp(run.ops.shift());
+      if(!run.op)continue;
+    }
+    const left=advance(run.op,budget);
+    if(st.crash)return;
+    if(run.op&&run.op.done)run.op=null;
+    budget=run.op?0:left;
+  }
+}
+function manualMoves(list,msg){
+  run.kind='MAN';run.ops=[];run.op=null;
+  let p={...st.pos};
+  list.forEach(t=>{const to={...p,...t};run.ops.push(opLin(p,to,true,0));p=to;});
+  if(msg)say(msg);
+}
+function goHome(then){
+  const ops=[];if(st.pos.Z<0)ops.push({Z:0});ops.push({X:0,Y:0});
+  manualMoves(ops);
+  if(then)run.ops.push({k:'call',fn:then});
+}
+
+/* G-kodstolk: en rad i taget blir en lista med moment. */
+function parseWords(line){
+  const out=[];const re=/([A-Z])\s*([+-]?(?:\d+\.?\d*|\.\d+))?/g;let m;
+  while((m=re.exec(line))){out.push([m[1],m[2]===undefined?null:parseFloat(m[2])]);}
+  return out;
+}
+function workPos(p){
+  const w=st.work[st.m.work],L=st.g43?st.tl[st.g43][0]+st.tl[st.g43][1]:0;
+  return {X:p.X-w[0],Y:p.Y-w[1],Z:p.Z-w[2]-L};
+}
+function toMachine(axis,v){
+  const w=st.work[st.m.work],L=st.g43?st.tl[st.g43][0]+st.tl[st.g43][1]:0;
+  return axis==='X'?w[0]+v:axis==='Y'?w[1]+v:w[2]+L+v;
+}
+function compileBlock(raw){
+  let line=String(raw).toUpperCase().replace(/\(.*?\)/g,'').replace(/;.*$/,'').trim();
+  if(!line||line==='%')return true;
+  if(line[0]==='/'){if(st.bdel)return true;line=line.slice(1);}
+  if(/^O\d+/.test(line))line=line.replace(/^O\d+/,'').trim();
+  if(!line)return true;
+  if(/^N\d+/.test(line))line=line.replace(/^N\d+/,'').trim();
+  const W=parseWords(line);
+  if(W.some(w=>w[1]===null)){alarmStop('INVALID CODE: '+line.slice(0,24));return false;}
+  const G=W.filter(w=>w[0]==='G').map(w=>w[1]),M=W.filter(w=>w[0]==='M').map(w=>w[1]);
+  const val=l=>{const w=W.find(x=>x[0]===l);return w?w[1]:undefined;};
+  const m=st.m,ops=[];
+  let g53=false,g28=false,g4=false,cycleNow=false;
+  for(const g of G){
+    switch(g){
+      case 0:case 1:case 2:case 3:m.motion=g;m.cyc=0;break;
+      case 4:g4=true;break;
+      case 17:break;
+      case 20:alarmStop('INCH MODE (G20) NOT SUPPORTED - USE G21');return false;
+      case 21:break;
+      case 28:g28=true;break;
+      case 40:break;
+      case 41:case 42:alarmStop('G41/G42 CUTTER COMP NOT SUPPORTED IN THIS SIMULATOR');return false;
+      case 43:{const h=val('H');st.g43=clamp(h===undefined?st.atool:Math.round(h),1,NT);break;}
+      case 49:st.g43=0;break;
+      case 53:g53=true;break;
+      case 54:case 55:case 56:case 57:case 58:case 59:m.work=g-54;break;
+      case 73:case 81:case 82:case 83:case 85:m.cyc=g;m.initZ=st.pos.Z;cycleNow=true;break;
+      case 80:m.cyc=0;break;
+      case 90:m.abs=true;break;case 91:m.abs=false;break;
+      case 94:break;
+      case 98:m.ret=98;break;case 99:m.ret=99;break;
+      default:alarmStop('INVALID G CODE G'+g);return false;
+    }
+  }
+  if(val('F')!==undefined)m.F=val('F');
+  const S=val('S');let rpm=null;
+  if(S!==undefined){rpm=Math.round(S);if(rpm>8100){rpm=8100;say('S LIMITED TO 8100 RPM');}st.lastRpm=rpm||st.lastRpm;if(st.spin&&!M.includes(3)&&!M.includes(4))ops.push({k:'spin',dir:st.spin,rpm});}
+  const T=val('T');
+  for(const mc of M){if(![0,1,2,3,4,5,6,8,9,30].includes(mc)){alarmStop('INVALID M CODE M'+mc);return false;}}
+  // M före rörelsen
+  if(M.includes(6)){
+    const t=T===undefined?st.atool:Math.round(T);
+    if(t<1||t>NT){alarmStop('INVALID TOOL NUMBER T'+t);return false;}
+    ops.push({k:'spin',dir:0});
+    if(st.atool!==t){ops.push({k:'zhome'});ops.push({k:'tool',t});}
+  }
+  if(M.includes(3)||M.includes(4)){
+    const r=rpm||st.rpm||0;
+    if(!r){alarmStop('NO SPINDLE SPEED (S) PROGRAMMED');return false;}
+    ops.push({k:'spin',dir:M.includes(3)?1:-1,rpm:r});
+  }
+  if(M.includes(8))ops.push({k:'cool',on:true});
+  if(rpm&&!M.includes(3)&&!M.includes(4)&&!st.spin)st.rpm=rpm;
+  // rörelser
+  const has=a=>W.some(w=>w[0]===a);
+  const p0={...st.pos};
+  if(g4){const P=val('P')||0;ops.push({k:'wait',t:P<30&&String(P).includes('.')?P*1000:P});}
+  else if(g28){
+    ['Z','X','Y'].forEach(a=>{if(has(a))ops.push({k:'home',axis:a});});
+  }else if(g53){
+    const to={...p0};['X','Y','Z'].forEach(a=>{if(has(a))to[a]=val(a);});
+    ops.push({k:'move',to,rapid:true});
+  }else if(m.cyc&&(has('X')||has('Y')||cycleNow)){
+    if(has('Z'))m.Z=val('Z');if(has('R'))m.R=val('R');if(has('Q'))m.Q=val('Q');if(has('P'))m.P=val('P');
+    if(!m.abs){alarmStop('G91 CANNED CYCLES NOT SUPPORTED - USE G90');return false;}
+    if(m.Z===null||m.R===null){alarmStop('CANNED CYCLE NEEDS Z AND R');return false;}
+    if(!m.F){alarmStop('NO FEED RATE (F) PROGRAMMED');return false;}
+    if((m.cyc===83||m.cyc===73)&&!(m.Q>0)){alarmStop('G'+m.cyc+' NEEDS A Q VALUE');return false;}
+    const wp=workPos(p0);
+    const x=has('X')?toMachine('X',val('X')):p0.X,y=has('Y')?toMachine('Y',val('Y')):p0.Y;
+    const Rm=toMachine('Z',m.R),Zm=toMachine('Z',m.Z),ret=m.ret===98?m.initZ:Rm;
+    if(Zm>Rm){alarmStop('CANNED CYCLE: Z ABOVE R PLANE');return false;}
+    if(p0.Z<Rm)ops.push({k:'move',to:{Z:Rm},rapid:true});
+    ops.push({k:'move',to:{X:x,Y:y},rapid:true});
+    ops.push({k:'move',to:{Z:Rm},rapid:true});
+    if(m.cyc===83||m.cyc===73){
+      let last=Rm;
+      while(last>Zm+1e-9){
+        const nxt=Math.max(Zm,last-m.Q);
+        if(last!==Rm&&m.cyc===83)ops.push({k:'move',to:{Z:last+1},rapid:true});
+        ops.push({k:'move',to:{Z:nxt},rapid:false,F:m.F});
+        if(nxt>Zm+1e-9)ops.push({k:'move',to:{Z:m.cyc===83?Rm:nxt+1},rapid:true});
+        last=nxt;
+      }
+    }else ops.push({k:'move',to:{Z:Zm},rapid:false,F:m.F});
+    if(m.cyc===82&&m.P)ops.push({k:'wait',t:m.P});
+    if(m.cyc===85)ops.push({k:'move',to:{Z:Rm},rapid:false,F:m.F});
+    ops.push({k:'move',to:{Z:Math.max(ret,Rm)},rapid:true});
+  }else if(has('X')||has('Y')||has('Z')){
+    const wp=workPos(p0),to={...p0};
+    ['X','Y','Z'].forEach(a=>{if(has(a)){const v=val(a);to[a]=toMachine(a,m.abs?v:wp[a]+v);}});
+    if(m.motion===0)ops.push({k:'move',to,rapid:true});
+    else{
+      if(!m.F){alarmStop('NO FEED RATE (F) PROGRAMMED');return false;}
+      if(m.motion===1)ops.push({k:'move',to,rapid:false,F:m.F});
+      else{
+        const cw=m.motion===2;let c;
+        const dx=to.X-p0.X,dy=to.Y-p0.Y,q=Math.hypot(dx,dy);
+        if(has('R')){
+          const R=val('R'),r=Math.abs(R);
+          if(q<1e-6||q>2*r+1e-4){alarmStop('INVALID ARC - CHECK R');return false;}
+          const h=Math.sqrt(Math.max(0,r*r-q*q/4)),mx=(p0.X+to.X)/2,my=(p0.Y+to.Y)/2;
+          const left={X:mx-dy/q*h,Y:my+dx/q*h},right={X:mx+dy/q*h,Y:my-dx/q*h};
+          // kort båge medurs: centrum till höger om kordan; negativt R ger lång båge
+          c=(cw!==(R<0))?right:left;
+        }else{
+          const I=val('I')||0,J=val('J')||0;
+          if(!has('I')&&!has('J')){alarmStop('ARC NEEDS I/J OR R');return false;}
+          c={X:p0.X+I,Y:p0.Y+J};
+        }
+        const r0=Math.hypot(p0.X-c.X,p0.Y-c.Y),r1=Math.hypot(to.X-c.X,to.Y-c.Y);
+        if(Math.abs(r0-r1)>0.05||r0<1e-6){alarmStop('INVALID ARC - END POINT NOT ON CIRCLE');return false;}
+        ops.push({k:'arc',to,c,r:r0,cw,F:m.F});
+      }
+    }
+  }
+  // M efter rörelsen
+  if(M.includes(5))ops.push({k:'spin',dir:0});
+  if(M.includes(9))ops.push({k:'cool',on:false});
+  if(M.includes(0))ops.push({k:'stop',msg:'PROGRAM STOP M00 - PRESS CYCLE START'});
+  if(M.includes(1)&&st.opt)ops.push({k:'stop',msg:'OPTIONAL STOP M01 - PRESS CYCLE START'});
+  if(M.includes(30)||M.includes(2))ops.push({k:'end'});
+  if(T!==undefined&&!M.includes(6)&&(T<0||T>NT)){alarmStop('INVALID TOOL NUMBER T'+T);return false;}
+  // gör om till körbara moment, med positionen räknad framåt
+  let p={...p0};
+  for(const o of ops){
+    if(o.k==='move'){
+      const to={...p,...o.to};
+      if(!inTravel(to)){alarmStop('OVERTRAVEL RANGE');return false;}
+      run.ops.push(opLin(p,to,o.rapid,o.F));p=to;
+    }else if(o.k==='zhome'||o.k==='home'){
+      const to={...p,[o.axis||'Z']:0};run.ops.push(opLin(p,to,true,0));p=to;
+    }else if(o.k==='arc'){
+      if(!inTravel(o.to)){alarmStop('OVERTRAVEL RANGE');return false;}
+      let a0=Math.atan2(p.Y-o.c.Y,p.X-o.c.X),a1=Math.atan2(o.to.Y-o.c.Y,o.to.X-o.c.X),da=a1-a0;
+      if(o.cw){while(da>=-1e-9)da-=2*Math.PI;}else{while(da<=1e-9)da+=2*Math.PI;}
+      const full=Math.hypot(o.to.X-p.X,o.to.Y-p.Y)<1e-6;
+      if(!full&&Math.abs(da)>2*Math.PI-1e-6)da=0;
+      const len=Math.hypot(Math.abs(da)*o.r,o.to.Z-p.Z);
+      run.ops.push({k:'arc',from:{...p},to:{...o.to},c:o.c,r:o.r,a0,da,rapid:false,F:o.F,len,s:0});p={...o.to};
+    }else run.ops.push(o);
+  }
+  return true;
+}
+function startProgram(kind,src,from){
+  run.kind=kind;run.src=src;run.pc=from||0;run.ops=[];run.op=null;run.blockEnded=false;
+  st.running=true;st.hold=false;
+}
+
+function wpos(){return workPos(st.pos);}
+
+/* ---------- power sequence ---------- */
+function powerOn(){
+  if(st.pwr!=='off')return;
+  st.pwr='boot';render();
+  setTimeout(()=>{
+    if(st.pwr!=='boot')return;
+    st.pwr='servo';st.alarms=st.estop?['EMERGENCY STOP','102 SERVOS OFF']:['102 SERVOS OFF'];render();
+  },1600);
+}
+function powerOff(){
+  clearTimeout(runTimer);run.ops=[];run.op=null;run.kind=null;
+  Object.assign(st,{pwr:'off',homed:false,running:false,hold:false,crash:false,spin:0,rpm:0,cool:false,alarms:[],buf:'',mdi:[],pc:0,g43:0,msg:''});
+  st.pos={X:-150,Y:-80,Z:-115};render();
+}
+function reset(){
+  if(st.pwr==='off'||st.pwr==='boot')return;
+  clearTimeout(runTimer);st.running=false;st.pc=0;st.buf='';
+  run.ops=[];run.op=null;run.kind=null;st.hold=false;st.spin=0;st.spinMem=0;st.cool=false;st.crash=false;st.mdi=[];
+  if(st.estop){say('RELEASE E-STOP FIRST');return;}
+  if(st.pwr==='servo'){st.alarms=[];st.pwr='unhomed';}
+  else st.alarms=[];
+  render();
+}
+function homeMachine(){
+  if(st.pwr!=='unhomed'){if(st.pwr==='ready')say('MACHINE ALREADY HOMED');return;}
+  st.pwr='homing';render();
+  goHome(()=>{if(st.pwr==='homing'){st.pwr='ready';st.homed=true;st.axis='Z';say('HOME COMPLETE');}});
+}
+function toggleEstop(){
+  st.estop=!st.estop;
+  if(st.estop){
+    clearTimeout(runTimer);run.ops=[];run.op=null;run.kind=null;st.running=false;st.hold=false;st.spin=0;st.homed=false;
+    if(st.pwr!=='off'&&st.pwr!=='boot'){st.pwr='servo';st.alarms=['EMERGENCY STOP','102 SERVOS OFF'];}
+  }else if(st.pwr==='servo'){st.alarms=['102 SERVOS OFF'];}
+  render();
+}
+
+/* ---------- handle ---------- */
+function handleClick(n){
+  if(!n)return;
+  if(!ready()||!st.homed){say('HANDLE DISABLED - HOME MACHINE FIRST');return;}
+  tick();
+  if(st.htarget==='feed'){st.feed=clamp(st.feed+n,0,999);render();return;}
+  if(st.htarget==='spin'){st.sov=clamp(st.sov+n,0,999);render();return;}
+  if(st.mode!=='JOG'){say('PRESS HANDLE JOG TO USE THE HANDLE');return;}
+  jogMove(st.axis,n*INC[st.inc]);
+}
+// Jogga en axel. Stannar när verktyget når ämnet om spindeln står still,
+// annars fräser det (som när man skrapar fram en kant).
+function jogMove(axis,d){
+  if(st.crash){say('ALARM ACTIVE - PRESS RESET');return;}
+  if(busy()||st.running){say('AXES IN MOTION');return;}
+  const from={...st.pos},target=lim(axis,+(from[axis]+d).toFixed(4));
+  const n=Math.max(1,Math.ceil(Math.abs(target-from[axis])/0.05));
+  const tool=TOOLS[st.atool];
+  for(let i=1;i<=n;i++){
+    const p={...st.pos};p[axis]=from[axis]+(target-from[axis])*i/n;
+    const zt=p.Z-tool.L;
+    if(zt<STK.top){
+      const c=toolCut(p.X,p.Y,zt,tool,false);
+      if(c.pen>0.005){
+        if(!st.spin){say('TOOL TOUCHING PART');break;}
+        if(STK.top-zt>tool.h+0.5){say('TOOL HOLDER WOULD HIT PART');break;}
+        cutRate+=toolCut(p.X,p.Y,zt,tool,true).vol;
+      }
+    }
+    st.pos[axis]=+p[axis].toFixed(4);
+  }
+  render();
+}
+function jogKey(k){
+  st.axis=k[1];
+  if(!ready()||!st.homed){say('HOME MACHINE FIRST');return;}
+  if(st.mode!=='JOG'){st.mode='JOG';}
+  jogMove(st.axis,(k[0]==='+'?1:-1)*Math.max(INC[st.inc]*5,0.005));
+}
+
+/* ---------- program / MDI execution ---------- */
+function cycleStart(){
+  if(!ready()){say(st.estop?'EMERGENCY STOP ACTIVE':'MACHINE NOT READY');return;}
+  if(!st.homed){say('HOME MACHINE FIRST');return;}
+  if(st.crash){say('ALARM ACTIVE - PRESS RESET');return;}
+  if(st.door&&!st.s51){say('DOOR OPEN - CLOSE THE DOOR FIRST');return;}
+  if(st.hold){st.hold=false;if(st.spinMem){st.spin=st.spinMem;st.spinMem=0;}if(run.kind!=='MAN'&&run.src)st.running=true;say('CYCLE START');return;}
+  if(busy()&&run.kind==='MAN'){say('AXES IN MOTION');return;}
+  if(st.mode==='MDI'){
+    if(st.running)return;
+    const lines=st.mdi.slice();
+    if(st.buf.trim()){lines.push(st.buf.toUpperCase().trim());st.buf='';}
+    if(!lines.length){say('MDI EMPTY - TYPE A COMMAND AND PRESS INSERT');return;}
+    st.mdi=lines;startProgram('MDI',lines,0);render();return;
+  }
+  if(st.mode==='MEM'){
+    if(st.running)return;
+    if(run.kind==='MEM'&&run.src===st.prog&&run.pc>0&&run.pc<st.prog.length&&!busy()){st.running=true;run.blockEnded=false;}
+    else startProgram('MEM',st.prog,st.pc);
+    st.page='prgm';render();return;
+  }
+  say('SELECT MEM OR MDI MODE');
+}
+function feedHold(){
+  if(busy()||st.running){st.hold=true;say('FEED HOLD - PRESS CYCLE START');}
+  else say('FEED HOLD');
+}
+function toggleDoor(){
+  st.door=!st.door;
+  if(st.door&&!st.s51){
+    if(st.spin){st.spinMem=st.spin;st.spin=0;}
+    if(busy()||st.running){st.hold=true;say('DOOR OPEN - FEED HOLD');}
+  }
+  render();
+}
+
+/* ---------- offsets ---------- */
+function numBuf(){const v=parseFloat(st.buf);return isNaN(v)?null:v;}
+function cellAdd(){
+  const v=numBuf();
+  if(st.page==='offset'&&st.sub===0&&v!==null){st.tl[st.row][st.col]=+(st.tl[st.row][st.col]+v).toFixed(3);st.buf='';return true;}
+  if(st.page==='offset'&&st.sub===1&&v!==null){st.work[st.wrow][st.wcol]=+(st.work[st.wrow][st.wcol]+v).toFixed(3);st.buf='';return true;}
+  return false;
+}
+function f1(){
+  if(st.page!=='offset'||st.sub!==0){say('F1: OPEN THE TOOL OFFSET PAGE FIRST');return;}
+  const v=numBuf();
+  if(v!==null){st.tl[st.row][st.col]=v;st.buf='';say('VALUE SET');return;}
+  if(st.col===0){
+    if(!st.homed){say('HOME MACHINE FIRST');return;}
+    st.tl[st.row][0]=+st.pos.Z.toFixed(3);say('TOOL '+st.row+' LENGTH MEASURED');return;
+  }
+  say('TYPE A VALUE, THEN PRESS F1 TO REPLACE');
+}
+function f4(){
+  if(st.page!=='offset'||st.sub!==1){say('F4: OPEN WORK ZERO PAGE (PAGE UP/DN)');return;}
+  const ax=['X','Y','Z'][st.wcol];
+  st.work[st.wrow][st.wcol]=+st.pos[ax].toFixed(3);
+  say('G'+(54+st.wrow)+' '+ax+' SET');
+  if(st.wcol<2)st.wcol++;
+}
+
+/* ---------- key dispatcher ---------- */
+const PAGES=['prgm','posit','offset','curnt','alarm','param','setng','help'];
+function cursorKey(k){
+  const d={up:-1,down:1,left:-1,right:1}[k];
+  if(st.page==='offset'){
+    if(k==='pgup'||k==='pgdn'){st.sub=1-st.sub;}
+    else if(st.sub===0){
+      if(k==='up'||k==='down')st.row=clamp(st.row+d,1,NT);
+      else if(k==='left'||k==='right')st.col=clamp(st.col+d,0,3);
+      else if(k==='home')st.row=1;else if(k==='end')st.row=NT;
+    }else{
+      if(k==='up'||k==='down')st.wrow=clamp(st.wrow+d,0,5);
+      else if(k==='left'||k==='right')st.wcol=clamp(st.wcol+d,0,2);
+    }
+  }else if(st.page==='prgm'&&st.mode!=='MDI'){
+    if(st.running)return;
+    const N=st.prog.length-1;
+    if(k==='up'||k==='down')st.pc=clamp(st.pc+d,0,N);
+    else if(k==='pgup')st.pc=clamp(st.pc-8,0,N);
+    else if(k==='pgdn')st.pc=clamp(st.pc+8,0,N);
+    else if(k==='home')st.pc=0;else if(k==='end')st.pc=N;
+    run.kind=null;
+  }else if(st.page==='setng'){
+    if(k==='up'||k==='down')st.setcur=clamp(st.setcur+d,0,SETS.length-1);
+  }
+  render();
+}
+function press(k){
+  if(k==='reset'){reset();return;}
+  if(st.pwr==='off'||st.pwr==='boot')return;
+  if(k.startsWith('c:')){if(st.buf.length<34)st.buf+=k.slice(2);render();return;}
+  if(['up','down','left','right','home','end','pgup','pgdn'].includes(k)){cursorKey(k);return;}
+  if(PAGES.includes(k)){st.page=k;render();return;}
+  if(/^[+-][XYZ]$/.test(k)){jogKey(k);return;}
+  if(/^i[0-3]$/.test(k)){st.inc=+k[1];render();return;}
+  const rdy=ready();
+  switch(k){
+    case 'pwrup':homeMachine();break;
+    case 'tcr':say(rdy?'TOOL CHANGER RESTORED':'MACHINE NOT READY');break;
+    case 'f1':f1();break;
+    case 'f2':if(rdy&&st.homed){st.row=st.row%NT+1;say('NEXT TOOL: T'+st.row);}else say('HOME MACHINE FIRST');break;
+    case 'f3':say('TOOL RELEASE - SPINDLE UNCLAMPED',1500);break;
+    case 'f4':f4();break;
+    case 'edit':st.mode='EDIT';st.page='prgm';say('EDIT: USE THE PROGRAM BOX BELOW THE MACHINE',3500);break;
+    case 'mem':st.mode='MEM';st.page='prgm';render();break;
+    case 'mdi':st.mode='MDI';st.page='prgm';render();break;
+    case 'hjog':st.mode='JOG';st.htarget='jog';render();break;
+    case 'sblk':st.single=!st.single;render();break;
+    case 'dry':if(st.running)say('DRY RUN CAN ONLY CHANGE AFTER RESET');else{st.dry=!st.dry;render();}break;
+    case 'opt':st.opt=!st.opt;render();break;
+    case 'bdel':st.bdel=!st.bdel;render();break;
+    case 'cool':st.cool=!st.cool;say(st.cool?'COOLANT ON':'COOLANT OFF',1400);break;
+    case 'orient':say(rdy?'SPINDLE ORIENTED':'MACHINE NOT READY',1400);break;
+    case 'atcf':case 'atcr':{
+      if(!rdy||!st.homed){say('HOME MACHINE FIRST');break;}
+      if(busy()||st.running){say('AXES IN MOTION');break;}
+      const m=/T\s*(\d+)/.exec(st.buf.toUpperCase());
+      const t=m?clamp(+m[1],1,NT):k==='atcf'?st.atool%NT+1:(st.atool+NT-2)%NT+1;
+      st.buf='';st.spin=0;manualMoves(st.pos.Z<0?[{Z:0}]:[]);run.ops.push({k:'tool',t});
+      say('TOOL CHANGE TO T'+t);break;}
+    case 'home28':if(rdy&&st.homed&&!busy()&&!st.running){goHome();say('G28 RETURN TO HOME');}else say(st.homed?'AXES IN MOTION':'HOME MACHINE FIRST');break;
+    case 'zret':say(rdy||st.pwr==='unhomed'?'ZERO RET: PRESS AUTO ALL AXES':'MACHINE NOT READY',1800);break;
+    case 'auto':if(st.pwr==='unhomed')homeMachine();else if(rdy&&!busy()&&!st.running){goHome();say('AUTO ALL AXES');}else say('MACHINE NOT READY');break;
+    case 'undo':case 'shift':case 'spnd':break;
+    case 'f-':st.feed=clamp(st.feed-10,0,999);render();break;
+    case 'f+':st.feed=clamp(st.feed+10,0,999);render();break;
+    case 'f100':st.feed=100;render();break;
+    case 's-':st.sov=clamp(st.sov-10,0,999);render();break;
+    case 's+':st.sov=clamp(st.sov+10,0,999);render();break;
+    case 's100':st.sov=100;render();break;
+    case 'hfeed':st.htarget=st.htarget==='feed'?'jog':'feed';render();break;
+    case 'hspin':st.htarget=st.htarget==='spin'?'jog':'spin';render();break;
+    case 'cw':case 'ccw':
+      if(!rdy){say('MACHINE NOT READY');break;}
+      if(st.door&&!st.s51){say('DOOR OPEN - SPINDLE CANNOT START');break;}
+      st.spin=k==='cw'?1:-1;if(!st.rpm)st.rpm=st.lastRpm;render();break;
+    case 'stop':st.spin=0;render();break;
+    case 'r5':st.rapid=5;render();break;
+    case 'r25':st.rapid=25;render();break;
+    case 'r50':st.rapid=50;render();break;
+    case 'r100':st.rapid=100;render();break;
+    case 'insert':
+      if(st.mode==='MDI'&&st.buf.trim()){st.mdi.push(st.buf.toUpperCase().trim());st.buf='';render();}
+      break;
+    case 'delete':if(st.mode==='MDI'){st.mdi.pop();render();}break;
+    case 'cancel':st.buf=st.buf.slice(0,-1);render();break;
+    case 'space':st.buf+=' ';render();break;
+    case 'eob':st.buf+=';';render();break;
+    case 'enter':
+      if(cellAdd()){say('VALUE ADDED',1200);}
+      else if(st.page==='setng'&&st.buf.trim()==='51'){st.s51=!st.s51;st.buf='';say('SETTING 51 '+(st.s51?'ON':'OFF'));}
+      else if(st.mode==='MDI'&&st.buf.trim()){st.mdi.push(st.buf.toUpperCase().trim());st.buf='';render();}
+      break;
+    default:say('NOT AVAILABLE IN THIS MODEL',1400);break;
+  }
+}
+
+/* ---------- screen ---------- */
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const n4=n=>n.toFixed(3);
+const pd=(s,n)=>String(s).padStart(n);
+const hl=s=>'<span class="hl">'+esc(s)+'</span>';
+const ctr=(s,n)=>{const l=Math.floor((n-s.length)/2);return ' '.repeat(Math.max(0,l))+s+' '.repeat(Math.max(0,n-s.length-l));};
+const MODENAME={MEM:'MEM',MDI:'MDI',EDIT:'EDIT',JOG:'HAND JOG'};
+function pageBody(){
+  const L=[];
+  if(st.page==='offset'){
+    if(st.sub===0){
+      L.push(esc(' '.repeat(10)+ctr('(LENGTH)',22)+ctr('(RADIUS)',22)));
+      L.push(esc(' NO   POS  '.slice(0,10)+pd('GEOMETRY',11)+pd('WEAR',11)+pd('GEOMETRY',11)+pd('WEAR',11)));
+      const start=clamp(st.row-4,1,NT-8);
+      for(let i=start;i<start+9;i++){
+        let s=esc(' '+(i===st.atool?'>':' ')+pd(i,2)+'  '+pd(0,3)+' ');
+        st.tl[i].forEach((v,c)=>{const t=pd(n4(v),11);s+=(i===st.row&&c===st.col)?hl(t):esc(t);});
+        L.push(s);
+      }
+      L.push(esc(' T'+st.row+' '+TOOLS[st.row].name+'   Z POS '+n4(st.pos.Z)+'  F1=SET'));
+    }else{
+      L.push(esc(' WORK ZERO OFFSET'));
+      L.push(esc(' G CODE'+pd('X AXIS',16)+pd('Y AXIS',16)+pd('Z AXIS',16)));
+      st.work.forEach((r,i)=>{
+        let s=esc(' G'+(54+i)+'    ');
+        r.forEach((v,c)=>{const t=pd(n4(v),16);s+=(i===st.wrow&&c===st.wcol)?hl(t):esc(t);});
+        L.push(s);
+      });
+      L.push(esc(' F4=PART ZERO SET (X, THEN Y, THEN Z)   WRITE=ADD'));
+    }
+  }else if(st.page==='posit'||st.page==='curnt'){
+    const w=wpos(),w0=st.work[0];
+    L.push(esc(pd('WORK G54',24)+pd('MACHINE',14)+pd('DIST TO GO',16)));
+    ['X','Y','Z'].forEach(a=>L.push(esc(' '+a+pd(n4(w[a]),22)+pd(n4(st.pos[a]),14)+pd(n4(run.op&&run.op.to?run.op.to[a]-st.pos[a]:0),16))));
+    L.push('');
+    L.push(esc(' SPINDLE  '+(st.spin>0?'CW ':st.spin<0?'CCW':'OFF')+'  '+pd(st.spin?st.rpm:0,5)+' RPM   LOAD '+pd(Math.round(st.load),2)+'%'));
+    L.push(esc(' FEED OVR '+pd(st.feed,3)+'%   SPINDLE OVR '+pd(st.sov,3)+'%   RAPID '+pd(st.rapid,3)+'%'));
+    L.push(esc(' TOOL IN SPINDLE  T'+st.atool+'     TOOL OFFSET  '+(st.g43?'G43 H'+String(st.g43).padStart(2,'0'):'NONE')));
+    L.push(esc(' COOLANT '+(st.cool?'ON':'OFF')+'    SINGLE BLOCK '+(st.single?'ON':'OFF')+'    DRY RUN '+(st.dry?'ON':'OFF')));
+  }else if(st.page==='prgm'){
+    if(st.mode==='MDI'){
+      L.push(esc(' MDI'));
+      st.mdi.forEach(m=>L.push(esc(' '+m)));
+      L.push(esc(' '+st.buf)+hl(' '));
+      if(!st.mdi.length&&!st.buf)L.push('<span class="dim">'+esc(' TYPE A COMMAND (G00 G90 G54 X0 Y0), PRESS INSERT, THEN CYCLE START')+'</span>');
+    }else{
+      const P=st.prog,start=clamp(st.pc-4,0,Math.max(0,P.length-12));
+      for(let i=start;i<Math.min(P.length,start+12);i++){
+        const t=(' '+String(P[i]).toUpperCase()).slice(0,44).padEnd(40);
+        L.push(i===st.pc?hl(t):esc(t));
+      }
+    }
+  }else if(st.page==='alarm'){
+    L.push(esc(' ACTIVE ALARMS'));
+    if(!st.alarms.length)L.push(esc(' NO ACTIVE ALARMS'));
+    st.alarms.forEach(a=>L.push('<span class="al">'+esc(' '+a)+'</span>'));
+  }else if(st.page==='setng'){
+    L.push(esc(' SETTING                                      VALUE'));
+    SETS.forEach((s,i)=>{
+      const v=s[0]===51?(st.s51?'ON':'OFF'):s[2];
+      const t=' '+pd(s[0],2)+'  '+s[1].padEnd(34)+pd(v,8);
+      L.push(i===st.setcur?hl(t):esc(t));
+    });
+    L.push('');L.push(esc(' TYPE 51 AND PRESS WRITE/ENTER TO TOGGLE DOOR OVERRIDE'));
+  }else if(st.page==='help'){
+    ['HELP','',' HANDLE JOG + HANDLE   JOG THE SELECTED AXIS',' OFFSET + F1          MEASURE TOOL LENGTH',' OFFSET + PAGE UP/DN  TOOL / WORK ZERO PAGES',' MDI + INSERT        STORE A COMMAND LINE',' CYCLE START         RUN MDI OR MEM PROGRAM',' FEED HOLD           PAUSE MOTION'].forEach(t=>L.push(esc(t)));
+  }else{L.push(esc(' PAGE NOT AVAILABLE IN THIS MODEL'));}
+  return L;
+}
+function screenHTML(){
+  if(st.pwr==='boot')return esc('\n  HASS CNC CONTROL\n  LOADING SOFTWARE ...\n  INITIALIZING SERVO DRIVES ...');
+  const titles={offset:st.sub?'WORK ZERO OFFSET':'TOOL OFFSET',posit:'POSITION',curnt:'CURRENT COMMANDS',prgm:'PROGRAM',alarm:'ALARMS',setng:'SETTINGS',help:'HELP',param:'PARAMETERS'};
+  const out=[];
+  const onum=(String(st.prog[0]||'').toUpperCase().match(/^O\d+/)||['O00000'])[0];
+  out.push(esc(' '+(titles[st.page]||'').padEnd(30)+onum.padEnd(12)+MODENAME[st.mode]+(st.hold?'  HOLD':st.running?'  RUN':'')));
+  let b='';
+  if(st.alarms.length)b='<span class="al">'+esc(' ALARM  '+st.alarms[0])+'</span>';
+  else if(st.pwr==='unhomed')b=esc(' PRESS POWER UP/RESTART TO HOME THE MACHINE');
+  else if(st.pwr==='homing')b=esc(' HOMING AXES ...');
+  out.push(b);
+  const body=pageBody().slice(0,12);
+  while(body.length<12)body.push('');
+  out.push(...body);
+  out.push(st.msg?hl(' '+st.msg+' '):'');
+  out.push(esc(' INPUT: '+st.buf)+(Date.now()%1000<500?'_':''));
+  return out.join('\n');
+}
+
+/* ---------- render ---------- */
+function isOn(k){
+  if(PAGES.includes(k))return st.page===k&&st.pwr!=='off';
+  if(/^i[0-3]$/.test(k))return st.inc===+k[1];
+  if(/^[+-][XYZ]$/.test(k))return st.mode==='JOG'&&st.axis===k[1];
+  switch(k){
+    case 'mem':return st.mode==='MEM';case 'mdi':return st.mode==='MDI';
+    case 'edit':return st.mode==='EDIT';case 'hjog':return st.mode==='JOG';
+    case 'sblk':return st.single;case 'dry':return st.dry;case 'opt':return st.opt;
+    case 'bdel':return st.bdel;case 'cool':return st.cool;
+    case 'hfeed':return st.htarget==='feed';case 'hspin':return st.htarget==='spin';
+    case 'cw':return st.spin>0;case 'ccw':return st.spin<0;case 'stop':return st.spin===0&&st.pwr==='ready';
+    case 'r5':case 'r25':case 'r50':case 'r100':return st.rapid===+k.slice(1);
+  }
+  return false;
+}
+function hintText(){
+  if(st.estop&&st.pwr!=='off')return '<b>Nödstopp aktivt.</b> Klicka på den röda svampen för att släppa den, tryck sedan RESET.';
+  switch(st.pwr){
+    case 'off':return '<b>Börja här:</b> tryck på den gröna POWER ON-knappen uppe till vänster.';
+    case 'boot':return 'Maskinen startar upp …';
+    case 'servo':return '<b>Larm 102 SERVOS OFF.</b> Det är normalt vid uppstart. Tryck RESET.';
+    case 'unhomed':return 'Tryck <b>POWER UP/RESTART</b> så kör axlarna hem till nollpunkten.';
+    case 'homing':return 'Axlarna kör hem …';
+  }
+  if(st.mode==='JOG')return '<b>HANDLE JOG är aktivt.</b> Vrid på ratten för att köra axel '+st.axis+'. Välj axel med +X, +Y, +Z och steg med 0,001 till 1 mm. Prova sedan OFFSET och F1 för att mäta verktygslängd.';
+  if(st.mode==='MDI')return '<b>MDI.</b> Skriv en rad med panelens tangenter, till exempel <b>S1200 M03</b> eller <b>G00 G90 G54 X0 Y0</b>, tryck INSERT och sedan CYCLE START.';
+  if(st.crash)return '<b>Larm.</b> Maskinen har stoppat. Läs larmet på skärmen, tryck RESET och kör sedan upp verktyget ur ämnet med ratten.';
+  if(st.door&&!st.s51)return '<b>Dörren är öppen.</b> Spindeln och programmet kan inte starta förrän du stänger dörren.';
+  if(st.mode==='MEM')return '<b>MEM.</b> Tryck CYCLE START för att köra det inlästa programmet. SINGLE BLOCK kör en rad åt gången och FEED HOLD pausar. Nytt program laddar du in i rutan under maskinen.';
+  return 'Välj HANDLE JOG för att köra axlarna med ratten, eller MDI för att skriva egna kommandon.';
+}
+const crt=$('#crt'),hint=$('#hint'),hread=$('#hread'),handle=$('#handle'),estop=$('#estop');
+function render(){
+  if(st.pwr==='off'){crt.classList.add('off');crt.innerHTML='';}
+  else{crt.classList.remove('off');crt.innerHTML=screenHTML();}
+  KEYS.forEach((el,k)=>el.classList.toggle('on',isOn(k)));
+  $('#k-pon').classList.toggle('lit',st.pwr!=='off');
+  estop.setAttribute('aria-pressed',st.estop?'true':'false');
+  hint.innerHTML=hintText();
+  updInfo();
+  hread.textContent=st.htarget==='feed'?'HANDLE: FEED OVERRIDE '+st.feed+'%':st.htarget==='spin'?'HANDLE: SPINDLE OVERRIDE '+st.sov+'%':st.axis+' AXIS  '+INCLBL[st.inc]+' MM / CLICK';
+}
+
+/* ---------- gauge ---------- */
+(function(){
+  const g=$('#gticks');let s='';const cx=100,cy=125,R=96,A0=-52,A1=52;
+  const pt=(v,r)=>{const a=(A0+(A1-A0)*v/180)*Math.PI/180;return [cx+r*Math.sin(a),cy-r*Math.cos(a)];};
+  const arc=(v0,v1,col)=>{const p=pt(v0,R-14),q=pt(v1,R-14);return '<path d="M'+p[0].toFixed(1)+' '+p[1].toFixed(1)+' A'+(R-14)+' '+(R-14)+' 0 0 1 '+q[0].toFixed(1)+' '+q[1].toFixed(1)+'" fill="none" stroke="'+col+'" stroke-width="3"/>';};
+  s+=arc(0,100,'#2b2b2b')+arc(100,150,'#e9b516')+arc(150,180,'#cf2a1f');
+  for(let v=0;v<=180;v+=10){
+    const major=v%50===0||v===180,p=pt(v,R-14),q=pt(v,R-14-(major?9:5));
+    s+='<line x1="'+p[0].toFixed(1)+'" y1="'+p[1].toFixed(1)+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="#222" stroke-width="'+(major?1.6:1)+'"/>';
+    if(major){const t=pt(v,R-34);s+='<text x="'+t[0].toFixed(1)+'" y="'+(t[1]+3).toFixed(1)+'" text-anchor="middle" font-family="Barlow Condensed,sans-serif" font-size="12" font-weight="600" fill="#222">'+v+'</text>';}
+  }
+  g.innerHTML=s;
+})();
+
+/* ---------- handle (handwheel) ---------- */
+let ang=0,resid=0,drag=false,lastA=0;
+function turn(d){
+  ang+=d;handle.style.transform='rotate('+ang+'deg)';
+  handle.setAttribute('aria-valuenow',String(Math.round(((ang%360)+360)%360)));
+  resid+=d;
+  const n=Math.trunc(+(resid/3.6).toFixed(6));
+  if(n){resid-=n*3.6;handleClick(n);}
+}
+function angleOf(e){const r=handle.getBoundingClientRect();return Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/Math.PI;}
+handle.addEventListener('pointerdown',e=>{drag=true;try{handle.setPointerCapture(e.pointerId);}catch(x){}lastA=angleOf(e);e.preventDefault();handle.focus({preventScroll:true});});
+handle.addEventListener('pointermove',e=>{
+  if(!drag)return;
+  const a=angleOf(e);let d=a-lastA;
+  if(d>180)d-=360;if(d<-180)d+=360;
+  lastA=a;turn(d);
+});
+['pointerup','pointercancel'].forEach(ev=>handle.addEventListener(ev,()=>{drag=false;}));
+handle.addEventListener('wheel',e=>{e.preventDefault();turn((e.deltaY<0?1:-1)*3.6*(e.shiftKey?10:1));},{passive:false});
+handle.addEventListener('keydown',e=>{
+  const m={ArrowRight:1,ArrowUp:1,ArrowLeft:-1,ArrowDown:-1}[e.key];
+  if(!m)return;e.preventDefault();turn(m*3.6*(e.shiftKey?10:1));
+});
+
+/* ---------- events ---------- */
+const panel=$('#panel');
+let holdT=0;
+panel.addEventListener('click',e=>{
+  const b=e.target.closest('[data-k]');if(!b)return;
+  if(b.dataset.hold&&e.detail!==0)return;
+  press(b.dataset.k);
+});
+panel.addEventListener('pointerdown',e=>{
+  const b=e.target.closest('[data-hold]');if(!b)return;
+  clearInterval(holdT);press(b.dataset.k);
+  holdT=setInterval(()=>press(b.dataset.k),130);
+});
+['pointerup','pointercancel'].forEach(ev=>window.addEventListener(ev,()=>clearInterval(holdT)));
+$('#k-pon').addEventListener('click',powerOn);
+$('#k-poff').addEventListener('click',powerOff);
+$('#k-cyc').addEventListener('click',cycleStart);
+$('#k-hold').addEventListener('click',feedHold);
+estop.addEventListener('click',toggleEstop);
+document.addEventListener('keydown',e=>{
+  if(e.target!==document.body||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.key==='Enter'){press('enter');e.preventDefault();}
+  else if(e.key==='Backspace'){press('cancel');e.preventDefault();}
+  else if(e.key===' '){press('space');e.preventDefault();}
+  else if(/^[0-9A-Za-z.\-\/()]$/.test(e.key)){press('c:'+e.key.toUpperCase());}
+});
+
+/* ---------- animation loop ---------- */
+const needle=$('#needle');
+let lastT=0,rateS=0;
+function loop(t){
+  const dt=lastT?Math.min(t-lastT,60):16;lastT=t;
+  const was=busy()||st.running;
+  cutRate=0;
+  stepRun(dt);
+  if(was||busy())render();
+  const r=cutRate/Math.max(0.001,dt*simSpeed/1000);   // mm³ per maskinsekund
+  rateS+=(r-rateS)*0.15;
+  const target=(st.spin!==0&&st.pwr==='ready')?clamp(6+rateS*0.12+Math.sin(t/260),0,170):0;
+  st.load+=(target-st.load)*0.08;
+  needle.setAttribute('transform','rotate('+(-52+clamp(st.load,0,180)*104/180).toFixed(1)+' 100 125)');
+  requestAnimationFrame(loop);
+}
+
+/* ---------- maskinkortet, program och ämne ---------- */
+const EXAMPLES=[{"name": "Planfräsning (T16, Ø50)", "stock": [100, 60, 20, "hörn"], "code": "O80001 (PLANFRASNING)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT16 M06\nG90 G54 G00 X-30. Y15.\nS1300 M03\nG43 H16 Z25.\nG01 Z-0.5 F600.\nG01 X130.\nG00 Z5.\nX-30. Y45.\nG01 Z-0.5\nG01 X130.\nG00 Z25.\nM05\nG91 G28 Z0\nM30"}, {"name": "R-02 Rektangelspår (T1)", "stock": [100, 60, 20, "hörn"], "code": "O1002\n(R-02 REKTANGELSPAR)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT1 M6\nG90\nG54 X10 Y10 S3000 M3\nG43 Z5 H1\nG1 Z-2 F150\nG1 X90 F300\nG1 Y50\nG1 X10\nG1 Y10\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-07 Ovalt spår, G3 (T1)", "stock": [100, 60, 20, "hörn"], "code": "O1007\n(R-07 OVALT SPAR)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT1 M6\nG90\nG54 X30 Y15 S3000 M3\nG43 Z5 H1\nG1 Z-3 F150\nG1 X70 F300\nG3 X70 Y45 I0 J15\nG1 X30\nG3 X30 Y15 I0 J-15\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-09 Hålbild, G81/G83 (T9, T13)", "stock": [100, 60, 20, "hörn"], "code": "O1009\n(R-09 HALBILD)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT9 M6\nG90\nG54 X15 Y15 S1500 M3\nG43 Z5 H9\nG99 G81 X15 Y15 Z-12 R2 F150\nX85\nY45\nX15\nG80\nG0 Z5\nG91 G28 Z0\nT13 M6\nG90\nG54 X50 Y30 S900 M3\nG43 Z5 H13\nG98 G83 X50 Y30 Z-22 R2 Q5 F100\nG80\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-16 Rektangulär ficka (T2)", "stock": [80, 60, 20, "mitt"], "code": "O1016\n(R-16 REKTANGULAR FICKA)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT2 M6\nG90\nG54 X-15 Y0 S2500 M3\nG43 Z5 H2\nG1 Z-4 F100\nG1 X15 F400\nG1 Y-7\nG1 X-15\nG1 Y7\nG1 X15\nG1 Y0\nG0 Z5\nG91 G28 Z0\nM30"}, {"name": "R-18 Hållare med ficka (T2, T9)", "stock": [100, 60, 20, "hörn"], "code": "O1018\n(R-18 HALLARE MED FICKA)\nG21\nG90 G80 G40 G0\nG91 G28 Z0\nT2 M6\nG90\nG54 X30 Y30 S2500 M3\nG43 Z5 H2\nG1 Z-5 F100\nG1 X70 F400\nG1 Y20\nG1 X30\nG1 Y40\nG1 X70\nG1 Y30\nG0 Z5\nG91 G28 Z0\nT9 M6\nG90\nG54 X10 Y10 S1500 M3\nG43 Z5 H9\nG99 G81 X10 Y10 Z-12 R2 F150\nX90\nY50\nX10\nG80\nG0 Z5\nG91 G28 Z0\nM30"}];
+const exSel=$('#exSel'),progText=$('#progText'),progMsg=$('#progMsg');
+EXAMPLES.forEach((e,i)=>{const o=document.createElement('option');o.value=i;o.textContent=e.name;exSel.appendChild(o);});
+function setProgMsg(t,bad){progMsg.textContent=t;progMsg.classList.toggle('bad',!!bad);}
+function loadProgram(text){
+  if(st.running||busy()){setProgMsg('Maskinen kör. Tryck RESET först.',true);return false;}
+  const lines=String(text).replace(/\r/g,'').split('\n').map(l=>l.trim()).filter(l=>l.length);
+  if(!lines.length){setProgMsg('Programmet är tomt.',true);return false;}
+  if(lines.length>2000){setProgMsg('Programmet är för långt (max 2000 rader).',true);return false;}
+  st.prog=lines;st.pc=0;run.kind=null;run.src=null;
+  st.mode='MEM';st.page='prgm';render();
+  setProgMsg('Programmet är inläst ('+lines.length+' rader). Tryck MEM och sedan CYCLE START på panelen.');
+  return true;
+}
+function stockFromInputs(){
+  newStock($('#stW').value,$('#stD').value,$('#stH').value,$('#stO').value);
+  $('#stW').value=STK.W;$('#stD').value=STK.D;$('#stH').value=STK.H;render();
+}
+exSel.addEventListener('change',()=>{
+  const e=EXAMPLES[+exSel.value];if(!e)return;
+  progText.value=e.code;
+  $('#stW').value=e.stock[0];$('#stD').value=e.stock[1];$('#stH').value=e.stock[2];$('#stO').value=e.stock[3];
+  setProgMsg('Exemplet är hämtat. Ämnet '+e.stock[0]+' × '+e.stock[1]+' × '+e.stock[2]+' mm läggs i när du laddar in programmet.');
+});
+$('#progLoad').addEventListener('click',()=>{
+  const e=EXAMPLES[+exSel.value];
+  const isEx=e&&progText.value.trim()===e.code.trim();
+  if(isEx&&(st.running||busy())){setProgMsg('Maskinen kör. Tryck RESET först.',true);return;}
+  if(loadProgram(progText.value)&&isEx){stockFromInputs();setProgMsg('Programmet och ett nytt ämne är inlästa. Tryck MEM och sedan CYCLE START på panelen.');}
+});
+$('#progGet').addEventListener('click',()=>{progText.value=st.prog.join('\n');setProgMsg('Maskinens program är hämtat till rutan.');});
+$('#stNew').addEventListener('click',()=>{
+  if(st.running||busy()){setProgMsg('Maskinen kör. Tryck RESET först.',true);return;}
+  const tool=TOOLS[st.atool];
+  stockFromInputs();
+  if(st.pos.Z-tool.L<STK.top+5&&st.homed){goHome();}
+  setProgMsg('Nytt ämne '+STK.W+' × '+STK.D+' × '+STK.H+' mm. G54 är satt till '+(STK.origin==='mitt'?'mitten':'nedre vänstra hörnet')+' på ovansidan.');
+});
+progText.value=DEFAULT_PROG.join('\n');
+$('#bDoor').addEventListener('click',()=>{if(st.pwr==='off'){st.door=!st.door;render();}else toggleDoor();});
+document.querySelectorAll('[data-speed]').forEach(b=>b.addEventListener('click',()=>{simSpeed=+b.dataset.speed;render();}));
+function updInfo(){
+  const w=wpos(),T=TOOLS[st.atool];
+  $('#iX').textContent=n4(w.X);$('#iY').textContent=n4(w.Y);$('#iZ').textContent=n4(w.Z);
+  $('#iTool').textContent='T'+st.atool+' '+(T?T.name.replace(/ D(\d)/,' Ø$1'):'');
+  $('#iSpin').textContent=st.spin?(st.spin>0?'CW ':'CCW ')+st.rpm+' v/min':'AV';
+  $('#iDoor').textContent=st.door?'ÖPPEN':'STÄNGD';$('#iDoor').classList.toggle('warn',st.door);
+  $('#iCool').textContent=st.cool?'PÅ':'AV';
+  $('#bDoor').textContent=st.door?'Stäng dörren':'Öppna dörren';
+  document.querySelectorAll('[data-speed]').forEach(b=>b.classList.toggle('on',+b.dataset.speed===simSpeed));
+}
+window.HASS={st,STK,TOOLS,run,compileBlock,get simSpeed(){return simSpeed;}};
+
+/* ---------- fit panel to width ---------- */
+const stage=$('#stage'),scroller=$('#scroller');
+function fit(){
+  const s=clamp(scroller.clientWidth/1517,0.5,1);
+  panel.style.transform='scale('+s+')';
+  stage.style.width=(1517*s)+'px';
+  stage.style.height=(panel.offsetHeight*s)+'px';
+}
+window.addEventListener('resize',fit);
+if(window.ResizeObserver)new ResizeObserver(fit).observe(scroller);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);
+
+fit();render();
+setInterval(()=>{if(st.pwr!=='off'&&st.pwr!=='boot'&&!busy())render();},500);
+requestAnimationFrame(loop);
+})();
+</script>
+<script type="importmap">
+{ "imports": { "three": "../../../assets/vendor/three-r160/three.module.min.js", "three/addons/": "../../../assets/vendor/three-r160/addons/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+// 3D-vy av maskinen. Läser bara maskinens tillstånd (window.HASS); all logik
+// ligger i panelens skript, så simulatorn fungerar även om 3D inte startar.
+const H=window.HASS,st=H.st,STK=H.STK,TOOLS=H.TOOLS;
+const host=document.getElementById('view3d');
+let renderer;
+try{renderer=new THREE.WebGLRenderer({antialias:true});}
+catch(e){document.getElementById('vfail').hidden=false;throw e;}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+host.appendChild(renderer.domElement);
+renderer.domElement.style.cssText='position:absolute;inset:0;width:100%;height:100%;display:block';
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x16191d);
+const cam=new THREE.PerspectiveCamera(38,1,5,30000);
+const controls=new OrbitControls(cam,renderer.domElement);
+controls.enablePan=false;controls.enableDamping=true;controls.dampingFactor=0.12;
+controls.minDistance=260;controls.maxDistance=5200;
+controls.minPolarAngle=0.35;controls.maxPolarAngle=1.75;
+controls.minAzimuthAngle=-1.2;controls.maxAzimuthAngle=1.2;
+const VIEWS={near:{pos:[70,-110,860],tgt:[0,-425,-70]},far:{pos:[1100,600,3700],tgt:[0,-250,0]}};
+let view='near';
+function setView(v){view=v;cam.position.set(...VIEWS[v].pos);controls.target.set(...VIEWS[v].tgt);controls.update();
+  document.getElementById('bCam').textContent=v==='near'?'Hela maskinen':'Nära dörren';}
+setView('near');
+
+scene.add(new THREE.HemisphereLight(0xf0f4fa,0x3a3e44,1.7));
+const key=new THREE.DirectionalLight(0xffffff,2.6);key.position.set(500,1500,1200);scene.add(key);
+const fill=new THREE.DirectionalLight(0xc8dcff,0.9);fill.position.set(-900,700,600);scene.add(fill);
+const rim=new THREE.DirectionalLight(0xffffff,0.6);rim.position.set(300,200,-900);scene.add(rim);
+
+const M=(c,m=0.25,r=0.6,extra={})=>new THREE.MeshStandardMaterial({color:c,metalness:m,roughness:r,...extra});
+const box=(w,h,d,mat)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+const XC=-381,YC=-203;                    // bordets mitt i maskinkoordinater
+const TABLE_TOP=-500;
+
+/* --- fast maskinram och kåpa (världskoordinater: x=X, y=Z, z=-Y) --- */
+const frameMat=M(0x5d6268,0.2,0.7),wallMat=M(0x6a7179,0.1,0.85,{side:THREE.DoubleSide}),darkMat=M(0x24272b,0.2,0.8);
+const floor=box(2200,30,1300,M(0x2c2f33,0.3,0.7));floor.position.set(0,-760,0);scene.add(floor);
+const back=box(2200,1700,30,wallMat);back.position.set(0,90,-640);scene.add(back);
+[-1100,1100].forEach(x=>{const w=box(30,1700,1300,wallMat);w.position.set(x,90,0);scene.add(w);});
+const roof=box(2200,30,1300,wallMat);roof.position.set(0,940,0);scene.add(roof);
+const column=box(520,1600,260,frameMat);column.position.set(0,120,-480);scene.add(column);
+const base=box(1300,170,900,darkMat);base.position.set(0,-690,-20);scene.add(base);
+// framsida med dörröppning
+const front=new THREE.Group();scene.add(front);
+const fMat=M(0x8e949b,0.25,0.6);
+[[-1100,200,-760,930],[1100,200,-760,930]].forEach(([x])=>{});
+const fTop=box(2200,260,40,fMat);fTop.position.set(0,810,660);front.add(fTop);
+const fBot=box(2200,180,40,fMat);fBot.position.set(0,-690,660);front.add(fBot);
+// dörrar: vänster fast, höger glider åt vänster
+const glass=new THREE.MeshStandardMaterial({color:0xb9d4e6,metalness:0,roughness:0.1,transparent:true,opacity:0.16,depthWrite:false,side:THREE.DoubleSide});
+function door(w){
+  const g=new THREE.Group(),h=1080,b=70;
+  const mat=M(0x9aa1a8,0.25,0.55);
+  const t=box(w,b,30,mat);t.position.y=h/2-b/2;g.add(t);
+  const bo=box(w,b*2,30,mat);bo.position.y=-h/2+b;g.add(bo);
+  const l=box(b,h,30,mat);l.position.x=-w/2+b/2;g.add(l);
+  const r=box(b,h,30,mat);r.position.x=w/2-b/2;g.add(r);
+  const gl=new THREE.Mesh(new THREE.PlaneGeometry(w-2*b,h-3*b),glass);gl.position.y=b/2;g.add(gl);
+  return g;
+}
+const doorL=door(820);doorL.position.set(-690,60,640);front.add(doorL);
+const doorR=door(1380);doorR.position.set(410,60,690);front.add(doorR);
+let doorX=410;
+
+/* --- bord, skruvstycke och ämne (följer X och Y) --- */
+const table=new THREE.Group();scene.add(table);
+const tMat=M(0x4a5058,0.45,0.45),slot=M(0x1c1f22,0.2,0.9);
+const tb=box(900,60,420,tMat);tb.position.set(XC,TABLE_TOP-30,-YC);table.add(tb);
+[-120,0,120].forEach(dy=>{const s=box(900,4,18,slot);s.position.set(XC,TABLE_TOP+1,-(YC+dy));table.add(s);});
+const saddle=box(620,110,560,darkMat);saddle.position.set(XC,TABLE_TOP-115,-YC);table.add(saddle);
+const viseMat=M(0x2f6aa0,0.35,0.5),jawMat=M(0x9da3aa,0.6,0.35);
+const vise=new THREE.Group();table.add(vise);
+const stockMat=M(0xc9ced4,0.35,0.42,{side:THREE.DoubleSide});
+let stockMesh=null,stockVer=-1,stockRebuild=-1,lastStockUpd=0,topIdx=null;
+function buildVise(){
+  vise.clear();
+  const cx=STK.x0+STK.W/2,len=Math.max(160,Math.min(STK.W+30,260)),jaw=26,par=10;
+  const jawTop=STK.zb+Math.min(STK.H*0.5,12),y0=STK.y0,y1=STK.y0+STK.D;
+  const bs=box(len,TABLE_TOP+70-TABLE_TOP,(y1+60)-(y0-70),viseMat);
+  bs.position.set(cx,TABLE_TOP+35,-((y0-70+y1+60)/2));vise.add(bs);
+  const parallel=box(Math.min(len,STK.W)*0.9,STK.zb-(TABLE_TOP+70),STK.D*0.7,jawMat);
+  parallel.position.set(cx,(STK.zb+TABLE_TOP+70)/2,-(y0+STK.D/2));vise.add(parallel);
+  const hj=jawTop-(TABLE_TOP+70);
+  const fj=box(len,hj+40,jaw,viseMat);fj.position.set(cx,TABLE_TOP+70+(hj+40)/2-40,-(y1+jaw/2));vise.add(fj);
+  const mj=box(len,hj+40,jaw,viseMat);mj.position.set(cx,TABLE_TOP+70+(hj+40)/2-40,-(y0-jaw/2));vise.add(mj);
+  [y1+1,y0-1].forEach(y=>{const p=box(len,hj,2,jawMat);p.position.set(cx,TABLE_TOP+70+hj/2,-y);vise.add(p);});
+  const screw=new THREE.Mesh(new THREE.CylinderGeometry(9,9,120,16),jawMat);screw.rotation.x=Math.PI/2;screw.position.set(cx,TABLE_TOP+30,-(y0-90));vise.add(screw);
+}
+function buildStock(){
+  if(stockMesh){table.remove(stockMesh);stockMesh.geometry.dispose();}
+  const nx=STK.nx,ny=STK.ny,cx=STK.cellX,cy=STK.cellY;
+  const X=i=>i===0?STK.x0:i===nx-1?STK.x0+STK.W:STK.x0+(i+0.5)*cx;
+  const Y=j=>j===0?STK.y0:j===ny-1?STK.y0+STK.D:STK.y0+(j+0.5)*cy;
+  const ring=[];for(let i=0;i<nx;i++)ring.push([i,0]);for(let j=1;j<ny;j++)ring.push([nx-1,j]);
+  for(let i=nx-2;i>=0;i--)ring.push([i,ny-1]);for(let j=ny-2;j>0;j--)ring.push([0,j]);
+  const nTop=nx*ny,nRing=ring.length;
+  const pos=new Float32Array((nTop+nRing*2+4)*3),idx=[];
+  for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const k=j*nx+i;pos[k*3]=X(i);pos[k*3+2]=-Y(j);}
+  for(let j=0;j<ny-1;j++)for(let i=0;i<nx-1;i++){const a=j*nx+i,b=a+1,c=a+nx,d=c+1;idx.push(a,b,c,b,d,c);}
+  const ringTop=[];
+  ring.forEach(([i,j],r)=>{const t=nTop+r*2,b=t+1;ringTop.push(j*nx+i);
+    pos[t*3]=X(i);pos[t*3+2]=-Y(j);pos[b*3]=X(i);pos[b*3+1]=STK.zb;pos[b*3+2]=-Y(j);});
+  for(let r=0;r<nRing;r++){const t=nTop+r*2,b=t+1,t2=nTop+((r+1)%nRing)*2,b2=t2+1;idx.push(t,b,t2,b,b2,t2);}
+  const bb=nTop+nRing*2;[[STK.x0,STK.y0],[STK.x0+STK.W,STK.y0],[STK.x0,STK.y0+STK.D],[STK.x0+STK.W,STK.y0+STK.D]]
+    .forEach(([x,y],q)=>{pos[(bb+q)*3]=x;pos[(bb+q)*3+1]=STK.zb-0.02;pos[(bb+q)*3+2]=-y;});
+  idx.push(bb,bb+2,bb+1,bb+1,bb+2,bb+3);
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setIndex(idx);
+  stockMesh=new THREE.Mesh(g,stockMat);stockMesh.userData={nTop,ringTop};table.add(stockMesh);
+  stockVer=-1;buildVise();updateStock(true);
+}
+function updateStock(force){
+  const now=performance.now();
+  if(!force&&(STK.ver===stockVer||now-lastStockUpd<70))return;
+  lastStockUpd=now;stockVer=STK.ver;
+  const g=stockMesh.geometry,p=g.attributes.position.array,{nTop,ringTop}=stockMesh.userData;
+  for(let k=0;k<nTop;k++)p[k*3+1]=STK.h[k];
+  for(let r=0;r<ringTop.length;r++)p[(nTop+r*2)*3+1]=STK.h[ringTop[r]];
+  g.attributes.position.needsUpdate=true;g.computeVertexNormals();g.computeBoundingSphere();
+}
+
+/* --- spindel och verktyg (följer Z) --- */
+const spindle=new THREE.Group();scene.add(spindle);
+const headMat=M(0x7d848b,0.3,0.55);
+const head=box(340,640,380,headMat);head.position.set(0,90+320,-90);spindle.add(head);
+const nose=new THREE.Mesh(new THREE.CylinderGeometry(58,62,90,32),M(0x30343a,0.5,0.4));nose.position.y=45;spindle.add(nose);
+const holderG=new THREE.Group();spindle.add(holderG);
+const holder=new THREE.Mesh(new THREE.CylinderGeometry(30,24,48,24),M(0x1d2023,0.6,0.35));holder.position.y=-24;holderG.add(holder);
+const toolG=new THREE.Group();holderG.add(toolG);
+const nozzle=new THREE.Mesh(new THREE.CylinderGeometry(5,7,70,10),M(0x2d6fb0,0.2,0.5));nozzle.position.set(-85,-10,55);nozzle.rotation.z=-0.6;spindle.add(nozzle);
+const jet=new THREE.Mesh(new THREE.CylinderGeometry(2.2,3.5,1,8),new THREE.MeshStandardMaterial({color:0x8fd2ff,transparent:true,opacity:0.55,depthWrite:false}));spindle.add(jet);
+let toolShown=-1;
+function buildTool(t){
+  toolG.clear();toolShown=t;const T=TOOLS[t];if(!T)return;
+  const shank=M(0x9aa2aa,0.7,0.3),flute=M(0x55606b,0.75,0.3),gold=M(0xc79b3b,0.6,0.35);
+  const r=Math.max(T.d/2,0.6),L=T.L;
+  if(T.type==='face'){
+    const arb=new THREE.Mesh(new THREE.CylinderGeometry(16,16,12,20),shank);arb.position.y=-54;toolG.add(arb);
+    const body=new THREE.Mesh(new THREE.CylinderGeometry(r,r*0.92,L-60,32),flute);body.position.y=-60-(L-60)/2;toolG.add(body);
+    for(let i=0;i<5;i++){const ins=box(9,9,4,gold);const a=i/5*Math.PI*2;ins.position.set(Math.cos(a)*(r-4),-L+5,Math.sin(a)*(r-4));ins.rotation.y=-a;toolG.add(ins);}
+    return;
+  }
+  const sh=Math.max(r,3),shankLen=L-48-T.h;
+  const s=new THREE.Mesh(new THREE.CylinderGeometry(sh,sh,shankLen,20),shank);s.position.y=-48-shankLen/2;toolG.add(s);
+  const tip=CONE(T.type)*r;
+  const f=new THREE.Mesh(new THREE.CylinderGeometry(r,r,T.h-tip,20),flute);f.position.y=-L+tip+(T.h-tip)/2;toolG.add(f);
+  if(tip>0.01){const c=new THREE.Mesh(new THREE.ConeGeometry(r,tip,20),flute);c.rotation.x=Math.PI;c.position.y=-L+tip/2;toolG.add(c);}
+  // två ljusa ränder så att man ser att verktyget roterar
+  [0,Math.PI].forEach(a=>{const st2=box(Math.max(r*0.25,0.5),T.h*0.8,0.6,M(0xd8dde2,0.6,0.3));st2.position.set(Math.cos(a)*r*0.98,-L+T.h*0.5,Math.sin(a)*r*0.98);st2.rotation.y=-a;toolG.add(st2);});
+}
+function CONE(type){return type==='drill'?0.6009:type==='spot'||type==='chamfer'?1:0;}
+function placeJet(){
+  const T=TOOLS[st.atool];if(!T)return;
+  const a=new THREE.Vector3(-108,-40,72),b=new THREE.Vector3(0,-T.L+Math.min(T.h*0.6,12),0);
+  const d=b.clone().sub(a),len=d.length();
+  jet.scale.set(1,len,1);jet.position.copy(a.clone().add(b).multiplyScalar(0.5));
+  jet.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());
+}
+
+/* --- knappar --- */
+let seeThrough=false;
+document.getElementById('bSee').addEventListener('click',()=>{seeThrough=!seeThrough;front.visible=!seeThrough;
+  document.getElementById('bSee').textContent=seeThrough?'Visa kåpan':'Se genom kåpan';});
+document.getElementById('bCam').addEventListener('click',()=>setView(view==='near'?'far':'near'));
+
+/* --- rendering --- */
+function resize(){const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(host);resize();
+let last=performance.now(),spinA=0;
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(STK.rebuild!==stockRebuild){stockRebuild=STK.rebuild;buildStock();}
+  updateStock(false);
+  table.position.set(-st.pos.X,0,st.pos.Y);
+  spindle.position.set(0,st.pos.Z,0);
+  const changing=H.run.op&&H.run.op.k==='wait'&&H.run.op.tool;
+  if(changing){toolG.visible=false;}else{toolG.visible=true;if(toolShown!==st.atool){buildTool(st.atool);placeJet();}}
+  if(st.spin&&st.pwr==='ready'){spinA+=st.spin*-Math.min(st.rpm,420)/60*Math.PI*2*dt;toolG.rotation.y=spinA;}
+  jet.visible=!!st.cool&&st.pwr==='ready'&&!changing;
+  const goal=st.door?-520:410;doorX+=(goal-doorX)*Math.min(1,dt*5);doorR.position.x=doorX;
+  controls.update();
+  renderer.render(scene,cam);
+}
+H.view3d={cam,controls,setView};
+requestAnimationFrame(frame);
+</script>
+
+</body></html>
