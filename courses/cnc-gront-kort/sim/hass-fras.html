@@ -246,6 +246,26 @@ body{margin:0}
 .pk button[data-t=empty]{opacity:.45}
 .mag .mnote2{color:var(--muted);font-size:12.5px;margin:0;line-height:1.45}
 .mach .view3d{aspect-ratio:5/4}
+<<<<<<< Updated upstream
+=======
+/* fysik */
+.phbar{display:grid;grid-template-columns:auto 1fr auto auto auto;align-items:center;gap:8px;background:#16191c;border:1px solid var(--line);border-radius:7px;padding:7px 9px}
+.phbar span{color:var(--muted);font:600 11px var(--f-key);letter-spacing:.1em;text-transform:uppercase}
+.phbar b{color:var(--amber);font:400 20px/1 var(--f-crt);min-width:56px;text-align:right}
+.phbar .bar{height:10px;background:#0c0e10;border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.phbar .bar i{display:block;height:100%;width:0;background:#2f9e44;transition:width .15s}
+.phmsgs{display:grid;gap:6px}
+.phmsgs:empty{display:none}
+.phmsgs p{margin:0;padding:7px 10px;border-radius:7px;font-size:13px;line-height:1.45;background:#2a2416;border:1px solid #6b5420}
+.phmsgs p.e{background:#2c1716;border-color:#7a2a24}
+.phmsgs p small{color:var(--muted);margin-right:6px}
+.ph-brk{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(40,12,12,.94);border:1px solid #c0392b;border-radius:9px;padding:12px 14px;display:grid;gap:6px;color:#fff;font-size:13.5px;line-height:1.45;z-index:5}
+.ph-brk b{font-size:15px;color:#ff8a76}
+.ph-brk button{justify-self:start;appearance:none;border:1px solid #c0392b;background:#5a1d1a;color:#fff;border-radius:6px;padding:5px 12px;font:700 12.5px var(--f-key);cursor:pointer}
+.progbox label.wide{display:grid;gap:5px}
+.progbox label.chk{display:flex;gap:8px;align-items:center;color:var(--fg)}
+#stM{width:100%}
+>>>>>>> Stashed changes
 /* below the panel */
 .hint{display:flex;gap:12px;align-items:flex-start;background:#1d2024;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
 .hint .dot{flex:none;width:10px;height:10px;margin-top:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px var(--amber)}
@@ -289,6 +309,19 @@ body{margin:0}
       <div><span>Spåntransp.</span><b id="iChip">AV</b></div>
       <div><span>Simuleringstakt</span><span class="speeds"><button type="button" data-speed="1">1×</button><button type="button" data-speed="5">5×</button><button type="button" data-speed="20">20×</button></span></div>
     </div>
+<<<<<<< Updated upstream
+=======
+    <div class="cells c3">
+      <div><span>Skärkraft</span><b id="iF">–</b></div>
+      <div><span>Vridmoment</span><b id="iM">–</b></div>
+      <div><span>Effekt</span><b id="iP">–</b></div>
+    </div>
+    <div class="phbar">
+      <span>Belastning på verktyget</span><div class="bar" title="Belastning i förhållande till vad verktyget tål"><i id="iLoad"></i></div><b id="iLoadT">0 %</b>
+      <span>Ämnet max</span><b id="iTemp">20 °C</b>
+    </div>
+    <div class="phmsgs" id="phMsgs" aria-live="polite"></div>
+>>>>>>> Stashed changes
     <div class="mag" id="mag">
       <div class="mh"><b>Verktygsmagasin</b><span id="mag-sel">Plats 1</span></div>
       <div class="pk" id="pk" role="group" aria-label="Verktygsplatser"></div>
@@ -391,6 +424,12 @@ body{margin:0}
         <label>Höjd Z (mm)<input id="stH" type="number" min="5" max="100" value="20"></label>
         <label>Nollpunkt (G54)<select id="stO"><option value="hörn">Nedre vänstra hörnet</option><option value="mitt">Mitten</option></select></label>
       </div>
+<<<<<<< Updated upstream
+=======
+      <label class="wide">Material<select id="stM"></select></label>
+      <p class="pmsg" id="stMinfo"></p>
+      <label class="chk"><input type="checkbox" id="phOn" checked> Fysik: skärkraft, verktygsbrott, spindelns gränser och värme</label>
+>>>>>>> Stashed changes
       <div class="prow"><button type="button" class="mbtn" id="stNew">Nytt ämne</button></div>
       <p class="pmsg">Ett nytt ämne spänns fast i skruvstycket och G54 sätts på ämnets ovansida. Verktygen T1–T34 är redan inmätta. Byter du ett verktyg i magasinet måste det mätas in igen under OFSET med F1.</p>
       <h2>Verktyg</h2>
@@ -406,6 +445,11 @@ body{margin:0}
     <div><b>Sidor</b>POSIT (PAGE UP/DN), OFSET (F1, F4, ORIGIN), CURNT COMDS (timers, verktygsliv), ALARM (historik), PARAM/DGNOS, HELP/CALC (kalkylatorer).</div>
   </div>
 </main>
+<<<<<<< Updated upstream
+=======
+<script src="../../../assets/sim/material.js"></script>
+<script src="../../../assets/sim/fysik.js"></script>
+>>>>>>> Stashed changes
 <script>
 (function(){
 'use strict';
@@ -654,10 +698,21 @@ const TT={endmill:{n:'Pinnfräs',ab:'EM',dia:10,h:40},drill:{n:'Borr',ab:'DR',di
 const TYPEMAP={end:'endmill',drill:'drill',face:'facemill',spot:'spot',chamfer:'chamfer',tap:'tap',edge:'edge',probe:'probe'};
 st.tool=[null];
 TOOL_SRC.forEach(([t,name,d,h,type])=>{st.tool[t]={type:TYPEMAP[type],dia:d,h,name};});
+<<<<<<< Updated upstream
 function toolOf(t){
   const x=st.tool[t];if(!x||x.type==='empty')return null;
   return {t,name:x.name||(TT[x.type].n.toUpperCase()+' D'+x.dia),d:x.dia,h:x.h,type:x.type,
     L:(x.type==='facemill'?60:75)+x.h,cut:x.type!=='probe'&&x.type!=='edge'};
+=======
+// verktygstyp i fysikmodulen (Spånlex koder)
+const PHTYPE={endmill:'em',facemill:'face',drill:'drill',spot:'spot',chamfer:'cham',tap:'tap',probe:'probe',edge:'edge'};
+const MACH={kw:22.4,nm:122};      // spindeln: 22,4 kW och 122 Nm (som en VF-2)
+function toolOf(t){
+  const x=st.tool[t];if(!x||x.type==='empty')return null;
+  const ph=PHTYPE[x.type]||'em',L=(x.type==='facemill'?60:75)+x.h;
+  return {t,name:x.name||(TT[x.type].n.toUpperCase()+' D'+x.dia),d:x.dia,h:x.broken?Math.min(2,x.h):x.h,type:x.type,
+    L:x.broken?L-x.h+Math.min(2,x.h):L,cut:x.type!=='probe'&&x.type!=='edge',ph,z:window.CNCFYSIK?CNCFYSIK.flutes(ph,x.dia):3,broken:!!x.broken};
+>>>>>>> Stashed changes
 }
 const ZREF=-400;            // ämnets ovansida när verktygslängderna mättes in
 st.tl=Array.from({length:NT+1},(_,i)=>i?[+(ZREF+toolOf(i).L).toFixed(3),0,toolOf(i).d/2,0]:null);
@@ -665,13 +720,25 @@ st.tl[1][1]=-0.02;
 const tipZ=()=>st.pos.Z-(toolOf(st.atool)?toolOf(st.atool).L:0);
 
 /* ---------- ämnet: höjdkarta i maskinkoordinater ---------- */
+<<<<<<< Updated upstream
 const STK={W:100,D:60,H:20,x0:-430,y0:-230,zb:-420,nx:0,ny:0,cellX:1,cellY:1,h:null,top:0,ver:0,rebuild:0,origin:'hörn'};
+=======
+const STK={W:100,D:60,H:20,x0:-430,y0:-230,zb:-420,nx:0,ny:0,cellX:1,cellY:1,h:null,top:0,ver:0,rebuild:0,origin:'hörn',
+  matId:'en-aw-6082',mat:null,F:null,hver:0};
+>>>>>>> Stashed changes
 function newStock(W,D,H,origin){
   W=clamp(+W||100,10,400);D=clamp(+D||60,10,300);H=clamp(+H||20,5,100);
   const cell=Math.max(0.5,Math.max(W,D)/260);
   Object.assign(STK,{W,D,H,origin:origin==='mitt'?'mitt':'hörn',nx:Math.max(2,Math.round(W/cell)),ny:Math.max(2,Math.round(D/cell))});
   STK.cellX=W/STK.nx;STK.cellY=D/STK.ny;STK.top=STK.zb+H;
   STK.h=new Float32Array(STK.nx*STK.ny).fill(STK.top);STK.ver++;STK.rebuild++;
+<<<<<<< Updated upstream
+=======
+  STK.mat=window.CNCFYSIK?CNCFYSIK.material(STK.matId):null;
+  const N=STK.nx*STK.ny;
+  STK.F={NX:STK.nx,NY:STK.ny,DX:STK.cellX,x0:STK.x0,y0:STK.y0,tt:new Float32Array(N),tl:new Float32Array(N),tc:new Float32Array(N).fill(20),clock:0,tmax:20};
+  STK.hver++;if(STK.ver>1)phClear();
+>>>>>>> Stashed changes
   st.work[0]=[STK.origin==='mitt'?STK.x0+W/2:STK.x0,STK.origin==='mitt'?STK.y0+D/2:STK.y0,+(STK.top-ZREF).toFixed(3)];
 }
 newStock(100,60,20,'hörn');
@@ -730,12 +797,62 @@ function placeTool(p,cutting){
       if(!cutting){alarmStop(st.spin?'TOOL CRASH - RAPID INTO MATERIAL':'TOOL CRASH - SPINDLE NOT RUNNING');return false;}
       if(!st.spin){alarmStop('TOOL CRASH - SPINDLE NOT RUNNING');return false;}
       if(STK.top-zt>tool.h+0.5){alarmStop('TOOL HOLDER CRASH - TOOL TOO SHORT');return false;}
+<<<<<<< Updated upstream
       cutRate+=toolCut(p.X,p.Y,zt,tool,true).vol;
+=======
+      const c=toolCut(p.X,p.Y,zt,tool,true);cutRate+=c.vol;lastCut.vol+=c.vol;if(chk.pen>lastCut.ap)lastCut.ap=chk.pen;
+>>>>>>> Stashed changes
     }
   }
   st.pos.X=p.X;st.pos.Y=p.Y;st.pos.Z=p.Z;
   return true;
 }
+<<<<<<< Updated upstream
+=======
+/* ---------- fysik (assets/sim/fysik.js): skärkraft, effekt, brott och värme ---------- */
+const lastCut={vol:0,ap:0};
+const PHA={dv:0,s:0,ap:0,from:null};
+st.phOn=true;st.ph=null;st.phAt=0;st.phMsgs=[];const phDone=new Set();
+function phClear(){st.ph=null;st.phMsgs=[];phDone.clear();const b=document.getElementById('phBrk');if(b)b.hidden=true;}
+function phLine(){return run.kind==='MEM'||run.kind==='MDI'?Math.max(0,run.pc-1):-1;}
+function phMsg(key,ty,msg){
+  if(phDone.has(key))return;phDone.add(key);
+  const li=phLine();st.phMsgs.unshift({ty,msg,li,kind:run.kind});if(st.phMsgs.length>8)st.phMsgs.length=8;
+}
+function phEval(op,to){
+  const tool=toolOf(st.atool),seg=PHA.s,dv=PHA.dv,ap=PHA.ap,from=PHA.from;
+  PHA.dv=0;PHA.s=0;PHA.ap=0;PHA.from={...to};
+  if(!st.phOn||!window.CNCFYSIK||!tool||!tool.cut||!st.spin||op.rapid||dv<=.002||seg<=1e-6||!from)return true;
+  const dz=Math.abs(to.Z-from.Z),dxy=Math.hypot(to.X-from.X,to.Y-from.Y),axial=dz>dxy*2;
+  const r=CNCFYSIK.cut({type:tool.ph,D:tool.d,z:tool.z,n:Math.max(1,effRpm()),vf:rateOf(op),dv,seg,ap,axial,cool:st.cool,mat:STK.mat,stickL:Math.min(tool.h,Math.max(12,tool.d*3)),mach:MACH});
+  st.ph=r;st.phAt=performance.now();
+  const tag='T'+st.atool;
+  r.warn.forEach(w=>{if(w.k!=='kw'&&w.k!=='nm')phMsg(tag+'|'+w.k,w.ty,w.msg);});
+  if(r.load>=1){
+    const L=r.lim[0].toUpperCase()+r.lim.slice(1),W=r.why[0].toUpperCase()+r.why.slice(1);
+    phMsg('brk|'+phLine(),'e',`<b>${L} går av.</b> ${W}. Minska matningen, skärdjupet eller ingreppet${CNCFYSIK.PSOLID.has(tool.ph)?', eller korta utsticket':''}.`);
+    st.tool[st.atool].broken=true;
+    alarmStop('TOOL BROKEN T'+st.atool+(phLine()>=0?' - LINE '+(phLine()+1):''));
+    phCrash(`${L} gick av${phLine()>=0?' på rad '+(phLine()+1):''}`,W+'. Byt verktyget i magasinet (Sätt in / byt) och mät in det igen innan du kör vidare.');
+    return false;
+  }
+  const kw=r.warn.find(w=>w.k==='kw'),nm=r.warn.find(w=>w.k==='nm');
+  if(kw||nm){phMsg(tag+'|'+(kw?'kw':'nm'),'e',(kw||nm).msg);alarmStop(kw?'SPINDLE OVERLOAD':'SPINDLE TORQUE LIMIT');
+    phCrash(kw?'Spindeln är överbelastad':'Spindelns vridmoment räcker inte',(kw||nm).msg);return false;}
+  const E=r.Pc*r.heatFrac*1000*r.dt;
+  if(CNCFYSIK.heat(STK.F,(from.X+to.X)/2,(from.Y+to.Y)/2,tool.d/2,E,r.dt,STK.mat,r.ap,st.cool))STK.hver++;
+  if(STK.mat&&STK.mat.tsoft&&STK.F.tmax>STK.mat.tsoft)phMsg('melt','w',`Ämnet blir cirka ${Math.round(STK.F.tmax)} °C, över de cirka ${STK.mat.tsoft} °C där ${CNCFYSIK.matName(STK.mat)} börjar mjukna eller smälta. Höj matningen, sänk varvtalet eller blås med luft.`);
+  return true;
+}
+function phCrash(title,text){
+  const host=document.getElementById('view3d');if(!host)return;
+  let b=document.getElementById('phBrk');
+  if(!b){b=document.createElement('div');b.id='phBrk';b.className='ph-brk';host.appendChild(b);}
+  b.innerHTML='<b></b><span></span><button type="button">Stäng</button>';
+  b.querySelector('b').textContent='Krasch! '+title;b.querySelector('span').innerHTML=text;
+  b.querySelector('button').onclick=()=>{b.hidden=true;};b.hidden=false;
+}
+>>>>>>> Stashed changes
 function rateOf(op){return op.rapid?RAPID*Math.min(st.rapid,SV(10)?50:100)/100:(st.dry?5000:op.F)*st.feed/100;}
 const STEP=0.4;
 function pointAt(op,s){
@@ -750,12 +867,29 @@ function advance(op,budget){
     if(v<=1e-9)return 0;
     const target=Math.min(op.len,op.s+budget*v);
     const used=(target-op.s)/v;
+<<<<<<< Updated upstream
     while(op.s<target-1e-9){
       const ns=Math.min(target,op.s+STEP);
       if(!placeTool(pointAt(op,ns),!op.rapid))return 0;
       op.s=ns;
     }
     if(op.s>=op.len-1e-9){placeTool(op.to,!op.rapid)&&(op.done=true);return Math.max(0,budget-used);}
+=======
+    if(!PHA.from||op!==PHA.op){PHA.from={...st.pos};PHA.op=op;PHA.dv=0;PHA.s=0;PHA.ap=0;}
+    while(op.s<target-1e-9){
+      const ns=Math.min(target,op.s+STEP);
+      lastCut.vol=0;lastCut.ap=0;
+      const pt=pointAt(op,ns);
+      if(!placeTool(pt,!op.rapid))return 0;
+      PHA.dv+=lastCut.vol;PHA.s+=ns-op.s;if(lastCut.ap>PHA.ap)PHA.ap=lastCut.ap;
+      op.s=ns;
+      if(PHA.s>=1.5&&!phEval(op,pt))return 0;
+    }
+    if(op.s>=op.len-1e-9){
+      lastCut.vol=0;lastCut.ap=0;
+      if(placeTool(op.to,!op.rapid)){PHA.dv+=lastCut.vol;if(PHA.s>0&&!phEval(op,op.to))return 0;op.done=true;}
+      return Math.max(0,budget-used);}
+>>>>>>> Stashed changes
     return 0;
   }
   if(op.k==='wait'){op.t-=budget;if(op.t>0)return 0;op.done=true;if(op.after)op.after();return -op.t;}
@@ -1098,6 +1232,10 @@ function compileBlock(raw){
   return true;
 }
 function startProgram(kind,src,from){
+<<<<<<< Updated upstream
+=======
+  if(!from)phClear();
+>>>>>>> Stashed changes
   run.kind=kind;run.src=src;run.pc=from||0;run.ops=[];run.op=null;run.blockEnded=false;
   st.running=true;st.held=false;st.hold=null;
 }
@@ -2486,6 +2624,17 @@ function updateMachine(){
   $('#iCool').textContent=(st.cool?(st.tsc?'TSC':'PÅ'):'AV')+' '+(st.nozzle+1)+'/7';
   $('#iChip').textContent=st.chip>0?'FRAM':st.chip<0?'BAK':'AV';
   document.querySelectorAll('[data-speed]').forEach(b=>b.classList.toggle('on',+b.dataset.speed===simSpeed));
+<<<<<<< Updated upstream
+=======
+  const ph=st.phOn&&st.ph&&performance.now()-st.phAt<500?st.ph:null;
+  const f1=v=>String(Math.round(v*10)/10).replace('.',',');
+  $('#iF').textContent=ph?Math.round(ph.F)+' N':'–';$('#iM').textContent=ph?f1(ph.Mc)+' Nm':'–';$('#iP').textContent=ph?String(Math.round(ph.Pc*100)/100).replace('.',',')+' kW':'–';
+  const L=ph?Math.min(1.2,ph.load):0,bar=$('#iLoad');bar.style.width=Math.min(100,L*100/1.2)+'%';bar.style.background=L>=1?'#e03131':L>=.7?'#f59f00':'#2f9e44';
+  $('#iLoadT').textContent=ph?Math.round(ph.load*100)+' %':'0 %';
+  $('#iTemp').textContent=Math.round(STK.F?STK.F.tmax:20)+' °C';
+  const box=$('#phMsgs'),key=st.phMsgs.length+'|'+(st.phMsgs[0]?st.phMsgs[0].msg:'');
+  if(box.dataset.k!==key){box.dataset.k=key;box.innerHTML=st.phMsgs.slice(0,4).map(m=>'<p class="'+m.ty+'">'+(m.li>=0?'<small>'+(m.kind==='MDI'?'MDI':'Rad '+(m.li+1))+'</small>':'')+m.msg+'</p>').join('');}
+>>>>>>> Stashed changes
 }
 
 /* ---------- door ---------- */
@@ -2649,7 +2798,12 @@ function loop(t){
   gfxTick();
   const r=cutRate/Math.max(0.001,dt*simSpeed/1000);
   rateS+=(r-rateS)*0.15;
+<<<<<<< Updated upstream
   const target=(st.spin!==0&&st.pwr==='ready')?clamp(6+rateS*0.12+Math.sin(t/260)+(effRpm()/1200)*2,0,170):0;
+=======
+  const phNow=st.phOn&&st.ph&&performance.now()-st.phAt<400?st.ph:null;
+  const target=(st.spin!==0&&st.pwr==='ready')?clamp((phNow?3+phNow.Pc/MACH.kw*100:6+rateS*0.12)+Math.sin(t/260)+(effRpm()/1200)*2,0,170):0;
+>>>>>>> Stashed changes
   st.load+=(target-st.load)*0.08;toolStats();
   needle.setAttribute('transform','rotate('+(-52+clamp(st.load,0,180)*104/180).toFixed(1)+' 100 125)');
   requestAnimationFrame(loop);
@@ -2705,6 +2859,21 @@ document.querySelectorAll('[data-speed]').forEach(b=>b.addEventListener('click',
 window.HASS={st,STK,run,toolOf,TT,NT,compileBlock,get simSpeed(){return simSpeed;}};
 
 
+<<<<<<< Updated upstream
+=======
+/* material och fysik i rutan Ämne */
+(function(){
+  const sel=$('#stM');if(!sel||!window.CNCFYSIK)return;
+  const groups={};CNCFYSIK.materials().forEach(m=>{(groups[m.kat]=groups[m.kat]||[]).push(m);});
+  Object.keys(groups).forEach(k=>{const g=document.createElement('optgroup');g.label=k;
+    groups[k].forEach(m=>{const o=document.createElement('option');o.value=m.id;o.textContent=CNCFYSIK.matName(m)+(m.SS&&m.SS.nr?' (SS '+m.SS.nr+')':'')+' – '+m.typ;g.appendChild(o);});sel.appendChild(g);});
+  const info=()=>{const m=STK.mat||CNCFYSIK.material(STK.matId);const v=m.vc||{};
+    $('#stMinfo').textContent=(m.info||'')+(v.mill?' Riktvärde vc fräsning '+v.mill[0]+'–'+v.mill[1]+' m/min, borrning '+(v.drill||['–','–']).join('–')+' m/min.':'');};
+  sel.value=STK.matId;info();
+  sel.addEventListener('change',()=>{STK.matId=sel.value;STK.mat=CNCFYSIK.material(sel.value);STK.hver++;info();render();});
+  $('#phOn').addEventListener('change',e=>{st.phOn=e.target.checked;if(!st.phOn){st.ph=null;}render();});
+})();
+>>>>>>> Stashed changes
 magBuild();
 /* ---------- fit panel to width ---------- */
 const stage=$('#stage'),scroller=$('#scroller');
@@ -2812,8 +2981,13 @@ const tb=box(900,60,420,tMat);tb.position.set(XC,TABLE_TOP-30,-YC);table.add(tb)
 const saddle=box(620,110,560,darkMat);saddle.position.set(XC,TABLE_TOP-115,-YC);table.add(saddle);
 const viseMat=M(0x2f6aa0,0.35,0.5),jawMat=M(0x9da3aa,0.6,0.35);
 const vise=new THREE.Group();table.add(vise);
+<<<<<<< Updated upstream
 const stockMat=M(0xc9ced4,0.35,0.42,{side:THREE.DoubleSide});
 let stockMesh=null,stockVer=-1,stockRebuild=-1,lastStockUpd=0,topIdx=null;
+=======
+const stockMat=M(0xffffff,0.35,0.42,{side:THREE.DoubleSide,vertexColors:true});
+let stockMesh=null,stockVer=-1,stockHver=-1,stockRebuild=-1,lastStockUpd=0,topIdx=null;
+>>>>>>> Stashed changes
 function buildVise(){
   vise.clear();
   const cx=STK.x0+STK.W/2,len=Math.max(160,Math.min(STK.W+30,260)),jaw=26,par=10;
@@ -2848,6 +3022,7 @@ function buildStock(){
   idx.push(bb,bb+2,bb+1,bb+1,bb+2,bb+3);
   const g=new THREE.BufferGeometry();
   g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setIndex(idx);
+<<<<<<< Updated upstream
   stockMesh=new THREE.Mesh(g,stockMat);stockMesh.userData={nTop,ringTop};table.add(stockMesh);
   stockVer=-1;buildVise();updateStock(true);
 }
@@ -2855,12 +3030,47 @@ function updateStock(force){
   const now=performance.now();
   if(!force&&(STK.ver===stockVer||now-lastStockUpd<70))return;
   lastStockUpd=now;stockVer=STK.ver;
+=======
+  g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(pos.length).fill(0.8),3));
+  stockMesh=new THREE.Mesh(g,stockMat);stockMesh.userData={nTop,ringTop};table.add(stockMesh);
+  stockVer=-1;stockHver=-1;buildVise();updateStock(true);
+}
+function updateStock(force){
+  const now=performance.now();
+  if(!force&&((STK.ver===stockVer&&STK.hver===stockHver)||now-lastStockUpd<70))return;
+  lastStockUpd=now;
+  if(STK.hver!==stockHver||force){stockHver=STK.hver;colorStock();}
+  if(STK.ver===stockVer&&!force)return;
+  stockVer=STK.ver;
+>>>>>>> Stashed changes
   const g=stockMesh.geometry,p=g.attributes.position.array,{nTop,ringTop}=stockMesh.userData;
   for(let k=0;k<nTop;k++)p[k*3+1]=STK.h[k];
   for(let r=0;r<ringTop.length;r++)p[(nTop+r*2)*3+1]=STK.h[ringTop[r]];
   g.attributes.position.needsUpdate=true;g.computeVertexNormals();g.computeBoundingSphere();
 }
 
+<<<<<<< Updated upstream
+=======
+// Ämnets färg: material, anlöpningsfärger på stål och mjuknande plast (assets/sim/fysik.js)
+function colorStock(){
+  if(!stockMesh)return;
+  const F=window.CNCFYSIK,Mt=STK.mat,col=stockMesh.geometry.attributes.color.array,{nTop,ringTop}=stockMesh.userData;
+  const base=F&&Mt?F.baseColor(Mt):[.8,.82,.85],tc=STK.F&&STK.F.tc;
+  const lin=v=>Math.pow(v,2.2);       // färger i linjärt ljus
+  const B=base.map(lin);
+  const cell=k=>{
+    const t=tc?tc[k]:20;
+    if(!F||!Mt||t<150)return B;
+    if(Mt.steel&&t>185)return F.filmRGB(F.oxD(t)).map(lin);
+    if(Mt.tsoft&&t>Mt.tsoft*.8){const u=Math.min(1,(t-Mt.tsoft*.8)/(Mt.tsoft*.4));return B.map((v,i)=>v+([.12,.07,.03][i]-v)*u);}
+    return B;
+  };
+  for(let k=0;k<nTop;k++){const c=cell(k);col[k*3]=c[0];col[k*3+1]=c[1];col[k*3+2]=c[2];}
+  for(let r=0;r<ringTop.length;r++){const c=cell(ringTop[r]);const t=(nTop+r*2)*3;col[t]=c[0];col[t+1]=c[1];col[t+2]=c[2];col[t+3]=B[0];col[t+4]=B[1];col[t+5]=B[2];}
+  const bb=(nTop+ringTop.length*2)*3;for(let q=0;q<12;q++)col[bb+q]=B[q%3];
+  stockMesh.geometry.attributes.color.needsUpdate=true;
+}
+>>>>>>> Stashed changes
 /* --- spindel och verktyg (följer Z) --- */
 const spindle=new THREE.Group();scene.add(spindle);
 const headMat=M(0x7d848b,0.3,0.55);
@@ -2872,7 +3082,11 @@ const toolG=new THREE.Group();holderG.add(toolG);
 const nozzle=new THREE.Mesh(new THREE.CylinderGeometry(5,7,70,10),M(0x2d6fb0,0.2,0.5));nozzle.position.set(-85,-10,55);nozzle.rotation.z=-0.6;spindle.add(nozzle);
 const jet=new THREE.Mesh(new THREE.CylinderGeometry(2.2,3.5,1,8),new THREE.MeshStandardMaterial({color:0x8fd2ff,transparent:true,opacity:0.55,depthWrite:false}));spindle.add(jet);
 let toolShown=-1,lastSig='';
+<<<<<<< Updated upstream
 const toolSig=()=>{const x=st.tool[st.atool]||{};return x.type+'|'+x.dia+'|'+x.h;};
+=======
+const toolSig=()=>{const x=st.tool[st.atool]||{};return x.type+'|'+x.dia+'|'+x.h+'|'+!!x.broken;};
+>>>>>>> Stashed changes
 /* --- verktygsmagasin (karusell till vänster om spindeln) --- */
 const car=new THREE.Group();scene.add(car);car.position.set(-560,330,-120);
 const carDisk=new THREE.Mesh(new THREE.CylinderGeometry(210,210,26,48),M(0x6f767d,0.35,0.5));car.add(carDisk);
