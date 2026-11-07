@@ -290,6 +290,7 @@ body{margin:0}
       <button type="button" class="mbtn" id="b-door" aria-pressed="false">Öppna dörren</button>
       <button type="button" class="mbtn" id="b-glass" aria-pressed="false">Se genom kåpan</button>
       <button type="button" class="mbtn" id="b-cam" aria-pressed="false">Hela maskinen</button>
+      <a class="mbtn" href="../lexikon.html" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center" title="Verktyg, G- och M-koder och skärdata (öppnas i en ny flik)">Lexikon</a>
     </div>
     <div class="cells c3">
       <div><span>X (G54)</span><b id="iX">0.000</b></div>
@@ -408,7 +409,7 @@ body{margin:0}
         <button type="button" class="mbtn pri" id="progLoad">Ladda in i maskinen</button>
         <button type="button" class="mbtn" id="progGet">Hämta aktivt program</button>
       </div>
-      <p class="pmsg" id="progMsg">Skriv eller klistra in G-kod (till exempel från Rita). Programmet läggs i maskinens minne under sitt O-nummer och blir aktivt.</p>
+      <p class="pmsg" id="progMsg">Skriv eller klistra in G-kod (till exempel från G-vis). Programmet läggs i maskinens minne under sitt O-nummer och blir aktivt.</p>
     </div>
     <div class="pcol">
       <h2>Ämne</h2>
@@ -438,6 +439,7 @@ body{margin:0}
 </main>
 <script src="material.js"></script>
 <script src="fysik.js"></script>
+<script src="ljud.js"></script>
 <script>
 (function(){
 'use strict';
@@ -663,7 +665,7 @@ const SV=n=>st.set[n]||0;
 const RATE=[2.5,25,250,2500];   // joggfart mm/min per steg
 function clockStr(){return new Date().toTimeString().slice(0,8);}
 /* ---------- verktyg ----------
-   Samma T-nummer som verktygslådan i G-kodsvisualiseraren (Rita), så att
+   Samma T-nummer som verktygslådan i G-kodsvisualiseraren (G-vis), så att
    program skrivna där går att köra här. L = verktygets längd från spindelnosen
    (hållare 75 mm + skärlängd h). */
 const TOOL_SRC=[
@@ -705,10 +707,11 @@ const STK={W:100,D:60,H:20,x0:-430,y0:-230,zb:-420,nx:0,ny:0,cellX:1,cellY:1,h:n
   matId:'en-aw-6082',mat:null,F:null,hver:0};
 function newStock(W,D,H,origin){
   W=clamp(+W||100,10,400);D=clamp(+D||60,10,300);H=clamp(+H||20,5,100);
-  const cell=Math.max(0.5,Math.max(W,D)/260);
+  const cell=Math.max(0.3,Math.max(W,D)/400);      // finare rutnät ger skarpare väggar (som i Spånlex)
   Object.assign(STK,{W,D,H,origin:origin==='mitt'?'mitt':'hörn',nx:Math.max(2,Math.round(W/cell)),ny:Math.max(2,Math.round(D/cell))});
   STK.cellX=W/STK.nx;STK.cellY=D/STK.ny;STK.top=STK.zb+H;
   STK.h=new Float32Array(STK.nx*STK.ny).fill(STK.top);STK.ver++;STK.rebuild++;
+  {const N0=STK.nx*STK.ny;STK.mx=new Float32Array(N0);STK.my=new Float32Array(N0);STK.mr=new Float32Array(N0);STK.ao=new Float32Array(N0).fill(1);}
   STK.mat=window.CNCFYSIK?CNCFYSIK.material(STK.matId):null;
   const N=STK.nx*STK.ny;
   STK.F={NX:STK.nx,NY:STK.ny,DX:STK.cellX,x0:STK.x0,y0:STK.y0,tt:new Float32Array(N),tl:new Float32Array(N),tc:new Float32Array(N).fill(20),clock:0,tmax:20};
@@ -734,7 +737,7 @@ function toolCut(x,y,zt,tool,apply){
       const n=j*STK.nx+i,hh=STK.h[n];
       if(hh<=STK.zb)continue;                       // genomborrat: inget material kvar
       const z=Math.max(zt+k*rho,STK.zb),d=hh-z;      // materialet finns mellan zb och hh
-      if(d>0){if(d>pen)pen=d;if(apply){vol+=d*cx*cy;STK.h[n]=z>STK.zb?z:STK.zb-0.01;}}
+      if(d>0){if(d>pen)pen=d;if(apply){vol+=d*cx*cy;STK.h[n]=z>STK.zb?z:STK.zb-0.01;STK.mx[n]=x;STK.my[n]=y;STK.mr[n]=r;}}
     }
   }
   if(apply&&vol>0)STK.ver++;
@@ -2804,7 +2807,8 @@ $('#stNew').addEventListener('click',()=>{
 });
 progText.value=PROG0.join('\n');
 document.querySelectorAll('[data-speed]').forEach(b=>b.addEventListener('click',()=>{simSpeed=+b.dataset.speed;render();}));
-window.HASS={st,STK,run,toolOf,TT,NT,compileBlock,get simSpeed(){return simSpeed;}};
+window.HASS={st,STK,run,toolOf,TT,NT,compileBlock,get simSpeed(){return simSpeed;},get rate(){return rateS;}};
+if(window.CNCLJUD)CNCLJUD.knapp(document.querySelector('.mach .mrow'),'mbtn');
 
 
 /* material och fysik i rutan Ämne */
@@ -2927,6 +2931,18 @@ const saddle=box(620,110,560,darkMat);saddle.position.set(XC,TABLE_TOP-115,-YC);
 const viseMat=M(0x2f6aa0,0.35,0.5),jawMat=M(0x9da3aa,0.6,0.35);
 const vise=new THREE.Group();table.add(vise);
 const stockMat=M(0xffffff,0.35,0.42,{side:THREE.DoubleSide,vertexColors:true});
+stockMat.onBeforeCompile=sh=>{
+  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute vec3 aMark;\nvarying vec3 vMark;\nvarying vec3 vLoc;')
+    .replace('#include <begin_vertex>','#include <begin_vertex>\nvMark=aMark;vLoc=position;');
+  sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vMark;\nvarying vec3 vLoc;')
+    .replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
+    if(vMark.z>0.){
+      vec2 pp=vec2(vLoc.x,-vLoc.z);vec2 dv=pp-vMark.xy;float d=length(dv);float k=6.2831/.5;
+      float fw=fwidth(d)*k;float amp=.22*clamp(1.-fw/2.2,0.,1.);float rr=sin(d*k)+.35*sin(d*k*2.7+1.3);vec2 dir=dv/max(d,1e-3);
+      vec3 upV=normalize((viewMatrix*vec4(0.,1.,0.,0.)).xyz);float fl=smoothstep(.9,.985,dot(normal,upV));
+      vec3 dvv=(viewMatrix*vec4(dir.x,0.,-dir.y,0.)).xyz;normal=normalize(normal+dvv*rr*amp*fl);
+    }`);
+};
 let stockMesh=null,stockVer=-1,stockHver=-1,stockRebuild=-1,lastStockUpd=0,topIdx=null;
 function buildVise(){
   vise.clear();
@@ -2963,6 +2979,7 @@ function buildStock(){
   const g=new THREE.BufferGeometry();
   g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setIndex(idx);
   g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(pos.length).fill(0.8),3));
+  {const mk=new Float32Array(pos.length);for(let k=2;k<mk.length;k+=3)mk[k]=-1;g.setAttribute('aMark',new THREE.BufferAttribute(mk,3));}
   stockMesh=new THREE.Mesh(g,stockMat);stockMesh.userData={nTop,ringTop};table.add(stockMesh);
   stockVer=-1;stockHver=-1;buildVise();updateStock(true);
 }
@@ -2977,6 +2994,25 @@ function updateStock(force){
   for(let k=0;k<nTop;k++)p[k*3+1]=STK.h[k];
   for(let r=0;r<ringTop.length;r++)p[(nTop+r*2)*3+1]=STK.h[ringTop[r]];
   g.attributes.position.needsUpdate=true;g.computeVertexNormals();g.computeBoundingSphere();
+  stockShade(g);colorStock();
+}
+// Som Spånlex: normaler ur höjdkartan med Sobel (begränsad lutning, så väggarna blir skarpa),
+// mörkare i hörn och vid väggarnas fot, och fräsmärken på bottnar frästa med pinnfräs.
+function stockShade(g){
+  const nx=STK.nx,ny=STK.ny,h=STK.h,cx=STK.cellX,cy=STK.cellY,nrm=g.attributes.normal.array,mk=g.attributes.aMark.array,ao=STK.ao;
+  const H=(i,j)=>h[(j<0?0:j>=ny?ny-1:j)*nx+(i<0?0:i>=nx?nx-1:i)];
+  const AOD=[[1,0],[.707,.707],[0,1],[-.707,.707],[-1,0],[-.707,-.707],[0,-1],[.707,-.707]],AOR=[1.2,3,6];
+  for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
+    const k=j*nx+i,hk=h[k];
+    let gx=((H(i+1,j-1)+2*H(i+1,j)+H(i+1,j+1))-(H(i-1,j-1)+2*H(i-1,j)+H(i-1,j+1)))/(8*cx);
+    let gy=((H(i-1,j+1)+2*H(i,j+1)+H(i+1,j+1))-(H(i-1,j-1)+2*H(i,j-1)+H(i+1,j-1)))/(8*cy);
+    const gm=Math.hypot(gx,gy);if(gm>6){gx*=6/gm;gy*=6/gm;}
+    const l=Math.hypot(gx,gy,1);nrm[k*3]=-gx/l;nrm[k*3+1]=1/l;nrm[k*3+2]=gy/l;      // tabellens z = −y
+    let oc=0;if(hk<STK.top-1e-3){for(const r of AOR){const si=r/cx,sj=r/cy;for(const d of AOD){const dz=H(Math.round(i+d[0]*si),Math.round(j+d[1]*sj))-hk;if(dz>0)oc+=Math.min(1,dz/(r*1.6));}}}
+    ao[k]=1-.62*Math.min(1,oc/24*1.6);
+    if(STK.mr[k]>0&&STK.mr[k]<14){mk[k*3]=STK.mx[k];mk[k*3+1]=STK.my[k];mk[k*3+2]=STK.mr[k];}else mk[k*3+2]=-1;
+  }
+  g.attributes.normal.needsUpdate=true;g.attributes.aMark.needsUpdate=true;
 }
 
 // Ämnets färg: material, anlöpningsfärger på stål och mjuknande plast (assets/sim/fysik.js)
@@ -2993,7 +3029,8 @@ function colorStock(){
     if(Mt.tsoft&&t>Mt.tsoft*.8){const u=Math.min(1,(t-Mt.tsoft*.8)/(Mt.tsoft*.4));return B.map((v,i)=>v+([.12,.07,.03][i]-v)*u);}
     return B;
   };
-  for(let k=0;k<nTop;k++){const c=cell(k);col[k*3]=c[0];col[k*3+1]=c[1];col[k*3+2]=c[2];}
+  const ao=STK.ao;
+  for(let k=0;k<nTop;k++){const c=cell(k),a=ao?ao[k]:1;col[k*3]=c[0]*a;col[k*3+1]=c[1]*a;col[k*3+2]=c[2]*a;}
   for(let r=0;r<ringTop.length;r++){const c=cell(ringTop[r]);const t=(nTop+r*2)*3;col[t]=c[0];col[t+1]=c[1];col[t+2]=c[2];col[t+3]=B[0];col[t+4]=B[1];col[t+5]=B[2];}
   const bb=(nTop+ringTop.length*2)*3;for(let q=0;q<12;q++)col[bb+q]=B[q%3];
   stockMesh.geometry.attributes.color.needsUpdate=true;
@@ -3069,6 +3106,105 @@ function placeJet(){
   jet.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());
 }
 
+
+/* --- effekter: spån och skärvätska (som i Spånlex) samt ljud (ljud.js) --- */
+const FX={MAXC:600,MAXW:700};
+{
+  // spån: små böjda flingor som snurrar, studsar och blir liggande en stund. De ligger i bordets koordinater.
+  const g=new THREE.BoxGeometry(1,0.08,0.55);g.translate(0,0,0);
+  const chipMat=new THREE.MeshStandardMaterial({color:0xffffff,metalness:0.75,roughness:0.32});
+  const im=new THREE.InstancedMesh(g,chipMat,FX.MAXC);im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);im.frustumCulled=false;
+  im.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(FX.MAXC*3).fill(1),3);
+  table.add(im);
+  Object.assign(FX,{im,cP:new Float32Array(FX.MAXC*3),cV:new Float32Array(FX.MAXC*3),cL:new Float32Array(FX.MAXC),cA:new Float32Array(FX.MAXC*3),cW:new Float32Array(FX.MAXC*3),cS:new Float32Array(FX.MAXC),cR:new Uint8Array(FX.MAXC),head:0,any:false});
+  const zero=new THREE.Matrix4().makeScale(0,0,0);for(let k=0;k<FX.MAXC;k++)im.setMatrixAt(k,zero);
+  // skärvätska: droppar som går från munstycket till verktyget, stänker och faller
+  const wg=new THREE.BufferGeometry(),wp=new Float32Array(FX.MAXW*3).fill(-1e5);
+  wg.setAttribute('position',new THREE.BufferAttribute(wp,3));
+  const pts=new THREE.Points(wg,new THREE.PointsMaterial({color:0x9fd6ff,size:2.6,sizeAttenuation:true,transparent:true,opacity:0.75,depthWrite:false}));pts.frustumCulled=false;scene.add(pts);
+  Object.assign(FX,{pts,wp,wV:new Float32Array(FX.MAXW*3),wL:new Float32Array(FX.MAXW),wT:new Float32Array(FX.MAXW),wJ:new Uint8Array(FX.MAXW),wA:new Float32Array(FX.MAXW*3),wB:new Float32Array(FX.MAXW*3),whead:0,wany:false});
+}
+const fxM=new THREE.Matrix4(),fxQ=new THREE.Quaternion(),fxE=new THREE.Euler(),fxS=new THREE.Vector3(),fxPv=new THREE.Vector3(),fxC=new THREE.Color();
+function chipColor(){
+  const Mt=STK.mat,id=(Mt&&Mt.id)||'',r=Math.random();
+  if(Mt&&Mt.kat==='Plaster'){const b=(window.CNCFYSIK?CNCFYSIK.baseColor(Mt):[.9,.9,.88]);return b.map(v=>v*(.9+Math.random()*.1));}
+  if(/^cu-/.test(id))return [.78,.45,.3];
+  if(/^cuzn|^cusn/.test(id))return [.85,.7,.35];
+  if(Mt&&Mt.steel&&!Mt.tsoft){if(r<.35){const b=.78+Math.random()*.18;return [b*.97,b*.99,b];}if(r<.8){const t=Math.random();return [.30+.25*t,.38+.22*t,.70+.2*t];}return [.78,.62,.34+Math.random()*.1];}
+  const b=.78+Math.random()*.18;return [b*.97,b*.99,b];
+}
+function floorAt(x,y){
+  if(x>=STK.x0&&x<=STK.x0+STK.W&&y>=STK.y0&&y<=STK.y0+STK.D&&STK.h){
+    const i=Math.min(STK.nx-1,Math.max(0,Math.floor((x-STK.x0)/STK.cellX))),j=Math.min(STK.ny-1,Math.max(0,Math.floor((y-STK.y0)/STK.cellY)));return Math.max(STK.h[j*STK.nx+i],STK.zb);}
+  return TABLE_TOP;
+}
+function spawnChips(n,x,y,z,r,size){
+  for(let q=0;q<n;q++){const k=FX.head;FX.head=(FX.head+1)%FX.MAXC;const a=Math.random()*Math.PI*2,sp=120+Math.random()*260;
+    FX.cP.set([x+Math.cos(a)*r,z+0.5,-(y+Math.sin(a)*r)],k*3);
+    FX.cV.set([Math.cos(a+1.3)*sp,90+Math.random()*240,-Math.sin(a+1.3)*sp],k*3);
+    FX.cL[k]=1.6+Math.random()*1.8;FX.cR[k]=0;FX.cS[k]=size*(.55+Math.random()*1.1);
+    FX.cA.set([Math.random()*6.3,Math.random()*6.3,Math.random()*6.3],k*3);
+    FX.cW.set([(Math.random()-.5)*30,(Math.random()-.5)*30,(Math.random()-.5)*30],k*3);
+    const c=chipColor();FX.im.instanceColor.setXYZ(k,c[0],c[1],c[2]);FX.any=true;}
+  FX.im.instanceColor.needsUpdate=true;
+}
+function stepChips(dt){
+  if(!FX.any)return;let any=false;const zero=new THREE.Matrix4().makeScale(0,0,0);
+  for(let k=0;k<FX.MAXC;k++){
+    if(FX.cL[k]<=0)continue;FX.cL[k]-=dt;const p=k*3;
+    if(FX.cL[k]<=0){FX.im.setMatrixAt(k,zero);continue;}any=true;
+    const fl=floorAt(FX.cP[p],-FX.cP[p+2])+0.3;
+    if(!FX.cR[k]){
+      FX.cV[p+1]-=2600*dt;const dr=1-0.6*dt;FX.cV[p]*=dr;FX.cV[p+2]*=dr;
+      FX.cP[p]+=FX.cV[p]*dt;FX.cP[p+1]+=FX.cV[p+1]*dt;FX.cP[p+2]+=FX.cV[p+2]*dt;
+      for(let i=0;i<3;i++)FX.cA[p+i]+=FX.cW[p+i]*dt;
+      if(FX.cP[p+1]<fl){FX.cP[p+1]=fl;if(FX.cV[p+1]<-250){FX.cV[p+1]*=-0.25;FX.cV[p]*=.4;FX.cV[p+2]*=.4;}else{FX.cR[k]=1;FX.cA[p]=0;FX.cA[p+2]=0;}}
+    }
+    const s=FX.cS[k];fxE.set(FX.cA[p],FX.cA[p+1],FX.cA[p+2]);fxQ.setFromEuler(fxE);fxS.set(s,s,s);fxPv.set(FX.cP[p],FX.cP[p+1],FX.cP[p+2]);
+    fxM.compose(fxPv,fxQ,fxS);FX.im.setMatrixAt(k,fxM);
+  }
+  FX.im.instanceMatrix.needsUpdate=true;FX.any=any;
+}
+const nozA=new THREE.Vector3(),nozB=new THREE.Vector3();
+function spawnWater(n,spread){
+  for(let q=0;q<n;q++){const k=FX.whead;FX.whead=(FX.whead+1)%FX.MAXW;const j=()=>(Math.random()-.5)*spread;
+    FX.wJ[k]=1;FX.wT[k]=Math.random()*.15;FX.wL[k]=1.2+Math.random()*.5;
+    FX.wA.set([nozA.x+j()*.3,nozA.y+j()*.3,nozA.z+j()*.3],k*3);FX.wB.set([nozB.x+j(),nozB.y+j()*.5,nozB.z+j()],k*3);FX.wany=true;}
+}
+function stepWater(dt){
+  if(!FX.wany)return;let any=false;
+  for(let k=0;k<FX.MAXW;k++){
+    if(FX.wL[k]<=0)continue;FX.wL[k]-=dt;const p=k*3;
+    if(FX.wL[k]<=0){FX.wp[p+1]=-1e5;continue;}any=true;
+    if(FX.wJ[k]){FX.wT[k]+=dt*6.5;const t=Math.min(1,FX.wT[k]);
+      for(let i=0;i<3;i++)FX.wp[p+i]=FX.wA[p+i]+(FX.wB[p+i]-FX.wA[p+i])*t;
+      if(t>=1){FX.wJ[k]=0;const a=Math.random()*Math.PI*2,sp=60+Math.random()*140;FX.wV.set([Math.cos(a)*sp,-40-Math.random()*80,Math.sin(a)*sp],p);FX.wL[k]=Math.min(FX.wL[k],.5+Math.random()*.5);}
+    }else{
+      FX.wV[p+1]-=2400*dt;FX.wp[p]+=FX.wV[p]*dt;FX.wp[p+1]+=FX.wV[p+1]*dt;FX.wp[p+2]+=FX.wV[p+2]*dt;
+      if(FX.wp[p+1]<TABLE_TOP+0.5){FX.wp[p+1]=TABLE_TOP+0.5;FX.wV[p]*=.2;FX.wV[p+2]*=.2;FX.wV[p+1]=0;}
+    }
+  }
+  FX.pts.geometry.attributes.position.needsUpdate=true;FX.wany=any;
+}
+let fxTool=-1;
+function fxFrame(dt,changing){
+  const T=H.toolOf(st.atool),on=!!st.spin&&st.pwr==='ready'&&!changing,rate=H.rate||0,rpm=Math.round(st.rpm*(st.sov||100)/100);
+  if(on&&T&&T.cut&&rate>1){
+    const vol=rate*dt,tipZ=st.pos.Z-T.L,top=STK.top;
+    spawnChips(Math.min(14,Math.ceil(vol/(T.d>15?8:2))),st.pos.X,st.pos.Y,Math.max(tipZ,Math.min(top,tipZ+T.h))+1,Math.min(T.d/2,25)*.9,Math.max(1.2,Math.min(4.5,.9+T.d*.12)));
+  }
+  if(on&&st.cool&&T){
+    nozA.set(-108,-40,72);nozB.set(0,-T.L+Math.min(T.h*0.6,12),0);spindle.localToWorld(nozA);spindle.localToWorld(nozB);
+    spawnWater(Math.ceil(140*dt*4),Math.max(1,T.d*.45));
+  }
+  stepChips(dt);stepWater(dt);
+  if(window.CNCLJUD){
+    if(fxTool!==st.atool){if(fxTool>0)CNCLJUD.klonk();fxTool=st.atool;}
+    const op=H.run.op;
+    CNCLJUD.update({spin:!!st.spin&&st.pwr==='ready',S:rpm,z:T?T.z:3,grupp:T&&T.cut?T.ph:null,cut:1-Math.exp(-rate/250),cool:!!st.cool,rapid:!!(op&&op.k==='lin'&&op.rapid)});
+  }
+}
+
 /* --- knappar --- */
 let seeThrough=false;
 document.getElementById('b-glass').addEventListener('click',()=>{seeThrough=!seeThrough;front.visible=!seeThrough;
@@ -3092,6 +3228,7 @@ function frame(now){
   updateCarousel(dt,changing);
   if(st.spin&&st.pwr==='ready'){spinA+=st.spin*-Math.min(st.rpm,420)/60*Math.PI*2*dt;toolG.rotation.y=spinA;}
   jet.visible=!!st.cool&&st.pwr==='ready'&&!changing;
+  fxFrame(dt,changing);
   const goal=st.doorOpen?-520:410;doorX+=(goal-doorX)*Math.min(1,dt*5);doorR.position.x=doorX;
   controls.update();
   renderer.render(scene,cam);

@@ -170,6 +170,11 @@
     .fd input[type="range"] { flex:1; width:auto; min-width:0; height:28px; accent-color:var(--cyan); cursor:pointer; }
     .fd strong { min-width:92px; text-align:right; font-family:"SFMono-Regular",Consolas,monospace; font-size:14px; color:var(--cyan); }
     .fl { margin-top:12px; }
+    .phline { margin-top:5px; font:600 11px "SFMono-Regular",Consolas,monospace; color:var(--muted); letter-spacing:.04em; }
+    .phline b { color:var(--ink); font-weight:700; }
+    .phnote { margin-top:6px; padding:6px 9px; border-radius:7px; font-size:12px; line-height:1.4; background:#2a2416; border:1px solid #6b5420; color:var(--ink); }
+    .phnote.e { background:#2c1716; border-color:#7a2a24; }
+    .phnote:empty { display:none; }
     .fh { display:flex; justify-content:space-between; align-items:baseline; font-size:11px; letter-spacing:.08em; color:var(--muted); }
     .fh b { font-weight:600; color:var(--muted); font-family:"SFMono-Regular",Consolas,monospace; font-size:12px; }
     .fh strong { font-size:14px; color:var(--cyan); font-weight:700; }
@@ -275,7 +280,7 @@
     </nav>
     <aside id="drawer" aria-label="Meny">
     <div id="subtabs" class="" role="group" aria-label="Verktyg"><button data-s="verktyg" class="" aria-pressed="false">Skärverktyg</button><button data-s="reitstock" aria-pressed="true" class="on">Reitstock</button></div>
-    <section class="card stock dp off" data-p="amne"><div class="eyebrow">ÄMNE</div><label>DIAMETER mm <input id="diameter" type="number" min="10" max="120" step="0.5" value="40"></label><label>LÄNGD mm <input id="length" type="number" min="30" max="300" step="1" value="80"></label><div class="presets"><span>SNABBVAL</span><button data-d="30" data-l="60">Ø30×60</button><button data-d="40" data-l="80">Ø40×80</button><button data-d="50" data-l="100">Ø50×100</button><button data-d="80" data-l="150">Ø80×150</button></div><div class="snote" id="stockNote">Ø 10–120 mm • längd 30–300 mm. Ca 21 mm av längden sitter i chucken. Ämnet byts ut när du ändrar måtten.</div><label>MATERIAL <select id="material"><option value="P" selected="">P — Stål</option><option value="M">M — Rostfritt</option><option value="K">K — Gjutjärn</option><option value="N">N — Aluminium</option><option value="S">S — Superlegering</option></select></label></section>
+    <section class="card stock dp off" data-p="amne"><div class="eyebrow">ÄMNE</div><label>DIAMETER mm <input id="diameter" type="number" min="10" max="120" step="0.5" value="40"></label><label>LÄNGD mm <input id="length" type="number" min="30" max="300" step="1" value="80"></label><div class="presets"><span>SNABBVAL</span><button data-d="30" data-l="60">Ø30×60</button><button data-d="40" data-l="80">Ø40×80</button><button data-d="50" data-l="100">Ø50×100</button><button data-d="80" data-l="150">Ø80×150</button></div><div class="snote" id="stockNote">Ø 10–120 mm • längd 30–300 mm. Ca 21 mm av längden sitter i chucken. Ämnet byts ut när du ändrar måtten.</div><label>MATERIAL <select id="material"></select></label><div class="snote" id="matNote"></div></section>
     <section class="card stock dp off" data-p="verktyg"><div class="eyebrow">SKÄRVERKTYG</div><div class="eyebrow" style="margin-top:10px">VERKTYGSLÅDA — klicka för att montera</div><div id="ctbox"><div class="grp">Utvändigt</div><div class="trw cur" data-id="SVJBR"><div><b>SVJBR</b><br><span>93° • max 1000 N</span></div></div><div class="trw" data-id="SVVCN"><div><b>SVVCN</b><br><span>72,5° • max 900 N</span></div></div><div class="trw" data-id="SVUBR"><div><b>SVUBR</b><br><span>95° • max 1000 N</span></div></div><div class="trw" data-id="SVQBR"><div><b>SVQBR</b><br><span>117,5° • max 900 N</span></div></div><div class="trw" data-id="MGMN"><div><b>MGMN 300</b><br><span>Avstick 3 mm • max 1300 N</span></div></div><div class="grp">Invändigt (borrstång i Z-led)</div><div class="trw" data-id="BSCLCR"><div><b>S-SCLCR</b><br><span>95° invändig</span></div></div><div class="trw" data-id="BSDUCR"><div><b>S-SDUCR</b><br><span>93° invändig</span></div></div><div class="trw" data-id="BSVUBR"><div><b>S-SVUBR</b><br><span>93° invändig (35°)</span></div></div></div><label style="display:none"><select id="toolType"><optgroup label="Utvändigt"><option value="SVJBR">SVJBR — 93°</option><option value="SVVCN">SVVCN — 72,5°</option><option value="SVUBR">SVUBR — 95°</option><option value="SVQBR">SVQBR — 117,5°</option><option value="MGMN">MGMN 300 — Avstick 3 mm</option></optgroup><optgroup label="Invändigt (borrstång i Z-led)"><option value="BSCLCR">S-SCLCR — 95° invändig</option><option value="BSDUCR">S-SDUCR — 93° invändig</option><option value="BSVUBR">S-SVUBR — 93° invändig (35°)</option></optgroup></select></label><label>HÅLLARVINKEL <span class="angctl"><input id="holderAngle" type="range" min="-90" max="90" value="0" step="1" aria-label="Hållarvinkel, reglage"><input id="holderAngleNum" type="number" min="-90" max="90" step="any" value="0" aria-label="Hållarvinkel i grader"><span class="deg">°</span></span></label><label id="barRow1" style="display:none">BORRSTÅNG Ø <select id="barD"><option value="3">Ø 3 mm</option><option value="4">Ø 4 mm</option><option value="5">Ø 5 mm</option><option value="6">Ø 6 mm</option><option value="8">Ø 8 mm</option><option value="10">Ø 10 mm</option><option value="12">Ø 12 mm</option><option value="16" selected="">Ø 16 mm</option><option value="20">Ø 20 mm</option><option value="25">Ø 25 mm</option></select></label><label id="barRow2" style="display:none">UTSTICK <select id="barL"><option value="20">20 mm</option><option value="30">30 mm</option><option value="40">40 mm</option><option value="60">60 mm</option><option value="80">80 mm</option><option value="100" selected="">100 mm</option><option value="120">120 mm</option><option value="150">150 mm</option><option value="200">200 mm</option></select></label><div class="toolnote" id="toolTypeRead">SVJBR • hållare 0° • ingrepp 93.0° • max 1000 N</div></section>
     <section class="card stock dp off" data-p="process"><div class="eyebrow">BEARBETNING</div><label>VARVTAL <span class="toolnote" id="rpmSet">712 varv/min (växellåda)</span></label><label>SKÄRANDE EGG <select id="cutMode"><option value="edge" selected="">Hela eggen</option><option value="tip">Bara spetsen</option></select></label><label>RIKTNING <select id="spinDir"><option value="1" selected="">Mot urs (M04)</option><option value="-1">Med urs (M03)</option></select></label><div class="toolnote" id="cutDataRead">S712 • F0.20 mm/v (170 mm/min) • Ra≈8.3 µm</div></section>
     <section class="card gear dp off locked" id="gearPanel" data-p="vaxel">
@@ -361,7 +366,8 @@
         <label>DIAMETER mm <input id="cDia" type="number" min="10" max="100" step="1" value="40"></label>
         <label>LÄNGD UR CHUCK mm <input id="cLen" type="number" min="40" max="200" step="1" value="80"></label>
         <button class="primary" id="cApply">↻ Lägg in nytt ämne</button>
-        <button id="cDoor">🚪 Dörr: STÄNGD</button></div>
+        <button id="cDoor">🚪 Dörr: STÄNGD</button>
+        <label>MATERIAL <select id="cMat"></select></label></div>
       <p class="hint">Maskinen kör bara med stängd dörr. Öppnas dörren under körning pausas programmet. Z0 = ämnets framsida, X = diameter. Ämnet sitter fast i chucken vid Z = −längd.</p></section>
     <section class="card gkp dp off" data-p="c_noll"><div class="eyebrow">NOLLPUNKT • OFFSET</div><p class="hint" style="border:0;padding:0;margin-top:8px">Under uppbyggnad. Här planerar vi:</p><ul class="hint" style="margin:6px 0 0 16px;padding:0;border:0"><li>Arbetsoffset G54–G59</li><li>Verktygsoffset (geometri och slitage)</li><li>Sätta nollpunkt med G50</li></ul></section>
     <section class="card gkp dp off" data-p="c_verktyg"><div class="eyebrow">REVOLVER • VERKTYGSUPPSÄTTNING</div>
@@ -401,6 +407,8 @@
           <div class="fl">
             <div class="fh"><span>SKÄRKRAFT</span><b><strong id="fcRead" class="">171</strong> N • <em id="fcPct">17 %</em></b></div>
             <div class="fbar"><i id="fcBar" style="width: 17.0581%; background: var(--cyan);"></i></div>
+            <div class="phline" id="phLine">EFFEKT – • VRIDMOMENT – • v<sub>c</sub> –</div>
+            <div class="phnote" id="phNote"></div>
           </div>
           <div class="zr">
             <span class="lbl">NOLLPUNKT</span>
@@ -467,6 +475,9 @@
             <div><span>VERKTYG</span><strong id="cT">T01</strong></div>
           </div>
           <div class="fd"><span class="lbl">MATNING %</span><input id="cFeedOv" type="range" min="0" max="150" step="10" value="100" aria-label="Matningsoverride"><strong id="cFeedOvVal">100 %</strong></div>
+          <div class="fl"><div class="fh"><span>SKÄRKRAFT</span><b><strong id="cFc">0</strong> N • <em id="cFcPct">0 %</em></b></div>
+            <div class="fbar"><i id="cFcBar" style="width:0%;background:var(--cyan)"></i></div>
+            <div class="phline" id="cPhLine">EFFEKT – • VRIDMOMENT – • v<sub>c</sub> –</div></div>
           <div class="zr"><span class="lbl">BLOCK</span><code id="cLine" style="color:var(--ink);font:12px monospace">—</code><span class="rem" id="cRem">0.00 cm³ avverkat</span></div>
         </section>
         <section class="dpanel"><div class="lbl">CYKEL</div>
@@ -474,6 +485,8 @@
       </footer>
     </div>
   </div>
+  <script src="material.js"></script>
+  <script src="fysik.js"></script>
   <script type="importmap">
     { "imports": {
       "three": "../../../assets/vendor/three-r160/three.module.min.js",
@@ -957,6 +970,30 @@
         const ivs=[]; if(xb>0)ivs.push([Math.max(0,xa),xb]); if(xa<0)ivs.push([Math.max(0,-xb),-xa]);
         for(const [lo,hi] of ivs){ const jA=Math.max(0,Math.ceil(lo/DX-.5)),jB=Math.min(nr-1,Math.floor(hi/DX-.5)),o=i*nr; for(let j=jA;j<=jB;j++)if(solid[o+j]){removeCell(i,j);did=true;} } }
       return did; }
+    /* ---- fysik (fysik.js): Kienzle med hm = f · sin κ, effekt och vridmoment, spindelns gräns ---- */
+    const SV_MACH={kw:7.5,nm:600};   // konventionell svarv: 7,5 kW, växellådan ger högt vridmoment vid låga varv
+    let svMat=window.CNCFYSIK?CNCFYSIK.material('s235jr'):null;
+    const svDone=new Set(); let svNoteT=0;
+    function svNote(key,ty,msg){ if(svDone.has(key))return; svDone.add(key); const el=document.querySelector('#phNote'); if(!el)return; el.className='phnote'+(ty==='e'?' e':''); el.innerHTML=msg; svNoteT=performance.now(); }
+    // A = spånarea per varv (mm²). Svarar false om skäret gick sönder eller spindeln stannade.
+    function svPhys(A){
+      if(!window.CNCFYSIK||!svMat){ const Fc=KC*A; if(Fc>state.fcFrame)state.fcFrame=Fc; if(Fc>curFmax()){breakTool();return false;} return true; }
+      const sp=toolSpecs[toolType.value]||{k:93}, kr=Math.max(5,Math.min(175,sp.k+holderDeg)), D=Math.max(1,Math.abs(state.x)*20);
+      const r=CNCFYSIK.turn({kr,f:state.feed,A,D,n:state.rpmAct,mat:svMat,Fmax:curFmax(),nose:NOSE*10,mach:SV_MACH});
+      state.ph=r; state.phAt=performance.now();
+      if(r.F>state.fcFrame)state.fcFrame=r.F;
+      r.warn.forEach(w=>{ if(w.k!=='kw'&&w.k!=='nm'&&w.k!=='hi')svNote(w.k,w.ty,w.msg); });
+      if(r.load>=1){ svNote('brk'+performance.now(),'e','<b>Skäret gick sönder.</b> '+r.why[0].toUpperCase()+r.why.slice(1)+'. Minska skärdjupet eller matningen. Byt skär med 🔧.'); breakTool(); return false; }
+      const lim=r.warn.find(w=>w.k==='kw'||w.k==='nm');
+      if(lim){ svNote('lim'+performance.now(),'e','<b>Spindeln stannade.</b> '+lim.msg); state.spindle=false; state.crash=1.5; document.querySelector('#mode').textContent='SPINDELN ÖVERBELASTAD — motorskyddet löste ut'; return false; }
+      return true;
+    }
+    function svPhysUI(){
+      const el=document.querySelector('#phLine'); if(!el)return; const r=state.ph, fresh=r&&performance.now()-state.phAt<500;
+      const nf=(v,d)=>(Math.round(v*10**d)/10**d).toFixed(d).replace('.',',');
+      el.innerHTML=fresh?`EFFEKT <b>${nf(r.Pc,2)} kW</b> • VRIDMOMENT <b>${nf(r.Mc,1)} Nm</b> • v<sub>c</sub> <b>${Math.round(r.vc)} m/min</b>`:'EFFEKT – • VRIDMOMENT – • v<sub>c</sub> –';
+      if(svNoteT&&performance.now()-svNoteT>9000){ svNoteT=0; svDone.clear(); const n=document.querySelector('#phNote'); if(n)n.innerHTML=''; }
+    }
     function breakTool(){ sfxBreak(); toolBroken=true; setToolStyle(); state.crash=3;
       if(state.demo){state.demo=false;state.demoPhase=0;document.querySelector('#demo').textContent='▶ Starta matning Z−';}
       document.querySelector('#mode').textContent='VERKTYGSBROTT — skärkraften blev för hög'; }
@@ -971,7 +1008,7 @@
       if(did){ const c0=Math.floor(dirtyLo/CH),c1=Math.min(nChunks-1,Math.floor((dirtyHi+1)/CH)); for(let c=c0;c<=c1;c++)rebuildChunk(c);
         document.querySelector('#removed').textContent=state.removed.toFixed(2)+' cm³ avverkat'; emitChips(Math.min(6,Math.ceil(frameCells/30)));
         for(const i of newEmpty){ if(cnt[i]===0&&anySolidAbove(i)){detachFrom(i);break;} }
-        const Fc=KC*maxEv*.0025; if(Fc>state.fcFrame)state.fcFrame=Fc; if(Fc>curFmax())breakTool(); } }
+        if(maxEv>0&&!svPhys(maxEv*.0025))return; } }
     // ---- Kollision: hållare/skär mot ämnet, samt chuck och käftar (alltid fasta) ----
     function scan(A,x,z,c,sn,R2,early,mat){ let n=0;
       for(let k=0;k<A.length;k+=3){
@@ -1077,7 +1114,14 @@
       if(A.on){ if(!A.ctx)initAudio(); A.ctx.resume(); A.px=state.x; A.pz=state.z; A.master.gain.setTargetAtTime(.7,A.ctx.currentTime,.05); }
       else if(A.ctx)A.master.gain.setTargetAtTime(0,A.ctx.currentTime,.05);
       sndBtn.textContent='🔊 Ljud: '+(A.on?'PÅ':'AV'); };
-    document.querySelector('#material').onchange=e=>{ A.mat=e.target.value; KC=MATS[A.mat].kc; };
+    // material ur biblioteket (material.js). Ljudet följer ISO-gruppen, borrkraften kc vid spåntjocklek 0,15 mm.
+    function fillMat(sel,val){ if(!sel||!window.CNCFYSIK)return; const groups={}; CNCFYSIK.materials().forEach(m=>{(groups[m.kat]=groups[m.kat]||[]).push(m);});
+      sel.innerHTML=''; Object.keys(groups).forEach(k=>{ const og=document.createElement('optgroup'); og.label=k; groups[k].forEach(m=>{ const o=document.createElement('option'); o.value=m.id; o.textContent=CNCFYSIK.matName(m)+(m.SS&&m.SS.nr?' (SS '+m.SS.nr+')':'')+' – '+m.typ; og.appendChild(o); }); sel.appendChild(og); }); sel.value=val; }
+    window.__fillMat=fillMat;
+    function setSvMat(id){ if(!window.CNCFYSIK)return; svMat=CNCFYSIK.material(id); A.mat=MATS[svMat.grupp]?svMat.grupp:'S'; KC=svMat.kc1*Math.pow(.15,-svMat.mc);
+      const v=(svMat.vc&&(svMat.vc.turn||svMat.vc.face))||[]; const n=document.querySelector('#matNote'); if(n)n.innerHTML=`k<sub>c1</sub> ${svMat.kc1} N/mm² • riktvärde v<sub>c</sub> ${v.join('–')} m/min med hårdmetallskär`; }
+    fillMat(document.querySelector('#material'),'s235jr'); setSvMat('s235jr');
+    document.querySelector('#material').onchange=e=>setSvMat(e.target.value);
     { const note=t=>{ if(state.demo)return; const md=document.querySelector('#mode'); md.textContent=t; setTimeout(()=>{if(!state.demo&&md.textContent===t)md.textContent=baseMode();},1800); };
       const curZ=()=>(state.z-(stockStart+stockLength))*10;
       document.querySelector('#zeroX').onclick=()=>{offX=state.x*20;positionTool();note('X NOLLSTÄLLD');};
@@ -1433,7 +1477,26 @@
         say('Kör program ('+gc.ops.length+' operationer)…'); ui(); }
       function adv(o){ gc.i++;gc.pi=0; if(gc.single&&gc.ops[gc.i]&&gc.ops[gc.i].ln!==o.ln){gc.paused=true;ui();} }
       const rpmNow=()=>cnc.rpmAct;
-      function move(o,dt){ let sp;
+      // fysik för CNC-svarven: volymen som togs bort i den här bildrutan ger spånarean A = Q / vc
+      const CNC_MACH={kw:11,nm:140};   // spindeln: 11 kW och 140 Nm
+      const CPH={kr:{1:95,2:93,3:90,4:90,5:90,6:93},fmax:{1:2500,2:1200,3:1100,4:800,5:600,6:1300}};
+      let cMat=window.CNCFYSIK?CNCFYSIK.material('s235jr'):null; cnc.ph=null; cnc.phAt=0;
+      { const sel=$('#cMat'); if(sel&&window.__fillMat){ window.__fillMat(sel,'s235jr'); sel.onchange=()=>{ cMat=CNCFYSIK.material(sel.value); }; } }
+      function cncPhys(o,dt,rem0){
+        if(!window.CNCFYSIK||!cMat||o.rapid||dt<=0||!gc.run)return true;
+        const dV=(cnc.removed-rem0)*1000; if(dV<=1e-4)return true;
+        const n=Math.max(1,cnc.rpmAct), f=o.f?(o.f.mode==='min'?o.f.v/n:o.f.v):.2, D=Math.max(1,cnc.x), vc=Math.PI*D*n/1000;
+        const Q=dV/dt, A=Q/(vc*1000/60), T=CTOOLS[cnc.tool]||{nose:.4};
+        const r=CNCFYSIK.turn({kr:CPH.kr[cnc.tool]||93,f:f*cnc.feedOv,A,D,n,mat:cMat,Fmax:CPH.fmax[cnc.tool]||1000,nose:T.nose,mach:CNC_MACH});
+        cnc.ph=r; cnc.phAt=performance.now();
+        const ln=gc.ln>=0?'Rad '+(gc.ln+1)+': ':'';
+        r.warn.forEach(w=>{ if(w.k==='kw'||w.k==='nm'||w.k==='hi')return; const key=w.k+'|'+cnc.tool; if(gc.once&&!gc.once.has(key)){ gc.once.add(key); say(ln+w.msg.replace(/<[^>]+>/g,''),'warn'); } });
+        if(r.load>=1){ gc.stop('LARM — SKÄRET GICK SÖNDER (T'+String(cnc.tool).padStart(2,'0')+'): '+r.why+'. Minska skärdjupet eller matningen.',true); return false; }
+        const lim=r.warn.find(w=>w.k==='kw'||w.k==='nm');
+        if(lim){ gc.stop('LARM — SPINDELN ÖVERBELASTAD: '+lim.msg.replace(/<[^>]+>/g,''),true); return false; }
+        return true; }
+      function move(o,dt){ const rem0=cnc.removed; const res=moveRaw(o,dt); if(!cncPhys(o,dt,rem0))return false; return res; }
+      function moveRaw(o,dt){ let sp;
         if(o.rapid)sp=200; else { const f=o.f; const spinOk=cnc.rpmAct>=Math.max(20,.9*(cnc.rpmTarget||0));
           if(!cnc.spindle||cnc.rpmAct<20){ if(!cnc.spindle&&(!f||f.mode==='rev'||CN3.nearMat())){gc.stop('LARM — spindeln går inte (M03 saknas)',true);return false;} }
           if(cnc.spindle&&!spinOk)return false;
@@ -1479,7 +1542,11 @@
         const td=angDiff(cnc.turRot,CN3.turTarget()); cnc.turRot+=Math.max(-6*dt,Math.min(6*dt,td));
         CN3.spin.rotation.x+=cnc.dir*cnc.rpmAct/60*2*Math.PI*.04*dt*10; CN3.place(); CN3.door.position.x=cnc.door?-21:0;
         if((tick++%6)===0){ $('#cX').textContent=(cnc.x-cnc.offX).toFixed(2); $('#cZ').textContent=(cnc.z-cnc.offZ).toFixed(2); $('#cS').textContent=Math.round(cnc.rpmAct); const T=CTOOLS[cnc.tool];
-          $('#cT').textContent='T'+String(cnc.tool).padStart(2,'0'); $('#cRem').textContent=cnc.removed.toFixed(2)+' cm³ avverkat'; $('#cF').textContent=Math.round(cnc.rpmAct*.2*cnc.feedOv); screenUpd(); }
+          $('#cT').textContent='T'+String(cnc.tool).padStart(2,'0'); $('#cRem').textContent=cnc.removed.toFixed(2)+' cm³ avverkat'; $('#cF').textContent=Math.round(cnc.rpmAct*.2*cnc.feedOv); screenUpd();
+          { const r=cnc.ph, fresh=r&&performance.now()-cnc.phAt<500, q=fresh?r.load:0, nf=(v,d)=>(Math.round(v*10**d)/10**d).toFixed(d).replace('.',',');
+            $('#cFc').textContent=fresh?Math.round(r.F):0; $('#cFcPct').textContent=Math.round(q*100)+' %';
+            const b=$('#cFcBar'); b.style.width=Math.min(100,q*100)+'%'; b.style.background=q>=1?'var(--red)':q>.7?'var(--amber)':'var(--cyan)';
+            $('#cPhLine').innerHTML=fresh?`EFFEKT <b>${nf(r.Pc,2)} kW</b> • VRIDMOMENT <b>${nf(r.Mc,1)} Nm</b> • v<sub>c</sub> <b>${Math.round(r.vc)} m/min</b>`:'EFFEKT – • VRIDMOMENT – • v<sub>c</sub> –'; } }
         CN3.render(); }
       requestAnimationFrame(loop);
       // ---- editor och knappar ----
@@ -1604,7 +1671,7 @@
       stepChips(dt);
       lamp.classList.toggle('crash',state.crash>0);
       positionTool();
-      cutFrame(dt); drillFrame(dt); state.fc=Math.max(state.fcFrame,state.fc*Math.exp(-dt*3)); state.fcFrame=0; state.fcd=Math.max(state.fcdFrame,state.fcd*Math.exp(-dt*3)); state.fcdFrame=0; updateReadouts(); renderTsReadout();
+      cutFrame(dt); drillFrame(dt); state.fc=Math.max(state.fcFrame,state.fc*Math.exp(-dt*3)); state.fcFrame=0; state.fcd=Math.max(state.fcdFrame,state.fcd*Math.exp(-dt*3)); state.fcdFrame=0; updateReadouts(); svPhysUI(); renderTsReadout();
       setLamp(engaged()); updateAudio(dt);
       if(fallingPart){ const restY=WAYTOP*SC+initialR-.01; if(fallingPart.position.y>restY){fallVelocity+=dt*8;fallingPart.position.y=Math.max(restY,fallingPart.position.y-fallVelocity*dt);fallingPart.rotation.z+=dt*1.35;} } // faller och landar på glidytorna
       const spin=dt*14*state.rpmAct/850; stockGroup.rotation.z+=state.dirAct*spin; chuck.rotation.z+=state.dirAct*spin;

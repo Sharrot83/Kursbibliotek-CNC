@@ -1,0 +1,30 @@
+{
+ "planfras": {
+  "rpm": 1560,
+  "z": 6
+ },
+ "pinnfras": {
+  "rpm": 8000,
+  "z": 3
+ },
+ "borr": {
+  "rpm": 3000,
+  "z": 2
+ },
+ "gangtapp": {
+  "rpm": 800,
+  "z": 4
+ },
+ "urborr": {
+  "rpm": 1200,
+  "z": 1
+ },
+ "gravyr": {
+  "rpm": 12000,
+  "z": 1
+ },
+ "skivfras": {
+  "rpm": 500,
+  "z": 48
+ }
+}

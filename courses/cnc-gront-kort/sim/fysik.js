@@ -72,10 +72,15 @@ function cut(p){
   if(load>=.75&&load<1)W('hi','w',`Hög belastning (${Math.round(load*100)} %): ${why}. Nära gränsen.`);
   if(Pc>mach.kw)W('kw','e',`Spindeln orkar inte: ${nf1(Pc)} kW behövs, maskinen har ${nf1(mach.kw)} kW. Minska skärdjup, ingrepp eller matning.`);
   else if(Mc>mach.nm)W('nm','e',`Spindelns vridmoment räcker inte: ${nf0(Mc)} Nm behövs vid S${Math.round(n)}, maskinen ger ${nf0(mach.nm)} Nm. Höj varvtalet eller minska ingreppet.`);
-  if(hm<.004&&['em','em2','crad','rough','neck'].includes(type)&&!p.axial)
+  // små skivor (verktyget går in i ett redan fräst spår, rutnätets upplösning) räknas inte som gnidning
+  const rub=hm<.004&&['em','em2','crad','rough','neck'].includes(type)&&!p.axial&&ae>=Math.max(.15,.03*D);
+  if(rub)
     W('rub','w',`Matningen är för låg (spåntjocklek ${(Math.round(hm*1000)/1000).toFixed(3).replace('.',',')} mm): verktyget gnider i stället för att skära. Det blir varmt, ytan blir sämre${M.tsoft?' och plasten kan smälta':M.steel?' och materialet kan deformationshärdna':''}. Öka matningen.`);
   const fam=famOf(type),rg=(M.vc&&M.vc[fam])||[50,300];
   let frac=p.cool?.05:.16;if(vc>rg[1])frac*=1+(vc/rg[1]-1)*3;if(hm<.008)frac*=2;
+  // gnidning: eggen plöjer och glider i stället för att skära. Friktionen (μ ≈ 0,6 mot en normalkraft på cirka 200 N per mm
+  // skärdjup) blir värme i ämnet, eftersom ingen spån tar med sig den. Värmen läggs till som en del av heatFrac (E = Pc · heatFrac).
+  if(rub){const Prub=.6*200*Math.max(ap,.2)*vc/60/1000;frac+=Prub/Math.max(Pc,1e-6);}
   if((fam==='mill'||fam==='face'||fam==='drill')&&vc>rg[1]*1.4)
     W('vc','w',`Varvtalet är för högt: v<sub>c</sub> ${nf0(vc)} m/min (riktvärde ${rg[0]}–${rg[1]}). Verktyget blir varmt och slits fort${M.steel&&!M.tsoft?', och spånen blir blå':''}.`);
   if(M.bue&&(fam==='mill'||fam==='face')&&vc<rg[0]*.5)
@@ -122,16 +127,52 @@ function filmRGB(d){
   filmCache.set(d,out);return out;
 }
 /* grundfärg för ämnet efter material (0–1) */
+/* ämnets färg som i verkligheten (linjär RGB 0–1): blankt aluminium, grått stål, ljusare rostfritt, mörkt gjutjärn,
+   kopparrött, mässingsgult, titan, och plasterna i sina vanliga färger */
 function baseColor(M){
   const id=M.id||'';
-  if(/^cu-/.test(id))return [.78,.47,.33];
-  if(/^cuzn|^cusn/.test(id))return [.82,.69,.36];
-  if(M.kat==='Plaster'){if(id==='peek')return [.78,.68,.52];if(id==='pa6')return [.92,.9,.82];if(id==='pvc-u')return [.5,.52,.55];if(id==='pmma'||id==='pc')return [.82,.88,.9];return [.93,.92,.88];}
-  if(M.kat==='Titan')return [.6,.6,.62];
-  if(M.base==='al')return [.8,.82,.85];
-  if(M.grupp==='K')return [.45,.46,.48];
-  return [.62,.64,.67];
+  const P={'pom-c':[.95,.95,.93],'pa6':[.93,.9,.8],'pe-uhmw':[.97,.97,.96],'pp':[.94,.94,.9],'peek':[.79,.69,.53],'pmma':[.86,.91,.94],'pc':[.84,.89,.92],'pvc-u':[.48,.51,.54],'ptfe':[.98,.98,.97],'hardplast':[.2,.2,.22]};
+  if(P[id])return P[id];
+  if(M.kat==='Plaster')return [.93,.92,.88];
+  if(/^cu-/.test(id))return [.88,.53,.38];
+  if(/^cuzn/.test(id))return [.87,.73,.42];
+  if(/^cusn/.test(id))return [.8,.6,.38];
+  if(M.kat==='Titan'||/^ti/.test(id))return [.62,.6,.57];
+  if(M.base==='al'||/^en-aw/.test(id))return [.88,.9,.92];
+  if(M.grupp==='K')return [.4,.41,.42];
+  if(M.grupp==='M')return [.7,.7,.69];
+  if(/^1\.23|orvar|unimax|sleipner|hardat/.test(id))return [.5,.52,.54];
+  return [.58,.6,.62];
+}
+/* ytans karaktär: metaller blanka och reflekterande, plaster matta */
+function surface(M){const id=M.id||'';if(M.kat==='Plaster')return {metal:0,rough:id==='pmma'||id==='pc'?.25:.55};
+  if(M.grupp==='K')return {metal:.5,rough:.55};if(M.base==='al'||/^en-aw/.test(id))return {metal:.7,rough:.32};return {metal:.65,rough:.38};}
+
+
+/* Svarvning (Sandvik Coromant): spåntjockleken hm = f · sin κr, kc = kc1 · hm^-mc,
+   skärkraften Fc = kc · A där A = ap · f är spånarean per varv, Pc = Fc · vc / 60 000 och Mc = Fc · D / 2 000.
+   p = {kr (grader), f (mm/varv), A (mm², spånarea per varv) eller ap (mm), D (mm, diameter vid skäret),
+        n (varv/min), mat, cool, mach:{kw,nm}, Fmax (N, vad skäret tål), nose (mm, spetsradie)}
+   Svar som cut(): {F, Mc, Pc, load, vc, hm, kc, ap, why, lim, warn:[{k,ty,msg}], heatFrac} */
+function turn(p){
+  const M=p.mat||FALLBACK,n=Math.max(1,p.n),D=Math.max(.2,p.D),f=Math.max(.001,p.f),kr=(p.kr||95)*Math.PI/180;
+  const vc=Math.PI*D*n/1000,hm=Math.max(.001,f*Math.abs(Math.sin(kr))),kc=M.kc1*Math.pow(hm,-M.mc);
+  const A=Math.max(0,p.A!=null?p.A:f*(p.ap||0)),ap=A/f;
+  const Fc=kc*A,Pc=Fc*vc/60000,Mc=Fc*D/2000,Fmax=Math.max(1,p.Fmax||1000);
+  const load=Fc/Fmax;
+  const why=`skärkraften ${nf0(Fc)} N (skäret tål ungefär ${nf0(Fmax)} N)`;
+  const warn=[],W=(k,ty,msg)=>warn.push({k,ty,msg}),mach=p.mach||{kw:11,nm:140};
+  if(load>=.75&&load<1)W('hi','w',`Hög belastning (${Math.round(load*100)} %): ${why}. Nära gränsen.`);
+  if(Pc>mach.kw)W('kw','e',`Spindeln orkar inte: ${nf1(Pc)} kW behövs, maskinen har ${nf1(mach.kw)} kW. Minska skärdjupet eller matningen, eller sänk varvtalet.`);
+  else if(Mc>mach.nm)W('nm','e',`Spindelns vridmoment räcker inte: ${nf0(Mc)} Nm behövs, maskinen ger ${nf0(mach.nm)} Nm. Minska skärdjupet eller matningen.`);
+  const nose=p.nose||.4;
+  if(ap>.05&&f<nose/8-1e-9)W('rub','w',`Matningen ${nf(Math.round(f*1000)/1000)} mm/varv är låg för spetsradien ${nf(nose)} mm (minst ungefär ${nf(Math.round(nose/8*100)/100)}): skäret gnider i stället för att skära${M.tsoft?' och plasten kan smälta':M.steel?' och materialet kan deformationshärdna':''}.`);
+  const rg=(M.vc&&(M.vc.turn||M.vc.face))||[60,300];
+  let frac=p.cool?.05:.16;if(vc>rg[1])frac*=1+(vc/rg[1]-1)*3;
+  if(vc>rg[1]*1.4)W('vc','w',`Skärhastigheten är för hög: v<sub>c</sub> ${nf0(vc)} m/min (riktvärde ${rg[0]}–${rg[1]}). Skäret blir varmt och slits fort${M.steel&&!M.tsoft?', och spånen blir blå':''}.`);
+  if(M.bue&&vc<rg[0]*.5&&D>2)W('bue','w',`Skärhastigheten är låg för ${matName(M)} (v<sub>c</sub> ${nf0(vc)} m/min): materialet kladdar fast på skäret och ytan blir matt och sliten.`);
+  return {F:Fc,Mc,Pc,load,vc,hm,kc,ap,A,lim:'skäret',why,warn,heatFrac:frac,rg};
 }
 
-window.CNCFYSIK={materials,material,matName,cut,heat,oxD,filmRGB,baseColor,flutes,famOf,PSOLID,PINS,PDRILL};
+window.CNCFYSIK={materials,material,matName,cut,turn,heat,surface,oxD,filmRGB,baseColor,flutes,famOf,PSOLID,PINS,PDRILL};
 })();
