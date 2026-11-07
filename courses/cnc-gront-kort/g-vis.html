@@ -874,6 +874,12 @@
   .gg-tip { background:rgba(77,163,255,.1); border:1px solid rgba(77,163,255,.35); border-radius:7px; padding:8px 12px; }
   .gg-keys { border-collapse:collapse; } .gg-keys td { padding:5px 14px 5px 0; border-bottom:1px solid var(--border); }
   @media (max-width:700px){ .gv-guide { grid-template-columns:1fr; } .gv-gnav { display:none; } }
+
+  /* hitta felet: G-vis egna varningar avslöjar inte felet */
+  html.k-blind #warnIndicator, html.k-blind #warnPopup, html.k-blind #inspWarnN { visibility:hidden !important; }
+  html.k-blind #inspWarn > * { display:none !important; }
+  html.k-blind #inspWarn::before { content:'Varningarna är avstängda i övningarna Hitta felet.'; color:var(--muted); font-size:13px; }
+  html.k-blind .k-meter { visibility:hidden; }
 </style>
 </head>
 <body>
@@ -7467,25 +7473,427 @@ KURSER.push({id:'k2',name:'Kurs 2 · Bågar och cirklar',engrave:true,tools:{1:{
   text:'En avlång form, som ett spår eller ett hål för en kil, är två raka linjer och två halvcirklar. Med I och J ser du direkt var centrum ligger. '+MEDURS,
   task:'Kör medurs runt formen: från X20 Y30 till X60 Y30, en halvcirkel ned till X60 Y10, en linje till X20 Y10 och en halvcirkel upp till start. Radien är 10.',start:KH(2,6,'AVLANG FORM')+'G00 X20 Y30\n',
   hint:'Första halvcirkeln har centrum 10 mm under sin startpunkt: G02 X60 Y10 I0 J-10.',answer:'G00 X20 Y30\nG01 X60 Y30\nG02 X60 Y10 I0 J-10\nG01 X20 Y10\nG02 X20 Y30 I0 J10'}]});
-KURSER.push({id:'k3',name:'Kurs 3 · Borrning med cykler',tools:{1:{type:'drill',d:6,label:'SPIRALBORR D6'}},lessons:[
+KURSER.push({id:'kr',name:'Kurs 3 · Radiekompensering',lessons:[
+ {short:'G41',t:'Radiekompensering med G41',type:'comp',comp:'G41',r:5,pts:[[20,10],[20,40],[60,40],[60,10],[20,10]],
+  text:'Fräsen har en radie. Kör du verktygets centrum rakt på ritningens linjer blir detaljen för liten, eftersom fräsen tar bort material en radie ut på var sida. Med radiekompensering skriver du ritningens mått, och styrningen flyttar själv ut verktyget en radie. G41 lägger verktyget till vänster om banan, sett i den riktning verktyget går. Runt utsidan medurs hamnar det då på utsidan, och det är medfräsning.',
+  task:'Fräs runt kvadraten 40 × 30 med nedre vänstra hörnet i X20 Y10, medurs. Slå på G41 med D2 (pinnfräs Ø10, radie 5 mm) på inkörningen från X10 Y0, och stäng av med G40 när du kör ut till X10 Y0 igen.',
+  start:KH(3,1,'G41 PA UTSIDAN')+'G00 X10 Y0\n',
+  hint:'Inkörningen: G41 G01 X20 Y10 D2. Sedan medurs: upp till X20 Y40, höger till X60 Y40, ned till X60 Y10 och tillbaka till X20 Y10. Utkörningen: G40 G01 X10 Y0.',
+  answer:'G00 X10 Y0\nG41 G01 X20 Y10 D2\nG01 X20 Y40\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nG40 G01 X10 Y0'},
+ {short:'G40',t:'Stäng av med G40',type:'comp',comp:'G41',r:5,pts:[[20,10],[20,40],[60,40],[60,10],[20,10]],
+  text:'Kompenseringen ska alltid stängas av med G40 när konturen är klar. Gör det på en rak utkörning bort från detaljen, så att styrningen kan flytta tillbaka verktyget utan att skära i konturen. Glömmer du G40 ligger kompenseringen kvar och nästa rörelse hamnar fel.',
+  task:'Konturen är redan skriven. Lägg till utkörningen: stäng av kompenseringen med G40 och kör rakt ut till X10 Y0.',
+  start:KH(3,2,'G40 PA UTKORNINGEN')+'G00 X10 Y0\nG41 G01 X20 Y10 D2\nG01 X20 Y40\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\n',
+  hint:'En rad: G40 G01 X10 Y0.',
+  answer:'G00 X10 Y0\nG41 G01 X20 Y10 D2\nG01 X20 Y40\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nG40 G01 X10 Y0'},
+ {short:'G42',t:'G42 på andra sidan',type:'comp',comp:'G42',r:5,pts:[[20,10],[60,10],[60,40],[20,40],[20,10]],why:'Runt utsidan moturs ligger utsidan till höger om banan.',
+  text:'G42 lägger verktyget till höger om banan. Kör du moturs runt utsidan av en form ligger utsidan till höger, och då är det G42 som gäller. Det blir motfräsning, som ibland används till exempel i hårda material eller på gjutgods med hård yta.',
+  task:'Fräs samma kvadrat, men moturs: från X20 Y10 åt höger till X60 Y10, upp, åt vänster och ned. Använd G42 med D2 på inkörningen från X10 Y0 och G40 på utkörningen.',
+  start:KH(3,3,'G42 MOTURS')+'G00 X10 Y0\n',
+  hint:'G42 G01 X20 Y10 D2, sedan X60 Y10, X60 Y40, X20 Y40 och X20 Y10. Avsluta med G40 G01 X10 Y0.',
+  answer:'G00 X10 Y0\nG42 G01 X20 Y10 D2\nG01 X60 Y10\nG01 X60 Y40\nG01 X20 Y40\nG01 X20 Y10\nG40 G01 X10 Y0'},
+ {short:'Rundade hörn',t:'Rundade hörn med G41',type:'comp',comp:'G41',r:5,pts:[[10,15],[10,35],[15,40],[65,40],[70,35],[70,15],[65,10],[15,10],[10,15]],
+  arcs:[null,{c:[15,35],cw:true},null,{c:[65,35],cw:true},null,{c:[65,15],cw:true},null,{c:[15,15],cw:true}],
+  text:'Med kompenseringen skriver du ritningens rundade hörn precis som de står. Styrningen gör själv bågarna en radie större runt utsidan. Utan kompensering hade du behövt räkna om varje båge och varje linje.',
+  task:'Fräs rektangeln 60 × 30 med radien 5 i hörnen och nedre vänstra hörnet i X10 Y10, medurs. Kör in med G41 D2 från X0 Y5 till X10 Y15 och ut med G40 till X0 Y5.',
+  start:KH(3,4,'RUNDADE HORN MED G41')+'G00 X0 Y5\n',
+  hint:'G41 G01 X10 Y15 D2. Sedan samma rader som i kurs 2: X10 Y35, G02 X15 Y40 R5, och så vidare medurs runt. Sist G40 G01 X0 Y5.',
+  answer:'G00 X0 Y5\nG41 G01 X10 Y15 D2\nG01 X10 Y35\nG02 X15 Y40 R5\nG01 X65 Y40\nG02 X70 Y35 R5\nG01 X70 Y15\nG02 X65 Y10 R5\nG01 X15 Y10\nG02 X10 Y15 R5\nG40 G01 X0 Y5'},
+ {short:'Ficka',t:'En ficka från insidan',type:'comp',comp:'G41',r:5,inside:true,pts:[[40,40],[20,40],[20,10],[60,10],[60,40],[40,40]],why:'I en ficka moturs ligger fickans insida till vänster om banan.',
+  text:'I en ficka ska verktyget ligga på insidan av konturen. Kör du moturs runt fickan ligger insidan till vänster, så det blir G41 och medfräsning även här. Börja mitt i fickan och kör in vinkelrätt mot en vägg, så att verktyget inte skär för djupt i hörnen.',
+  task:'Fräs väggarna i fickan 40 × 30 med hörnen X20 Y10 och X60 Y40, moturs. Börja i fickans mitt X40 Y25, kör in med G41 D2 rakt upp till X40 Y40 och ut med G40 till X40 Y25.',
+  start:KH(3,5,'FICKA MED G41')+'G00 X40 Y25\n',
+  hint:'G41 G01 X40 Y40 D2. Moturs: åt vänster till X20 Y40, ned till X20 Y10, åt höger till X60 Y10, upp till X60 Y40 och tillbaka till X40 Y40. Sist G40 G01 X40 Y25.',
+  answer:'G00 X40 Y25\nG41 G01 X40 Y40 D2\nG01 X20 Y40\nG01 X20 Y10\nG01 X60 Y10\nG01 X60 Y40\nG01 X40 Y40\nG40 G01 X40 Y25'},
+ {short:'Slutprov',t:'Slutprov: platta med rund ände',type:'comp',comp:'G41',r:5,pts:[[20,10],[20,40],[50,40],[50,10],[20,10]],arcs:[null,null,{c:[50,25],cw:true},null],
+  text:'Nu sätter du ihop allt: inkörning med G41 och D-register, ritningens mått med en båge, och utkörning med G40.',
+  task:'Fräs plattan medurs: från X20 Y10 upp till X20 Y40, åt höger till X50 Y40, en halvcirkel med radien 15 ned till X50 Y10 och tillbaka till X20 Y10. Kör in från X10 Y0 och ut till X10 Y0.',
+  start:KH(3,6,'SLUTPROV')+'G00 X10 Y0\n',
+  hint:'Halvcirkeln går medurs: G02 X50 Y10 R15. Glöm inte D2 på G41-raden och G40 på sista raden.',
+  answer:'G00 X10 Y0\nG41 G01 X20 Y10 D2\nG01 X20 Y40\nG01 X50 Y40\nG02 X50 Y10 R15\nG01 X20 Y10\nG40 G01 X10 Y0'}]});
+/* kontroll av radiekompensering: rätt kod, D-register, rak in- och utkörning som är lång nog, och konturen enligt ritningen */
+function kEvalComp(L){const els=(R&&R.els)||[],msgs=[],n=ta.value.split(/\r?\n/).length,nf1=v=>String(Math.round(v*10)/10).replace('.',',');
+ const side=c=>c==='G41'?'till vänster':'till höger';
+ let ci=-1,oi=-1;for(let i=0;i<n;i++){const u=kSrc(i);if(ci<0&&/G4[12](?![\d.])/.test(u))ci=i;else if(ci>=0&&oi<0&&/G40(?![\d.])/.test(u))oi=i;}
+ const bad=(t,score)=>({score:score||0,ok:false,msgs:[{k:'err',t}]});
+ if(ci<0)return {score:0,ok:false,msgs:[{k:'tip',t:`Slå på radiekompenseringen med ${L.comp} och D2 på inkörningen, till exempel ${L.comp} G01 X${L.pts[0][0]} Y${L.pts[0][1]} D2.`}]};
+ const cu=kSrc(ci),used=/G41(?![\d.])/.test(cu)?'G41':'G42';
+ if(used!==L.comp)return bad(`Rad ${ci+1} använder ${used}, som lägger verktyget ${side(used)} om banan. Här ska det ligga ${side(L.comp)}: ${L.comp}. ${L.why||'Runt utsidan medurs ligger utsidan till vänster om banan.'}`,10);
+ if(!/D\s*\d/.test(cu))return bad(`Rad ${ci+1} saknar D-register. Skriv D2 på samma rad som ${used}, så att styrningen vet verktygets radie (5 mm för T2).`,15);
+ if(/G0?[23](?![\d.])/.test(cu))return bad(`Kompenseringen på rad ${ci+1} slås på i en båge. Slå på den med en rak rörelse, G00 eller G01.`,15);
+ const lin=els.find(e=>e.li===ci&&e.k!=='A');
+ if(!lin)return bad(`På rad ${ci+1} ska verktyget också röra sig in mot konturen, till exempel ${used} G01 X${L.pts[0][0]} Y${L.pts[0][1]} D2.`,20);
+ const lenIn=Math.hypot(lin.p1[0]-lin.p0[0],lin.p1[1]-lin.p0[1]);
+ if(lenIn<L.r-1e-6)return bad(`Inkörningen på rad ${ci+1} är bara ${nf1(lenIn)} mm. Den måste vara minst verktygets radie, ${L.r} mm, så att styrningen hinner flytta ut verktyget.`,20);
+ if(Math.abs(lin.p1[0]-L.pts[0][0])>.05||Math.abs(lin.p1[1]-L.pts[0][1])>.05)return bad(`Inkörningen på rad ${ci+1} slutar i ${kfmt(lin.p1)}. Den ska sluta där konturen börjar, ${kfmt(L.pts[0])}.`,25);
+ // konturen: de skärande rörelserna mellan inkörningen och G40-raden
+ const E=.05,eq=(a,b)=>Math.abs(a[0]-b[0])<E&&Math.abs(a[1]-b[1])<E,feeds=[];
+ els.forEach(e=>{if(e.rapid||!e.xy||e.li<=ci||(oi>=0&&e.li>=oi))return;const a=[e.p0[0],e.p0[1]],b=[e.p1[0],e.p1[1]];if(e.k!=='A'&&Math.hypot(b[0]-a[0],b[1]-a[1])<1e-6)return;
+  const s={a,b,li:e.li,arc:e.k==='A',c:e.c?[e.c[0],e.c[1]]:null,cw:!!e.cw},p=feeds[feeds.length-1];
+  if(p&&!s.arc&&!p.arc&&eq(p.b,s.a)){const c=(p.b[0]-p.a[0])*(s.b[1]-s.a[1])-(p.b[1]-p.a[1])*(s.b[0]-s.a[0]),dt=(p.b[0]-p.a[0])*(s.b[0]-s.a[0])+(p.b[1]-p.a[1])*(s.b[1]-s.a[1]);if(Math.abs(c)<1e-6&&dt>0){p.b=s.b;return}}feeds.push(s);});
+ if(!feeds.length)return {score:30,ok:false,msgs:[{k:'ok',t:`Inkörningen med ${used} på rad ${ci+1} är rätt.`},{k:'tip',t:`Skriv nu konturen efter ritningen, med start i ${kfmt(L.pts[0])}.`}]};
+ const C={pts:L.pts,arcs:L.arcs||L.pts.slice(1).map(()=>null)},r=kEvalArc(C,feeds,[]);
+ if(!r.ok&&r.score<95)return {score:30+Math.round(r.score*.55),ok:false,msgs:[{k:'ok',t:`Inkörningen med ${used} och D2 på rad ${ci+1} är rätt.`}].concat(r.msgs)};
+ if(oi<0)return {score:88,ok:false,msgs:[{k:'ok',t:'Konturen följer ritningen.'},{k:'tip',t:'Stäng av kompenseringen med G40 på en rak utkörning bort från detaljen, till exempel G40 G01 X'+lin.p0[0]+' Y'+lin.p0[1]+'.'}]};
+ if(r.score>=95&&!r.ok)return {score:90,ok:false,msgs:[{k:'tip',t:'Konturen är klar, men det finns fler skärande rader före G40. Ta bort dem.'}]};
+ const ou=kSrc(oi);if(/G0?[23](?![\d.])/.test(ou))return bad(`G40 på rad ${oi+1} står på en båge. Stäng av kompenseringen på en rak rörelse.`,90);
+ const lout=els.find(e=>e.li===oi);if(!lout)return bad(`På rad ${oi+1} ska verktyget också köra ut från konturen, till exempel G40 G01 X${lin.p0[0]} Y${lin.p0[1]}.`,90);
+ return {score:100,ok:true,msgs:[{k:'ok',t:`${used} med D2 slås på i en rak inkörning, konturen följer ritningens mått och G40 stänger av kompenseringen på utkörningen. Tryck på 3D och Kör banan: fräsen går en radie ${L.inside?'innanför väggarna, inne i fickan':'utanför ritningens linjer'}, så att detaljen blir exakt efter ritningen.`}]}}
+KURSER.push({id:'k3',name:'Kurs 4 · Borrning med cykler',tools:{1:{type:'drill',d:6,label:'SPIRALBORR D6'}},lessons:[
  {short:'G81',t:'Ett hål med G81',type:'drill',cyc:'G81',need:['R'],holes:[[20,20]],z:-5,
   text:'En borrcykel gör hela borrningen på en rad: snabbt ned till R-planet strax ovanför ytan, borrning till djupet Z och snabbt upp igen. G81 är den enklaste cykeln. G80 stänger av cykeln när du är klar.',
-  task:'Borra ett hål i X20 Y20, 5 mm djupt. Använd R2 som säkerhetsplan och avsluta med G80.',start:KH(3,1,'G81 ETT HAL')+'G00 X0 Y0 Z10\n',hint:'Skriv G81 X20 Y20 Z-5 R2 F100 på en rad och G80 på nästa.',answer:'G00 X0 Y0 Z10\nG81 X20 Y20 Z-5 R2 F100\nG80'},
+  task:'Borra ett hål i X20 Y20, 5 mm djupt. Använd R2 som säkerhetsplan och avsluta med G80.',start:KH(4,1,'G81 ETT HAL')+'G00 X0 Y0 Z10\n',hint:'Skriv G81 X20 Y20 Z-5 R2 F100 på en rad och G80 på nästa.',answer:'G00 X0 Y0 Z10\nG81 X20 Y20 Z-5 R2 F100\nG80'},
  {short:'Flera hål',t:'Flera hål med samma cykel',type:'drill',cyc:'G81',need:['R'],holes:[[10,10],[30,10],[50,10]],z:-5,
   text:'Så länge cykeln är aktiv borrar varje rad med en ny X- eller Y-position ett nytt hål, med samma Z och R. Du skriver alltså cykeln en gång.',
-  task:'Borra tre hål, 5 mm djupa, i X10 Y10, X30 Y10 och X50 Y10. Skriv G81 en gång och avsluta med G80.',start:KH(3,2,'TRE HAL')+'G00 X0 Y0 Z10\n',hint:'G81 X10 Y10 Z-5 R2 F100, sedan en rad med bara X30 och en med X50. Sist G80.',answer:'G00 X0 Y0 Z10\nG81 X10 Y10 Z-5 R2 F100\nX30\nX50\nG80'},
+  task:'Borra tre hål, 5 mm djupa, i X10 Y10, X30 Y10 och X50 Y10. Skriv G81 en gång och avsluta med G80.',start:KH(4,2,'TRE HAL')+'G00 X0 Y0 Z10\n',hint:'G81 X10 Y10 Z-5 R2 F100, sedan en rad med bara X30 och en med X50. Sist G80.',answer:'G00 X0 Y0 Z10\nG81 X10 Y10 Z-5 R2 F100\nX30\nX50\nG80'},
  {short:'G82',t:'Uppehåll i botten med G82',type:'drill',cyc:'G82',need:['R','P'],holes:[[40,25]],z:-3,
   text:'G82 är som G81, men verktyget stannar en stund i botten innan det går upp. Uppehållet skrivs med P i millisekunder, så P500 är en halv sekund. Det ger en jämn botten, till exempel vid punktborrning och försänkning.',
-  task:'Borra ett hål i X40 Y25, 3 mm djupt, med en halv sekunds uppehåll i botten.',start:KH(3,3,'G82 UPPEHALL')+'G00 X0 Y0 Z10\n',hint:'G82 X40 Y25 Z-3 R2 P500 F100, och G80 efter.',answer:'G00 X0 Y0 Z10\nG82 X40 Y25 Z-3 R2 P500 F100\nG80'},
+  task:'Borra ett hål i X40 Y25, 3 mm djupt, med en halv sekunds uppehåll i botten.',start:KH(4,3,'G82 UPPEHALL')+'G00 X0 Y0 Z10\n',hint:'G82 X40 Y25 Z-3 R2 P500 F100, och G80 efter.',answer:'G00 X0 Y0 Z10\nG82 X40 Y25 Z-3 R2 P500 F100\nG80'},
  {short:'G83',t:'Djupa hål med G83',type:'drill',cyc:'G83',need:['R','Q'],holes:[[30,25]],z:-9,
   text:'I djupa hål måste spånen ut, annars fastnar borren. G83 borrar en bit i taget, Q millimeter per steg, och går upp till R mellan stegen så att spånen följer med. En tumregel är att hål djupare än tre gånger diametern behöver det.',
-  task:'Borra ett hål i X30 Y25, 9 mm djupt, med 2 mm per steg.',start:KH(3,4,'G83 DJUPBORRNING')+'G00 X0 Y0 Z10\n',hint:'G83 X30 Y25 Z-9 R2 Q2 F100, och G80 efter.',answer:'G00 X0 Y0 Z10\nG83 X30 Y25 Z-9 R2 Q2 F100\nG80'},
+  task:'Borra ett hål i X30 Y25, 9 mm djupt, med 2 mm per steg.',start:KH(4,4,'G83 DJUPBORRNING')+'G00 X0 Y0 Z10\n',hint:'G83 X30 Y25 Z-9 R2 Q2 F100, och G80 efter.',answer:'G00 X0 Y0 Z10\nG83 X30 Y25 Z-9 R2 Q2 F100\nG80'},
  {short:'G98 och G99',t:'Återgång med G98 och G99',type:'drill',cyc:'G81',need:['R'],g99:true,holes:[[10,10],[60,10],[60,40],[10,40]],z:-4,
   text:'Efter varje hål går borren tillbaka upp. Med G98 går den till startnivån, där den stod innan cykeln. Med G99 går den bara till R-planet, vilket går fortare när inget är i vägen mellan hålen.',
-  task:'Borra fyra hål, 4 mm djupa, i hörnen på rektangeln X10–X60, Y10–Y40. Gå bara upp till R-planet mellan hålen.',start:KH(3,5,'G99 FYRA HAL')+'G00 X0 Y0 Z10\n',hint:'G99 G81 X10 Y10 Z-4 R2 F100, sedan X60, Y40 och X10 på var sin rad. Sist G80.',answer:'G00 X0 Y0 Z10\nG99 G81 X10 Y10 Z-4 R2 F100\nX60\nY40\nX10\nG80'},
+  task:'Borra fyra hål, 4 mm djupa, i hörnen på rektangeln X10–X60, Y10–Y40. Gå bara upp till R-planet mellan hålen.',start:KH(4,5,'G99 FYRA HAL')+'G00 X0 Y0 Z10\n',hint:'G99 G81 X10 Y10 Z-4 R2 F100, sedan X60, Y40 och X10 på var sin rad. Sist G80.',answer:'G00 X0 Y0 Z10\nG99 G81 X10 Y10 Z-4 R2 F100\nX60\nY40\nX10\nG80'},
  {short:'Hålcirkel',t:'Hålcirkel',type:'drill',cyc:'G81',need:['R'],holes:[[60,25],[40,45],[20,25],[40,5]],z:-6,
   text:'En hålcirkel är hål jämnt fördelade på en cirkel. Med fyra hål ligger de rakt till höger, uppåt, till vänster och nedåt från centrum, och koordinaterna räknar du ut med radien.',
-  task:'Borra fyra hål, 6 mm djupa, på en hålcirkel med diametern 40 och centrum i X40 Y25.',start:KH(3,6,'HALCIRKEL D40')+'G00 X0 Y0 Z10\n',hint:'Radien är 20. Hålen ligger i X60 Y25, X40 Y45, X20 Y25 och X40 Y5.',answer:'G00 X0 Y0 Z10\nG81 X60 Y25 Z-6 R2 F100\nX40 Y45\nX20 Y25\nX40 Y5\nG80'}]});
+  task:'Borra fyra hål, 6 mm djupa, på en hålcirkel med diametern 40 och centrum i X40 Y25.',start:KH(4,6,'HALCIRKEL D40')+'G00 X0 Y0 Z10\n',hint:'Radien är 20. Hålen ligger i X60 Y25, X40 Y45, X20 Y25 och X40 Y5.',answer:'G00 X0 Y0 Z10\nG81 X60 Y25 Z-6 R2 F100\nX40 Y45\nX20 Y25\nX40 Y5\nG80'}]});
+
+KURSER.push({id:'kz',name:'Kurs 5 · Djup och Z',lessons:[
+ {short:'Ned och upp',t:'Ned i materialet och upp igen',type:'z',paths:[[[10,20],[60,20]]],zs:[-2],
+  text:'Hittills har allt varit platt. Nu börjar Z: Z0 är ämnets överyta, och negativt Z är nere i materialet. Verktyget ska alltid gå ned i materialet med G01 och en lugn matning, aldrig med G00. När skäret är klart kör man upp med G00 till en säker höjd över ämnet.',
+  task:'Verktyget står i X10 Y20, 5 mm över ytan. Gå ned till Z-2 med G01, fräs ett spår till X60 Y20 och kör upp till Z5 med G00.',start:KH(5,1,'NED OCH UPP')+'G00 X10 Y20 Z5\n',
+  hint:'Tre rader: G01 Z-2 F100, sedan G01 X60 Y20 F300 och sist G00 Z5.',answer:'G00 X10 Y20 Z5\nG01 Z-2 F100\nG01 X60 Y20 F300\nG00 Z5'},
+ {short:'Säkerhetshöjd',t:'Flytta på säkerhetshöjd',type:'z',paths:[[[10,10],[60,10]],[[10,30],[60,30]]],zs:[-2],
+  text:'Snabbtransport i sidled får bara ske över ämnet. Går verktyget i sidled med G00 nere i materialet kör det rakt in i ämnet i full fart. Kör därför alltid upp till säkerhetshöjden innan du flyttar till nästa ställe.',
+  task:'Fräs två spår, 2 mm djupa: från X10 Y10 till X60 Y10 och från X10 Y30 till X60 Y30. Kör upp till Z5 mellan spåren och efter det sista.',start:KH(5,2,'SAKERHETSHOJD')+'G00 X10 Y10 Z5\n',
+  hint:'Efter första spåret: G00 Z5, sedan G00 X10 Y30, ned med G01 Z-2 och fräs till X60 Y30.',answer:'G00 X10 Y10 Z5\nG01 Z-2 F100\nG01 X60 Y10 F300\nG00 Z5\nG00 X10 Y30\nG01 Z-2 F100\nG01 X60 Y30 F300\nG00 Z5'},
+ {short:'Flera djup',t:'Flera skärdjup i steg',type:'z',paths:[[[20,10],[20,40],[60,40],[60,10],[20,10]]],zs:[-2,-4,-6],
+  text:'En fräs klarar inte hur djupt som helst på en gång. Ett djupt spår fräses därför i flera varv, ett skärdjup i taget. Konturen är densamma varje varv, bara Z blir djupare.',
+  task:'Fräs kvadraten 40 × 30 med nedre vänstra hörnet i X20 Y10, medurs, i tre varv: Z-2, Z-4 och Z-6. Kör upp till Z5 efteråt.',start:KH(5,3,'TRE SKARDJUP')+'G00 X20 Y10 Z5\n',
+  hint:'G01 Z-2, sedan fyra linjer runt kvadraten tillbaka till X20 Y10. Upprepa med Z-4 och Z-6. Sist G00 Z5.',
+  answer:'G00 X20 Y10 Z5\nG01 Z-2 F100\nG01 X20 Y40 F300\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nG01 Z-4 F100\nG01 X20 Y40 F300\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nG01 Z-6 F100\nG01 X20 Y40 F300\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nG00 Z5'},
+ {short:'Ramp',t:'Ramp ned i materialet',type:'z',paths:[[[60,20],[10,20]]],zs:[-3],entry:'ramp',maxAng:10,
+  text:'En pinnfräs skär bäst från sidan. Att borra rakt ned med den är hårt för verktyget. Med en ramp går fräsen snett ned medan den rör sig framåt, och då skär den med sidan hela tiden. Rampvinkeln ska vara liten, ofta under 10°.',
+  task:'Verktyget står i X10 Y20 strax över ytan. Gå ned till Z0, rampa ned längs spåret till X60 Y20 Z-3, och fräs sedan tillbaka till X10 Y20 på botten. Kör upp till Z5.',start:KH(5,4,'RAMP')+'G00 X10 Y20 Z1\n',
+  hint:'G01 Z0 F100, sedan G01 X60 Y20 Z-3 (X, Y och Z på samma rad blir en ramp), G01 X10 Y20 och G00 Z5.',answer:'G00 X10 Y20 Z1\nG01 Z0 F100\nG01 X60 Y20 Z-3 F200\nG01 X10 Y20\nG00 Z5'},
+ {short:'Helix',t:'Helix ned i en rund ficka',type:'z',paths:[[[50,25],[50,25]]],arcs:[[{c:[40,25],cw:false}]],zs:[-4],entry:'helix',
+  text:'En helix är en båge där Z ändras samtidigt, som en skruv. Verktyget går runt och ned på samma gång, och det är det skonsammaste sättet att komma ned i en ficka. Du skriver en vanlig båge med G02 eller G03 och lägger till Z.',
+  task:'Verktyget står i X50 Y25 strax över ytan. Gå ned till Z0 och gör två varv helix moturs runt centrum X40 Y25 ned till Z-4, 2 mm per varv. Gör sedan ett varv till på botten och kör upp till Z5.',start:KH(5,5,'HELIX')+'G00 X50 Y25 Z1\n',
+  hint:'Ett varv: G03 X50 Y25 I-10 J0 Z-2. Nästa varv likadant med Z-4. Varvet på botten utan Z. Sist G00 Z5.',answer:'G00 X50 Y25 Z1\nG01 Z0 F100\nG03 X50 Y25 I-10 J0 Z-2 F200\nG03 X50 Y25 I-10 J0 Z-4\nG03 X50 Y25 I-10 J0\nG00 Z5'},
+ {short:'Slutprov',t:'Slutprov: kontur i två djup',type:'z',paths:[[[20,10],[20,40],[50,40],[50,10],[20,10]]],arcs:[[null,null,{c:[50,25],cw:true},null]],zs:[-3,-6],
+  text:'Nu sätter du ihop allt: ned med G01, flera skärdjup, bågar och upp till säkerhetshöjden när du är klar.',
+  task:'Fräs plattan med den runda änden medurs i två varv, Z-3 och Z-6: från X20 Y10 upp till X20 Y40, åt höger till X50 Y40, en halvcirkel med radien 15 ned till X50 Y10 och tillbaka till X20 Y10. Kör upp till Z5.',start:KH(5,6,'SLUTPROV')+'G00 X20 Y10 Z5\n',
+  hint:'Ett varv: G01 Z-3, G01 X20 Y40, G01 X50 Y40, G02 X50 Y10 R15, G01 X20 Y10. Sedan samma sak med Z-6.',
+  answer:'G00 X20 Y10 Z5\nG01 Z-3 F100\nG01 X20 Y40 F300\nG01 X50 Y40\nG02 X50 Y10 R15\nG01 X20 Y10\nG01 Z-6 F100\nG01 X20 Y40 F300\nG01 X50 Y40\nG02 X50 Y10 R15\nG01 X20 Y10\nG00 Z5'}]});
+const KP6=(n,t)=>`(KURS 6 · LEKTION ${n}: ${t})\n`;
+const PHEAD='O1000 (KONTUR 40X30)\nG21 G17 G40 G49 G80 G90\n',PTOOL='T2 M06 (PINNFRAS D10)\n',PSP='G54 G00 X10 Y0 S3200 M03\n',PG43='G43 H02 Z25.\n';
+const PCUT='G00 Z5.\nG01 Z-2. F100\nG01 X20 Y10 F300\nG01 X20 Y40\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nG00 Z25.\n';
+KURSER.push({id:'kp',name:'Kurs 6 · Ett riktigt program',lessons:[
+ {short:'Programhuvud',t:'Programhuvudet',type:'prog',req:['head'],
+  text:'Ett riktigt program börjar med ett programnummer, O och fyra siffror, ofta med programmets namn som kommentar. Sedan kommer en säkerhetsrad som sätter maskinen i ett känt läge: millimeter (G21), XY-planet (G17), ingen radiekompensering (G40), ingen längdkompensering (G49), ingen borrcykel (G80) och absoluta mått (G90).',
+  task:'Skriv programhuvudet: programnummer O1000 med namnet (KONTUR 40X30), och på nästa rad säkerhetsraden G21 G17 G40 G49 G80 G90.',start:KP6(1,'PROGRAMHUVUD'),
+  hint:'Två rader: O1000 (KONTUR 40X30) och G21 G17 G40 G49 G80 G90.',answer:PHEAD},
+ {short:'Verktyg',t:'Verktygsbyte',type:'prog',req:['head','tool'],
+  text:'Innan något kan fräsas måste rätt verktyg sitta i spindeln. T väljer verktyget i magasinet och M06 byter. Skriv verktygets namn som kommentar, så att den som läser programmet ser vad som används.',
+  task:'Lägg till ett verktygsbyte till T2, pinnfräsen Ø10, med kommentaren (PINNFRAS D10).',start:KP6(2,'VERKTYGSBYTE')+PHEAD,
+  hint:'En rad: T2 M06 (PINNFRAS D10).',answer:PHEAD+PTOOL},
+ {short:'Spindel',t:'Nollpunkt, varvtal och spindel',type:'prog',req:['head','tool','wcs','spindle'],
+  text:'Efter verktygsbytet väljer man nollpunkt (G54), flyttar till startpunkten och startar spindeln. S är varvtalet i varv per minut, och M03 startar spindeln medurs. Spindeln måste gå innan verktyget rör vid materialet.',
+  task:'Lägg till en rad efter verktygsbytet: nollpunkten G54, snabbtransport till X10 Y0, varvtalet 3200 och spindelstart medurs.',start:KP6(3,'SPINDEL')+PHEAD+PTOOL,
+  hint:'En rad: G54 G00 X10 Y0 S3200 M03.',answer:PHEAD+PTOOL+PSP},
+ {short:'Längdkomp',t:'Längdkompensering med G43',type:'prog',req:['head','tool','wcs','spindle','g43'],
+  text:'Alla verktyg är olika långa. G43 med H och verktygets nummer talar om för styrningen hur långt verktyget är, så att Z0 hamnar på ämnets yta oavsett verktyg. Raden flyttar också verktyget ned till en säker höjd över ämnet.',
+  task:'Lägg till längdkompensering för T2 och gå ned till Z25.',start:KP6(4,'LANGDKOMPENSERING')+PHEAD+PTOOL+PSP,
+  hint:'En rad: G43 H02 Z25. H-numret ska vara samma som verktygets.',answer:PHEAD+PTOOL+PSP+PG43},
+ {short:'Kylning',t:'Kylvätska',type:'prog',req:['head','tool','wcs','spindle','g43','cool'],
+  text:'Kylvätskan kyler verktyget och spolar bort spånen. M08 slår på den och M09 stänger av. Slå på den innan verktyget börjar skära.',
+  task:'Konturen är redan skriven. Slå på kylvätskan på raden efter G43, innan verktyget går ned i materialet.',start:KP6(5,'KYLNING')+PHEAD+PTOOL+PSP+PG43+PCUT,
+  hint:'En rad med M08 efter G43-raden.',answer:PHEAD+PTOOL+PSP+PG43+'M08\n'+PCUT},
+ {short:'Programslut',t:'Programslut',type:'prog',req:['head','tool','wcs','spindle','g43','cool','end'],pts:[[20,10],[20,40],[60,40],[60,10],[20,10]],z:-2,
+  text:'När skäret är klart stänger man av kylvätskan (M09) och spindeln (M05), kör upp Z till maskinens nollpunkt (G91 G28 Z0) så att det går att komma åt detaljen, och avslutar programmet med M30. Nu är programmet komplett och kan köras i en riktig maskin.',
+  task:'Avsluta programmet: stäng av kylvätskan och spindeln, kör hem i Z och avsluta med M30.',start:KP6(6,'PROGRAMSLUT')+PHEAD+PTOOL+PSP+PG43+'M08\n'+PCUT,
+  hint:'Fyra rader: M09, M05, G91 G28 Z0 och M30.',answer:PHEAD+PTOOL+PSP+PG43+'M08\n'+PCUT+'M09\nM05\nG91 G28 Z0\nM30'}]});
+
+/* hjälp: ihopslagna skärande rörelser (raka i samma riktning slås ihop) */
+function kFeeds(list){const E=.05,eq=(a,b)=>Math.abs(a[0]-b[0])<E&&Math.abs(a[1]-b[1])<E,out=[];
+ list.forEach(e=>{const a=[e.p0[0],e.p0[1]],b=[e.p1[0],e.p1[1]];if(e.k!=='A'&&Math.hypot(b[0]-a[0],b[1]-a[1])<1e-6)return;
+  const s={a,b,li:e.li,arc:e.k==='A',c:e.c?[e.c[0],e.c[1]]:null,cw:!!e.cw},p=out[out.length-1];
+  if(p&&!s.arc&&!p.arc&&eq(p.b,s.a)){const c=(p.b[0]-p.a[0])*(s.b[1]-s.a[1])-(p.b[1]-p.a[1])*(s.b[0]-s.a[0]),dt=(p.b[0]-p.a[0])*(s.b[0]-s.a[0])+(p.b[1]-p.a[1])*(s.b[1]-s.a[1]);if(Math.abs(c)<1e-6&&dt>0){p.b=s.b;return}}out.push(s)});return out;}
+/* kontroll av Z: ned med G01, sidled bara över ämnet, rätt kontur på varje djup, ramp eller helix, upp efteråt */
+function kEvalZ(L){const els=((R&&R.els)||[]).filter(e=>e.xy),nfz=v=>String(Math.round(v*100)/100).replace('.',',').replace('-','−');
+ if(!els.length)return {score:0,ok:false,msgs:[{k:'tip',t:'Skriv rörelserna. Börja med att gå ned i materialet med G01.'}]};
+ for(const e of els){if(!e.rapid)continue;const lo=Math.min(e.p0[2],e.p1[2]),xy=Math.hypot(e.p1[0]-e.p0[0],e.p1[1]-e.p0[1]);
+  if(lo<-0.01&&e.p1[2]<e.p0[2]-1e-6)return {score:5,ok:false,msgs:[{k:'err',t:`Rad ${e.li+1} går ned i materialet med G00 till Z${nfz(e.p1[2])}. Gå ned med G01 och en lugn matning, till exempel G01 Z${nfz(e.p1[2])} F100.`}]};
+  if(xy>0.01&&Math.max(e.p0[2],e.p1[2])<=0.001)return {score:5,ok:false,msgs:[{k:'err',t:`Rad ${e.li+1} flyttar i sidled med G00 nere vid Z${nfz(e.p0[2])}, alltså i eller vid ämnet. Kör upp till säkerhetshöjden först, till exempel G00 Z5.`}]};}
+ // ingången: ramp eller helix
+ const entry=els.find(e=>!e.rapid&&e.p1[2]<-0.01&&e.p1[2]<e.p0[2]-1e-6);
+ if(L.entry==='ramp'&&entry){const xy=Math.hypot(entry.p1[0]-entry.p0[0],entry.p1[1]-entry.p0[1]),dz=entry.p0[2]-entry.p1[2];
+  if(xy<0.01)return {score:15,ok:false,msgs:[{k:'err',t:`Rad ${entry.li+1} går rakt ned. Skriv X, Y och Z på samma rad, så att fräsen går snett ned i en ramp.`}]};
+  const ang=Math.atan2(dz,xy)*180/Math.PI;if(ang>L.maxAng)return {score:20,ok:false,msgs:[{k:'err',t:`Rampen på rad ${entry.li+1} lutar ${String(Math.round(ang*10)/10).replace('.',',')}°. Den ska vara högst ${L.maxAng}°. Gör rampen längre eller mindre djup.`}]};}
+ if(L.entry==='helix'&&entry&&entry.k!=='A')return {score:15,ok:false,msgs:[{k:'err',t:`Rad ${entry.li+1} går rakt ned. Gå ned i en helix: en båge med G02 eller G03 där du också skriver Z.`}]};
+ // varje djup: konturen ska finnas där
+ const msgs=[];let done=0;
+ for(let k=0;k<L.zs.length;k++){const d=L.zs[k],lvl=els.filter(e=>!e.rapid&&Math.abs(e.p0[2]-d)<.05&&Math.abs(e.p1[2]-d)<.05),feeds=kFeeds(lvl);
+  for(let q=0;q<L.paths.length;q++){const P=L.paths[q],C={pts:P,arcs:(L.arcs&&L.arcs[q])||P.slice(1).map(()=>null)};
+   const E=.05,st=feeds.findIndex(f=>Math.abs(f.a[0]-P[0][0])<E&&Math.abs(f.a[1]-P[0][1])<E);
+   const where=(L.zs.length>1?`på Z${nfz(d)}: `:'')+(L.paths.length>1?`spår ${q+1}: `:'');
+   if(st<0){const tot=L.zs.length*L.paths.length;return {score:Math.round(25+done/tot*70),ok:false,msgs:msgs.concat([{k:'tip',t:`${where}Nästa: fräs ${L.paths.length>1?'spåret':'konturen'} på djupet Z${nfz(d)} med start i ${kfmt(P[0])}.`}])};}
+   let chain=[feeds[st]];for(let m=st+1;m<feeds.length&&Math.abs(feeds[m].a[0]-chain[chain.length-1].b[0])<E&&Math.abs(feeds[m].a[1]-chain[chain.length-1].b[1])<E;m++)chain.push(feeds[m]);
+   chain=chain.slice(0,P.length-1);
+   const r=kEvalArc(C,chain,[]);
+   if(!r.ok){const tot=L.zs.length*L.paths.length;return {score:Math.round(25+done/tot*70),ok:false,msgs:msgs.concat(r.msgs.filter(m=>m.k!=='ok').map(m=>({k:m.k,t:where+m.t})))};}
+   done++;}}
+ msgs.push({k:'ok',t:L.zs.length>1?`Konturen är fräst på alla ${L.zs.length} djupen.`:(L.paths.length>1?`Båda spåren är frästa på Z${nfz(L.zs[0])}.`:`Banan på Z${nfz(L.zs[0])} följer ritningen.`)});
+ const last=els[els.length-1];
+ if(last.p1[2]<1-1e-6)return {score:95,ok:false,msgs:msgs.concat([{k:'tip',t:'Kör upp till säkerhetshöjden när du är klar, till exempel G00 Z5.'}])};
+ if(L.entry==='ramp')msgs.push({k:'ok',t:'Fräsen rampar ned i stället för att borra rakt ned.'});
+ if(L.entry==='helix')msgs.push({k:'ok',t:'Fräsen går ned i en helix.'});
+ return {score:100,ok:true,msgs};}
+/* kontroll av programmets uppbyggnad: huvud, verktyg, nollpunkt, spindel, längdkomp, kylning och slut */
+function kEvalProg(L){const n=ta.value.split(/\r?\n/).length,S=i=>kSrc(i),els=((R&&R.els)||[]).filter(e=>e.xy);
+ const code=[];for(let i=0;i<n;i++){const u=S(i).trim();if(u&&u!=='%')code.push(i);}
+ const cut=els.find(e=>!e.rapid&&(Math.hypot(e.p1[0]-e.p0[0],e.p1[1]-e.p0[1])>1e-6||e.p1[2]<e.p0[2]-1e-6)&&Math.min(e.p0[2],e.p1[2])<0),fc=cut?cut.li:n;
+ const find=(re,from,to)=>{for(let i=from||0;i<(to==null?n:to);i++)if(re.test(S(i)))return i;return -1;};
+ const ok=[],bad=t=>({score:Math.round(ok.length/(L.req.length+(L.pts?1:0))*90),ok:false,msgs:(ok.length?[{k:'ok',t:ok.join(' ')}]:[]).concat([{k:'err',t}])});
+ let tl=-1,tn=null;
+ for(const r of L.req){
+  if(r==='head'){if(!code.length||!/^O\s*\d+/.test(S(code[0]).trim()))return bad('Programmet ska börja med ett programnummer, till exempel O1000 (KONTUR 40X30).');
+   const sl=find(/G0?21(?![\d.])/);if(sl<0||!/G17(?![\d.])/.test(S(sl))||!/G40(?![\d.])/.test(S(sl))||!/G80(?![\d.])/.test(S(sl))||!/G90(?![\d.])/.test(S(sl))||!/G49(?![\d.])/.test(S(sl)))return bad('Säkerhetsraden saknas eller är inte komplett. Den ska innehålla G21 G17 G40 G49 G80 G90.');
+   ok.push('Programhuvudet är rätt.');}
+  else if(r==='tool'){tl=find(/T\s*\d+.*M0?6(?![\d.])|M0?6(?![\d.]).*T\s*\d+/);if(tl<0)return bad('Verktygsbytet saknas. Skriv T2 M06 (PINNFRAS D10).');
+   tn=+S(tl).match(/T\s*(\d+)/)[1];if(tl>fc)return bad(`Verktygsbytet på rad ${tl+1} kommer efter att verktyget har börjat skära. Det ska stå före.`);ok.push(`Verktygsbytet till T${tn} är rätt.`);}
+  else if(r==='wcs'){const w=find(/G5[4-9](?![\d.])/);if(w<0)return bad('Nollpunkten saknas. Välj den med G54 på raden efter verktygsbytet.');if(tl>=0&&w<tl)return bad(`G54 står före verktygsbytet. Byt verktyg först och välj nollpunkt efteråt.`);ok.push('Nollpunkten G54 är vald.');}
+  else if(r==='spindle'){const sp=find(/M0?3(?![\d.])/);if(sp<0)return bad('Spindeln startas inte. Skriv S3200 M03 på raden med G54.');
+   const sv=(S(sp).match(/S\s*(\d+)/)||[])[1];if(!sv||+sv<=0)return bad(`Rad ${sp+1} startar spindeln men saknar varvtal. Skriv S3200 på samma rad.`);
+   if(tl>=0&&sp<tl)return bad('Spindeln startas före verktygsbytet. Den ska startas efter.');if(sp>fc)return bad(`Spindeln startas på rad ${sp+1}, efter att verktyget har börjat skära. Den måste gå innan.`);ok.push(`Spindeln startar med S${sv}.`);}
+  else if(r==='g43'){const g=find(/G43(?![\d.])/);if(g<0)return bad('Längdkompenseringen saknas. Skriv G43 H02 Z25.');
+   const h=(S(g).match(/H\s*(\d+)/)||[])[1];if(!h)return bad(`G43 på rad ${g+1} saknar H. Skriv H02, samma nummer som verktyget.`);
+   if(tn!=null&&+h!==tn)return bad(`G43 använder H${h}, men verktyget är T${tn}. H-numret ska vara samma som verktygets.`);
+   if(!/Z\s*-?[\d.]/.test(S(g)))return bad(`Skriv också en säker höjd på G43-raden, till exempel Z25.`);
+   if(tl>=0&&g<tl)return bad('G43 står före verktygsbytet. Den ska komma efter.');if(g>fc)return bad('G43 ska stå innan verktyget går ned i materialet.');ok.push(`Längdkompenseringen G43 H${h} är rätt.`);}
+  else if(r==='cool'){const c=find(/M0?8(?![\d.])/);if(c<0)return bad('Kylvätskan slås inte på. Skriv M08 innan verktyget går ned i materialet.');if(c>fc)return bad(`M08 på rad ${c+1} kommer efter att verktyget har börjat skära. Slå på kylvätskan innan.`);ok.push('Kylvätskan slås på i tid.');}
+  else if(r==='end'){const lastCut=els.filter(e=>!e.rapid).reduce((m,e)=>Math.max(m,e.li),-1);
+   const m9=find(/M0?9(?![\d.])/,lastCut+1),m5=find(/M0?5(?![\d.])/,lastCut+1),g28=find(/G28(?![\d.])/,lastCut+1),m30=find(/M30(?![\d.])/);
+   if(m9<0)return bad('Kylvätskan stängs inte av. Skriv M09 efter konturen.');if(m5<0)return bad('Spindeln stoppas inte. Skriv M05 efter konturen.');
+   if(g28<0)return bad('Z körs inte hem. Skriv G91 G28 Z0, så att verktyget går upp och det går att komma åt detaljen.');
+   if(!/G91(?![\d.])/.test(S(g28)))return bad(`G28 på rad ${g28+1} ska stå tillsammans med G91: G91 G28 Z0. Annars går maskinen via punkten Z0 i ämnet.`);
+   if(m30<0)return bad('Programmet avslutas inte. Skriv M30 sist.');if(m30!==code[code.length-1])return bad('M30 ska stå på programmets sista rad.');ok.push('Programslutet är rätt.');}}
+ if(L.pts){const lvl=els.filter(e=>!e.rapid&&Math.abs(e.p0[2]-L.z)<.05&&Math.abs(e.p1[2]-L.z)<.05),F=kFeeds(lvl),E=.05,st=Math.max(0,F.findIndex(f=>Math.abs(f.a[0]-L.pts[0][0])<E&&Math.abs(f.a[1]-L.pts[0][1])<E)),r=kEvalArc({pts:L.pts,arcs:L.pts.slice(1).map(()=>null)},F.slice(st,st+L.pts.length-1),[]);if(!r.ok)return {score:85,ok:false,msgs:[{k:'ok',t:ok.join(' ')}].concat(r.msgs)};}
+ return {score:100,ok:true,msgs:[{k:'ok',t:ok.join(' ')+(L.req.includes('end')?' Programmet är komplett och kan köras i en maskin.':'')}]};}
+
+/* ---------- kurs 7–12 ---------- */
+const KSD=(n,t)=>KH(7,n,t);
+KURSER.push({id:'ks',name:'Kurs 7 · Skärdata',lessons:[
+ {short:'Varvtal',t:'Varvtalet ur skärhastigheten',type:'sd',chk:[{k:'S',v:9549,tol:.05,f:'S = vc × 1000 / (π × D) = 300 × 1000 / (π × 10) ≈ 9549'}],
+  text:'Skärhastigheten vc är hur fort eggen rör sig genom materialet, i meter per minut. Den väljs efter material och verktyg, till exempel cirka 300 m/min för en hårdmetallfräs i aluminium. Varvtalet räknas ut så här: S = vc × 1000 / (π × D), där D är fräsens diameter i mm.',
+  task:'Pinnfräsen Ø10 ska fräsa aluminium med vc 300 m/min. Räkna ut varvtalet och skriv S på raden med M03. Avrunda till hela varv.',start:KSD(1,'VARVTAL')+'G00 X10 Y20 Z5 M03\nG01 Z-2 F100\nG01 X60 Y20 F1400\nG00 Z5\n',
+  hint:'300 × 1000 = 300 000. π × 10 ≈ 31,42. 300 000 / 31,42 ≈ 9549. Skriv S9549 på raden med M03.',answer:'G00 X10 Y20 Z5 S9549 M03\nG01 Z-2 F100\nG01 X60 Y20 F1400\nG00 Z5'},
+ {short:'Matning',t:'Matningen ur tandmatningen',type:'sd',chk:[{k:'F',v:1432,tol:.05,f:'F = fz × z × S = 0,05 × 3 × 9550 ≈ 1432'}],
+  text:'Tandmatningen fz är hur tjockt spån varje skär tar, i mm. Matningen F i mm/min blir F = fz × z × S, där z är antalet skär. Är F för låg gnider eggen och blir varm, är den för hög går fräsen av.',
+  task:'Fräsen Ø10 har 3 skär och går i S9550. Tandmatningen ska vara 0,05 mm. Räkna ut F och skriv den på raden som fräser spåret.',start:KSD(2,'MATNING')+'G00 X10 Y20 Z5 S9550 M03\nG01 Z-2 F100\nG01 X60 Y20\nG00 Z5\n',
+  hint:'0,05 × 3 × 9550 = 1432,5. Skriv F1432 på raden G01 X60 Y20.',answer:'G00 X10 Y20 Z5 S9550 M03\nG01 Z-2 F100\nG01 X60 Y20 F1432\nG00 Z5'},
+ {short:'Stål',t:'Skärdata i stål',type:'sd',chk:[{k:'S',v:3820,tol:.05,f:'S = 120 × 1000 / (π × 10) ≈ 3820'},{k:'F',v:458,tol:.06,f:'F = 0,04 × 3 × 3820 ≈ 458'}],
+  text:'Stål är hårdare än aluminium. Skärhastigheten blir lägre, cirka 120 m/min för hårdmetall i vanligt konstruktionsstål, och tandmatningen mindre. Samma formler gäller.',
+  task:'Samma fräs, Ø10 med 3 skär, i stål: vc 120 m/min och fz 0,04 mm. Räkna ut S och F och skriv in dem.',start:KSD(3,'STAL')+'G00 X10 Y20 Z5 M03\nG01 Z-2 F80\nG01 X60 Y20\nG00 Z5\n',
+  hint:'S = 120 000 / 31,42 ≈ 3820. F = 0,04 × 3 × 3820 ≈ 458.',answer:'G00 X10 Y20 Z5 S3820 M03\nG01 Z-2 F80\nG01 X60 Y20 F458\nG00 Z5'},
+ {short:'Maxvarv',t:'När maskinen inte räcker till',type:'sd',chk:[{k:'S',v:12000,tol:.01,f:'S = 150 × 1000 / (π × 3) ≈ 15 915, men maskinen klarar högst 12 000. Då blir S12000'},{k:'F',v:360,tol:.06,f:'F = 0,015 × 2 × 12000 = 360'}],
+  text:'Små fräsar behöver höga varvtal. Räcker inte maskinens spindel använder man maskinens högsta varvtal och räknar matningen från det. Skärhastigheten blir då lite lägre än det som står i tabellen, och det är helt i sin ordning.',
+  task:'En fräs Ø3 med 2 skär ska fräsa aluminium med vc 150 m/min och fz 0,015 mm. Maskinen klarar högst 12 000 varv/min. Skriv S och F.',start:KSD(4,'MAXVARV')+'G00 X10 Y20 Z5 M03\nG01 Z-1 F100\nG01 X60 Y20\nG00 Z5\n',
+  hint:'150 000 / (π × 3) ≈ 15 915, vilket är mer än 12 000. Använd S12000. F = 0,015 × 2 × 12000 = 360.',answer:'G00 X10 Y20 Z5 S12000 M03\nG01 Z-1 F100\nG01 X60 Y20 F360\nG00 Z5'},
+ {short:'Borrning',t:'Skärdata för borrning',type:'sd',chk:[{k:'S',v:995,tol:.05,f:'S = 25 × 1000 / (π × 8) ≈ 995'},{k:'F',v:119,tol:.06,f:'F = f × S = 0,12 × 995 ≈ 119'}],
+  text:'En borr räknas lite annorlunda. Varvtalet ur vc är samma formel, men matningen anges per varv, f i mm/varv, eftersom borrspetsen skär i hela diametern. F = f × S.',
+  task:'En borr Ø8 i snabbstål ska borra stål med vc 25 m/min och f 0,12 mm/varv. Skriv S på raden med M03 och F på raden med G81.',start:KSD(5,'BORRNING')+'G00 X30 Y25 Z5 M03\nG81 X30 Y25 Z-10 R2\nG80\nG00 Z25\n',
+  hint:'S = 25 000 / (π × 8) ≈ 995. F = 0,12 × 995 ≈ 119. Skriv F119 sist på G81-raden.',answer:'G00 X30 Y25 Z5 S995 M03\nG81 X30 Y25 Z-10 R2 F119\nG80\nG00 Z25'},
+ {short:'Slutprov',t:'Slutprov: varvtal, matning och nedgång',type:'sd',chk:[{k:'S',v:10610,tol:.05,f:'S = 200 × 1000 / (π × 6) ≈ 10 610'},{k:'F',v:1273,tol:.06,f:'F = 0,04 × 3 × 10610 ≈ 1273'},{k:'Fz',max:.5,f:'Nedgången ska ha högst halva matningen, alltså högst cirka 636'}],
+  text:'Rakt ned i materialet skär fräsen med spetsen, och då ska matningen vara lägre. En vanlig tumregel är halva matningen eller mindre.',
+  task:'Pinnfräs Ø6 med 3 skär i aluminium: vc 200 m/min och fz 0,04 mm. Skriv S, matningen i spåret och en nedgång i Z med högst halva matningen.',start:KSD(6,'SLUTPROV')+'G00 X10 Y20 Z5 M03\nG01 Z-2\nG01 X60 Y20\nG00 Z5\n',
+  hint:'S ≈ 10610 och F ≈ 1273. Nedgången kan till exempel vara F600.',answer:'G00 X10 Y20 Z5 S10610 M03\nG01 Z-2 F600\nG01 X60 Y20 F1273\nG00 Z5'}]});
+const KPK=(n,t)=>KH(8,n,t);
+KURSER.push({id:'kf',name:'Kurs 8 · Fickfräsning',lessons:[
+ {short:'Zigzag',t:'Töm en ficka i zigzag',type:'pocket',r:5,rect:[20,10,60,40],zs:[-3],edge:2,maxStep:7,
+  text:'En ficka töms genom att verktyget går fram och tillbaka i banor bredvid varandra, i zigzag. Verktygets centrum kan aldrig komma närmare väggen än sin radie, så med en fräs Ø10 går banorna 5 mm innanför fickans kanter.',
+  task:'Töm fickan 40 × 30 (hörnen X20 Y10 och X60 Y40), 3 mm djup, med fräsen Ø10. Verktyget är redan nere i X25 Y15. Gå i zigzag längs X mellan X25 och X55, med högst 7 mm mellan banorna, upp till Y35.',start:KPK(1,'ZIGZAG')+'G00 X25 Y15 Z5\nG01 Z-3 F100\n',
+  hint:'G01 X55 Y15, sedan G01 Y22, X25, Y29, X55, Y35, X25. Sist G00 Z5.',answer:'G00 X25 Y15 Z5\nG01 Z-3 F100\nG01 X55 Y15 F400\nG01 Y22\nG01 X25\nG01 Y29\nG01 X55\nG01 Y35\nG01 X25\nG00 Z5'},
+ {short:'Stegning',t:'Stegningen mellan banorna',type:'pocket',r:5,rect:[15,5,65,45],zs:[-3],edge:2,maxStep:7,
+  text:'Stegningen är avståndet mellan två banor. Är den större än fräsens diameter blir det en kam kvar mellan banorna. En vanlig regel är högst 70 % av diametern, för fräsen Ø10 alltså 7 mm.',
+  task:'Töm fickan 50 × 40 (hörnen X15 Y5 och X65 Y45), 3 mm djup, med stegning på högst 7 mm. Börja i X20 Y10.',start:KPK(2,'STEGNING')+'G00 X20 Y10 Z5\nG01 Z-3 F100\n',
+  hint:'Banorna mellan X20 och X60. Y10, 17, 24, 31, 38 och sist 40 ger högst 7 mm mellan banorna.',answer:'G00 X20 Y10 Z5\nG01 Z-3 F100\nG01 X60 Y10 F400\nG01 Y17\nG01 X20\nG01 Y24\nG01 X60\nG01 Y31\nG01 X20\nG01 Y38\nG01 X60\nG01 Y40\nG01 X20\nG00 Z5'},
+ {short:'Finskär',t:'Finskär runt väggarna',type:'pocket',r:5,rect:[20,10,60,40],zs:[-3],edge:0,
+  text:'Zigzaggen lämnar små rester vid väggarna, mellan banornas ändar. Därför kör man till sist ett varv runt väggarna, ett finskär. I hörnen blir det en radie lika stor som fräsens. Det går inte att undvika med en rund fräs.',
+  task:'Zigzaggen är redan skriven. Lägg till ett varv runt fickans väggar på samma djup, med verktygets centrum 5 mm innanför väggarna, innan du kör upp.',start:KPK(3,'FINSKAR')+'G00 X25 Y15 Z5\nG01 Z-3 F100\nG01 X55 Y15 F400\nG01 Y22\nG01 X25\nG01 Y29\nG01 X55\nG01 Y35\nG01 X25\n',
+  hint:'Från X25 Y35: G01 X25 Y15, X55 Y15, X55 Y35 och X25 Y35. Sist G00 Z5.',answer:'G00 X25 Y15 Z5\nG01 Z-3 F100\nG01 X55 Y15 F400\nG01 Y22\nG01 X25\nG01 Y29\nG01 X55\nG01 Y35\nG01 X25\nG01 X25 Y15\nG01 X55 Y15\nG01 X55 Y35\nG01 X25 Y35\nG00 Z5'},
+ {short:'Två djup',t:'En djup ficka i två djup',type:'pocket',r:5,rect:[20,10,60,40],zs:[-3,-6],edge:2,
+  text:'En djup ficka töms i flera djup, precis som en kontur. Hela zigzaggen upprepas på varje djup.',
+  task:'Töm fickan 40 × 30 först på Z-3 och sedan på Z-6, med samma zigzag som i lektion 1.',start:KPK(4,'TVA DJUP')+'G00 X25 Y15 Z5\n',
+  hint:'G01 Z-3 och zigzaggen. Sedan G01 X25 Y15, G01 Z-6 och samma zigzag igen. Sist G00 Z5.',answer:'G00 X25 Y15 Z5\nG01 Z-3 F100\nG01 X55 Y15 F400\nG01 Y22\nG01 X25\nG01 Y29\nG01 X55\nG01 Y35\nG01 X25\nG01 X25 Y15\nG01 Z-6 F100\nG01 X55 Y15 F400\nG01 Y22\nG01 X25\nG01 Y29\nG01 X55\nG01 Y35\nG01 X25\nG00 Z5'},
+ {short:'Rund ficka',t:'En rund ficka med cirklar',type:'pocket',r:5,circ:[40,25,15],zs:[-4],edge:0,
+  text:'En rund ficka töms med cirklar som blir större och större runt centrum. Varje cirkel går ett halvt varv till ett steg ut och sedan ett helt varv.',
+  task:'Töm den runda fickan Ø30 med centrum i X40 Y25, 4 mm djup. Gå ned i centrum, gör en cirkel med radien 5 och sedan en med radien 10, moturs.',start:KPK(5,'RUND FICKA')+'G00 X40 Y25 Z5\nG01 Z-4 F100\n',
+  hint:'G01 X45 Y25, G03 X45 Y25 I-5 J0. Sedan G01 X50 Y25, G03 X50 Y25 I-10 J0. Sist G00 Z5.',answer:'G00 X40 Y25 Z5\nG01 Z-4 F100\nG01 X45 Y25 F400\nG03 X45 Y25 I-5 J0\nG01 X50 Y25\nG03 X50 Y25 I-10 J0\nG00 Z5'},
+ {short:'Slutprov',t:'Slutprov: ramp, zigzag och finskär',type:'pocket',r:5,rect:[20,10,60,40],zs:[-4],edge:0,entry:'ramp',
+  text:'Nu sätter du ihop allt: rampa ned i fickan i stället för att borra rakt ned, töm den i zigzag och kör ett finskär runt väggarna.',
+  task:'Töm fickan 40 × 30, 4 mm djup. Rampa ned från X25 Y15 Z0 till X55 Y15 Z-4, kör tillbaka till X25 på botten, töm resten i zigzag och avsluta med ett finskär runt väggarna.',start:KPK(6,'SLUTPROV')+'G00 X25 Y15 Z5\nG01 Z0 F100\n',
+  hint:'G01 X55 Y15 Z-4, G01 X25 Y15, sedan zigzag Y22, Y29, Y35 och finskäret runt X25–X55, Y15–Y35.',answer:'G00 X25 Y15 Z5\nG01 Z0 F100\nG01 X55 Y15 Z-4 F300\nG01 X25 Y15\nG01 Y22\nG01 X55\nG01 Y29\nG01 X25\nG01 Y35\nG01 X55\nG01 X55 Y15\nG01 X25 Y15\nG01 X25 Y35\nG01 X55 Y35\nG00 Z5'}]});
+KURSER.push({id:'kn',name:'Kurs 9 · Nollpunkter och G91',lessons:[
+ {short:'G91',t:'Inkrementella mått med G91',type:'path',pts:[[20,10],[20,30],[50,30],[50,10],[20,10]],need:[['G91','Använd G91, så att X och Y blir avstånd från där verktyget står.'],['G90#after','Slå på G90 igen när kvadraten är klar, så att nästa program inte börjar i G91.']],
+  text:'Med G90 är X och Y en punkt på ritningen. Med G91 är de i stället ett avstånd från där verktyget står just nu: X10 betyder 10 mm åt höger. Det kallas inkrementella mått. Glöm inte att slå tillbaka till G90 efteråt.',
+  task:'Verktyget står i X20 Y10. Fräs rektangeln 30 × 20 medurs med G91, och slå på G90 igen efteråt.',start:KH(9,1,'G91')+'G00 X20 Y10\nG91\n',
+  hint:'G01 Y20, G01 X30, G01 Y-20, G01 X-30 och sist G90.',answer:'G00 X20 Y10\nG91\nG01 Y20\nG01 X30\nG01 Y-20\nG01 X-30\nG90'},
+ {short:'Trappa',t:'En trappa med G91',type:'path',open:true,pts:[[10,5],[20,5],[20,15],[30,15],[30,25],[40,25],[40,35],[50,35]],need:[['G91','Använd G91, så att varje steg blir samma rad.'],['G90#after','Slå på G90 igen när trappan är klar.']],
+  text:'G91 är praktiskt när samma steg upprepas. Varje trappsteg är 10 mm åt höger och 10 mm upp, och raderna blir likadana oavsett var trappan börjar.',
+  task:'Verktyget står i X10 Y5. Fräs en trappa med fyra steg: 10 mm åt höger, 10 mm upp och så vidare, och sist 10 mm åt höger. Använd G91 och slå på G90 efteråt.',start:KH(9,2,'TRAPPA')+'G00 X10 Y5\n',
+  hint:'G91, sedan G01 X10, G01 Y10, G01 X10, G01 Y10, G01 X10, G01 Y10, G01 X10 och sist G90.',answer:'G00 X10 Y5\nG91\nG01 X10\nG01 Y10\nG01 X10\nG01 Y10\nG01 X10\nG01 Y10\nG01 X10\nG90'},
+ {short:'G55',t:'En andra nollpunkt med G55',type:'path',wcs:{2:{x:40,y:0}},pts:[[40,10],[40,30],[70,30],[70,10],[40,10]],need:[['G55','Välj nollpunkten G55 före rörelserna.']],
+  text:'En maskin har flera nollpunkter, G54 till G59. Varje nollpunkt är ett ställe på maskinbordet som operatören har mätt upp. Med två detaljer på bordet kan samma program köras på båda genom att bara byta nollpunkt. Här ligger G55 40 mm till höger om G54.',
+  task:'Fräs rektangeln 30 × 20 med nedre vänstra hörnet i X0 Y10, medurs, men räknat från nollpunkten G55. Den ritas då 40 mm till höger.',start:KH(9,3,'G55'),
+  hint:'G55 först. Sedan G00 X0 Y10, G01 X0 Y30, G01 X30 Y30, G01 X30 Y10 och G01 X0 Y10.',answer:'G55\nG00 X0 Y10\nG01 X0 Y30\nG01 X30 Y30\nG01 X30 Y10\nG01 X0 Y10'},
+ {short:'Två detaljer',t:'Samma detalj på två ställen',type:'z',wcs:{2:{x:40,y:0}},paths:[[[0,10],[0,30],[30,30],[30,10],[0,10]],[[40,10],[40,30],[70,30],[70,10],[40,10]]],zs:[-1],need:[['G54','Fräs den första detaljen i G54.'],['G55','Fräs den andra detaljen i G55.']],
+  text:'Nu körs samma rader två gånger, en gång i varje nollpunkt. Mellan detaljerna kör verktyget upp till säkerhetshöjden.',
+  task:'Fräs rektangeln 30 × 20 med hörnet i X0 Y10, 1 mm djup, först i G54 och sedan samma rader i G55.',start:KH(9,4,'TVA DETALJER'),
+  hint:'G54, G00 X0 Y10 Z5, G01 Z-1 och rektangeln, G00 Z5. Sedan G55 och exakt samma rader igen.',
+  answer:'G54\nG00 X0 Y10 Z5\nG01 Z-1 F100\nG01 X0 Y30 F300\nG01 X30 Y30\nG01 X30 Y10\nG01 X0 Y10\nG00 Z5\nG55\nG00 X0 Y10 Z5\nG01 Z-1 F100\nG01 X0 Y30 F300\nG01 X30 Y30\nG01 X30 Y10\nG01 X0 Y10\nG00 Z5'},
+ {short:'Slutprov',t:'Slutprov: G55 och G91',type:'path',wcs:{2:{x:40,y:0}},open:true,pts:[[40,10],[50,10],[50,20],[60,20],[60,30],[70,30]],need:[['G55','Välj nollpunkten G55.'],['G91','Rita trappan med G91.'],['G90#after','Slå på G90 igen efteråt.']],
+  text:'Allt tillsammans: en annan nollpunkt och inkrementella mått.',
+  task:'Fräs en trappa med tre steg på 10 mm i nollpunkten G55. Den börjar i X0 Y10 räknat från G55, går 10 åt höger, 10 upp och så vidare och slutar med 10 åt höger. Använd G91 för stegen.',start:KH(9,5,'SLUTPROV'),
+  hint:'G55, G00 X0 Y10, G91, sedan G01 X10, G01 Y10 omväxlande, och sist G90.',answer:'G55\nG00 X0 Y10\nG91\nG01 X10\nG01 Y10\nG01 X10\nG01 Y10\nG01 X10\nG90'}]});
+KURSER.push({id:'kg',name:'Kurs 10 · Gängning',lessons:[
+ {short:'Gängborr',t:'Borra för gängan',type:'drill',cyc:'G81',need:['R'],holes:[[30,25]],z:-15,
+  text:'Innan man gängar borrar man ett hål med gängborrdiametern, som är gängans diameter minus stigningen. För M8 med stigningen 1,25 mm blir det 8 − 1,25 = 6,75, och man använder borren Ø6,8. Hålet borras lite djupare än gängan, så att tappen inte slår i botten.',
+  task:'Borra hålet för en M8-gänga i X30 Y25, 15 mm djupt, med G81 och R-planet 2 mm över ytan.',start:KH(10,1,'GANGBORR')+'G00 X0 Y0 Z10\n',hint:'G81 X30 Y25 Z-15 R2 F100 och sedan G80.',answer:'G00 X0 Y0 Z10\nG81 X30 Y25 Z-15 R2 F100\nG80'},
+ {short:'G84',t:'Gänga med G84',type:'drill',cyc:'G84',need:['R'],holes:[[30,25]],z:-12,pitch:1.25,
+  text:'G84 är gängcykeln. Tappen går ned till djupet, spindeln vänder och tappen går upp igen. Matningen måste stämma exakt med gängans stigning: F = S × stigningen. För M8 med stigningen 1,25 mm och S400 blir det F500.',
+  task:'Gänga M8 i X30 Y25, 12 mm djupt, med G84, R-planet 5 mm över ytan, varvtalet 400 och rätt matning.',start:KH(10,2,'G84')+'G00 X0 Y0 Z10 S400 M03\n',hint:'G84 X30 Y25 Z-12 R5 F500 och sedan G80.',answer:'G00 X0 Y0 Z10 S400 M03\nG84 X30 Y25 Z-12 R5 F500\nG80'},
+ {short:'M29',t:'Stelgängning med M29 (Fanuc)',type:'drill',cyc:'G84',need:['R'],holes:[[30,25]],z:-12,pitch:1.25,m29:true,
+  text:'På Fanuc-styrningar kör man ofta stelgängning: spindeln och Z-axeln går exakt i takt, och tappen kan sitta i en vanlig hållare. Det slås på med M29 och varvtalet före G84. Hass och LinuxCNC behöver inte M29.',
+  task:'Gänga M8 i X30 Y25, 12 mm djupt, som stelgängning: M29 S400 på raden före G84, och sedan G84 med rätt matning.',start:KH(10,3,'M29')+'G00 X0 Y0 Z10 S400 M03\n',hint:'M29 S400, sedan G84 X30 Y25 Z-12 R5 F500 och G80.',answer:'G00 X0 Y0 Z10 S400 M03\nM29 S400\nG84 X30 Y25 Z-12 R5 F500\nG80'},
+ {short:'Flera gängor',t:'Slutprov: tre gängor M6',type:'drill',cyc:'G84',need:['R'],holes:[[20,25],[40,25],[60,25]],z:-10,pitch:1,
+  text:'M6 har stigningen 1 mm, så matningen blir lika stor som varvtalet. Som i en borrcykel räcker det med X och Y på raderna efter G84.',
+  task:'Gänga M6 i X20 Y25, X40 Y25 och X60 Y25, 10 mm djupt, med S500. R-planet 5 mm över ytan.',start:KH(10,4,'TRE GANGOR')+'G00 X0 Y0 Z10 S500 M03\n',hint:'G84 X20 Y25 Z-10 R5 F500, sedan X40 Y25, X60 Y25 och G80.',answer:'G00 X0 Y0 Z10 S500 M03\nG84 X20 Y25 Z-10 R5 F500\nX40 Y25\nX60 Y25\nG80'}]});
+KURSER.push({id:'ku',name:'Kurs 11 · Underprogram',lessons:[
+ {short:'Anropa',t:'Anropa ett underprogram med M98',type:'z',paths:[[[10,20],[60,20]]],zs:[-2],need:[['M98\\s*P\\s*2000|M98.*P2000','Anropa underprogrammet med M98 P2000.']],
+  text:'Ett underprogram är en bit kod som kan köras flera gånger. Det har ett eget O-nummer, skrivs efter M30 och slutar med M99, som hoppar tillbaka. Huvudprogrammet kör det med M98 P och underprogrammets nummer.',
+  task:'Underprogrammet O2000 fräser ett spår. Anropa det i huvudprogrammet på raden före M30.',start:KH(11,1,'ANROPA')+'G00 X10 Y20 Z5\n\nM30\nO2000 (ETT SPAR)\nG01 Z-2 F100\nG01 X60 Y20 F300\nG00 Z5\nM99\n',
+  hint:'Skriv M98 P2000 på den tomma raden före M30.',answer:'G00 X10 Y20 Z5\nM98 P2000\nM30\nO2000 (ETT SPAR)\nG01 Z-2 F100\nG01 X60 Y20 F300\nG00 Z5\nM99'},
+ {short:'Skriv det',t:'Skriv underprogrammet',type:'z',paths:[[[20,10],[20,40],[60,40],[60,10],[20,10]]],zs:[-2],need:[['O\\s*3000','Underprogrammet ska ha numret O3000.'],['M99','Underprogrammet ska sluta med M99.']],
+  text:'Nu skriver du själv underprogrammet. Det börjar med sitt O-nummer på en egen rad och slutar med M99.',
+  task:'Huvudprogrammet anropar O3000. Skriv underprogrammet efter M30: gå ned till Z-2, fräs kvadraten 40 × 30 medurs från X20 Y10, kör upp till Z5 och avsluta med M99.',start:KH(11,2,'SKRIV DET')+'G00 X20 Y10 Z5\nM98 P3000\nM30\n',
+  hint:'O3000, G01 Z-2 F100, fyra linjer runt kvadraten, G00 Z5 och M99.',answer:'G00 X20 Y10 Z5\nM98 P3000\nM30\nO3000\nG01 Z-2 F100\nG01 X20 Y40 F300\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nG00 Z5\nM99'},
+ {short:'Upprepa',t:'Upprepa med L',type:'z',paths:[[[10,10],[60,10]],[[10,20],[60,20]],[[10,30],[60,30]],[[10,40],[60,40]]],zs:[-2],need:[['M98.*L\\s*4|M98\\s*P\\s*4\\d{4}','Kör underprogrammet fyra gånger med L4.']],
+  text:'L efter M98 talar om hur många gånger underprogrammet ska köras. Skrivs underprogrammet med G91 flyttar det sig själv ett steg varje gång, och då blir det ett mönster.',
+  task:'Underprogrammet O4000 fräser ett spår med G91 och flyttar 10 mm upp. Kör det fyra gånger så att det blir fyra spår, och slå på G90 igen efteråt.',start:KH(11,3,'UPPREPA')+'G00 X10 Y10 Z5\n\nG90 G00 Z25\nM30\nO4000 (ETT SPAR, SEDAN 10 MM UPP)\nG91 G01 Z-7 F100\nX50 F300\nG00 Z7\nX-50 Y10\nM99\n',
+  hint:'M98 P4000 L4 på den tomma raden.',answer:'G00 X10 Y10 Z5\nM98 P4000 L4\nG90 G00 Z25\nM30\nO4000 (ETT SPAR, SEDAN 10 MM UPP)\nG91 G01 Z-7 F100\nX50 F300\nG00 Z7\nX-50 Y10\nM99'},
+ {short:'Djup i steg',t:'Skärdjup i steg med underprogram',type:'z',paths:[[[20,10],[20,40],[60,40],[60,10],[20,10]]],zs:[-2,-4,-6],need:[['M98.*L\\s*3|M98\\s*P\\s*3\\d{4}','Kör underprogrammet tre gånger med L3.']],
+  text:'Ett vanligt knep: underprogrammet går ned ett skärdjup med G91 och fräser sedan konturen med G90. Körs det tre gånger blir det tre djup, utan att konturen skrivs tre gånger.',
+  task:'Underprogrammet O5000 går 2 mm djupare och fräser kvadraten. Kör det tre gånger från Z0 så att det blir Z-2, Z-4 och Z-6, och kör sedan upp till Z5.',start:KH(11,4,'DJUP I STEG')+'G00 X20 Y10 Z5\nG01 Z0 F100\n\nG00 Z5\nM30\nO5000\nG91 G01 Z-2 F100\nG90 G01 X20 Y40 F300\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nM99\n',
+  hint:'M98 P5000 L3 på den tomma raden.',answer:'G00 X20 Y10 Z5\nG01 Z0 F100\nM98 P5000 L3\nG00 Z5\nM30\nO5000\nG91 G01 Z-2 F100\nG90 G01 X20 Y40 F300\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nM99'},
+ {short:'M97',t:'Lokalt underprogram med M97 (Hass)',type:'z',paths:[[[10,20],[60,20]]],zs:[-2],need:[['M97','Anropa med M97 P100.'],['N\\s*100','Underprogrammet ska börja på raden N100.']],
+  text:'Hass-styrningar har M97: underprogrammet ligger i samma program och hittas med ett radnummer, N, i stället för ett eget O-nummer. Det är bekvämt när underprogrammet bara används i det här programmet.',
+  task:'Skriv underprogrammet efter M30, med första raden N100, så att det fräser spåret från X10 Y20 till X60 Y20 2 mm djupt och slutar med M99. Anropet M97 P100 finns redan.',start:KH(11,5,'M97')+'G00 X10 Y20 Z5\nM97 P100\nM30\n',
+  hint:'N100 G01 Z-2 F100, G01 X60 Y20 F300, G00 Z5 och M99.',answer:'G00 X10 Y20 Z5\nM97 P100\nM30\nN100 G01 Z-2 F100\nG01 X60 Y20 F300\nG00 Z5\nM99'},
+ {short:'Slutprov',t:'Slutprov: två kvadrater med samma underprogram',type:'z',paths:[[[10,10],[10,35],[35,35],[35,10],[10,10]],[[45,10],[45,35],[70,35],[70,10],[45,10]]],zs:[-2],need:[['M98','Anropa underprogrammet med M98.'],['M99','Underprogrammet ska sluta med M99.']],
+  text:'Ett underprogram med G91 fungerar var som helst: det utgår från där verktyget står. Därför kan samma kvadrat fräsas på två ställen.',
+  task:'Skriv underprogrammet O6000: med G91 ned 7 mm (till Z-2 från Z5), en kvadrat 25 × 25 medurs, upp 7 mm, G90 och M99. Anropa det i X10 Y10 och i X45 Y10.',start:KH(11,6,'SLUTPROV')+'G00 X10 Y10 Z5\n',
+  hint:'Huvudprogram: M98 P6000, G00 X45 Y10, M98 P6000, G00 Z25, M30. Underprogram: O6000, G91 G01 Z-7 F100, Y25, X25, Y-25, X-25, G00 Z7, G90, M99.',
+  answer:'G00 X10 Y10 Z5\nM98 P6000\nG00 X45 Y10\nM98 P6000\nG00 Z25\nM30\nO6000\nG91 G01 Z-7 F100\nY25 F300\nX25\nY-25\nX-25\nG00 Z7\nG90\nM99'}]});
+
+const KF=n=>KH(12,n,'OVNING '+n),KFp=n=>`(KURS 12 · LEKTION ${n}: OVNING ${n})\n`;
+const FT='Hitta felet och rätta det. Tryck på Kontrollera när du tror att programmet är rätt.',FT2='Programmet har två fel. Hitta och rätta båda.',FT3='Programmet har tre fel. Hitta och rätta alla.';
+KURSER.push({id:'kh',name:'Kurs 12 · Hitta felet',lessons:[
+ {short:'1',t:'Övning 1',blind:true,type:'path',pts:[[20,10],[20,40],[60,40],[60,10],[20,10]],
+  text:'Programmet ska fräsa kvadraten på ritningen, men banan blir inte som ritningen.',task:FT,start:KF(1)+'G00 X20 Y10\nG01 X20 Y40\nG01 X6 Y40\nG01 X60 Y10\nG01 X20 Y10\n',
+  hint:'Jämför koordinaterna rad för rad med ritningens hörn.',answer:'G00 X20 Y10\nG01 X20 Y40\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10'},
+ {short:'2',t:'Övning 2',blind:true,type:'path',pts:[[60,20],[40,40]],arcs:[{c:[40,20],cw:false}],
+  text:'Bågen ska gå från X60 Y20 till X40 Y40 runt centrum X40 Y20, men den ser inte ut som på ritningen.',task:FT,start:KF(2)+'G00 X60 Y20\nG02 X40 Y40 R20\n',
+  hint:'Åt vilket håll går bågen på ritningen, och vilken kod hör till det hållet?',answer:'G00 X60 Y20\nG03 X40 Y40 R20'},
+ {short:'3',t:'Övning 3',blind:true,type:'path',pts:[[20,10],[20,40],[60,40],[60,10],[20,10]],
+  text:'Programmet ska fräsa samma kvadrat medurs, men en del av banan hamnar långt utanför ritningen.',task:FT,start:KF(3)+'G00 X20 Y10\nG01 X20 Y40\nG01 X60 Y-40\nG01 X60 Y10\nG01 X20 Y10\n',
+  hint:'Titta på tecknen framför talen.',answer:'G00 X20 Y10\nG01 X20 Y40\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10'},
+ {short:'4',t:'Övning 4',blind:true,type:'z',paths:[[[10,20],[60,20]]],zs:[-2],
+  text:'Programmet ska fräsa ett spår 2 mm djupt. Banan ser rätt ut, men i en riktig maskin skulle fräsen gå sönder.',task:FT,start:KF(4)+'G00 X10 Y20 Z5\nG00 Z-2\nG01 X60 Y20 F300\nG00 Z5\n',
+  hint:'Hur rör sig verktyget när det går ned i materialet?',answer:'G00 X10 Y20 Z5\nG01 Z-2 F100\nG01 X60 Y20 F300\nG00 Z5'},
+ {short:'5',t:'Övning 5',blind:true,type:'drill',cyc:'G81',need:['R'],holes:[[30,25]],z:-6,
+  text:'Programmet ska borra ett hål 6 mm djupt i X30 Y25, men det blir inget hål, och nästa rörelse kan bli en borrning.',task:FT2,start:KF(5)+'G00 X0 Y0 Z10\nG81 X30 Y25 Z6 R2 F100\nG00 X0 Y0\n',
+  hint:'Vilket tecken har djupet? Och vad stänger av en borrcykel?',answer:'G00 X0 Y0 Z10\nG81 X30 Y25 Z-6 R2 F100\nG80\nG00 X0 Y0'},
+ {short:'6',t:'Övning 6',blind:true,type:'comp',comp:'G41',r:5,pts:[[20,10],[20,40],[60,40],[60,10],[20,10]],
+  text:'Konturen ska fräsas medurs runt utsidan med radiekompensering, men detaljen blir för liten och kompenseringen ligger kvar efteråt.',task:FT2,start:KF(6)+'G00 X10 Y0\nG42 G01 X20 Y10 D2\nG01 X20 Y40\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nG01 X10 Y0\n',
+  hint:'På vilken sida om banan ska verktyget ligga runt utsidan medurs? Och hur stängs kompenseringen av?',answer:'G00 X10 Y0\nG41 G01 X20 Y10 D2\nG01 X20 Y40\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nG40 G01 X10 Y0'},
+ {short:'7',t:'Övning 7',blind:true,type:'prog',req:['head','tool','wcs','spindle','g43','cool','end'],
+  text:'Programmet är nästan klart, men verktygets längd blir fel, och på väg hem går maskinen via ämnet.',task:FT2,
+  start:KFp(7)+'O1000 (KONTUR 40X30)\nG21 G17 G40 G49 G80 G90\nT2 M06 (PINNFRAS D10)\nG54 G00 X10 Y0 S3200 M03\nG43 H01 Z25.\nM08\nG00 Z5.\nG01 Z-2. F100\nG01 X20 Y10 F300\nG01 X20 Y40\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nG00 Z25.\nM09\nM05\nG28 Z0\nM30\n',
+  hint:'Vilket verktyg sitter i spindeln, och vilket H-nummer används? Vad ska stå framför G28?',
+  answer:'O1000 (KONTUR 40X30)\nG21 G17 G40 G49 G80 G90\nT2 M06 (PINNFRAS D10)\nG54 G00 X10 Y0 S3200 M03\nG43 H02 Z25.\nM08\nG00 Z5.\nG01 Z-2. F100\nG01 X20 Y10 F300\nG01 X20 Y40\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nG00 Z25.\nM09\nM05\nG91 G28 Z0\nM30'},
+ {short:'8',t:'Övning 8',blind:true,type:'z',paths:[[[10,10],[60,10]],[[10,30],[60,30]]],zs:[-2],
+  text:'Programmet ska fräsa två spår, båda 2 mm djupa. Det ena spåret blir för djupt, och på väg mellan spåren skulle fräsen köra rakt in i ämnet.',task:FT2,
+  start:KF(8)+'G00 X10 Y10 Z5\nG01 Z-2 F100\nG01 X60 Y10 F300\nG00 X10 Y30\nG01 Z-3 F100\nG01 X60 Y30 F300\nG00 Z5\n',
+  hint:'Var står verktyget i Z när det flyttar till nästa spår? Och hur djupt går det andra spåret?',answer:'G00 X10 Y10 Z5\nG01 Z-2 F100\nG01 X60 Y10 F300\nG00 Z5\nG00 X10 Y30\nG01 Z-2 F100\nG01 X60 Y30 F300\nG00 Z5'},
+ {short:'9',t:'Övning 9',blind:true,type:'path',pts:[[10,15],[10,35],[15,40],[65,40],[70,35],[70,15],[65,10],[15,10],[10,15]],arcs:[null,{c:[15,35],cw:true},null,{c:[65,35],cw:true},null,{c:[65,15],cw:true},null,{c:[15,15],cw:true}],
+  text:'Rektangeln 60 × 30 med radien 5 i hörnen ska fräsas medurs. Två av hörnen blir fel.',task:FT2,
+  start:KF(9)+'G00 X10 Y15\nG01 X10 Y35\nG02 X15 Y40 R5\nG01 X65 Y40\nG03 X70 Y35 R5\nG01 X70 Y15\nG02 X65 Y10 R5\nG01 X15 Y10\nG02 X10 Y15 R-5\n',
+  hint:'Alla hörn går åt samma håll runt rektangeln. Och vad betyder ett minustecken framför R?',
+  answer:'G00 X10 Y15\nG01 X10 Y35\nG02 X15 Y40 R5\nG01 X65 Y40\nG02 X70 Y35 R5\nG01 X70 Y15\nG02 X65 Y10 R5\nG01 X15 Y10\nG02 X10 Y15 R5'},
+ {short:'10',t:'Övning 10',blind:true,type:'pocket',r:5,rect:[20,10,60,40],zs:[-3],edge:2,
+  text:'Fickan 40 × 30 ska tömmas med fräsen Ø10, men det blir en kam kvar mitt i fickan, och på ett ställe fräser verktyget in i väggen.',task:FT2,
+  start:KF(10)+'G00 X25 Y15 Z5\nG01 Z-3 F100\nG01 X58 Y15 F400\nG01 Y25\nG01 X25\nG01 Y35\nG01 X55\nG00 Z5\n',
+  hint:'Hur långt in från väggen får verktygets centrum gå med en fräs Ø10? Och hur stort är steget mellan banorna?',
+  answer:'G00 X25 Y15 Z5\nG01 Z-3 F100\nG01 X55 Y15 F400\nG01 Y22\nG01 X25\nG01 Y29\nG01 X55\nG01 Y35\nG01 X25\nG00 Z5'},
+ {short:'11',t:'Övning 11',blind:true,type:'z',paths:[[[10,10],[60,10]],[[10,20],[60,20]],[[10,30],[60,30]],[[10,40],[60,40]]],zs:[-2],need:[['M98.*L\\s*4|M98\\s*P\\s*4\\d{4}','Underprogrammet ska köras fyra gånger.']],
+  text:'Programmet ska fräsa fyra spår med ett underprogram, men det blir bara varningar och inga spår.',task:FT2,
+  start:KF(11)+'G00 X10 Y10 Z5\nM98 P4001 L4\nG90 G00 Z25\nM30\nO4000 (ETT SPAR, SEDAN 10 MM UPP)\nG91 G01 Z-7 F100\nX50 F300\nG00 Z7\nX-50 Y10\n',
+  hint:'Stämmer numret i anropet med underprogrammets O-nummer? Och hur hoppar ett underprogram tillbaka?',
+  answer:'G00 X10 Y10 Z5\nM98 P4000 L4\nG90 G00 Z25\nM30\nO4000 (ETT SPAR, SEDAN 10 MM UPP)\nG91 G01 Z-7 F100\nX50 F300\nG00 Z7\nX-50 Y10\nM99'},
+ {short:'12',t:'Övning 12',blind:true,type:'prog',req:['head','tool','wcs','spindle','g43','cool','end'],pts:[[20,10],[20,40],[60,40],[60,10],[20,10]],z:-2,
+  text:'Det sista programmet ser färdigt ut, men tre saker skulle göra att det inte går att köra som det är.',task:FT3,
+  start:KFp(12)+'O1000 (KONTUR 40X30)\nG21 G17 G40 G49 G80 G90\nT2 M06 (PINNFRAS D10)\nG54 G00 X10 Y0 M03\nG43 H02 Z25.\nG00 Z5.\nG01 Z-2. F100\nM08\nG01 X20 Y10 F300\nG01 X20 Y40\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nG00 Z25.\nM09\nM05\nG91 G28 Z0\n',
+  hint:'Hur fort går spindeln? När slås kylvätskan på? Och hur slutar programmet?',
+  answer:'O1000 (KONTUR 40X30)\nG21 G17 G40 G49 G80 G90\nT2 M06 (PINNFRAS D10)\nG54 G00 X10 Y0 S3200 M03\nG43 H02 Z25.\nM08\nG00 Z5.\nG01 Z-2. F100\nG01 X20 Y10 F300\nG01 X20 Y40\nG01 X60 Y40\nG01 X60 Y10\nG01 X20 Y10\nG00 Z25.\nM09\nM05\nG91 G28 Z0\nM30'}]});
+
+/* kontroll av skärdata: S före första skäret, F i skäret, nedgångens matning */
+function kEvalSd(L){const n=ta.value.split(/\r?\n/).length,els=((R&&R.els)||[]).filter(e=>e.xy),nfx=v=>String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+ const cutXY=els.find(e=>!e.rapid&&Math.hypot(e.p1[0]-e.p0[0],e.p1[1]-e.p0[1])>1e-6&&Math.max(e.p0[2],e.p1[2])<0),down=els.find(e=>!e.rapid&&e.p1[2]<e.p0[2]-1e-6&&e.p1[2]<0);
+ const first=Math.min(cutXY?cutXY.li:n,down?down.li:n);let S=null,Sl=-1;for(let i=0;i<=Math.min(first,n-1);i++){const m=kSrc(i).match(/S\s*(\d+(?:\.\d+)?)/);if(m){S=+m[1];Sl=i;}}
+ const ok=[];
+ for(const c of L.chk){
+  if(c.k==='S'){if(S==null)return {score:0,ok:false,msgs:[{k:'tip',t:'Skriv varvtalet med S på raden med M03.'}]};
+   if(Math.abs(S-c.v)>c.v*c.tol)return {score:20,ok:false,msgs:[{k:'err',t:`S${S} stämmer inte. ${c.f}.`}]};ok.push(`Varvtalet S${S} är rätt.`);}
+  else if(c.k==='F'){const e=L.chk.some(x=>x.k==='S'&&x.v<2000)&&down&&!cutXY?down:(cutXY||down);if(!e)return {score:40,ok:false,msgs:[{k:'tip',t:'Det finns ingen skärande rörelse att räkna matningen på.'}]};
+   const F=e.f;if(!F||Math.abs(F-c.v)>c.v*c.tol)return {score:50,ok:false,msgs:(ok.length?[{k:'ok',t:ok.join(' ')}]:[]).concat([{k:'err',t:`Rad ${e.li+1} har matningen F${F?nfx(F):' saknas'}. ${c.f}.`}])};ok.push(`Matningen F${nfx(F)} är rätt.`);}
+  else if(c.k==='Fz'){if(!down)return {score:70,ok:false,msgs:[{k:'tip',t:'Gå ned i materialet med G01 och en egen matning.'}]};const Fc=cutXY?cutXY.f:null;
+   if(!down.f||!Fc||down.f>Fc*c.max+1e-6)return {score:80,ok:false,msgs:[{k:'ok',t:ok.join(' ')},{k:'err',t:`Nedgången på rad ${down.li+1} går i F${down.f?nfx(down.f):'?'}. ${c.f}.`}]};ok.push(`Nedgången går i F${nfx(down.f)}, lugnare än skäret.`);}}
+ return {score:100,ok:true,msgs:[{k:'ok',t:ok.join(' ')}]};}
+/* kontroll av fickor: verktyget håller sig innanför väggarna och hela fickan blir urfräst på varje djup */
+function kEvalPocket(L){const r=L.r,E=.06,nfz=v=>String(Math.round(v*100)/100).replace('.',',').replace('-','−');
+ const P=(paths||[]).filter(s=>s.type!=='tilt'&&!s.skipMotion&&s.type!==0&&s.pts&&s.pts.length>1);
+ if(!P.length)return {score:0,ok:false,msgs:[{k:'tip',t:'Skriv banorna som tömmer fickan.'}]};
+ const inside=(x,y)=>L.rect?(x>=L.rect[0]+r-E&&x<=L.rect[2]-r+E&&y>=L.rect[1]+r-E&&y<=L.rect[3]-r+E):(Math.hypot(x-L.circ[0],y-L.circ[1])<=L.circ[2]-r+E);
+ if(L.entry==='ramp'){const s=P.find(s=>{const a=s.pts[0],b=s.pts[s.pts.length-1];return (b.z||0)<-.01&&(b.z||0)<(a.z||0)-1e-6;});if(s){const a=s.pts[0],b=s.pts[s.pts.length-1];if(Math.hypot(b.x-a.x,b.y-a.y)<.01)return {score:10,ok:false,msgs:[{k:'err',t:`Rad ${s.line} går rakt ned i fickan. Rampa ned: skriv X, Y och Z på samma rad.`}]};}}
+ const res=[];
+ for(const d of L.zs){const C=[];
+  for(const s of P){const pts=s.centerPts||s.pts;for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];if(Math.abs((a.z||0)-d)>.05||Math.abs((b.z||0)-d)>.05)continue;
+    const L2=Math.hypot(b.x-a.x,b.y-a.y),n=Math.max(1,Math.ceil(L2/.5));for(let k=0;k<=n;k++){const x=a.x+(b.x-a.x)*k/n,y=a.y+(b.y-a.y)*k/n;
+     if(!inside(x,y))return {score:15,ok:false,msgs:[{k:'err',t:`Rad ${s.line} fräser utanför fickan i ${kfmt([x,y])} på Z${nfz(d)}. Verktygets centrum måste hålla sig ${r} mm (fräsens radie) innanför väggarna.`}]};C.push(x,y);}}}
+  if(!C.length)return {score:Math.round(res.length/L.zs.length*80),ok:false,msgs:[{k:'tip',t:`Nästa: töm fickan på djupet Z${nfz(d)}.`}]};
+  // punkter i fickan som en rund fräs kan nå
+  let miss=null,tot=0,hit=0;const g=1;
+  const pts=[];if(L.rect){for(let x=L.rect[0]+.5;x<=L.rect[2]-.5;x+=g)for(let y=L.rect[1]+.5;y<=L.rect[3]-.5;y+=g){const cx=Math.min(Math.max(x,L.rect[0]+r),L.rect[2]-r),cy=Math.min(Math.max(y,L.rect[1]+r),L.rect[3]-r);if(Math.hypot(x-cx,y-cy)<=r-L.edge)pts.push([x,y]);}}
+  else{for(let x=L.circ[0]-L.circ[2];x<=L.circ[0]+L.circ[2];x+=g)for(let y=L.circ[1]-L.circ[2];y<=L.circ[1]+L.circ[2];y+=g)if(Math.hypot(x-L.circ[0],y-L.circ[1])<=L.circ[2]-.5-L.edge)pts.push([x,y]);}
+  const R2=(r+.05)**2;for(const [x,y] of pts){tot++;let c=false;for(let k=0;k<C.length;k+=2){const dx=C[k]-x,dy=C[k+1]-y;if(dx*dx+dy*dy<=R2){c=true;break;}}if(c)hit++;else if(!miss)miss=[x,y];}
+  if(miss){const pct=Math.min(99,Math.floor(hit/tot*100));return {score:Math.round((res.length+hit/tot)/L.zs.length*90),ok:false,msgs:(res.length?[{k:'ok',t:res.join(' ')}]:[]).concat([{k:'err',t:`På Z${nfz(d)} är ${pct} % av fickan urfräst. Det finns material kvar vid ${kfmt(miss)}.${L.maxStep?` Stegningen får vara högst ${L.maxStep} mm, annars blir det en kam kvar mellan banorna.`:L.edge===0?' Kör ett finskär runt väggarna, 5 mm innanför dem.':''}`}])};}
+  res.push(`Fickan är helt urfräst på Z${nfz(d)}.`);}
+ return {score:100,ok:true,msgs:[{k:'ok',t:res.join(' ')+(L.entry==='ramp'?' Fräsen rampar ned i stället för att borra rakt ned.':'')}]};}
+/* krav på koden i vissa lektioner, till exempel G91 och G90 efteråt, eller M98 */
+function kNeed(L,r){if(!L.need)return r;const n=ta.value.split(/\r?\n/).length,txt=[];for(let i=0;i<n;i++)txt.push(kSrc(i));const all=txt.join('\n');
+ if(!r.ok){for(const [re,msg] of L.need){if(re==='G90#after')continue;if(!new RegExp(re).test(all))return {score:r.score,ok:false,msgs:[{k:'tip',t:msg}].concat(r.msgs.filter(m=>m.k==='err').slice(0,1))};}return r;}
+ for(const [re,msg] of L.need){if(re==='G90#after'){const g91=txt.map((t,i)=>/G91(?![\d.])/.test(t)?i:-1).filter(i=>i>=0).pop();if(g91!=null&&!txt.slice(g91+1).some(t=>/G90(?![\d.])/.test(t))&&!/G90(?![\d.])/.test(txt[g91].replace(/G91/,'')))return {score:95,ok:false,msgs:r.msgs.filter(m=>m.k!=='ok').concat([{k:'tip',t:msg}])};continue;}
+  if(!new RegExp(re+'(?![\\d.])').test(all)&&!new RegExp(re).test(all))return {score:90,ok:false,msgs:[{k:'ok',t:'Banan följer ritningen.'},{k:'tip',t:msg}]};}
+ return r;}
+/* tapp: matningen ska vara varvtal × stigning, och M29 före G84 när det krävs */
+function kEvalTap(L,els){let r=kEvalDrill(L,els);if(!r.ok||!L.pitch)return r;const n=ta.value.split(/\r?\n/).length;let S=null,F=null,c=-1,m29=-1;
+ for(let i=0;i<n;i++){const u=kSrc(i),s=u.match(/S\s*(\d+)/),f=u.match(/F\s*(\d+(?:\.\d+)?)/);if(/M29(?![\d.])/.test(u))m29=i;if(/G\s*0?84(?![\d.])/.test(u)&&c<0){c=i;if(s)S=+s[1];if(f)F=+f[1];break;}if(s)S=+s[1];if(f)F=+f[1];}
+ if(!S)return {score:80,ok:false,msgs:[{k:'err',t:'Varvtalet saknas. Skriv S på raden med M03.'}]};
+ if(!F||Math.abs(F-S*L.pitch)>.5)return {score:85,ok:false,msgs:[{k:'err',t:`Matningen F${F||' saknas'} stämmer inte med gängan. F = S × stigningen = ${S} × ${String(L.pitch).replace('.',',')} = ${String(S*L.pitch).replace('.',',')}.`}]};
+ if(L.m29&&(m29<0||m29>c))return {score:90,ok:false,msgs:[{k:'err',t:'Skriv M29 och varvtalet, till exempel M29 S400, på raden före G84.'}]};
+ r.msgs=[{k:'ok',t:r.msgs.map(m=>m.t).join(' ')+` Matningen F${F} är S${S} × stigningen ${String(L.pitch).replace('.',',')} mm.${L.m29?' M29 slår på stelgängningen.':''}`}];return r;}
 
 /* ritningens bana med bågarna utritade */
 function kTargetPts(L){if(!L.arcs)return L.pts;const out=[L.pts[0]];for(let i=0;i<L.pts.length-1;i++){const a=L.pts[i],b=L.pts[i+1],A=L.arcs[i];
@@ -7532,8 +7940,14 @@ function kEvalDrill(L,els){const E=.05,lines=ta.value.split(/\r?\n/).map((l,i)=>
  return {score:100,ok:true,msgs:[{k:'ok',t:want.length>1?`Alla ${want.length} hålen är borrade på rätt ställe och djup, och cykeln är avslutad med G80.`:`Hålet i ${kfmt(want[0])} är ${nf(-L.z)} mm djupt, och cykeln är avslutad med G80.`}]}}
 
 /* kontrollen: följer banan ritningen, punkt för punkt och medurs? */
-function kEval(){const L=KL(),E=.05,eq=(a,b)=>Math.abs(a[0]-b[0])<E&&Math.abs(a[1]-b[1])<E,msgs=[];const els=(R&&R.els)||[];
- if(L.type==='drill')return kEvalDrill(L,els);
+function kEval(){const L=KL();return L.type==='path'?kNeed(L,kEvalBase()):kEvalBase();}
+function kEvalBase(){const L=KL(),E=.05,eq=(a,b)=>Math.abs(a[0]-b[0])<E&&Math.abs(a[1]-b[1])<E,msgs=[];const els=(R&&R.els)||[];
+ if(L.type==='drill')return L.pitch?kEvalTap(L,els):kEvalDrill(L,els);
+ if(L.type==='comp')return kEvalComp(L);
+ if(L.type==='z')return kNeed(L,kEvalZ(L));
+ if(L.type==='prog')return kEvalProg(L);
+ if(L.type==='sd')return kEvalSd(L);
+ if(L.type==='pocket')return kEvalPocket(L);
  const segs=[];els.forEach(e=>{if(!e.xy)return;const a=[e.p0[0],e.p0[1]],b=[e.p1[0],e.p1[1]];if(e.k!=='A'&&Math.hypot(b[0]-a[0],b[1]-a[1])<1e-6)return;segs.push({a,b,li:e.li,rapid:!!e.rapid,arc:e.k==='A',c:e.c?[e.c[0],e.c[1]]:null,cw:!!e.cw,f:e.f})});
  const rap=segs.filter(s=>s.rapid),raw=segs.filter(s=>!s.rapid);
  if(L.type==='g0'){let end=rap.length?rap[rap.length-1].b:null,eli=rap.length?rap[rap.length-1].li:-1;
@@ -7560,7 +7974,7 @@ let KP={done:[],cur:0};try{Object.assign(KP,JSON.parse(localStorage.getItem('rit
 let kC=0;const KC=()=>KURSER[kC];
 KP.c=KP.c||{};const kp=()=>kC===0?KP:(KP.c[KC().id]=KP.c[KC().id]||{done:[],cur:0});
 const kpSave=()=>{try{localStorage.setItem('rita-kurs',JSON.stringify(KP));}catch(e){}};
-let kursOn=false,kSaved=null,kLi=0,kRes=null,kShowHint=false,kOk=false,kTarget=null,kHoles=null;
+let kWcs=null,kTargets=null,kursOn=false,kSaved=null,kLi=0,kRes=null,kShowHint=false,kOk=false,kTarget=null,kHoles=null;
 const KL=()=>KC().lessons[kLi];
 const kHead=L=>L.start.split('\n').slice(0,2).join('\n')+'\n';
 const msg=t=>{statusEl.textContent=t;};
@@ -7571,7 +7985,9 @@ const kCard=document.createElement('div');kCard.className='k-card';kCard.hidden=
 const kBar=document.createElement('div');kBar.className='k-bar';kBar.hidden=true;$('rtView').after(kBar);
 function kRenderTop(){const ls=KC().lessons;kTop.innerHTML=`<span class="k-kname">${esc(KC().name)}</span><ol class="k-steps">${ls.map((l,i)=>`<li><button type="button" data-kl="${i}" class="${i===kLi?'cur':''}${kp().done.includes(i)?' done':''}" aria-current="${i===kLi?'step':'false'}"><span class="n">${kp().done.includes(i)&&i!==kLi?'✓':i+1}</span><span class="t">${esc(l.short)}</span></button></li>`).join('')}</ol><button type="button" class="k-exit" id="kExit">Avsluta kursen</button>`;
  kTop.querySelectorAll('[data-kl]').forEach(b=>b.onclick=()=>kLoad(+b.dataset.kl));$('kExit').onclick=()=>kursEnd();}
-function kRenderCard(){const L=KL(),r=kRes||{msgs:[]};
+let kTries=0,kShown=false;
+function kRenderCard(){const L=KL();let r=kRes||{msgs:[]};
+ if(L.blind&&!(kOk&&kShown)){const wl=document.querySelector('#warnList li');r=kShown&&kRes?{msgs:kTries>=2?[{k:'err',t:'Inte rätt än.'}].concat(wl?[{k:'tip',t:wl.textContent.replace(/^Fel:\s*/,'')}]:kRes.msgs.filter(m=>m.k!=='ok').slice(0,1).map(m=>({k:'tip',t:m.t}))):[{k:'err',t:kTries>1?'Inte rätt än. Fortsätt leta.':'Inte rätt än. Läs programmet rad för rad och jämför med ritningen och beskrivningen.'}]}:{msgs:[]};}
  kCard.innerHTML=`<div class="k-h"><span class="k-num">${kLi+1}</span><div><h3>${esc(L.t)}</h3><p>${esc(L.text)}</p></div></div>
   <div class="k-task"><b>Uppgift:</b> ${esc(L.task)}</div>
   <div class="k-msgs" aria-live="polite">${r.msgs.map(m=>`<p class="k-m ${m.k}">${m.k==='ok'?'<b>Bra!</b> ':m.k==='tip'?'<b>Tips:</b> ':''}${esc(m.t)}</p>`).join('')}${kShowHint?`<p class="k-m hint"><b>Ledtråd:</b> ${esc(L.hint)}</p>`:''}</div>
@@ -7579,15 +7995,15 @@ function kRenderCard(){const L=KL(),r=kRes||{msgs:[]};
  $('kHint').onclick=()=>{kShowHint=!kShowHint;kRenderCard();};
  $('kAns').onclick=()=>{dlg(`<h3>Svar på lektion ${kLi+1}</h3><p>Så här kan koden se ut. Vill du lägga in den i kodfältet?</p><pre class="k-pre">${esc(kHead(L)+L.answer)}</pre><div class="dl-btns"><button type="button" class="pri" id="kAnsOk">Lägg in svaret</button><button type="button" id="kAnsNo">Nej, jag försöker själv</button></div>`);
   $('kAnsOk').onclick=()=>{$('rtDlg').hidden=true;loadTextIntoEditor(kHead(L)+L.answer);};$('kAnsNo').onclick=()=>{$('rtDlg').hidden=true;};};}
-function kRenderBar(){const r=kRes||{score:0};const last=kLi>=KC().lessons.length-1;
+function kRenderBar(){const r=(KL().blind&&!kOk)?{score:0}:(kRes||{score:0});const last=kLi>=KC().lessons.length-1;
  kBar.innerHTML=`<div class="k-meter"><div class="k-ml"><span>Hur väl banan följer ritningen</span><b>${r.score} %</b></div><div class="k-mt"><div style="width:${r.score}%"></div></div></div>
   <button type="button" id="kRun">Kör banan</button>${kOk?`<button type="button" class="pri" id="kNext">${last?'Avsluta kursen':'Nästa lektion'}</button>`:`<button type="button" class="pri" id="kCheck">Kontrollera</button>`}`;
  $('kRun').onclick=()=>{$('stopBtn').click();$('playBtn').click();};
  if($('kCheck'))$('kCheck').onclick=kCheckNow;if($('kNext'))$('kNext').onclick=()=>{if(last)kursEnd();else kLoad(kLi+1);};}
-function kCheckNow(){buildR();kRes=kEval();if(kRes.ok){kOk=true;if(!kp().done.includes(kLi))kp().done.push(kLi);kpSave();kRes.msgs.push({k:'ok',t:kLi>=KC().lessons.length-1?`Du har klarat hela kurs ${kC+1}!`:'Lektionen är klar. Gå vidare när du vill.'});msg('Lektion '+(kLi+1)+' klar.');}
+function kCheckNow(){buildR();kRes=kEval();if(KL().blind){kShown=true;if(!kRes.ok)kTries++;}if(kRes.ok){kOk=true;if(!kp().done.includes(kLi))kp().done.push(kLi);kpSave();kRes.msgs.push({k:'ok',t:kLi>=KC().lessons.length-1?`Du har klarat hela kurs ${kC+1}!`:'Lektionen är klar. Gå vidare när du vill.'});msg('Lektion '+(kLi+1)+' klar.');}
  else msg('Inte riktigt än, se tipsen i lektionskortet.');kRenderTop();kRenderCard();kRenderBar();}
 let kT=0;
-function kAfterDraw(){if(!kursOn)return;clearTimeout(kT);kT=setTimeout(()=>{buildR();kRes=kEval();if(kOk&&!kRes.ok)kOk=false;kRenderCard();kRenderBar();},150);}
+function kAfterDraw(){if(!kursOn)return;clearTimeout(kT);kT=setTimeout(()=>{buildR();kRes=kEval();if(kOk&&!kRes.ok)kOk=false;if(KL().blind)kShown=false;kRenderCard();kRenderBar();},150);}
 /* 2D-vyn visar lektionens ritning: banan streckad, startpunkt, krysset och hålen */
 function kView(){const r=$('canvas').getBoundingClientRect(),W=KSTOCK.x1-KSTOCK.x0,H=KSTOCK.y1-KSTOCK.y0;
  view.scale=Math.min(r.width/(W+30),r.height/(H+30));view.offsetX=r.width/2-(KSTOCK.x0+W/2)*view.scale;view.offsetY=r.height/2+(KSTOCK.y0+H/2)*view.scale;}
@@ -7595,15 +8011,21 @@ function kOverlay(){if(!kursOn||stockMode||mode3D)return;const c=ctx;c.save();
  const S=p=>screen({x:p[0],y:p[1]});
  // råämnet
  const a=S([KSTOCK.x0,KSTOCK.y1]),b=S([KSTOCK.x1,KSTOCK.y0]);c.strokeStyle='rgba(200,155,60,.55)';c.lineWidth=1.5;c.setLineDash([]);c.strokeRect(a.x,a.y,b.x-a.x,b.y-a.y);
+ (kTargets||[kTarget]).forEach(kTarget=>{
  if(kTarget&&kTarget.length){c.strokeStyle='rgba(255,214,102,.32)';c.lineWidth=Math.max(8,3*view.scale);c.setLineDash([]);c.lineJoin='round';c.lineCap='round';c.beginPath();
   kTarget.forEach((p,i)=>{const q=S(p);i?c.lineTo(q.x,q.y):c.moveTo(q.x,q.y);});if(kTarget.length>1)c.stroke();c.setLineDash([]);
   const s0=S(kTarget[0]);c.fillStyle='#ffd666';c.beginPath();c.arc(s0.x,s0.y,6,0,Math.PI*2);c.fill();
   if(kTarget.length===1){c.strokeStyle='#ffd666';c.lineWidth=2.5;c.beginPath();c.moveTo(s0.x-14,s0.y);c.lineTo(s0.x+14,s0.y);c.moveTo(s0.x,s0.y-14);c.lineTo(s0.x,s0.y+14);c.stroke();}
   c.font='600 12px ui-monospace,monospace';c.fillStyle='#ffd666';c.fillText(kfmt(kTarget[0]),s0.x+10,s0.y-10);}
+ });
  if(kHoles){c.strokeStyle='#ffd666';c.lineWidth=2;c.setLineDash([5,4]);kHoles.forEach(h=>{const q=S(h),rr=3*view.scale;c.beginPath();c.arc(q.x,q.y,rr,0,Math.PI*2);c.stroke();c.beginPath();c.moveTo(q.x-rr-5,q.y);c.lineTo(q.x+rr+5,q.y);c.moveTo(q.x,q.y-rr-5);c.lineTo(q.x,q.y+rr+5);c.stroke();});c.setLineDash([]);}
  c.restore();}
-function kLoad(i){kLi=Math.max(0,Math.min(KC().lessons.length-1,i));kp().cur=kLi;kpSave();kOk=false;kShowHint=false;kRes=null;const L=KL();
- kTarget=L.type==='g0'?[L.pts[0]]:L.type==='drill'?null:kTargetPts(L);kHoles=L.type==='drill'?L.holes:null;
+function kLoad(i){kLi=Math.max(0,Math.min(KC().lessons.length-1,i));kp().cur=kLi;kpSave();kOk=false;kShowHint=false;kRes=null;kTries=0;kShown=false;const L=KL();
+ document.documentElement.classList.toggle('k-blind',!!L.blind);
+ kTarget=L.type==='g0'?[L.pts[0]]:L.type==='drill'?null:L.paths?null:L.pts?kTargetPts(L):null;
+ kTargets=L.paths?L.paths.map((P,q)=>kTargetPts({pts:P,arcs:L.arcs&&L.arcs[q]})):L.rect?[[[L.rect[0],L.rect[1]],[L.rect[0],L.rect[3]],[L.rect[2],L.rect[3]],[L.rect[2],L.rect[1]],[L.rect[0],L.rect[1]]]]:L.circ?[Array.from({length:73},(_,k)=>[L.circ[0]+L.circ[2]*Math.cos(k/72*2*Math.PI),L.circ[1]+L.circ[2]*Math.sin(k/72*2*Math.PI)])]:null;
+ // lektioner med egna nollpunkter (G55 …): lägg in dem, och återställ annars
+ if(typeof wcsTable!=='undefined'){if(kWcs==null)kWcs=JSON.parse(JSON.stringify(wcsTable));wcsTable.splice(0,wcsTable.length,...JSON.parse(JSON.stringify(kWcs)));if(L.wcs)Object.entries(L.wcs).forEach(([k,v])=>{const w=wcsTable[+k-1];if(w){w.x=v.x||0;w.y=v.y||0;w.z=v.z||0;}});}kHoles=L.type==='drill'?L.holes:null;
  loadTextIntoEditor(L.start);kView();window.render();kRenderTop();kRenderCard();kRenderBar();ta.focus();const n=ta.value.length;ta.setSelectionRange(n,n);kAfterDraw();}
 function kursStart(i,c){kC=c!=null?c:(KP.lastC||0);if(!KURSER[kC])kC=0;KP.lastC=kC;if(i==null)i=kp().cur||0;
  if(!kursOn){kSaved={code:ta.value,dialect:window.RITA_DIALECT,stock:stockMode,m3:mode3D};try{localStorage.setItem('rita-kurs-backup',JSON.stringify(kSaved));}catch(e){}
@@ -7611,7 +8033,7 @@ function kursStart(i,c){kC=c!=null?c:(KP.lastC||0);if(!KURSER[kC])kC=0;KP.lastC=
   if(stockMode)$('cncFrasBtn').click();if(mode3D){const t=$('toggle3D');t.checked=false;t.dispatchEvent(new Event('change',{bubbles:true}));}
   if(window.RITA_DIALECT!=='fanuc'&&window.ritaSetDialect)window.ritaSetDialect('fanuc',true);dispatchEvent(new Event('resize'));}
  kLoad(i);}
-function kursEnd(){if(!kursOn)return;kursOn=false;document.documentElement.classList.remove('rt-kurs');kTop.hidden=kCard.hidden=kBar.hidden=true;kTarget=kHoles=null;
+function kursEnd(){if(!kursOn)return;kursOn=false;document.documentElement.classList.remove('k-blind');if(kWcs&&typeof wcsTable!=='undefined'){wcsTable.splice(0,wcsTable.length,...kWcs);kWcs=null;}document.documentElement.classList.remove('rt-kurs');kTop.hidden=kCard.hidden=kBar.hidden=true;kTarget=kHoles=null;
  const s=kSaved;kSaved=null;if(s){if(s.dialect&&window.ritaSetDialect)window.ritaSetDialect(s.dialect,true);loadTextIntoEditor(s.code);if(s.stock&&!stockMode)$('cncFrasBtn').click();}
  try{localStorage.removeItem('rita-kurs-backup');}catch(e){}dispatchEvent(new Event('resize'));msg('Kursen är avslutad, ditt program är tillbaka.');}
 window.ritaKursMenu=function(){const out=[];KURSER.forEach((K,c)=>{const p=c===0?KP:((KP.c&&KP.c[K.id])||{done:[],cur:0});out.push({l:K.name,sub:K.lessons.map((l,i)=>({l:`${i+1}. ${l.t}${p.done.includes(i)?'  ✓':''}`,a:()=>kursStart(i,c)})).concat([{sep:1},{l:'Fortsätt där jag slutade',a:()=>kursStart(p.cur||0,c)}])});});
@@ -8174,6 +8596,7 @@ window.gvMeasure={toggle};
 <li><b>Förklara rad</b>: klicka på en rad eller på radnumret. Rutan förklarar varje G-kod, M-kod och adress, till exempel vart X- och Y-värdena tar verktyget, och räknar ut skärhastigheten när du skriver ett varvtal. Länken <i>Läs mer i lexikonet</i> öppnar rätt avsnitt.</li>
 <li><b>Varningar</b>: den gröna bocken ✓ i uppspelningsraden blir röd om något i koden ser fel ut. Klicka på den, eller titta i inspektörens flik Varningar.</li>
 <li><b>Kommentarer</b> skrivs inom parentes <code>(SÅ HÄR)</code> eller efter semikolon. Maskinen bryr sig inte om dem.</li>
+<li><b>Underprogram</b>: <code>M98 P2000 L4</code> kör underprogrammet <code>O2000</code> fyra gånger. Underprogrammet skrivs efter M30 och slutar med <code>M99</code>. Med Hass går också <code>M97 P100</code>, som hoppar till raden <code>N100</code>. Banan visas som om programmet hade körts, och förklaringen visar raden i underprogrammet.</li>
 </ul>
 </section>
 
@@ -8273,7 +8696,7 @@ window.gvMeasure={toggle};
 <ul>
 <li><b>Exempel</b>: färdiga program i kategorierna Grunder (2D-banor), Program, Logga-Gravyr och Fysik. Råämne, nollpunkt och verktyg ställs in automatiskt.</li>
 <li><b>Exempel → Ritningar att öva på</b>: ritningar där du skriver G-koden själv. Varje ritning har ett facit.</li>
-<li><b>Kurser</b>: tre kurser med sex lektioner vardera. Kurserna handlar om första rörelserna, bågar och cirklar, och borrning med cykler.
+<li><b>Kurser</b>: tolv kurser: första rörelserna, bågar och cirklar, radiekompensering, borrning med cykler, djup och Z, ett riktigt program, skärdata, fickfräsning, nollpunkter och G91, gängning, underprogram och hitta felet.
   <ul>
   <li>Varje lektion har en uppgift, en ledtråd och ett svar.</li>
   <li>Ritningen syns som ett ljust band i 2D-vyn. <b>Kontrollera</b> visar hur väl din bana följer den och ger tips om något är fel.</li>
@@ -8358,6 +8781,56 @@ window.gvGuide=function(id){W.hidden=false;if(id)setTimeout(()=>go(id),20);else 
 document.getElementById('gvGuideX').onclick=()=>{W.hidden=true;};
 document.addEventListener('keydown',e=>{if(e.key==='F1'){e.preventDefault();W.hidden?window.gvGuide():(W.hidden=true);}else if(e.key==='Escape'&&!W.hidden){W.hidden=true;}});
 if(window.ritaWinMove)window.ritaWinMove(W,'gvis-guidestorlek',420);
+})();
+</script>
+<script>
+/* ---------- Underprogram: M98 P… L… (O-nummer) och M97 P… (N-nummer, Hass), med M99 som retur ----------
+   Programmet vecklas ut till en rak följd av rader innan det läses, och varje bana får tillbaka radnumret där den står i koden. */
+(function(){
+function expandSub(text){
+  const L=String(text).split('\n'),clean=i=>(L[i]||'').replace(/\(.*?\)/g,'').replace(/;.*/,'').toUpperCase();
+  let any=false;for(let i=0;i<L.length;i++)if(/M0*9[78](?![\d.])/.test(clean(i))){any=true;break;}
+  if(!any)return null;
+  const O={},N={};
+  for(let i=0;i<L.length;i++){const u=clean(i),o=u.match(/^\s*(?:N\d+\s*)?O\s*(\d+)/),n=u.match(/^\s*N\s*(\d+)/);if(o&&O[+o[1]]==null)O[+o[1]]=i;if(n&&N[+n[1]]==null)N[+n[1]]=i;}
+  const subStarts=new Set();const out=[],map=[],msgs=[];let guard=0;
+  // vilka O-block som anropas (där slutar huvudprogrammet om M30 saknas)
+  for(let i=0;i<L.length;i++){const u=clean(i);if(/M0*98(?![\d.])/.test(u)){const p=u.match(/P\s*(\d+)/);if(p){let pv=p[1];if(!/L\s*\d/.test(u)&&pv.length>4)pv=pv.slice(-4);if(O[+pv]!=null)subStarts.add(O[+pv]);}}}
+  function run(start,depth,isSub,callLine){
+    for(let i=start;i<L.length;i++){
+      if(++guard>200000)return 'end';
+      const u=clean(i);
+      if(isSub&&/M0*99(?![\d.])/.test(u)){const rest=L[i].replace(/M0*99(?![\d.])/i,'').replace(/\(.*?\)/g,'').trim();if(rest&&!/^N\d+$/i.test(rest)){out.push(rest);map.push(i);}return 'ret';}
+      if(!isSub&&i>0&&subStarts.has(i))return 'end';
+      const m98=/M0*98(?![\d.])/.test(u),m97=/M0*97(?![\d.])/.test(u);
+      if(m98||m97){
+        const p=u.match(/P\s*(\d+)/),l=u.match(/L\s*(\d+)/);
+        out.push(L[i].replace(/M0*9[78](?![\d.])/i,'').replace(/P\s*\d+/i,'').replace(/L\s*\d+/i,''));map.push(i);
+        if(!p){msgs.push('Rad '+(i+1)+': M9'+(m98?8:7)+' saknar P (vilket underprogram som ska köras).');continue;}
+        let pv=p[1],times=l?+l[1]:1;
+        if(m98&&!l&&pv.length>4){times=+pv.slice(0,pv.length-4)||1;pv=pv.slice(-4);}
+        const target=m98?O[+pv]:N[+pv];
+        if(target==null){msgs.push('Rad '+(i+1)+': '+(m98?'underprogrammet O'+pv:'raden N'+pv)+' finns inte i programmet.');continue;}
+        if(depth>=4){msgs.push('Rad '+(i+1)+': underprogrammen är nästlade i för många nivåer (högst 4).');continue;}
+        for(let k=0;k<Math.min(times,500);k++){const r=run(m98?target+1:target,depth+1,true,i);if(r==='end')return 'end';}
+        continue;}
+      if(/M0*(30|2)(?![\d.])/.test(u)){out.push(L[i]);map.push(i);return 'end';}
+      out.push(L[i]);map.push(i);}
+    if(isSub)msgs.push('Rad '+(callLine+1)+': underprogrammet som anropas här slutar inte med M99.');
+    return 'eof';}
+  run(0,0,false,-1);
+  return {out,map,msgs};
+}
+const _pg=parseGcode;
+parseGcode=function(text){
+  const ex=expandSub(text);if(!ex)return _pg(text);
+  const r=_pg(ex.out.join('\n')),mp=n=>{const k=n-1;return (k>=0&&k<ex.map.length)?ex.map[k]+1:n;};
+  (r.paths||[]).forEach(s=>{if(s.line)s.line=mp(s.line);});
+  if(r.endedBy&&r.endedBy.line)r.endedBy.line=mp(r.endedBy.line);
+  const fix=a=>{if(Array.isArray(a))a.forEach((w,i)=>{if(typeof w==='string')a[i]=w.replace(/Rad (\d+)/g,(m,n)=>'Rad '+mp(+n));else if(w&&typeof w.text==='string')w.text=w.text.replace(/Rad (\d+)/g,(m,n)=>'Rad '+mp(+n));});};
+  fix(r.warnings);fix(r.cautions);ex.msgs.forEach(m=>r.warnings.push(m));
+  r.subprograms=true;return r;};
+window.gvExpandSub=expandSub;
 })();
 </script>
 </body></html>
