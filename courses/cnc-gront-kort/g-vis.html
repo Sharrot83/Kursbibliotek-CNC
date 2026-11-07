@@ -3228,6 +3228,17 @@ function resizeCanvas() {
   render();
 }
 window.addEventListener('resize', resizeCanvas);
+// Ritytan följer vyns storlek även när något annat ändrar den (kursraden, tidslinjen, inspektören, delaren),
+// annars blir bilden utdragen eller får en remsa längst ned.
+if (window.ResizeObserver) {
+  let roT = 0, last = '';
+  new ResizeObserver(() => {
+    const r = canvas.getBoundingClientRect(), k = Math.round(r.width)+'x'+Math.round(r.height);
+    if (k === last) return; last = k;
+    cancelAnimationFrame(roT);
+    roT = requestAnimationFrame(() => { resizeCanvas(); if (typeof resizeWebGL === 'function' && (stockMode || mode3D)) resizeWebGL(); window.dispatchEvent(new Event('gv-vy-storlek')); });
+  }).observe(canvas);
+}
 
 function stripComments(line, warnings=null, lineNo=null) {
   let out = '', depth = 0;
@@ -7605,6 +7616,7 @@ function kursEnd(){if(!kursOn)return;kursOn=false;document.documentElement.class
  try{localStorage.removeItem('rita-kurs-backup');}catch(e){}dispatchEvent(new Event('resize'));msg('Kursen är avslutad, ditt program är tillbaka.');}
 window.ritaKursMenu=function(){const out=[];KURSER.forEach((K,c)=>{const p=c===0?KP:((KP.c&&KP.c[K.id])||{done:[],cur:0});out.push({l:K.name,sub:K.lessons.map((l,i)=>({l:`${i+1}. ${l.t}${p.done.includes(i)?'  ✓':''}`,a:()=>kursStart(i,c)})).concat([{sep:1},{l:'Fortsätt där jag slutade',a:()=>kursStart(p.cur||0,c)}])});});
  return out.concat([{sep:1},{l:'Fortsätt där jag slutade',a:()=>kursStart(null,null)}],kursOn?[{l:'Avsluta kursen',a:()=>kursEnd()}]:[]);};
+addEventListener('gv-vy-storlek',()=>{if(kursOn&&!stockMode&&!mode3D){kView();window.render();}});
 window.ritaKurs={start:kursStart,end:kursEnd,get on(){return kursOn;},check:kCheckNow};
 const _g=drawGrid;drawGrid=function(){const r=_g.apply(this,arguments);try{kOverlay();}catch(e){}return r;};   // ritningen under programmets bana
 const _d=drawFromText;drawFromText=function(){const r=_d.apply(this,arguments);try{kAfterDraw();}catch(e){}return r;};
