@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>G-vis</title>
+<script>(function(){var t='dark',l=null;try{t=localStorage.getItem('cnc-tema')||'dark';l=localStorage.getItem('cnc-sprak');}catch(e){}
+if(l!=='sv'&&l!=='en')l=/^sv/i.test(navigator.language||'')?'sv':'en';document.documentElement.setAttribute('data-theme',t);document.documentElement.lang=l;})();</script>
+<style>
+@font-face{font-family:'Barlow';font-weight:500;src:url(assets/fonts/barlow-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-weight:700;src:url(assets/fonts/barlow-latin-700-normal.woff2) format('woff2')}
+:root{--bg:#101318;--card:#181d24;--card2:#202732;--text:#eef3f8;--muted:#9aa7b5;--line:#303a47;--gold:#c89b3c;--accent:#4da3ff}
+html[data-theme="light"]{--bg:#e9edf1;--card:#ffffff;--card2:#f4f6f8;--text:#1d2329;--muted:#5b6672;--line:#c9d2db}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font:500 16px/1.5 'Barlow',system-ui,sans-serif;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:16px;padding:18px 28px;border-bottom:2px solid var(--gold);background:#0b0f14}
+header img{height:56px}header h1{margin:0;font-size:22px;color:#eef3f8;font-weight:700}header p{margin:0;color:#9aa7b5;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
+.sp{flex:1}.btn{font:inherit;font-size:14px;padding:7px 14px;border:1px solid #3a4148;border-radius:7px;background:transparent;color:#dfe6ee;cursor:pointer}.btn:hover{border-color:var(--accent)}
+main{flex:1;padding:36px 28px;max-width:1100px;width:100%;margin:0 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+a.card{display:flex;flex-direction:column;gap:6px;padding:22px 22px 20px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--text);text-decoration:none;transition:border-color .15s,transform .15s}
+a.card:hover,a.card:focus-visible{border-color:var(--accent);transform:translateY(-2px);outline:none}
+a.card b{font-size:20px}a.card span{color:var(--muted);font-size:14.5px}
+a.card.big{grid-column:1/-1;flex-direction:row;align-items:center;gap:22px;background:linear-gradient(135deg,var(--card),var(--card2))}
+a.card.big img{height:90px}
+a.card.big div{display:flex;flex-direction:column;gap:4px}
+footer{padding:14px 28px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+[data-l]{display:none}html[lang="sv"] [data-l="sv"],html[lang="en"] [data-l="en"]{display:revert}
+</style>
+</head>
+<body>
+<header>
+  <img src="icon.png" alt="">
+  <div><h1>G-vis</h1><p data-l="sv">En CNC-operatörs guide till spån</p><p data-l="en">A CNC operator's guide to chips</p></div>
+  <span class="sp"></span>
+  <button class="btn" id="lang" type="button"></button>
+  <button class="btn" id="theme" type="button"></button>
+</header>
+<main>
+  <div class="grid">
+    <a class="card big" href="courses/cnc-gront-kort/g-vis.html"><img src="icon.png" alt=""><div><b>G-vis</b>
+      <span data-l="sv">Skriv G-kod och se banan, fräsningen i 3D och fysiken. Med kurser, exempel, ritningar och verktygsmagasin.</span>
+      <span data-l="en">Write G-code and see the toolpath, 3D material removal and physics. With courses, examples, drawings and a tool changer.</span></div></a>
+    <a class="card" href="courses/cnc-gront-kort/lexikon.html"><b data-l="sv">Lexikon</b><b data-l="en">Lexicon</b>
+      <span data-l="sv">Verktyg, skärdata, G- och M-koder, formler och en guide till manuell G-kod.</span>
+      <span data-l="en">Tools, cutting data, G and M codes, formulas and a guide to manual G-code.</span></a>
+    <a class="card" href="courses/cnc-gront-kort/sim/hass-fras.html"><b data-l="sv">Hass-fräsen</b><b data-l="en">Hass mill</b>
+      <span data-l="sv">Vertikal fräsmaskin med styrpanel, verktygsväxlare, G-kod och fysik.</span>
+      <span data-l="en">Vertical machining center with control panel, tool changer, G-code and physics.</span></a>
+    <a class="card" href="courses/cnc-gront-kort/sim/svarv.html#support"><b data-l="sv">Supportsvarv</b><b data-l="en">Manual lathe</b>
+      <span data-l="sv">Konventionell svarv med växellåda, handratt och verktygshållare.</span>
+      <span data-l="en">Conventional lathe with gearbox, handwheels and tool post.</span></a>
+    <a class="card" href="courses/cnc-gront-kort/sim/svarv.html#cnc"><b data-l="sv">CNC-svarv</b><b data-l="en">CNC lathe</b>
+      <span data-l="sv">CNC-svarv med G-kod, cykler och revolver.</span>
+      <span data-l="en">CNC lathe with G-code, canned cycles and turret.</span></a>
+  </div>
+</main>
+<footer><span data-l="sv">Fungerar utan internet. Språk och tema gäller i alla delar.</span><span data-l="en">Works offline. Language and theme apply everywhere.</span></footer>
+<script>
+(function(){const H=document.documentElement,L=document.getElementById('lang'),T=document.getElementById('theme');
+function lab(){const en=H.lang==='en',dk=H.getAttribute('data-theme')!=='light';L.textContent=en?'🌐 Svenska':'🌐 English';T.textContent=dk?(en?'☀ Light mode':'☀ Ljust läge'):(en?'☾ Dark mode':'☾ Mörkt läge');}
+L.onclick=()=>{H.lang=H.lang==='en'?'sv':'en';try{localStorage.setItem('cnc-sprak',H.lang);}catch(e){}document.title='G-vis';lab();};
+T.onclick=()=>{const t=H.getAttribute('data-theme')==='light'?'dark':'light';H.setAttribute('data-theme',t);try{localStorage.setItem('cnc-tema',t);}catch(e){}lab();};
+lab();})();
+</script>
+</body>
+</html>

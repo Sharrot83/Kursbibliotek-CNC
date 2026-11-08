@@ -219,6 +219,18 @@
   .mimg{display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:cover; border-bottom:1px solid var(--line); background:#0d1116;}
   a.tblock .tb-bottom .qn{margin-right:8px;}
   .simnote{margin-top:26px; color:var(--muted); font-size:13.5px; line-height:1.6; max-width:70ch;}
+
+.dl{display:flex;gap:18px;align-items:flex-start;margin:0 0 26px;padding:18px 20px;border:1.5px solid var(--line,#d4dbe2);border-radius:12px;background:var(--card,#fff)}
+.dl img{flex:none;border-radius:16px}
+.dl h2{margin:0 0 6px;font-size:20px}
+.dl p{margin:0 0 10px;line-height:1.5}
+.dl-btns{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:4px 0 8px}
+.dl-main{display:inline-block;padding:10px 18px;border-radius:8px;background:#2c5aa0;color:#fff;font-weight:700;text-decoration:none}
+.dl-main:hover{background:#1f4580}
+.dl-alt{font-size:14px}
+.dl-help summary{cursor:pointer;font-weight:600}
+.dl-help p{font-size:14px;margin:8px 0}
+@media (max-width:640px){.dl{flex-direction:column}}
 </style>
 <style>:root{--page-accent:#ff8a2b;}
   :root[data-theme="light"]{
@@ -244,6 +256,22 @@
     <h1>Välj <span class="accent">maskin</span></h1>
     <div class="sub">Öva på maskinerna i en simulator innan du står vid den riktiga. Klicka på en maskin för att starta.</div>
   </header>
+
+  <section class="dl" id="ladda-ned" aria-labelledby="dlT">
+    <img src="../../app/icon.png" alt="" width="72" height="72">
+    <div class="dl-txt">
+      <h2 id="dlT">G-vis som program</h2>
+      <p>På din egen dator kan du ladda ned G-vis, lexikonet och simulatorerna som ett program. Det fungerar utan internet och utan webbläsare, på svenska och engelska. På skolans datorer använder du sidan som vanligt.</p>
+      <div class="dl-btns"><a class="dl-main" id="dlMain" href="https://github.com/Sharrot83/Kursbibliotek-CNC/releases/latest" rel="noopener">Ladda ned programmet</a>
+        <a class="dl-alt" href="https://github.com/Sharrot83/Kursbibliotek-CNC/releases/latest" rel="noopener">Alla versioner (Windows, Mac, Linux)</a></div>
+      <details class="dl-help"><summary>Så installerar du</summary>
+        <p><b>Windows:</b> välj filen som slutar på <code>-setup.exe</code>. Första gången kan Windows visa "Windows skyddade datorn". Klicka då på <b>Mer information</b> och sedan <b>Kör ändå</b>. Det visas för att programmet inte är signerat med ett köpt certifikat.</p>
+        <p><b>Mac:</b> välj filen som slutar på <code>.dmg</code> och dra G-vis till Program. Första gången: högerklicka på G-vis, välj <b>Öppna</b> och bekräfta.</p>
+        <p><b>Linux:</b> välj <code>.AppImage</code>, gör den körbar och starta den, eller installera <code>.deb</code>.</p>
+      </details>
+    </div>
+  </section>
+  <script>(function(){var u=navigator.userAgent||'',b=document.getElementById('dlMain');if(!b)return;var os=/Windows/.test(u)?'Windows':/Mac/.test(u)?'Mac':/Linux/.test(u)&&!/Android/.test(u)?'Linux':'';if(/Android|iPhone|iPad|CrOS/.test(u)){b.textContent='Programmet finns för Windows, Mac och Linux';}else if(os){b.textContent='Ladda ned för '+os;}})();</script>
 
   <div class="grid">
   <a class="tblock" href="sim/hass-fras.html" style="--accent:#ff8a2b">

@@ -1,0 +1,63 @@
+# Bygger G-vis som program (Windows, Mac och Linux) när en release publiceras.
+# Installationsfilerna läggs automatiskt på releasen. Inget behöver installeras på din egen dator.
+name: G-vis program
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bygg:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-latest
+            args: ''
+          - platform: macos-latest
+            args: '--target universal-apple-darwin'
+          - platform: ubuntu-22.04
+            args: ''
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Linux-paket som Tauri behöver
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Programmets filer (samma som på webben)
+        run: node app/build.mjs
+
+      - name: Ikoner
+        run: npx --yes @tauri-apps/cli@2 icon app/icon.png --output app/src-tauri/icons
+
+      - name: Versionsnummer från releasen
+        if: github.event_name == 'release'
+        shell: bash
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          node -e "const f='app/src-tauri/tauri.conf.json';const j=JSON.parse(require('fs').readFileSync(f));j.version=process.argv[1];require('fs').writeFileSync(f,JSON.stringify(j,null,2))" "$V"
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: app
+          tauriScript: npx --yes @tauri-apps/cli@2
+          releaseId: ${{ github.event.release.id }}
+          args: ${{ matrix.args }}
