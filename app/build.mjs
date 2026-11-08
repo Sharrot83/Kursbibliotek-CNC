@@ -2,7 +2,8 @@
 // Bara G-vis, lexikonet, simulatorerna och det de behöver följer med, inga kurssidor.
 import fs from 'fs';
 import path from 'path';
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+import { fileURLToPath } from 'url';
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');   // fungerar även på Windows (D:\...)
 const dist = path.join(root, 'app', 'dist');
 fs.rmSync(dist, { recursive: true, force: true });
 const copy = (rel) => {

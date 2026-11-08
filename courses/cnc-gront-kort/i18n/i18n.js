@@ -10,9 +10,9 @@ try{if(app)sessionStorage.setItem('cnc-app','1');else app=sessionStorage.getItem
 let lang=null;try{lang=localStorage.getItem(KEY);}catch(e){}
 if(lang!=='sv'&&lang!=='en')lang=(app&&!/^sv/i.test(navigator.language||''))?'en':'sv';
 document.documentElement.lang=lang;
-const EX=new Map(),RX=[],SUB=[],HTML=[];
+const EX=new Map(),EXU=new Map(),RX=[],SUB=[],HTML=[];
 const api=window.cncI18n={lang,app,
-  add(p){if(p.exact)for(const k in p.exact)EX.set(k,p.exact[k]);if(p.rx)RX.push(...p.rx);if(p.sub)SUB.push(...p.sub);if(p.html)HTML.push(...p.html);},
+  add(p){if(p.exact)for(const k in p.exact){EX.set(k,p.exact[k]);EXU.set(k.toUpperCase(),p.exact[k]);}if(p.rx)RX.push(...p.rx);if(p.sub)SUB.push(...p.sub);if(p.html)HTML.push(...p.html);},
   set(l){try{localStorage.setItem(KEY,l);}catch(e){}location.reload();},
   t:s=>lang==='en'?tr(String(s)):String(s)};
 window.cncT=api.t;
@@ -25,7 +25,8 @@ if(app){const me=document.currentScript&&document.currentScript.src,home=me?new 
   api.home=home;}
 function tr(s){const m=s.match(/^(\s*)([\s\S]*?)(\s*)$/),core=m[2];if(!core)return s;
   let e=EX.get(core);
-  if(e==null){for(const [re,rep] of RX){const mm=core.match(re);if(mm){e=typeof rep==='function'?rep(...mm):core.replace(re,rep);break;}}}
+  if(e==null){const u=EXU.get(core.toUpperCase());if(u!=null)e=core===core.toUpperCase()?u.toUpperCase():u;}
+  if(e==null){for(const [re,rep] of RX){const mm=core.match(re);if(mm){const x=typeof rep==='function'?rep(...mm):core.replace(re,rep);if(x!==core){e=x;break;}}}}
   if(e==null&&SUB.length){let x=core;for(const [re,rep] of SUB)x=x.replace(re,rep);if(x!==core)e=x;}
   return e==null?s:m[1]+e+m[3];}
 api.tr=tr;
@@ -39,7 +40,7 @@ function langBtn(){if(document.getElementById('rtLang')||document.querySelector(
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',langBtn);else langBtn();
 if(lang!=='en')return;
 const SKIP='script,style,textarea,code,kbd,pre,.code-editor,.src,.k-pre,[data-noi18n],.line-numbers';
-const ATTR=['title','aria-label','placeholder'];
+const ATTR=['title','aria-label','placeholder','label'];
 function node(n){if(n.nodeType===3){const p=n.parentElement;if(!p||p.closest(SKIP))return;const v=n.nodeValue,t=tr(v);if(t!==v)n.nodeValue=t;return;}
   if(n.nodeType!==1||n.matches(SKIP))return;
   for(const a of ATTR){const v=n.getAttribute(a);if(v){const t=tr(v);if(t!==v)n.setAttribute(a,t);}}

@@ -4,6 +4,7 @@
 <script src="i18n/i18n.js"></script>
 <script src="i18n/en-gvis.js"></script>
 <script src="i18n/en-fysik.js"></script>
+<script src="i18n/en-kurser.js"></script>
 <script>(function(){var t="dark";try{t=localStorage.getItem("cnc-tema")||"dark"}catch(e){}document.documentElement.setAttribute("data-theme",t)})();</script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8842,5 +8843,16 @@ window.gvExpandSub=expandSub;
 (function(){const b=document.getElementById('rtLang');if(!b||!window.cncI18n)return;const en=cncI18n.lang==='en';
 b.textContent=en?'🌐 Svenska':'🌐 English';b.setAttribute('aria-label',en?'Byt språk till svenska':'Switch language to English');
 b.onclick=()=>cncI18n.set(en?'sv':'en');})();
+</script>
+<script>
+/* verktygens namn följer språket (namnet blir kommentaren i koden): Pinnfräs Ø6 ↔ End mill Ø6 */
+(function(){if(!window.cncI18n||typeof toolTable==='undefined')return;
+const SV2EN=[['Hörnradiefräs','Bull nose end mill'],['Radiefräs','Corner rounding mill'],['Centrumborr','Spot drill'],['Pinnfräs','End mill'],['Planfräs','Face mill'],['Gängtapp','Tap'],['Gängfräs','Thread mill'],['Fasfräs','Chamfer mill'],['Graverstift','Engraving tool'],['Kantavkännare','Edge finder'],['Borr','Drill']];
+const en=cncI18n.lang==='en';
+const conv=n=>{if(typeof n!=='string')return n;for(const [a,b] of SV2EN){const f=en?a:b,t=en?b:a;if(n===f||n.startsWith(f+' '))return t+n.slice(f.length);}return n;};
+let ch=false;toolTable.forEach(t=>{const c=conv(t.name);if(c!==t.name){t.name=c;ch=true;}});
+const _s=saveJSON;saveJSON=function(k,v){if(k==='gkodviz_tools_v1'&&Array.isArray(v))v.forEach(t=>{t.name=conv(t.name);});return _s.apply(this,arguments);};
+if(ch){saveJSON('gkodviz_tools_v1',toolTable);try{drawFromText(false);}catch(e){}}
+})();
 </script>
 </body></html>

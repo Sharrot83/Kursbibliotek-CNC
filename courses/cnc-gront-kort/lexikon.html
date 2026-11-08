@@ -1955,6 +1955,7 @@ const TOOLS = [
  tank:["Begränsat moment vid tung grovbearbetning","Spänn aldrig utan verktyg isatt"],
  hint:"Bra val för brotschar och gängfräsar där kast direkt syns i resultatet."}
 ];
+if(window.cncI18n&&cncI18n.lang==='en')TOOLS.forEach(x=>{if(x.en){const sv=x.name;x.name=x.en;x.en=sv;}});
 
 /* ===== Verktygsprofiler (enkla SVG-silhuetter) ===== */
 function svgFor(s){

@@ -24,9 +24,9 @@ jobs:
             args: ''
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
 
@@ -41,9 +41,11 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Programmets filer (samma som på webben)
+        shell: bash
         run: node app/build.mjs
 
       - name: Ikoner
+        shell: bash
         run: npx --yes @tauri-apps/cli@2 icon app/icon.png --output app/src-tauri/icons
 
       - name: Versionsnummer från releasen
