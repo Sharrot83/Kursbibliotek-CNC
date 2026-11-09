@@ -41,14 +41,17 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 if(lang!=='en')return;
 const SKIP='script,style,textarea,code,kbd,pre,.code-editor,.src,.k-pre,[data-noi18n],.line-numbers';
 const ATTR=['title','aria-label','placeholder','label'];
-function node(n){if(n.nodeType===3){const p=n.parentElement;if(!p||p.closest(SKIP))return;const v=n.nodeValue,t=tr(v);if(t!==v)n.nodeValue=t;return;}
+/* varje text och attribut översätts en gång: det vi själv skrev in rörs inte igen (så kan inget gå runt i en slinga) */
+const DONE=new WeakMap();
+function node(n){if(n.nodeType===3){const p=n.parentElement;if(!p||p.closest(SKIP))return;const v=n.nodeValue;if(DONE.get(n)===v)return;const t=tr(v);DONE.set(n,t);if(t!==v)n.nodeValue=t;return;}
   if(n.nodeType!==1||n.matches(SKIP))return;
-  for(const a of ATTR){const v=n.getAttribute(a);if(v){const t=tr(v);if(t!==v)n.setAttribute(a,t);}}
+  let D=DONE.get(n);if(!D){D={};DONE.set(n,D);}
+  for(const a of ATTR){const v=n.getAttribute(a);if(v&&D[a]!==v){const t=tr(v);D[a]=t;if(t!==v)n.setAttribute(a,t);}}
   if(n.tagName==='INPUT'&&(n.type==='button'||n.type==='submit')&&n.value){const t=tr(n.value);if(t!==n.value)n.value=t;}
   for(let c=n.firstChild;c;c=c.nextSibling)node(c);}
 function run(){HTML.forEach(([sel,html])=>{const el=document.querySelector(sel);if(el)el.innerHTML=html;});
   node(document.body);document.title=tr(document.title);
-  new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')node(m.target);else if(m.type==='attributes')node(m.target);else m.addedNodes.forEach(node);}})
+  new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')node(m.target);else if(m.type==='attributes'){const n=m.target,a=m.attributeName;if(n.nodeType!==1||n.closest(SKIP))continue;const v=n.getAttribute(a);let D=DONE.get(n);if(!D){D={};DONE.set(n,D);}if(v&&D[a]!==v){const t=tr(v);D[a]=t;if(t!==v)n.setAttribute(a,t);}}else m.addedNodes.forEach(node);}})
    .observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:ATTR});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
 })();

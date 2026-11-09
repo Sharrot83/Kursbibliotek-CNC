@@ -890,6 +890,7 @@
   .rt-dl { margin-left:auto; display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:6px; border:1px solid var(--accent); color:var(--accent); font:600 13px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; text-decoration:none; white-space:nowrap; }
   .rt-dl:hover { background:var(--accent); color:#fff; }
   html.is-app .rt-dl { display:none; }
+  @media (max-width:1560px){ .rt-dl { font-size:0; padding:6px 10px; } .rt-dl::before { content:'⬇'; font-size:15px; } }
 </style>
 </head>
 <body>
@@ -6788,7 +6789,7 @@ function menus(){return [
  {t:'Simulering',i:[{l:'Spela',a:click('playBtn')},{l:'Paus',a:click('pauseBtn')},{l:'Stoppa',a:click('stopBtn')},{l:'Singel block',a:click('singleBlockBtn')},{sep:1},
    {l:'M1 valfritt stopp',...chkBox('toggleOptionalStop')},
    {l:'Hastighet',sub:[0.5,1,2,4].map(v=>({l:String(v).replace('.',',')+'×',c:()=>Math.abs(parseFloat($('speedSlider').value)-v)<1e-6,a:()=>{const e=$('speedSlider');e.value=v;e.dispatchEvent(new Event('input'));}}))},
-   {sep:1},{l:'Ämne, material och fysik …',a:()=>{if(window.ritaShown&&!window.ritaShown('insp'))window.ritaToggle('insp');const b=document.querySelector('[data-it="amne"]');if(b)b.click();}},{l:'Hemposition …',a:click('homepos')},{l:'Ämnets upplösning',sub:[{hd:'Ämnets upplösning'}].concat(Object.entries(STOCK_RES_OPTS).map(([k,r])=>({l:r.name+(k==='n'?' (snabbast)':k==='h'?' (2× fler punkter)':' (3,5× fler punkter)'),c:()=>stockResKey===k,a:()=>{statusEl.textContent='Bygger om ämnet …';setTimeout(()=>setStockRes(k),30);}}))).concat([{note:'Hög och Ultra ger skarpare kanter, finare ytor och tydligare fräsmärken men kräver mer av datorn. Börja med Normal om datorn är äldre.'}])},{l:'Dialekt',sub:[['fanuc','Fanuc'],['haas','Hass'],['linuxcnc','LinuxCNC'],['iso','ISO (DIN 66025)']].map(([k,n])=>({l:n,c:()=>window.RITA_DIALECT===k,a:()=>{const s=document.getElementById('rtDialect');s.value=k;s.dispatchEvent(new Event('change'));}}))},{l:'Fysik: kraft, brott och värme',...chkBox('cncPhysOn')},
+   {sep:1},{l:'Ämne, material och fysik …',a:()=>{if(window.ritaShown&&!window.ritaShown('insp'))window.ritaToggle('insp');const b=document.querySelector('[data-it="amne"]');if(b)b.click();}},{l:'Hemposition …',a:click('homepos')},{l:'Rita ämnet med grafikkortet (snabbare)',c:()=>!window.gvGpu||gvGpu.on,a:()=>gvGpu.set(!gvGpu.on)},{l:'Ämnets upplösning',sub:[{hd:'Ämnets upplösning'}].concat(Object.entries(STOCK_RES_OPTS).map(([k,r])=>({l:r.name+(k==='n'?' (snabbast)':k==='h'?' (2× fler punkter)':' (3,5× fler punkter)'),c:()=>stockResKey===k,a:()=>{statusEl.textContent='Bygger om ämnet …';setTimeout(()=>setStockRes(k),30);}}))).concat([{note:'Hög och Ultra ger skarpare kanter, finare ytor och tydligare fräsmärken men kräver mer av datorn. Börja med Normal om datorn är äldre.'}])},{l:'Dialekt',sub:[['fanuc','Fanuc'],['haas','Hass'],['linuxcnc','LinuxCNC'],['iso','ISO (DIN 66025)']].map(([k,n])=>({l:n,c:()=>window.RITA_DIALECT===k,a:()=>{const s=document.getElementById('rtDialect');s.value=k;s.dispatchEvent(new Event('change'));}}))},{l:'Fysik: kraft, brott och värme',...chkBox('cncPhysOn')},
    {l:'Ljud',c:()=>!!(window.CNCLJUD&&CNCLJUD.on),a:()=>{if(window.CNCLJUD)CNCLJUD.setOn(!CNCLJUD.on);}}]},
  {t:'Verktyg',i:[{l:'Verktygsmagasin …',k:'Ctrl+M',a:()=>window.ritaMagOpen&&window.ritaMagOpen()},{l:'Lathund G/M …',a:click('cheatsheetBtn')},{l:'Lathund skärdata …',a:click('skardataBtn')}]},
  {t:'Kurser',i:(window.ritaKursMenu?window.ritaKursMenu():[{l:'Kurserna laddas …',dis:true}])},
@@ -8870,5 +8871,99 @@ if(/Android|iPhone|iPad|CrOS/.test(u)){b.remove();return;}if(os)b.textContent='�
 cncI18n.add({exact:Object.assign({},M,{'⚙ Ämne':'⚙ Stock','Verktygslåda':'Tool box','Välj en ritning och skriv G-koden själv. Ritningen öppnas i ett eget fönster som ligger överst och som du kan flytta.':'Pick a drawing and write the G-code yourself. The drawing opens in its own window on top that you can move.','Nivå 1 · raka linjer':'Level 1 · straight lines','Nivå 2 · bågar och hål':'Level 2 · arcs and holes','Nivå 3 · konturer (G41)':'Level 3 · profiles (G41)','Nivå 4 · fickor och hela detaljer':'Level 4 · pockets and complete parts'}),rx:[[/^(R-\d+) · (.+)$/,(m,a,b)=>a+' · '+(M[b]||b)],[/^Nivå (\d) · (.+)$/,(m,a,b)=>'Level '+a+' · '+(M[b]||b)]]});
 DRAWINGS.forEach(d=>{['name','topic','task'].forEach(k=>{if(typeof d[k]==='string')d[k]=M[d[k]]||tr(d[k]);});['origin','tool'].forEach(k=>{if(typeof d[k]==='string')d[k]=d[k].split(', ').map(x=>tr(x)).join(', ');});});
 try{if(typeof renderDrawingsList==='function')renderDrawingsList();}catch(e){}})();
+</script>
+<script>
+/* ---------- Snabbare ämne: höjdkartan ritas av grafikkortet ----------
+   I stället för att bygga om tusentals små ytor i JavaScript efter varje snitt laddas ämnets höjder upp
+   som en textur, och grafikkortet lyfter ett rutnät till rätt höjd. Bara den bit som ändrats skickas upp.
+   Färger (material, anlöpning, gängor, skuggning i hörn) och fräsmärken ligger i egna texturer.
+   Används för fyrkantsämnen. Runda ämnen och vända ämnen (Rotera) ritas på det gamla sättet. */
+(function(){
+const KEY='gvis-gpu';
+function wanted(w){let on=true;try{on=localStorage.getItem(KEY)!=='0';}catch(e){}return on&&w&&w.renderer&&w.renderer.capabilities&&w.renderer.capabilities.isWebGL2;}
+window.gvGpu={get on(){try{return localStorage.getItem(KEY)!=='0';}catch(e){return true;}},set(v){try{localStorage.setItem(KEY,v?'1':'0');}catch(e){}if(typeof removeStockMesh==='function')removeStockMesh();if(stockGrid){for(let k=0;k<stockGrid.chunkNX*stockGrid.chunkNY;k++)stockGrid.dirtyChunks.add(k);}window.render();}};
+function drop(w){const S=w.gpuStock;if(!S)return;if(S.top){w.scene.remove(S.top);S.top.traverse(o=>{if(o.geometry)o.geometry.dispose();});}[S.hTex,S.cTex,S.mTex].forEach(t=>t&&t.dispose());if(S.mat)S.mat.dispose();w.gpuStock=null;if(w.stockColorMaterial===S.mat)w.stockColorMaterial=null;}
+function makeMat(w,S){const m=new THREE.MeshStandardMaterial({color:0xffffff,metalness:.35,roughness:.42,side:THREE.DoubleSide});
+  m.onBeforeCompile=sh=>{Object.assign(sh.uniforms,{hMap:{value:S.hTex},cMap:{value:S.cTex},mMap:{value:S.mTex},hTexel:{value:new THREE.Vector2(1/S.res,1/S.res)},hCell:{value:new THREE.Vector2(S.g.cellW,S.g.cellH)},hBottom:{value:S.g.bottom}});
+    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform sampler2D hMap;uniform vec2 hTexel;uniform vec2 hCell;uniform float hBottom;attribute vec2 aUv;attribute float aSkirt;varying vec2 vGUv;varying vec3 vLoc;')
+     .replace('#include <beginnormal_vertex>',`vec3 objectNormal=vec3(normal);
+      if(aSkirt<-0.5){vec2 ex=vec2(hTexel.x,0.),ey=vec2(0.,hTexel.y);
+       float gx=(texture2D(hMap,aUv+ex).r-texture2D(hMap,aUv-ex).r)*.5+(texture2D(hMap,aUv+2.*ex).r-texture2D(hMap,aUv-2.*ex).r)*.25;
+       float gy=(texture2D(hMap,aUv+ey).r-texture2D(hMap,aUv-ey).r)*.5+(texture2D(hMap,aUv+2.*ey).r-texture2D(hMap,aUv-2.*ey).r)*.25;
+       objectNormal=normalize(vec3(-gx/(1.5*hCell.x),1.,gy/(1.5*hCell.y)));}
+      #ifdef USE_TANGENT
+      vec3 objectTangent=vec3(tangent.xyz);
+      #endif`)
+     .replace('#include <begin_vertex>','vec3 transformed=vec3(position);transformed.y=aSkirt>0.5?hBottom:texture2D(hMap,aUv).r;vGUv=aUv;vLoc=transformed;');
+    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform sampler2D cMap;uniform sampler2D mMap;varying vec2 vGUv;varying vec3 vLoc;')
+     .replace('#include <color_fragment>','#include <color_fragment>\nvec4 gvC=texture2D(cMap,vGUv);diffuseColor.rgb*=gvC.rgb;')
+     .replace('#include <metalnessmap_fragment>','#include <metalnessmap_fragment>\nmetalnessFactor*=mix(.12,1.,gvC.a);')
+     .replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
+      {vec4 mk=texture2D(mMap,vGUv);if(mk.z>0.){vec2 pp=vec2(vLoc.x,-vLoc.z);vec2 dv=pp-mk.xy;float d=length(dv);float k=6.2831/max(.35,min(.9,mk.z*.09));
+       float fw=fwidth(d)*k;float amp=.30*clamp(1.-fw/2.2,0.,1.);float rr=sin(d*k)+.35*sin(d*k*2.7+1.3);vec2 dir=dv/max(d,1e-3);
+       vec3 upV=normalize((viewMatrix*vec4(0.,1.,0.,0.)).xyz);float fl=smoothstep(.9,.985,dot(normal,upV));vec3 dvv=(viewMatrix*vec4(dir.x,0.,-dir.y,0.)).xyz;normal=normalize(normal+dvv*rr*amp*fl);}}`);};
+  return m;}
+function build(w,g){drop(w);const res=g.res,S={g,res};
+  S.hTex=new THREE.DataTexture(g.heights,res,res,THREE.RedFormat,THREE.FloatType);
+  S.cData=new Uint8Array(res*res*4);S.cTex=new THREE.DataTexture(S.cData,res,res,THREE.RGBAFormat,THREE.UnsignedByteType);
+  S.mData=new Float32Array(res*res*4);S.mTex=new THREE.DataTexture(S.mData,res,res,THREE.RGBAFormat,THREE.FloatType);
+  [S.hTex,S.cTex,S.mTex].forEach(t=>{t.magFilter=t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;t.flipY=false;t.needsUpdate=true;});
+  colorRect(g,S,0,0,res,res);markRect(g,S,0,0,res,res);
+  // rutnät: en punkt per cell, plus en rad längs varje kant
+  const N=res+2,xs=new Float32Array(N),ys=new Float32Array(N),us=new Float32Array(N),vs=new Float32Array(N);
+  for(let k=0;k<N;k++){const c=Math.min(res-1,Math.max(0,k-1));xs[k]=k===0?g.minX:k===N-1?g.maxX:g.minX+(k-0.5)*g.cellW;ys[k]=k===0?g.minY:k===N-1?g.maxY:g.minY+(k-0.5)*g.cellH;us[k]=(c+0.5)/res;vs[k]=(c+0.5)/res;}
+  const nv=N*N,pos=new Float32Array(nv*3),uv=new Float32Array(nv*2),sk=new Float32Array(nv).fill(-1),nor=new Float32Array(nv*3);
+  for(let j=0;j<N;j++)for(let i=0;i<N;i++){const v=j*N+i;pos[v*3]=xs[i];pos[v*3+1]=g.top;pos[v*3+2]=-ys[j];uv[v*2]=us[i];uv[v*2+1]=vs[j];nor[v*3+1]=1;}
+  const idx=new Uint32Array((N-1)*(N-1)*6);let q=0;
+  for(let j=0;j<N-1;j++)for(let i=0;i<N-1;i++){const a=j*N+i,b=a+1,c=a+N,d=c+1;idx[q++]=a;idx[q++]=b;idx[q++]=c;idx[q++]=b;idx[q++]=d;idx[q++]=c;   /* uppåt */}
+  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('normal',new THREE.BufferAttribute(nor,3));
+  geo.setAttribute('aUv',new THREE.BufferAttribute(uv,2));geo.setAttribute('aSkirt',new THREE.BufferAttribute(sk,1));geo.setIndex(new THREE.BufferAttribute(idx,1));
+  geo.boundingBox=new THREE.Box3(new THREE.Vector3(g.minX,g.bottom,-g.maxY),new THREE.Vector3(g.maxX,g.top,-g.minY));geo.boundingSphere=geo.boundingBox.getBoundingSphere(new THREE.Sphere());
+  // sidorna: från kantens höjd ned till botten, och botten
+  const sp=[],su=[],ss=[],sn=[],si=[];let vc=0;
+  const side=(pts,nx,nz,flip)=>{for(let k=0;k<pts.length;k++){const [x,y,u,v]=pts[k];sp.push(x,0,-y,x,0,-y);su.push(u,v,u,v);ss.push(0,1);sn.push(nx,0,nz,nx,0,nz);if(k>0){const a=vc+(k-1)*2;if(flip)si.push(a,a+2,a+1,a+2,a+3,a+1);else si.push(a,a+1,a+2,a+2,a+1,a+3);}}vc+=pts.length*2;};
+  const row=j=>Array.from({length:N},(_,i)=>[xs[i],ys[j],us[i],vs[j]]),col=i=>Array.from({length:N},(_,j)=>[xs[i],ys[j],us[i],vs[j]]);
+  side(row(0),0,1,false);side(row(N-1),0,-1,true);side(col(0),-1,0,true);side(col(N-1),1,0,false);
+  const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));sg.setAttribute('normal',new THREE.Float32BufferAttribute(sn,3));sg.setAttribute('aUv',new THREE.Float32BufferAttribute(su,2));sg.setAttribute('aSkirt',new THREE.Float32BufferAttribute(ss,1));sg.setIndex(si);
+  sg.boundingBox=geo.boundingBox.clone();sg.boundingSphere=geo.boundingSphere.clone();
+  S.mat=makeMat(w,S);
+  const bc=phBase255();w.stockMaterial=new THREE.MeshStandardMaterial({color:new THREE.Color(bc[0]/255,bc[1]/255,bc[2]/255),metalness:.35,roughness:.42,side:THREE.DoubleSide});
+  w.stockColorMaterial=S.mat;if(typeof ritaStockLook==='function')ritaStockLook(w);
+  S.top=new THREE.Mesh(geo,S.mat);S.top.frustumCulled=false;
+  const top=new THREE.Group();top.add(S.top);top.add(new THREE.Mesh(sg,S.mat));
+  const bg=new THREE.PlaneGeometry(g.maxX-g.minX,g.maxY-g.minY);bg.rotateX(Math.PI/2);bg.translate((g.minX+g.maxX)/2,g.bottom,-(g.minY+g.maxY)/2);top.add(new THREE.Mesh(bg,w.stockMaterial));
+  S.top=top;w.scene.add(top);S.uploaded=false;w.gpuStock=S;
+  if(w.gridHelper)w.gridHelper.position.y=g.bottom-Math.max(2,(g.top-g.bottom)*0.05);}
+const AO=(g)=>{if(g._ao)return g._ao;const n=CORNER_DISTS_MM.length*CORNER_DIRS.length,di=new Int32Array(n),dj=new Int32Array(n),dd=new Float32Array(n);let k=0;
+  for(const dMM of CORNER_DISTS_MM)for(const dir of CORNER_DIRS){di[k]=Math.max(-22,Math.min(22,Math.round(dir[0]*dMM/g.cellW)));dj[k]=Math.max(-22,Math.min(22,Math.round(dir[1]*dMM/g.cellH)));dd[k]=dMM;k++;}return g._ao={n,di,dj,dd};};
+function colorRect(g,S,i0,j0,i1,j1){const res=g.res,H=g.heights,base=phBase255(),A=AO(g);
+  for(let j=j0;j<j1;j++)for(let i=i0;i<i1;i++){const id=j*res+i,h=H[id];let f=1;
+    if(h<g.top-1e-6){let occ=0;for(let n=0;n<A.n;n++){const ii=i+A.di[n],jj=j+A.dj[n];if(ii<0||ii>=res||jj<0||jj>=res)continue;const dh=H[jj*res+ii]-h;if(dh<=0.05)continue;occ+=Math.atan2(dh,A.dd[n])/1.5708;}f=1-CORNER_SHADE*(occ/A.n);}
+    const t=g.tags?g.tags[id]:0,hc=t?null:phCellCol(g,i,j,base);let T=t?STOCK_TINTS_255[t]:(hc||base);
+    // färgen i texturen är förhållandet mot materialets grundfärg (materialets egen färg är vit)
+    const o=id*4;S.cData[o]=Math.min(255,T[0]*f+0.5);S.cData[o+1]=Math.min(255,T[1]*f+0.5);S.cData[o+2]=Math.min(255,T[2]*f+0.5);S.cData[o+3]=(t||hc)?0:255;}}   // alfa 0 = färgad yta (anlöpning, gänga): visas som färg i stället för blank metall
+function markRect(g,S,i0,j0,i1,j1){const res=g.res;if(!g.mr)return;for(let j=j0;j<j1;j++)for(let i=i0;i<i1;i++){const id=j*res+i,o=id*4;const on=g.mr[id]>0&&g.heights[id]<g.top-0.01;S.mData[o]=on?g.mx[id]:0;S.mData[o+1]=on?g.my[id]:0;S.mData[o+2]=on?g.mr[id]:0;}}
+function sub(w,big,data,ch,type,fmt,i0,j0,i1,j1,res){const ww=i1-i0,hh=j1-j0,a=new (data.constructor)(ww*hh*ch);
+  for(let j=0;j<hh;j++)a.set(data.subarray(((j0+j)*res+i0)*ch,((j0+j)*res+i1)*ch),j*ww*ch);
+  const t=new THREE.DataTexture(a,ww,hh,fmt,type);t.flipY=false;t.generateMipmaps=false;w.renderer.copyTextureToTexture(new THREE.Vector2(i0,j0),t,big);t.dispose();}
+function update(w,g){const S=w.gpuStock;if(!S||!g.dirtyChunks.size)return;const res=g.res,cs=Math.ceil(res/g.chunkNX);
+  let i0=res,j0=res,i1=0,j1=0;for(const key of g.dirtyChunks){const ci=key%g.chunkNX,cj=Math.floor(key/g.chunkNX);i0=Math.min(i0,ci*cs);j0=Math.min(j0,cj*cs);i1=Math.max(i1,Math.min(res,(ci+1)*cs));j1=Math.max(j1,Math.min(res,(cj+1)*cs));}
+  g.dirtyChunks.clear();
+  // skuggan i hörnen påverkas upp till 22 celler bort
+  const pad=23,ci0=Math.max(0,i0-pad),cj0=Math.max(0,j0-pad),ci1=Math.min(res,i1+pad),cj1=Math.min(res,j1+pad);
+  colorRect(g,S,ci0,cj0,ci1,cj1);markRect(g,S,i0,j0,i1,j1);
+  if(!S.uploaded||(i1-i0)*(j1-j0)>res*res*0.5){S.hTex.needsUpdate=S.cTex.needsUpdate=true;if(g.mr){if(S.mTex.image.data!==S.mData)S.mTex.image.data=S.mData;S.mTex.needsUpdate=true;}S.uploaded=true;return;}
+  sub(w,S.hTex,g.heights,1,THREE.FloatType,THREE.RedFormat,i0,j0,i1,j1,res);
+  sub(w,S.cTex,S.cData,4,THREE.UnsignedByteType,THREE.RGBAFormat,ci0,cj0,ci1,cj1,res);
+  if(g.mr)sub(w,S.mTex,S.mData,4,THREE.FloatType,THREE.RGBAFormat,i0,j0,i1,j1,res);}
+const _rb=rebuildStockMesh;
+rebuildStockMesh=function(){const w=ensureWebGL();if(!w||!stockGrid)return;const g=stockGrid;
+  if(stockBox||g.shape==='cylinder'||!wanted(w)){if(w.gpuStock){drop(w);w.stockMaterial=null;w.stockColorMaterial=null;}return _rb.apply(this,arguments);}
+  if(w.chunkMeshes||w.bottomMesh||w.boxRef){const keep=g.dirtyChunks;_rmOld(w);g.dirtyChunks=keep;}
+  if(!w.gpuStock||w.gpuStock.g!==g||w.gpuStock.res!==g.res){build(w,g);g.dirtyChunks.clear();}else update(w,g);};
+function _rmOld(w){if(typeof disposeBoxMeshes==='function')disposeBoxMeshes(w);if(w.chunkMeshes){for(const m of w.chunkMeshes.values()){w.scene.remove(m);m.geometry.dispose();}w.chunkMeshes=null;}
+  if(w.bottomMesh){w.scene.remove(w.bottomMesh);w.bottomMesh.geometry.dispose();w.bottomMesh=null;}w.chunkGridRef=null;}
+const _rm=removeStockMesh;removeStockMesh=function(){if(webgl&&webgl.gpuStock){drop(webgl);webgl.stockMaterial=null;webgl.stockColorMaterial=null;}return _rm.apply(this,arguments);};
+})();
 </script>
 </body></html>
