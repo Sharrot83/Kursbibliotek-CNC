@@ -382,8 +382,10 @@
 <script src="../i18n/i18n.js"></script>
 <script src="../i18n/en-gvis.js"></script>
 <script src="../i18n/en-fysik.js"></script>
+<script src="../i18n/en-kod.js"></script>
 <script src="../i18n/en-kurser.js"></script>
 <script src="../i18n/en-sim.js"></script>
+<script src="../i18n/en-sim2.js"></script>
         <div class="tb-l">
           <a class="pill backlink" href="../simulator.html">&larr; Tillbaka till Simulator</a>
           <a class="pill backlink" href="../lexikon.html" target="_blank" title="Verktyg, G- och M-koder och skärdata (öppnas i en ny flik)">Lexikon</a>
@@ -1570,8 +1572,8 @@
       const doorBtns=[$('#cDoor')]; doorBtns.forEach(b=>b.onclick=()=>{ cnc.door=!cnc.door; b.textContent=cnc.door?'🚪 Dörr: ÖPPEN':'🚪 Dörr: STÄNGD'; });
       $('#cFeedOv').oninput=e=>{ cnc.feedOv=e.target.value/100; $('#cFeedOvVal').textContent=e.target.value+' %'; };
       { const ph=document.createElement('option'); ph.value=''; ph.textContent='Exempelprogram…'; sel.appendChild(ph); }
-      Object.keys(GK_EX).forEach(k=>{ const op=document.createElement('option'); op.textContent=k; sel.appendChild(op); });
-      sel.onchange=()=>{ if(!sel.value)return; if(gc.run)gc.stop('G-KOD STOPPAD'); ta.value=GK_EX[sel.value].join('\n'); sel.value=''; ta.dispatchEvent(new Event('input')); };
+      Object.keys(GK_EX).forEach(k=>{ const op=document.createElement('option'); op.value=k; op.textContent=k; sel.appendChild(op); });
+      sel.onchange=()=>{ if(!sel.value)return; if(gc.run)gc.stop('G-KOD STOPPAD'); ta.value=window.cncCodeEN?cncCodeEN(GK_EX[sel.value].join('\n')):GK_EX[sel.value].join('\n'); sel.value=''; ta.dispatchEvent(new Event('input')); };
       let saved=null; try{saved=localStorage.getItem('gkProg2');}catch(_){}
       const exTexts=new Set(Object.values(GK_EX).map(a=>a.join('\n')));
       ta.value=(saved&&!exTexts.has(saved))?saved:'';   // editorn startar tom; bara ett eget (ändrat) program återställs, inte ett oförändrat exempel

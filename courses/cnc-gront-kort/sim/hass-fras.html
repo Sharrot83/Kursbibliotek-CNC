@@ -4,8 +4,10 @@
 <script src="../i18n/i18n.js"></script>
 <script src="../i18n/en-gvis.js"></script>
 <script src="../i18n/en-fysik.js"></script>
+<script src="../i18n/en-kod.js"></script>
 <script src="../i18n/en-kurser.js"></script>
 <script src="../i18n/en-sim.js"></script>
+<script src="../i18n/en-sim2.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Hass fräs — Simulator</title>
@@ -430,7 +432,7 @@ body{margin:0}
       <div class="prow"><button type="button" class="mbtn" id="stNew">Nytt ämne</button></div>
       <p class="pmsg">Ett nytt ämne spänns fast i skruvstycket och G54 sätts på ämnets ovansida. Verktygen T1–T34 är redan inmätta. Byter du ett verktyg i magasinet måste det mätas in igen under OFSET med F1.</p>
       <h2>Verktyg</h2>
-      <p class="pmsg">Samma T-nummer som i Ritas verktygslåda: T1 pinnfräs Ø6, T2 Ø10, T3 Ø15, T4–T15 borr Ø1–Ø12, T16 planfräs Ø50, T19–T25 centrumborr, T29 fasfräs. T33 kantavkännare och T34 3D-taster skär inte. Radiekompensering G41/G42 använder D-registrets radie under OFSET.</p>
+      <p class="pmsg">Samma T-nummer som i G-vis verktygsmagasin: T1 pinnfräs Ø6, T2 Ø10, T3 Ø15, T4–T15 borr Ø1–Ø12, T16 planfräs Ø50, T19–T25 centrumborr, T29 fasfräs. T33 kantavkännare och T34 3D-taster skär inte. Radiekompensering G41/G42 använder D-registrets radie under OFSET.</p>
     </div>
   </section>
 
@@ -2790,13 +2792,13 @@ function stockFromInputs(){
 }
 exSel.addEventListener('change',()=>{
   const e=EXAMPLES[+exSel.value];if(!e)return;
-  progText.value=e.code;
+  progText.value=window.cncCodeEN?cncCodeEN(e.code):e.code;
   $('#stW').value=e.stock[0];$('#stD').value=e.stock[1];$('#stH').value=e.stock[2];$('#stO').value=e.stock[3];
   setProgMsg('Exemplet är hämtat. Ämnet '+e.stock[0]+' × '+e.stock[1]+' × '+e.stock[2]+' mm läggs i när du laddar in programmet.');
 });
 $('#progLoad').addEventListener('click',()=>{
   const e=EXAMPLES[+exSel.value];
-  const isEx=e&&progText.value.trim()===e.code.trim();
+  const isEx=e&&(progText.value.trim()===e.code.trim()||(window.cncCodeEN&&progText.value.trim()===cncCodeEN(e.code).trim()));
   if(isEx&&(st.running||busy())){setProgMsg('Maskinen kör. Tryck RESET först.',true);return;}
   const msgBefore=()=>progMsg.textContent;
   if(loadProgram(progText.value)&&isEx){stockFromInputs();setProgMsg(msgBefore().replace(' och är aktivt',', ett nytt ämne är fastspänt och programmet är aktivt'));}

@@ -4,8 +4,10 @@
 <script src="i18n/i18n.js"></script>
 <script src="i18n/en-gvis.js"></script>
 <script src="i18n/en-fysik.js"></script>
+<script src="i18n/en-kod.js"></script>
 <script src="i18n/en-kurser.js"></script>
 <script src="i18n/en-lektioner.js"></script>
+<script src="i18n/en-sim2.js"></script>
 <script>(function(){var t="dark";try{t=localStorage.getItem("cnc-tema")||"dark"}catch(e){}document.documentElement.setAttribute("data-theme",t)})();</script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -891,6 +893,18 @@
   .rt-dl:hover { background:var(--accent); color:#fff; }
   html.is-app .rt-dl { display:none; }
   @media (max-width:1560px){ .rt-dl { font-size:0; padding:6px 10px; } .rt-dl::before { content:'⬇'; font-size:15px; } }
+
+  /* sök och ersätt i koden */
+  .fs-bar { display:flex; flex-direction:column; gap:5px; margin:0 0 8px; }
+  .fs-row { display:flex; gap:5px; align-items:center; }
+  .fs-row input { flex:1; min-width:0; font:13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; padding:6px 9px; border:1px solid var(--border); border-radius:6px; background:var(--panel2); color:var(--text); }
+  .fs-row input:focus { outline:none; border-color:var(--accent); }
+  .fs-row button { font:600 12.5px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; padding:6px 9px; border:1px solid var(--border); border-radius:6px; background:var(--panel2); color:var(--text); cursor:pointer; white-space:nowrap; }
+  .fs-row button:hover { border-color:var(--accent); filter:none; }
+  .fs-count { font:12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--muted); white-space:nowrap; min-width:58px; text-align:right; }
+  .fs-count.none { color:#ff8a76; }
+  .fs-opts { display:flex; gap:14px; font-size:12.5px; color:var(--muted); }
+  .fs-opts label { display:flex; gap:5px; align-items:center; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -957,6 +971,14 @@
 
 <div class="app">
   <section class="left">
+    <div class="fs-bar" role="search" aria-label="Sök och ersätt i koden">
+      <div class="fs-row"><input type="search" id="fsFind" placeholder="Sök i koden (Ctrl+F)" aria-label="Sök i koden" spellcheck="false" autocomplete="off">
+        <span class="fs-count" id="fsCount" aria-live="polite"></span>
+        <button type="button" id="fsPrev" title="Föregående träff (Shift+Enter)" aria-label="Föregående träff">↑</button><button type="button" id="fsNext" title="Nästa träff (Enter)" aria-label="Nästa träff">↓</button></div>
+      <div class="fs-row"><input type="text" id="fsRepl" placeholder="Ersätt med (Ctrl+H)" aria-label="Ersätt med" spellcheck="false" autocomplete="off">
+        <button type="button" id="fsOne" title="Ersätt den markerade träffen (Enter)">Ersätt</button><button type="button" id="fsAll" title="Ersätt alla träffar (Ctrl+Enter)">Ersätt alla</button></div>
+      <div class="fs-opts"><label title="Skilj på stora och små bokstäver"><input type="checkbox" id="fsCase"> Aa</label><label title="Bara hela ord: G1 träffar inte G10, G17 eller G1.5"><input type="checkbox" id="fsWord" checked> Hela ord</label></div>
+    </div>
     <div class="code-editor">
       <div class="line-numbers" id="lineNumbers"></div>
       <div class="code-wrap">
@@ -8006,8 +8028,8 @@ function kRenderCard(){const L=KL();let r=kRes||{msgs:[]};
   <div class="k-msgs" aria-live="polite">${r.msgs.map(m=>`<p class="k-m ${m.k}">${m.k==='ok'?'<b>Bra!</b> ':m.k==='tip'?'<b>Tips:</b> ':''}${esc(m.t)}</p>`).join('')}${kShowHint?`<p class="k-m hint"><b>Ledtråd:</b> ${esc(L.hint)}</p>`:''}</div>
   <div class="k-btns"><button type="button" id="kHint">${kShowHint?'Dölj ledtråd':'Visa ledtråd'}</button><button type="button" id="kAns">Visa svar</button></div>`;
  $('kHint').onclick=()=>{kShowHint=!kShowHint;kRenderCard();};
- $('kAns').onclick=()=>{dlg(`<h3>Svar på lektion ${kLi+1}</h3><p>Så här kan koden se ut. Vill du lägga in den i kodfältet?</p><pre class="k-pre">${esc(kHead(L)+L.answer)}</pre><div class="dl-btns"><button type="button" class="pri" id="kAnsOk">Lägg in svaret</button><button type="button" id="kAnsNo">Nej, jag försöker själv</button></div>`);
-  $('kAnsOk').onclick=()=>{$('rtDlg').hidden=true;loadTextIntoEditor(kHead(L)+L.answer);};$('kAnsNo').onclick=()=>{$('rtDlg').hidden=true;};};}
+ $('kAns').onclick=()=>{dlg(`<h3>Svar på lektion ${kLi+1}</h3><p>Så här kan koden se ut. Vill du lägga in den i kodfältet?</p><pre class="k-pre">${esc(kEN(kHead(L)+L.answer,L))}</pre><div class="dl-btns"><button type="button" class="pri" id="kAnsOk">Lägg in svaret</button><button type="button" id="kAnsNo">Nej, jag försöker själv</button></div>`);
+  $('kAnsOk').onclick=()=>{$('rtDlg').hidden=true;loadTextIntoEditor(kEN(kHead(L)+L.answer,L));};$('kAnsNo').onclick=()=>{$('rtDlg').hidden=true;};};}
 function kRenderBar(){const r=(KL().blind&&!kOk)?{score:0}:(kRes||{score:0});const last=kLi>=KC().lessons.length-1;
  kBar.innerHTML=`<div class="k-meter"><div class="k-ml"><span>Hur väl banan följer ritningen</span><b>${r.score} %</b></div><div class="k-mt"><div style="width:${r.score}%"></div></div></div>
   <button type="button" id="kRun">Kör banan</button>${kOk?`<button type="button" class="pri" id="kNext">${last?'Avsluta kursen':'Nästa lektion'}</button>`:`<button type="button" class="pri" id="kCheck">Kontrollera</button>`}`;
@@ -8033,13 +8055,15 @@ function kOverlay(){if(!kursOn||stockMode||mode3D)return;const c=ctx;c.save();
  });
  if(kHoles){c.strokeStyle='#ffd666';c.lineWidth=2;c.setLineDash([5,4]);kHoles.forEach(h=>{const q=S(h),rr=3*view.scale;c.beginPath();c.arc(q.x,q.y,rr,0,Math.PI*2);c.stroke();c.beginPath();c.moveTo(q.x-rr-5,q.y);c.lineTo(q.x+rr+5,q.y);c.moveTo(q.x,q.y-rr-5);c.lineTo(q.x,q.y+rr+5);c.stroke();});c.setLineDash([]);}
  c.restore();}
+/* exempelkoden på engelska: kommentarerna översätts och rubriken får lektionens engelska namn */
+function kEN(s,L){if(!window.cncCodeEN||!window.cncI18n||cncI18n.lang!=='en')return s;let x=cncCodeEN(s);const t=cncI18n.tr(L.t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[’']/g,'').toUpperCase();return x.replace(/^\(COURSE (\d+) · LESSON (\d+)(?:: [^)]*)?\)/,(m,k,l)=>'(COURSE '+k+' · LESSON '+l+': '+t+')');}
 function kLoad(i){kLi=Math.max(0,Math.min(KC().lessons.length-1,i));kp().cur=kLi;kpSave();kOk=false;kShowHint=false;kRes=null;kTries=0;kShown=false;const L=KL();
  document.documentElement.classList.toggle('k-blind',!!L.blind);
  kTarget=L.type==='g0'?[L.pts[0]]:L.type==='drill'?null:L.paths?null:L.pts?kTargetPts(L):null;
  kTargets=L.paths?L.paths.map((P,q)=>kTargetPts({pts:P,arcs:L.arcs&&L.arcs[q]})):L.rect?[[[L.rect[0],L.rect[1]],[L.rect[0],L.rect[3]],[L.rect[2],L.rect[3]],[L.rect[2],L.rect[1]],[L.rect[0],L.rect[1]]]]:L.circ?[Array.from({length:73},(_,k)=>[L.circ[0]+L.circ[2]*Math.cos(k/72*2*Math.PI),L.circ[1]+L.circ[2]*Math.sin(k/72*2*Math.PI)])]:null;
  // lektioner med egna nollpunkter (G55 …): lägg in dem, och återställ annars
  if(typeof wcsTable!=='undefined'){if(kWcs==null)kWcs=JSON.parse(JSON.stringify(wcsTable));wcsTable.splice(0,wcsTable.length,...JSON.parse(JSON.stringify(kWcs)));if(L.wcs)Object.entries(L.wcs).forEach(([k,v])=>{const w=wcsTable[+k-1];if(w){w.x=v.x||0;w.y=v.y||0;w.z=v.z||0;}});}kHoles=L.type==='drill'?L.holes:null;
- loadTextIntoEditor(L.start);kView();window.render();kRenderTop();kRenderCard();kRenderBar();ta.focus();const n=ta.value.length;ta.setSelectionRange(n,n);kAfterDraw();}
+ loadTextIntoEditor(kEN(L.start,L));kView();window.render();kRenderTop();kRenderCard();kRenderBar();ta.focus();const n=ta.value.length;ta.setSelectionRange(n,n);kAfterDraw();}
 function kursStart(i,c){kC=c!=null?c:(KP.lastC||0);if(!KURSER[kC])kC=0;KP.lastC=kC;if(i==null)i=kp().cur||0;
  if(!kursOn){kSaved={code:ta.value,dialect:window.RITA_DIALECT,stock:stockMode,m3:mode3D};try{localStorage.setItem('rita-kurs-backup',JSON.stringify(kSaved));}catch(e){}
   kursOn=true;document.documentElement.classList.add('rt-kurs');kTop.hidden=kCard.hidden=kBar.hidden=false;
@@ -8608,6 +8632,7 @@ window.gvMeasure={toggle};
 <ul>
 <li><b>Förklara rad</b>: klicka på en rad eller på radnumret. Rutan förklarar varje G-kod, M-kod och adress, till exempel vart X- och Y-värdena tar verktyget, och räknar ut skärhastigheten när du skriver ett varvtal. Länken <i>Läs mer i lexikonet</i> öppnar rätt avsnitt.</li>
 <li><b>Varningar</b>: den gröna bocken ✓ i uppspelningsraden blir röd om något i koden ser fel ut. Klicka på den, eller titta i inspektörens flik Varningar.</li>
+<li><b>Sök och ersätt</b> ovanför kodfältet söker bara i koden. Enter går till nästa träff och Shift+Enter till föregående. <b>Ersätt</b> byter den markerade träffen och <b>Ersätt alla</b> byter alla, till exempel g1 mot G01. Med <b>Hela ord</b> träffar G1 inte G10, G17 eller G1.5. Ctrl+F och Ctrl+H hoppar dit, och Ctrl+Z ångrar.</li>
 <li><b>Kommentarer</b> skrivs inom parentes <code>(SÅ HÄR)</code> eller efter semikolon. Maskinen bryr sig inte om dem.</li>
 <li><b>Underprogram</b>: <code>M98 P2000 L4</code> kör underprogrammet <code>O2000</code> fyra gånger. Underprogrammet skrivs efter M30 och slutar med <code>M99</code>. Med Hass går också <code>M97 P100</code>, som hoppar till raden <code>N100</code>. Banan visas som om programmet hade körts, och förklaringen visar raden i underprogrammet.</li>
 </ul>
@@ -8756,6 +8781,8 @@ window.gvMeasure={toggle};
 <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd></td><td>Spara som</td></tr>
 <tr><td><kbd>Ctrl</kbd>+<kbd>Enter</kbd></td><td>Rita G-koden</td></tr>
 <tr><td><kbd>Ctrl</kbd>+<kbd>M</kbd></td><td>Verktygsmagasinet</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd></td><td>Sök i koden</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>H</kbd></td><td>Ersätt i koden</td></tr>
 <tr><td><kbd>F1</kbd></td><td>Den här guiden</td></tr>
 <tr><td><kbd>F11</kbd></td><td>Helskärm</td></tr>
 <tr><td><kbd>Esc</kbd></td><td>Stänger fönster, helskärm och mätning</td></tr>
@@ -8964,6 +8991,52 @@ rebuildStockMesh=function(){const w=ensureWebGL();if(!w||!stockGrid)return;const
 function _rmOld(w){if(typeof disposeBoxMeshes==='function')disposeBoxMeshes(w);if(w.chunkMeshes){for(const m of w.chunkMeshes.values()){w.scene.remove(m);m.geometry.dispose();}w.chunkMeshes=null;}
   if(w.bottomMesh){w.scene.remove(w.bottomMesh);w.bottomMesh.geometry.dispose();w.bottomMesh=null;}w.chunkGridRef=null;}
 const _rm=removeStockMesh;removeStockMesh=function(){if(webgl&&webgl.gpuStock){drop(webgl);webgl.stockMaterial=null;webgl.stockColorMaterial=null;}return _rm.apply(this,arguments);};
+})();
+</script>
+<script>
+/* exempel och ritningarnas facit med engelska kommentarer när engelska är valt */
+(function(){if(!window.cncCodeEN||!window.cncI18n||cncI18n.lang!=='en')return;
+try{Object.values(EXAMPLES).forEach(e=>{if(e&&typeof e.code==='string')e.code=cncCodeEN(e.code);});}catch(e){}
+try{DRAWINGS.forEach(d=>{['facit','start'].forEach(k=>{if(typeof d[k]==='string')d[k]=cncCodeEN(d[k]);});});}catch(e){}})();
+</script>
+<script>
+/* ---------- Sök och ersätt i koden (bara i kodfältet). Ctrl+F söker, Ctrl+H ersätter. ---------- */
+(function(){
+const $=id=>document.getElementById(id);
+const Q=$('fsFind'),R=$('fsRepl'),CNT=$('fsCount'),CASE=$('fsCase'),WORD=$('fsWord');
+let hits=[],cur=-1;
+function pattern(){const q=Q.value;if(!q)return null;let s=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  // hela ord: "G1" ska inte träffa G10, G17 eller G1.5 – inte direkt efter eller före en bokstav eller siffra
+  if(WORD.checked)s='(?<![A-Za-z0-9.])'+s+'(?![0-9.])';
+  try{return new RegExp(s,CASE.checked?'g':'gi');}catch(e){return null;}}
+function find(){const re=pattern();hits=[];if(re){let m;while((m=re.exec(ta.value))){hits.push([m.index,m.index+m[0].length]);if(m[0].length===0)re.lastIndex++;}}
+  if(cur>=hits.length)cur=hits.length-1;show();}
+function show(){CNT.textContent=!Q.value?'':hits.length?(cur>=0?(cur+1)+' av '+hits.length:hits.length+' träffar'):'Inga träffar';CNT.classList.toggle('none',!!Q.value&&!hits.length);}
+function select(k,focus){if(!hits.length)return;cur=(k+hits.length)%hits.length;const [a,b]=hits[cur];
+  // markera träffen i kodfältet och rulla dit
+  const keep=document.activeElement;ta.focus({preventScroll:true});ta.setSelectionRange(a,b);
+  const line=ta.value.slice(0,a).split('\n').length-1,lh=parseFloat(getComputedStyle(ta).lineHeight)||18;const top=line*lh;
+  if(top<ta.scrollTop+lh||top>ta.scrollTop+ta.clientHeight-2*lh)ta.scrollTop=Math.max(0,top-ta.clientHeight/2);ta.dispatchEvent(new Event('scroll'));
+  ta.dispatchEvent(new Event('click'));if(!focus&&keep&&keep!==ta)keep.focus({preventScroll:true});show();}
+function next(d){find();if(!hits.length)return;if(cur<0){const p=ta.selectionStart;let k=hits.findIndex(h=>h[0]>=p);if(d<0)k=(k<0?hits.length:k)-1;else if(k<0)k=0;select(k);}else select(cur+d);}
+function setText(v,selA,selB){ta.value=v;ta.dispatchEvent(new Event('input',{bubbles:true}));if(selA!=null){ta.setSelectionRange(selA,selB);}}
+function replaceOne(){find();if(!hits.length)return;if(cur<0)next(1);const [a,b]=hits[cur],r=R.value,v=ta.value;
+  // vanliga ersättningen går att ångra med Ctrl+Z
+  ta.focus({preventScroll:true});ta.setSelectionRange(a,b);if(!document.execCommand||!document.execCommand('insertText',false,r))setText(v.slice(0,a)+r+v.slice(b),a,a+r.length);
+  statusEl.textContent='Ersatte 1 träff.';const keep=cur;find();if(hits.length){let k=hits.findIndex(h=>h[0]>=a+r.length);select(k<0?0:k);}else{cur=-1;show();}Q.focus();}
+function replaceAll(){find();if(!hits.length)return;const n=hits.length,re=pattern(),r=R.value;
+  ta.focus({preventScroll:true});ta.setSelectionRange(0,ta.value.length);const nv=ta.value.replace(re,()=>r);
+  if(!document.execCommand||!document.execCommand('insertText',false,nv))setText(nv);ta.setSelectionRange(0,0);
+  cur=-1;find();statusEl.textContent='Ersatte '+n+(n===1?' träff.':' träffar.');Q.focus();}
+Q.addEventListener('input',()=>{cur=-1;find();if(hits.length){const p=ta.selectionStart;let k=hits.findIndex(h=>h[0]>=Math.min(p,ta.selectionEnd));select(k<0?0:k);}});
+[CASE,WORD].forEach(c=>c.addEventListener('change',()=>{cur=-1;find();}));
+Q.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();next(e.shiftKey?-1:1);}else if(e.key==='Escape'){Q.value='';find();ta.focus();}});
+R.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(e.ctrlKey||e.metaKey)replaceAll();else replaceOne();}else if(e.key==='Escape'){ta.focus();}});
+$('fsPrev').onclick=()=>next(-1);$('fsNext').onclick=()=>next(1);$('fsOne').onclick=replaceOne;$('fsAll').onclick=replaceAll;
+ta.addEventListener('input',()=>{if(Q.value){find();}});
+document.addEventListener('keydown',e=>{if(!(e.ctrlKey||e.metaKey)||e.altKey)return;const k=e.key.toLowerCase();
+  if(k==='f'||k==='h'){e.preventDefault();const sel=ta.value.slice(ta.selectionStart,ta.selectionEnd);if(sel&&!sel.includes('\n')&&document.activeElement===ta){Q.value=sel;cur=-1;find();}
+    (k==='h'?R:Q).focus();(k==='h'?R:Q).select();}},true);
 })();
 </script>
 </body></html>

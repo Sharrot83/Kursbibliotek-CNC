@@ -4,6 +4,7 @@
 <script src="i18n/i18n.js"></script>
 <script src="i18n/en-gvis.js"></script>
 <script src="i18n/en-lexikon.js"></script>
+<script src="i18n/en-kod.js"></script>
 <script src="i18n/en-lexikon-data.js"></script>
 <meta charset="utf-8">
 <script>(function(){var t="light";try{t=localStorage.getItem("cnc-tema")||"light"}catch(e){}try{if(window.parent!==window&&/[?&]inbaddad=1/.test(location.search))t=window.parent.document.documentElement.getAttribute("data-theme")||t}catch(e){}document.documentElement.setAttribute("data-theme",t)})();</script>
@@ -1714,7 +1715,7 @@ html.inbaddad .lexpage .lex-head{top:0}
 </div>
 <script>
 /* Knapparna "Öppna i G-vis" lämnar koden till G-vis (g-vis.html läser den när sidan öppnas). */
-window.edOpen=function(o){o=o||{};let code=o.code||'';
+window.edOpen=function(o){o=o||{};let code=o.code||'';if(window.cncCodeEN)code=cncCodeEN(code);
   if(!code&&o.tool&&window.TOOLDOC_CODE)code=window.TOOLDOC_CODE[o.tool]||'';
   if(!code&&o.part!=null&&window.__sim&&window.__sim.parts&&window.__sim.parts[o.part])code=window.__sim.parts[o.part].lines.map(l=>l.t).join('\n');
   if(!code)return;try{if(window.parent!==window&&window.parent.ritaFromLexikon){window.parent.ritaFromLexikon(code);return;}}catch(e){}

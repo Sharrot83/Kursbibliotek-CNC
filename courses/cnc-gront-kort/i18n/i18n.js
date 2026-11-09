@@ -20,7 +20,10 @@ window.cncT=api.t;
 if(app){const me=document.currentScript&&document.currentScript.src,home=me?new URL('../../../index.html',me).href:'/index.html';
   document.documentElement.classList.add('is-app');
   const fix=()=>{document.querySelectorAll('a[href]').forEach(a=>{const h=a.getAttribute('href')||'';if(/(^|\/)(material|simulator)\.html(\?|#|$)/.test(h)||/^(\.\.\/)+index\.html$/.test(h)){a.setAttribute('href',home);if(a.title)a.title='Till startsidan';if(a.getAttribute('aria-label'))a.setAttribute('aria-label','Till startsidan');if(/Tillbaka/.test(a.textContent))a.textContent='← Startsida';}});
-    document.querySelectorAll('[data-site-only]').forEach(e=>e.remove());};
+    document.querySelectorAll('[data-site-only]').forEach(e=>e.remove());
+    /* i programmet finns inga flikar: länkar som skulle öppnas i ny flik öppnas i samma fönster */
+    document.querySelectorAll('a[target="_blank"]').forEach(a=>{const h=a.getAttribute('href')||'';if(!/^https?:/.test(h))a.removeAttribute('target');});};
+  document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[target="_blank"]');if(a){const h=a.getAttribute('href')||'';if(!/^https?:/.test(h)){e.preventDefault();location.href=a.href;}}},true);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix);else fix();
   api.home=home;}
 function tr(s){const m=s.match(/^(\s*)([\s\S]*?)(\s*)$/),core=m[2];if(!core)return s;
@@ -44,7 +47,12 @@ const ATTR=['title','aria-label','placeholder','label'];
 /* varje text och attribut översätts en gång: det vi själv skrev in rörs inte igen (så kan inget gå runt i en slinga) */
 const DONE=new WeakMap();
 function node(n){if(n.nodeType===3){const p=n.parentElement;if(!p||p.closest(SKIP))return;const v=n.nodeValue;if(DONE.get(n)===v)return;const t=tr(v);DONE.set(n,t);if(t!==v)n.nodeValue=t;return;}
-  if(n.nodeType!==1||n.matches(SKIP))return;
+  if(n.nodeType!==1)return;
+  if(n.matches('pre,code')&&window.cncCodeEN&&!(n.parentElement&&n.parentElement.querySelector('textarea'))&&!n.closest('.code-editor')){const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT);let c;const all=[];while((c=w.nextNode()))all.push(c);
+    /* en kommentar kan vara uppdelad i flera textbitar (färgad kod): översätt hela texten och lägg tillbaka bitvis */
+    const full=all.map(x=>x.nodeValue).join(''),tf=cncCodeEN(full);if(tf!==full){if(all.length===1){all[0].nodeValue=tf;}else{all.forEach(x=>{const v=cncCodeEN(x.nodeValue);if(v!==x.nodeValue)x.nodeValue=v;});const s2=all.map(x=>x.nodeValue).join('');if(s2!==tf){all[0].nodeValue=tf;for(let k=1;k<all.length;k++)all[k].nodeValue='';}}}
+    all.forEach(x=>DONE.set(x,x.nodeValue));return;}
+  if(n.matches(SKIP)){if(n.tagName==='TEXTAREA'&&n.placeholder){const t=tr(n.placeholder);if(t!==n.placeholder)n.placeholder=t;}return;}
   let D=DONE.get(n);if(!D){D={};DONE.set(n,D);}
   for(const a of ATTR){const v=n.getAttribute(a);if(v&&D[a]!==v){const t=tr(v);D[a]=t;if(t!==v)n.setAttribute(a,t);}}
   if(n.tagName==='INPUT'&&(n.type==='button'||n.type==='submit')&&n.value){const t=tr(n.value);if(t!==n.value)n.value=t;}
