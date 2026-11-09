@@ -27,7 +27,7 @@ function tr(s){const m=s.match(/^(\s*)([\s\S]*?)(\s*)$/),core=m[2];if(!core)retu
   let e=EX.get(core);
   if(e==null){const u=EXU.get(core.toUpperCase());if(u!=null)e=core===core.toUpperCase()?u.toUpperCase():u;}
   if(e==null){for(const [re,rep] of RX){const mm=core.match(re);if(mm){const x=typeof rep==='function'?rep(...mm):core.replace(re,rep);if(x!==core){e=x;break;}}}}
-  if(e==null&&SUB.length){let x=core;for(const [re,rep] of SUB)x=x.replace(re,rep);if(x!==core)e=x;}
+  if(SUB.length&&(e==null||/[åäöÅÄÖ]/.test(e))){let x=e==null?core:e;for(const [re,rep] of SUB)x=x.replace(re,rep);if(x!==core)e=x;}
   return e==null?s:m[1]+e+m[3];}
 api.tr=tr;
 /* språkknapp på sidor som inte har en egen (lexikonet och simulatorerna) */
