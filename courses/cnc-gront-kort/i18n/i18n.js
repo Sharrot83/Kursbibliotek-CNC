@@ -16,6 +16,20 @@ const api=window.cncI18n={lang,app,
   set(l){try{localStorage.setItem(KEY,l);}catch(e){}location.reload();},
   t:s=>lang==='en'?tr(String(s)):String(s)};
 window.cncT=api.t;
+/* versionen i programmet och kontroll av nyare version (i bakgrunden, högst var tolfte timme) */
+const ME=document.currentScript&&document.currentScript.src;
+const REPO='Sharrot83/Kursbibliotek-CNC',REL='https://github.com/'+REPO+'/releases/latest';
+api.releases=REL;
+api.version=async function(){if(!app)return null;
+  try{if(window.__TAURI__&&window.__TAURI__.app&&window.__TAURI__.app.getVersion)return await window.__TAURI__.app.getVersion();}catch(e){}
+  try{const r=await fetch(new URL('../../../version.json',ME||location.href).href,{cache:'no-store'});return (await r.json()).version||null;}catch(e){return null;}};
+api.latest=async function(force){let c=null;try{c=JSON.parse(localStorage.getItem('gvis-senaste')||'null');}catch(e){}
+  if(!force&&c&&Date.now()-c.t<12*3600e3)return c;
+  try{const r=await fetch('https://api.github.com/repos/'+REPO+'/releases/latest',{headers:{Accept:'application/vnd.github+json'}});if(!r.ok)throw 0;const j=await r.json();
+    c={t:Date.now(),version:String(j.tag_name||'').replace(/^v/i,''),url:j.html_url||REL};try{localStorage.setItem('gvis-senaste',JSON.stringify(c));}catch(e){}return c;}catch(e){return c;}};
+api.newer=function(a,b){const p=x=>String(x||'').split(/[.-]/).map(n=>parseInt(n,10)||0);const A=p(a),B=p(b);for(let i=0;i<Math.max(A.length,B.length);i++){if((A[i]||0)>(B[i]||0))return true;if((A[i]||0)<(B[i]||0))return false;}return false;};
+api.openExternal=function(url){try{if(window.__TAURI__&&window.__TAURI__.opener&&window.__TAURI__.opener.openUrl){window.__TAURI__.opener.openUrl(url);return;}}catch(e){}window.open(url,'_blank','noopener');};
+
 /* programläge (G-vis som program): inga länkar till kurssajten, tillbaka-länkar går till programmets startsida */
 if(app){const me=document.currentScript&&document.currentScript.src,home=me?new URL('../../../index.html',me).href:'/index.html';
   document.documentElement.classList.add('is-app');

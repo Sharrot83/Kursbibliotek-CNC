@@ -40,6 +40,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
+      - name: Versionsnummer från releasen
+        if: github.event_name == 'release'
+        shell: bash
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          node -e "const f='app/src-tauri/tauri.conf.json';const j=JSON.parse(require('fs').readFileSync(f));j.version=process.argv[1];require('fs').writeFileSync(f,JSON.stringify(j,null,2))" "$V"
+
       - name: Programmets filer (samma som på webben)
         shell: bash
         run: node app/build.mjs
@@ -47,13 +54,6 @@ jobs:
       - name: Ikoner
         shell: bash
         run: npx --yes @tauri-apps/cli@2 icon app/icon.png --output app/src-tauri/icons
-
-      - name: Versionsnummer från releasen
-        if: github.event_name == 'release'
-        shell: bash
-        run: |
-          V="${GITHUB_REF_NAME#v}"
-          node -e "const f='app/src-tauri/tauri.conf.json';const j=JSON.parse(require('fs').readFileSync(f));j.version=process.argv[1];require('fs').writeFileSync(f,JSON.stringify(j,null,2))" "$V"
 
       - uses: tauri-apps/tauri-action@v0
         env:

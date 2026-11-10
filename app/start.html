@@ -23,7 +23,8 @@ a.card b{font-size:20px}a.card span{color:var(--muted);font-size:14.5px}
 a.card.big{grid-column:1/-1;flex-direction:row;align-items:center;gap:22px;background:linear-gradient(135deg,var(--card),var(--card2))}
 a.card.big img{height:90px}
 a.card.big div{display:flex;flex-direction:column;gap:4px}
-footer{padding:14px 28px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+footer{padding:14px 28px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+#upd a{color:#ffd666;font-weight:700;text-decoration:none;border:1px solid #ffd666;border-radius:6px;padding:3px 9px}#upd a:hover{background:#ffd666;color:#1a1205}
 [data-l]{display:none}html[lang="sv"] [data-l="sv"],html[lang="en"] [data-l="en"]{display:revert}
 </style>
 </head>
@@ -54,13 +55,21 @@ footer{padding:14px 28px;color:var(--muted);font-size:13px;border-top:1px solid 
       <span data-l="en">CNC lathe with G-code, canned cycles and turret.</span></a>
   </div>
 </main>
-<footer><span data-l="sv">Fungerar utan internet. Språk och tema gäller i alla delar.</span><span data-l="en">Works offline. Language and theme apply everywhere.</span></footer>
+<footer><span id="ver" class="ver"></span><span id="upd"></span></footer>
+<script src="courses/cnc-gront-kort/i18n/i18n.js"></script>
 <script>
 (function(){const H=document.documentElement,L=document.getElementById('lang'),T=document.getElementById('theme');
 function lab(){const en=H.lang==='en',dk=H.getAttribute('data-theme')!=='light';L.textContent=en?'🌐 Svenska':'🌐 English';T.textContent=dk?(en?'☀ Light mode':'☀ Ljust läge'):(en?'☾ Dark mode':'☾ Mörkt läge');}
-L.onclick=()=>{H.lang=H.lang==='en'?'sv':'en';try{localStorage.setItem('cnc-sprak',H.lang);}catch(e){}document.title='G-vis';lab();};
+L.onclick=()=>{H.lang=H.lang==='en'?'sv':'en';try{localStorage.setItem('cnc-sprak',H.lang);}catch(e){}document.title='G-vis';lab();vers();};
 T.onclick=()=>{const t=H.getAttribute('data-theme')==='light'?'dark':'light';H.setAttribute('data-theme',t);try{localStorage.setItem('cnc-tema',t);}catch(e){}lab();};
-lab();})();
+lab();
+/* versionen, och en länk när det finns en nyare */
+let V=null,N=null;
+function vers(){const en=H.lang==='en',ve=document.getElementById('ver'),up=document.getElementById('upd');
+  ve.textContent=(en?'Version ':'Version ')+(V||'?')+(en?' · works offline':' · fungerar utan internet');up.innerHTML='';
+  if(N&&V&&window.cncI18n&&cncI18n.newer(N.version,V)){const a=document.createElement('a');a.href=N.url;a.textContent=(en?'New version ':'Ny version ')+N.version+(en?' available – download':' finns – ladda ned');a.onclick=e=>{e.preventDefault();cncI18n.openExternal(N.url);};up.appendChild(a);}}
+(async()=>{if(!window.cncI18n)return;V=await cncI18n.version();vers();N=await cncI18n.latest(false);vers();})();
+})();
 </script>
 </body>
 </html>

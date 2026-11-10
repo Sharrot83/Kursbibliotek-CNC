@@ -21,4 +21,6 @@ const copy = (rel) => {
 ].forEach(copy);
 fs.copyFileSync(path.join(root, 'app', 'start.html'), path.join(dist, 'index.html'));
 fs.copyFileSync(path.join(root, 'app', 'icon.png'), path.join(dist, 'icon.png'));
-console.log('Klart:', dist);
+const conf = JSON.parse(fs.readFileSync(path.join(root, 'app', 'src-tauri', 'tauri.conf.json'), 'utf8'));
+fs.writeFileSync(path.join(dist, 'version.json'), JSON.stringify({ version: conf.version }));
+console.log('Klart:', dist, 'version', conf.version);

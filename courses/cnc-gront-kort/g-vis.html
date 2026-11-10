@@ -913,6 +913,26 @@
   .fs-count.none { color:#ff8a76; }
   .fs-opts { display:flex; gap:14px; font-size:12.5px; color:var(--muted); }
   .fs-opts label { display:flex; gap:5px; align-items:center; cursor:pointer; }
+
+  /* Om G-vis */
+  .gv-about { position:fixed; inset:0; z-index:960; background:rgba(5,8,12,.6); display:flex; align-items:center; justify-content:center; }
+  .gv-about[hidden] { display:none; }
+  .gv-about-box { position:relative; width:min(460px,92vw); background:var(--panel); border:1px solid var(--border); border-top:3px solid #c89b3c; border-radius:12px; padding:22px 24px 18px; color:var(--text); box-shadow:0 20px 60px rgba(0,0,0,.5); }
+  .gv-about-x { position:absolute; top:10px; right:10px; border:0; background:none; color:var(--muted); font-size:16px; cursor:pointer; }
+  .gv-about-logo { display:flex; justify-content:center; }
+  .gv-about-logo svg { height:70px; width:auto; color:var(--text); }
+  .gv-sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+  .gv-about-tag { text-align:center; margin:6px 0 16px; font:600 12.5px system-ui,sans-serif; letter-spacing:.16em; color:var(--muted); }
+  .gv-about-v { display:grid; grid-template-columns:auto 1fr; gap:6px 14px; margin:0 0 10px; font-size:14px; }
+  .gv-about-v dt { color:var(--muted); } .gv-about-v dd { margin:0; font:600 14px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+  .gv-about-v a, .gv-about-msg a { color:var(--accent); }
+  .gv-about-msg { margin:0 0 10px; font-size:13.5px; min-height:1.2em; }
+  .gv-about-msg.new { color:#ffd666; } .gv-about-msg.new a { color:#ffd666; font-weight:700; }
+  .gv-about-txt { font-size:13px; line-height:1.5; color:var(--muted); margin:0 0 14px; }
+  .gv-about-btns { display:flex; gap:8px; justify-content:flex-end; }
+  .gv-about-btns button { font:600 13px system-ui,sans-serif; padding:7px 14px; border-radius:7px; border:1px solid var(--border); background:var(--panel2); color:var(--text); cursor:pointer; }
+  .gv-about-btns button.pri { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .rt-mt.gv-has-upd > button::after { content:''; display:inline-block; width:7px; height:7px; margin-left:5px; border-radius:50%; background:#ffd666; vertical-align:middle; }
 </style>
 </head>
 <body>
@@ -6828,7 +6848,7 @@ function menus(){return [
  {t:'Kurser',i:(window.ritaKursMenu?window.ritaKursMenu():[{l:'Kurserna laddas …',dis:true}])},
  {t:'Lexikon',i:[{hd:'Handbok'},{l:'Verktyg',a:lex('verktyg')},{l:'3D-simulering',a:lex('simulering')},{l:'Skärdata',a:lex('grunder')},{l:'Manuell G-kod',a:lex('gkod')},
    {hd:'Uppslag'},{l:'G-koder',a:lex('g-koder')},{l:'M-koder',a:lex('m-koder')},{l:'Adressbokstäver',a:lex('adresser')},{l:'Formler och begrepp',a:lex('formler')},{sep:1},{l:'Källor',a:lex('kallor')}]},
- {t:'Hjälp',i:[{l:'Guide till G-vis',k:'F1',a:()=>window.gvGuide&&gvGuide()},{sep:1},{l:'Varningar i programmet',a:click('warnIndicator')},{sep:1},
+ {t:'Hjälp',i:[{l:'Guide till G-vis',k:'F1',a:()=>window.gvGuide&&gvGuide()},{l:'Om G-vis …',a:()=>window.gvAbout&&gvAbout()},{sep:1},{l:'Varningar i programmet',a:click('warnIndicator')},{sep:1},
    {l:'Tangenter',sub:[{hd:'Kortkommandon'},{l:'Öppna fil',k:'Ctrl+O',dis:true},{l:'Spara',k:'Ctrl+S',dis:true},{l:'Rita G-kod',k:'Ctrl+Enter',dis:true},{l:'Anpassa vy',k:'Dubbelklick',dis:true},{l:'Alla kortkommandon …',a:()=>window.gvGuide&&gvGuide('gg-tangent')}]}]}
 ];}
 let open=-1,MD=[];
@@ -9056,6 +9076,37 @@ ta.addEventListener('input',()=>{if(Q.value){find();}});
 document.addEventListener('keydown',e=>{if(!(e.ctrlKey||e.metaKey)||e.altKey)return;const k=e.key.toLowerCase();
   if(k==='f'||k==='h'){e.preventDefault();const sel=ta.value.slice(ta.selectionStart,ta.selectionEnd);if(sel&&!sel.includes('\n')&&document.activeElement===ta){Q.value=sel;cur=-1;find();}
     (k==='h'?R:Q).focus();(k==='h'?R:Q).select();}},true);
+})();
+</script>
+<script>
+/* ---------- Hjälp → Om G-vis: version och kontroll av nyare version ---------- */
+(function(){
+const I=window.cncI18n;
+const D=document.createElement('div');D.className='gv-about';D.hidden=true;D.setAttribute('role','dialog');D.setAttribute('aria-modal','true');D.setAttribute('aria-labelledby','gvAboutT');
+D.innerHTML='<div class="gv-about-box"><button type="button" class="gv-about-x" aria-label="Stäng">✕</button>'
+ +'<div class="gv-about-logo">'+(document.querySelector('.rt-logo-svg')?document.querySelector('.rt-logo-svg').outerHTML:'G-vis')+'</div>'
+ +'<h2 id="gvAboutT" class="gv-sr">Om G-vis</h2><p class="gv-about-tag">EN CNC-OPERATÖRS GUIDE TILL SPÅN</p>'
+ +'<dl class="gv-about-v"><dt>Version</dt><dd id="gvAbV">…</dd><dt>Senaste version</dt><dd id="gvAbL">…</dd></dl>'
+ +'<p id="gvAbMsg" class="gv-about-msg"></p>'
+ +'<p class="gv-about-txt">G-vis visar vad ett CNC-program gör: banan, fräsningen i 3D och fysiken. Med kurser, exempel, ritningar, ett lexikon och simulatorer för fräs och svarv.</p>'
+ +'<div class="gv-about-btns"><button type="button" id="gvAbCheck">Sök efter ny version</button><button type="button" id="gvAbOk" class="pri">Stäng</button></div></div>';
+document.body.appendChild(D);
+const $=id=>document.getElementById(id);
+const close=()=>{D.hidden=true;};D.querySelector('.gv-about-x').onclick=close;$('gvAbOk').onclick=close;D.addEventListener('click',e=>{if(e.target===D)close();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!D.hidden)close();});
+async function fill(force){const app=I&&I.app;let v=app?await I.version():null;
+  $('gvAbV').textContent=app?(v||'okänd'):'Webbversion (alltid den senaste)';
+  $('gvAbL').textContent='Söker …';$('gvAbMsg').textContent='';$('gvAbMsg').className='gv-about-msg';
+  const L=I?await I.latest(force):null;
+  if(!L||!L.version){$('gvAbL').textContent='Okänd';$('gvAbMsg').textContent='Det gick inte att söka efter en ny version. Kontrollera internetanslutningen.';return;}
+  $('gvAbL').innerHTML='';const a=document.createElement('a');a.href=L.url;a.textContent=L.version;a.onclick=e=>{e.preventDefault();I.openExternal(L.url);};$('gvAbL').appendChild(a);
+  if(app&&v){if(I.newer(L.version,v)){const m=$('gvAbMsg');m.className='gv-about-msg new';m.innerHTML='';m.append('Det finns en ny version, '+L.version+'. ');const d=document.createElement('a');d.href=L.url;d.textContent='Ladda ned den';d.onclick=e=>{e.preventDefault();I.openExternal(L.url);};m.appendChild(d);m.append('.');}
+    else $('gvAbMsg').textContent='Du har den senaste versionen.';}
+  else if(!app)$('gvAbMsg').textContent='Programmet för din egen dator finns att ladda ned under länken ovan.';}
+window.gvAbout=function(){D.hidden=false;fill(false);$('gvAbOk').focus();};
+$('gvAbCheck').onclick=()=>fill(true);
+/* i programmet: kontrollera i bakgrunden och visa en prick på Hjälp om det finns en ny version */
+if(I&&I.app)setTimeout(async()=>{const v=await I.version(),L=await I.latest(false);if(v&&L&&I.newer(L.version,v)){const h=[...document.querySelectorAll('.rt-mt')].find(m=>/Hjälp|Help/.test(m.textContent));if(h){h.classList.add('gv-has-upd');h.title='Ny version '+L.version+' finns. Se Hjälp → Om G-vis.';}if(window.statusEl)statusEl.textContent='Ny version '+L.version+' finns. Se Hjälp → Om G-vis.';}},4000);
 })();
 </script>
 </body></html>
