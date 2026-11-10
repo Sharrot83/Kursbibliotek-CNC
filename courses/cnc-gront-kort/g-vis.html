@@ -139,6 +139,14 @@
     font:inherit; line-height:inherit; tab-size:4;
   }
   .code-highlight { pointer-events:none; color:#dfe9f2; }
+  /* sökträffar: raden ljusgul, själva träffen mörkare gul, den markerade träffen med ram */
+  .fs-lines { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+  .fs-lines > div { position:absolute; left:0; right:0; top:0; }
+  .fs-lines i { position:absolute; left:0; right:0; background:rgba(255,224,130,.13); }
+  .fs-marks { position:absolute; inset:0; margin:0; padding:12px; border:0; white-space:pre; overflow:hidden; font:inherit; line-height:inherit; tab-size:4; color:transparent; pointer-events:none; }
+  .fs-marks mark { color:transparent; background:rgba(255,193,7,.5); border-radius:2px; }
+  .fs-marks mark.cur { background:rgba(255,170,0,.85); box-shadow:0 0 0 1px #ffd666; }
+  html[data-theme="light"] .fs-lines i { background:rgba(255,224,130,.13); }
   .code-input { resize:none; background:transparent; color:transparent; caret-color:#fff; outline:none; }
   .line-highlight {
     position:absolute; left:0; right:0; top:0; height:18px;
@@ -982,6 +990,8 @@
     <div class="code-editor">
       <div class="line-numbers" id="lineNumbers"></div>
       <div class="code-wrap">
+        <div class="fs-lines" id="fsLines" aria-hidden="true"><div></div></div>
+        <pre class="fs-marks" id="fsMarks" aria-hidden="true"></pre>
         <div class="line-highlight" id="lineHighlight"></div>
         <pre class="code-highlight" id="codeHighlight" aria-hidden="true"></pre>
         <textarea class="code-input" id="gcode" spellcheck="false"></textarea>
@@ -5350,6 +5360,7 @@ lineNumbersEl.addEventListener('click', (e) => {
   }
   scrubSlider.value = segIdx;
   scrubSlider.dispatchEvent(new Event('input'));
+  setPlayingLine(lineNo);   // markera raden man klickade på (positionen före rörelsen hör till raden ovanför)
   statusEl.textContent = (segIdx>=paths.length)
     ? 'Rad '+lineNo+' har ingen rörelse efter sig.'
     : 'Startposition satt till rad '+paths[segIdx].line+' (segment '+(segIdx+1)+'/'+paths.length+'). Tryck Spela, Paus eller Singel block.';
@@ -9011,7 +9022,15 @@ function pattern(){const q=Q.value;if(!q)return null;let s=q.replace(/[.*+?^${}(
   try{return new RegExp(s,CASE.checked?'g':'gi');}catch(e){return null;}}
 function find(){const re=pattern();hits=[];if(re){let m;while((m=re.exec(ta.value))){hits.push([m.index,m.index+m[0].length]);if(m[0].length===0)re.lastIndex++;}}
   if(cur>=hits.length)cur=hits.length-1;show();}
-function show(){CNT.textContent=!Q.value?'':hits.length?(cur>=0?(cur+1)+' av '+hits.length:hits.length+' träffar'):'Inga träffar';CNT.classList.toggle('none',!!Q.value&&!hits.length);}
+const ML=document.getElementById('fsMarks'),LL=document.getElementById('fsLines'),LLi=LL.firstElementChild;
+const escH=t=>t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function paint(){if(!Q.value||!hits.length){ML.innerHTML='';LLi.innerHTML='';return;}
+  const v=ta.value;let out='',p=0;hits.forEach((h,k)=>{out+=escH(v.slice(p,h[0]))+'<mark'+(k===cur?' class="cur"':'')+'>'+escH(v.slice(h[0],h[1]))+'</mark>';p=h[1];});out+=escH(v.slice(p))+'\n';ML.innerHTML=out;
+  const cs=getComputedStyle(ta),lh=parseFloat(cs.lineHeight)||18.85,pt=parseFloat(cs.paddingTop)||12,lines=new Set();hits.forEach(h=>lines.add(v.slice(0,h[0]).split('\n').length-1));
+  LLi.innerHTML=[...lines].map(n=>'<i style="top:'+(pt+n*lh)+'px;height:'+lh+'px"></i>').join('');sync();}
+function sync(){ML.scrollTop=ta.scrollTop;ML.scrollLeft=ta.scrollLeft;LLi.style.transform='translateY('+(-ta.scrollTop)+'px)';}
+ta.addEventListener('scroll',sync,{passive:true});
+function show(){paint();CNT.textContent=!Q.value?'':hits.length?(cur>=0?(cur+1)+' av '+hits.length:hits.length+' träffar'):'Inga träffar';CNT.classList.toggle('none',!!Q.value&&!hits.length);}
 function select(k,focus){if(!hits.length)return;cur=(k+hits.length)%hits.length;const [a,b]=hits[cur];
   // markera träffen i kodfältet och rulla dit
   const keep=document.activeElement;ta.focus({preventScroll:true});ta.setSelectionRange(a,b);
