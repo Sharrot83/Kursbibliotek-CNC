@@ -2,6 +2,7 @@
 (function(){if(!window.cncI18n)return;
 const T=s=>window.cncI18n.tr(s);
 const E={
+'G-vis – G-kodsvisualiserare och CNC-simulator':'G-vis – G-code visualizer and CNC simulator',
 'Spara för maskinen …':'Save for the machine …','Spara verktyg, ämne och material i filen':'Save tools, stock and material in the file','Verktygsmagasinet, råämnet och materialet sparas i filen.':'The tool changer, stock and material are saved in the file.','Bara G-koden sparas i filen.':'Only the G-code is saved in the file.',
 'Om G-vis …':'About G-vis …','Om G-vis':'About G-vis','Senaste version':'Latest version','Webbversion (alltid den senaste)':'Web version (always the latest)','Söker …':'Checking …','Okänd':'Unknown','okänd':'unknown','Sök efter ny version':'Check for updates','Du har den senaste versionen.':'You have the latest version.','Det gick inte att söka efter en ny version. Kontrollera internetanslutningen.':'Could not check for a new version. Check the internet connection.','Programmet för din egen dator finns att ladda ned under länken ovan.':'The app for your own computer can be downloaded from the link above.','G-vis visar vad ett CNC-program gör: banan, fräsningen i 3D och fysiken. Med kurser, exempel, ritningar, ett lexikon och simulatorer för fräs och svarv.':'G-vis shows what a CNC program does: the toolpath, the 3D machining and the physics. With courses, examples, drawings, a lexicon and simulators for a mill and lathes.','Ladda ned den':'Download it',
 'Ersätt i koden':'Replace in code','Sök i koden ':'Find in code',

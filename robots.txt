@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kcgrabbarna.netlify.app/sitemap.xml
