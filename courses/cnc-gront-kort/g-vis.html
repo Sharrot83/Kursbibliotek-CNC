@@ -932,6 +932,7 @@
   .gv-about-btns { display:flex; gap:8px; justify-content:flex-end; }
   .gv-about-btns button { font:600 13px system-ui,sans-serif; padding:7px 14px; border-radius:7px; border:1px solid var(--border); background:var(--panel2); color:var(--text); cursor:pointer; }
   .gv-about-btns button.pri { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .gv-dot { display:inline-block; width:7px; height:7px; margin-left:7px; border-radius:50%; background:#ffd666; vertical-align:middle; box-shadow:0 0 0 2px rgba(255,214,102,.25); }
   .rt-mt.gv-has-upd > button::after { content:''; display:inline-block; width:7px; height:7px; margin-left:5px; border-radius:50%; background:#ffd666; vertical-align:middle; }
 </style>
 </head>
@@ -6848,7 +6849,7 @@ function menus(){return [
  {t:'Kurser',i:(window.ritaKursMenu?window.ritaKursMenu():[{l:'Kurserna laddas …',dis:true}])},
  {t:'Lexikon',i:[{hd:'Handbok'},{l:'Verktyg',a:lex('verktyg')},{l:'3D-simulering',a:lex('simulering')},{l:'Skärdata',a:lex('grunder')},{l:'Manuell G-kod',a:lex('gkod')},
    {hd:'Uppslag'},{l:'G-koder',a:lex('g-koder')},{l:'M-koder',a:lex('m-koder')},{l:'Adressbokstäver',a:lex('adresser')},{l:'Formler och begrepp',a:lex('formler')},{sep:1},{l:'Källor',a:lex('kallor')}]},
- {t:'Hjälp',i:[{l:'Guide till G-vis',k:'F1',a:()=>window.gvGuide&&gvGuide()},{l:'Om G-vis …',a:()=>window.gvAbout&&gvAbout()},{sep:1},{l:'Varningar i programmet',a:click('warnIndicator')},{sep:1},
+ {t:'Hjälp',i:[{l:'Guide till G-vis',k:'F1',a:()=>window.gvGuide&&gvGuide()},{l:'Om G-vis …',dot:()=>!!window.gvUpdateAvail,a:()=>window.gvAbout&&gvAbout()},{sep:1},{l:'Varningar i programmet',a:click('warnIndicator')},{sep:1},
    {l:'Tangenter',sub:[{hd:'Kortkommandon'},{l:'Öppna fil',k:'Ctrl+O',dis:true},{l:'Spara',k:'Ctrl+S',dis:true},{l:'Rita G-kod',k:'Ctrl+Enter',dis:true},{l:'Anpassa vy',k:'Dubbelklick',dis:true},{l:'Alla kortkommandon …',a:()=>window.gvGuide&&gvGuide('gg-tangent')}]}]}
 ];}
 let open=-1,MD=[];
@@ -6858,7 +6859,7 @@ function ddHTML(items){return '<div class="rt-dd" role="menu">'+items.map((x,k)=
   if(x.hd)return '<div class="rt-hd">'+esc(x.hd)+'</div>';
   if(x.note)return '<div class="rt-note">'+esc(x.note)+'</div>';
   if(x.sub)return '<div class="rt-mi sub"><button type="button" role="menuitem" aria-haspopup="true" data-k="'+k+'"><span></span><span>'+esc(x.l)+'</span><span></span><span>▸</span></button>'+ddHTML(x.sub)+'</div>';
-  return '<div class="rt-mi"><button type="button" role="'+(x.c!==undefined?'menuitemcheckbox':'menuitem')+'"'+(x.c!==undefined?' aria-checked="'+!!x.c()+'"':'')+(x.dis?' disabled':'')+' data-k="'+k+'"><span>'+chk(x)+'</span><span>'+esc(x.l)+'</span><kbd>'+(x.k?esc(x.k):'')+'</kbd><span></span></button></div>';}).join('')+'</div>';}
+  return '<div class="rt-mi"><button type="button" role="'+(x.c!==undefined?'menuitemcheckbox':'menuitem')+'"'+(x.c!==undefined?' aria-checked="'+!!x.c()+'"':'')+(x.dis?' disabled':'')+' data-k="'+k+'"><span>'+chk(x)+'</span><span>'+esc(x.l)+(x.dot&&x.dot()?'<i class="gv-dot" title="Ny version finns"></i>':'')+'</span><kbd>'+(x.k?esc(x.k):'')+'</kbd><span></span></button></div>';}).join('')+'</div>';}
 function render(){
   if(!MB.querySelector('.rt-mt')){const r=MB.querySelector('.rt-mb-r');
     menus().forEach((m,i)=>{const d=document.createElement('div');d.className='rt-mt';d.innerHTML='<button type="button" role="menuitem" aria-haspopup="true" aria-expanded="false" data-m="'+i+'">'+esc(m.t)+'</button>';MB.insertBefore(d,r);});
@@ -9100,13 +9101,13 @@ async function fill(force){const app=I&&I.app;let v=app?await I.version():null;
   const L=I?await I.latest(force):null;
   if(!L||!L.version){$('gvAbL').textContent='Okänd';$('gvAbMsg').textContent='Det gick inte att söka efter en ny version. Kontrollera internetanslutningen.';return;}
   $('gvAbL').innerHTML='';const a=document.createElement('a');a.href=L.url;a.textContent=L.version;a.onclick=e=>{e.preventDefault();I.openExternal(L.url);};$('gvAbL').appendChild(a);
-  if(app&&v){if(I.newer(L.version,v)){const m=$('gvAbMsg');m.className='gv-about-msg new';m.innerHTML='';m.append('Det finns en ny version, '+L.version+'. ');const d=document.createElement('a');d.href=L.url;d.textContent='Ladda ned den';d.onclick=e=>{e.preventDefault();I.openExternal(L.url);};m.appendChild(d);m.append('.');}
+  if(app&&v){if(I.newer(L.version,v)){window.gvUpdateAvail=L.version;const dot=document.createElement('i');dot.className='gv-dot';$('gvAbL').appendChild(dot);const hm=[...document.querySelectorAll('.rt-mt')].find(m=>/Hjälp|Help/.test(m.textContent));if(hm)hm.classList.add('gv-has-upd');const m=$('gvAbMsg');m.className='gv-about-msg new';m.innerHTML='';m.append('Det finns en ny version, '+L.version+'. ');const d=document.createElement('a');d.href=L.url;d.textContent='Ladda ned den';d.onclick=e=>{e.preventDefault();I.openExternal(L.url);};m.appendChild(d);m.append('.');}
     else $('gvAbMsg').textContent='Du har den senaste versionen.';}
   else if(!app)$('gvAbMsg').textContent='Programmet för din egen dator finns att ladda ned under länken ovan.';}
 window.gvAbout=function(){D.hidden=false;fill(false);$('gvAbOk').focus();};
 $('gvAbCheck').onclick=()=>fill(true);
 /* i programmet: kontrollera i bakgrunden och visa en prick på Hjälp om det finns en ny version */
-if(I&&I.app)setTimeout(async()=>{const v=await I.version(),L=await I.latest(false);if(v&&L&&I.newer(L.version,v)){const h=[...document.querySelectorAll('.rt-mt')].find(m=>/Hjälp|Help/.test(m.textContent));if(h){h.classList.add('gv-has-upd');h.title='Ny version '+L.version+' finns. Se Hjälp → Om G-vis.';}if(window.statusEl)statusEl.textContent='Ny version '+L.version+' finns. Se Hjälp → Om G-vis.';}},4000);
+if(I&&I.app)setTimeout(async()=>{const v=await I.version(),L=await I.latest(false);if(v&&L&&I.newer(L.version,v)){window.gvUpdateAvail=L.version;const h=[...document.querySelectorAll('.rt-mt')].find(m=>/Hjälp|Help/.test(m.textContent));if(h){h.classList.add('gv-has-upd');h.title='Ny version '+L.version+' finns. Se Hjälp → Om G-vis.';}if(window.statusEl)statusEl.textContent='Ny version '+L.version+' finns. Se Hjälp → Om G-vis.';}},4000);
 })();
 </script>
 </body></html>
