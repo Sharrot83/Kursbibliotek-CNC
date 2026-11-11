@@ -5511,7 +5511,19 @@ function base64ToUtf8(str) {
 // the matching Verktygslåda automatically instead of leaving whatever
 // tool table happened to be loaded before.
 const TOOLTABLE_MARKER = /^\(GKODVIZ:TOOLS:([A-Za-z0-9+/=]+)\)\r?\n?/;
+const SETUP_MARKER = /^\(GKODVIZ:SETUP:([A-Za-z0-9+/=]+)\)\r?\n?/;
 function loadTextIntoEditor(text) {
+  const su = text.match(SETUP_MARKER);
+  if (su) {
+    try {
+      const S = JSON.parse(base64ToUtf8(su[1]));
+      if (Array.isArray(S.tools) && S.tools.length) { toolTable = normalizeTools(S.tools); saveJSON('gkodviz_tools_v1', toolTable); renderToolTable(); }
+      if (S.stock && typeof S.stock === 'object') { Object.assign(stockSize, S.stock); saveJSON('gkodviz_stocksize_v1', stockSize); try { if (typeof removeStockMesh==='function' && webgl) removeStockMesh(); } catch(e) {} }
+      if (S.mat && typeof phSettings !== 'undefined') { phSettings.mat = S.mat; try { phSave(); } catch(e) {} const ms = document.getElementById('cncStockMat'); if (ms) { ms.value = S.mat; ms.dispatchEvent(new Event('change')); } }
+      setTimeout(() => { if (window.ritaInspDraw) window.ritaInspDraw(); }, 0);
+    } catch(e) { /* trasig rad: koden läses ändå */ }
+    text = text.slice(su[0].length);
+  }
   const m = text.match(TOOLTABLE_MARKER);
   if (m) {
     try {
@@ -5540,11 +5552,7 @@ fileInput.addEventListener('change', ()=>{
 });
 
 function saveGcode() {
-  let text = ta.value;
-  try {
-    const encoded = utf8ToBase64(JSON.stringify(toolTable));
-    text = '(GKODVIZ:TOOLS:'+encoded+')\n' + text;
-  } catch(e) { /* if encoding ever fails, still save the plain code rather than nothing */ }
+  let text = typeof fileText==='function' ? fileText() : ta.value;
   const blob = new Blob([text], {type:'text/plain'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -6831,7 +6839,7 @@ const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 function examples(){const bs=[...document.querySelectorAll('#exampleMenu button')];if(bs.length){const cats=[];bs.forEach(b=>{const c=b.dataset.cat||'Exempel';let g=cats.find(x=>x.l===c);if(!g){g={l:c,sub:[]};cats.push(g);}g.sub.push({l:b.textContent.trim(),a:()=>b.click()});});return cats;}
   return bs.length?bs.map(b=>({l:b.textContent.trim(),a:()=>b.click()})):[{l:'Inga exempel',dis:true}];}
 function menus(){return [
- {t:'Arkiv',i:[{l:'Öppna',k:'Ctrl+O',a:click('openBtn')},{l:'Spara',k:'Ctrl+S',a:click('saveBtn')},{l:'Spara som …',k:'Ctrl+Shift+S',a:()=>window.gvFile&&gvFile.saveAs()},{sep:1},
+ {t:'Arkiv',i:[{l:'Öppna',k:'Ctrl+O',a:click('openBtn')},{l:'Spara',k:'Ctrl+S',a:click('saveBtn')},{l:'Spara som …',k:'Ctrl+Shift+S',a:()=>window.gvFile&&gvFile.saveAs()},{l:'Spara för maskinen …',a:()=>window.gvSaveMachine&&gvSaveMachine()},{l:'Spara verktyg, ämne och material i filen',c:()=>!window.gvSetupOn||gvSetupOn(),a:()=>{const on=!(window.gvSetupOn&&gvSetupOn());try{localStorage.setItem('gvis-spara-upps',on?'1':'0');}catch(e){}statusEl.textContent=on?'Verktygsmagasinet, råämnet och materialet sparas i filen.':'Bara G-koden sparas i filen.';}},{sep:1},
    {l:'Rensa',a:click('clearBtn')},{sep:1},{l:'Översätt till dialekt',sub:[['fanuc','Fanuc'],['haas','Hass'],['linuxcnc','LinuxCNC'],['iso','ISO (DIN 66025)']].map(([k,n])=>({l:n+(window.RITA_DIALECT===k?' (nuvarande)':''),a:()=>window.ritaTranslateTo&&window.ritaTranslateTo(k)}))},{sep:1},{l:'Tillbaka till CNC-Grönt kort',a:()=>{location.href='material.html';}}]},
  {t:'Exempel',i:[...examples(),{sep:1},{l:'Ritningar att öva på …',a:click('drawingsBtn')}]},
  {t:'Visa',i:[{l:'Rita G-kod',k:'Ctrl+Enter',a:click('drawBtn')},{l:'Anpassa vy',a:click('fitBtn')},{sep:1},
@@ -8494,7 +8502,13 @@ const FS=!!(window.showSaveFilePicker&&window.showOpenFilePicker);   // Chrome o
 const TYPES=[{description:'G-kod',accept:{'text/plain':['.nc','.tap','.ngc','.txt','.cnc','.gcode','.h','.mpf']}}];
 let fileName='program.nc',handle=null,dirty=false,saveT=0,pendingName=null,quiet=false;
 const kurs=()=>!!(window.ritaKurs&&window.ritaKurs.on);
-function fileText(){let t=ta.value;try{t='(GKODVIZ:TOOLS:'+utf8ToBase64(JSON.stringify(toolTable))+')\n'+t;}catch(e){}return t;}
+/* G-vis-raden överst i filen: verktygsmagasinet, råämnet och materialet. Den kan stängas av under Arkiv,
+   och Spara för maskinen sparar alltid utan den. */
+window.gvSetupOn=function(){try{return localStorage.getItem('gvis-spara-upps')!=='0';}catch(e){return true;}};
+function setupLine(){return '(GKODVIZ:SETUP:'+utf8ToBase64(JSON.stringify({v:1,tools:toolTable,stock:stockSize,mat:(typeof phSettings!=='undefined'?phSettings.mat:null)}))+')\n';}
+let plainOnce=false;
+function fileText(){let t=ta.value;if(plainOnce||!gvSetupOn())return t;try{t=setupLine()+t;}catch(e){}return t;}
+window.gvFileText=fileText;
 function saveLocal(){if(kurs())return;try{localStorage.setItem(LSK,JSON.stringify({code:ta.value,fileName,t:Date.now()}));}catch(e){}}
 function label(){return (handle?'📄 ':'')+fileName+(dirty?' •':'');}
 function mark(d){dirty=d;const el=document.getElementById('rtFileName');if(el){el.textContent=label();el.title=dirty?'Ändrad sedan den sparades'+(handle?' till filen':''):(handle?'Sparad till filen på datorn':'Sparas automatiskt i webbläsaren');}}
@@ -8506,7 +8520,7 @@ const _load=loadTextIntoEditor;
 loadTextIntoEditor=function(text){const r=_load.apply(this,arguments);if(!quiet){if(pendingName){fileName=pendingName;pendingName=null;handle=null;}else{handle=null;fileName='program.nc';}mark(false);saveLocal();}return r;};
 async function writeHandle(){const w=await handle.createWritable();await w.write(fileText());await w.close();mark(false);saveLocal();statusEl.textContent='Sparat till '+handle.name+'.';}
 function download(){const b=new Blob([fileText()],{type:'text/plain'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=fileName;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);mark(false);saveLocal();statusEl.textContent='Laddade ned '+fileName+'.';}
-async function save(as){saveLocal();
+async function save(as){saveLocal();plainOnce=false;
   if(FS){try{if(!handle||as){handle=await window.showSaveFilePicker({suggestedName:fileName,types:TYPES});fileName=handle.name;}await writeHandle();return;}
     catch(e){if(e&&e.name==='AbortError')return;handle=null;}}
   download();}
@@ -8515,6 +8529,14 @@ async function open(){
     catch(e){if(e&&e.name==='AbortError')return;}}
   fileInput.click();}
 fileInput.addEventListener('change',()=>{const f=fileInput.files&&fileInput.files[0];if(f)pendingName=f.name;},true);
+/* Spara för maskinen: bara G-koden, utan G-vis-raden, som en ny fil */
+async function saveMachine(){saveLocal();plainOnce=true;const keepH=handle,keepN=fileName;
+  const base=fileName.replace(/\.[^.]+$/,'');fileName=base+'.nc';
+  try{if(FS){try{const h=await window.showSaveFilePicker({suggestedName:fileName,types:TYPES});const w=await h.createWritable();await w.write(ta.value);await w.close();statusEl.textContent='Sparat för maskinen till '+h.name+' (bara G-koden).';}
+      catch(e){if(!(e&&e.name==='AbortError'))throw e;}}
+    else{const b=new Blob([ta.value],{type:'text/plain'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=fileName;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);statusEl.textContent='Laddade ned '+fileName+' för maskinen (bara G-koden).';}}
+  finally{plainOnce=false;handle=keepH;fileName=keepN;mark(dirty);}}
+window.gvSaveMachine=saveMachine;
 const stop=e=>{e.stopImmediatePropagation();e.preventDefault();};
 document.getElementById('openBtn').addEventListener('click',e=>{stop(e);open();},true);
 document.getElementById('saveBtn').addEventListener('click',e=>{stop(e);save(false);},true);
@@ -8792,7 +8814,7 @@ window.gvMeasure={toggle};
 <li>Filnamnet står längst till höger i menyraden. 📄 betyder att G-vis kan spara direkt till filen. En prick • betyder att koden är ändrad sedan den sparades.</li>
 <li>Startar skärmsläckaren medan en fil är öppen och ändrad, sparas den till filen först.</li>
 </ul>
-<p>Verktygsmagasinet sparas i filen, så samma verktyg kommer tillbaka när filen öppnas igen.</p>
+<p>Verktygsmagasinet, råämnet och materialet sparas i filen, på en G-vis-rad överst. När filen öppnas igen kommer samma verktyg, ämne och material tillbaka. Raden kan stängas av under <b>Arkiv → Spara verktyg, ämne och material i filen</b>. <b>Arkiv → Spara för maskinen …</b> sparar bara G-koden, som du skickar till en riktig maskin.</p>
 </section>
 
 <section id="gg-visa"><h2>Visning, ljud och skärmsläckare</h2>

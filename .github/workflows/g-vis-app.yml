@@ -44,7 +44,10 @@ jobs:
         if: github.event_name == 'release'
         shell: bash
         run: |
-          V="${GITHUB_REF_NAME#v}"
+          # versionen tas ur taggen, till exempel v1.0.8 -> 1.0.8 (tre tal med punkt emellan krävs)
+          V=$(echo "$GITHUB_REF_NAME" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          if [ -z "$V" ]; then echo "::error::Taggen '$GITHUB_REF_NAME' har inget versionsnummer. Använd till exempel v1.0.8."; exit 1; fi
+          echo "Version: $V"
           node -e "const f='app/src-tauri/tauri.conf.json';const j=JSON.parse(require('fs').readFileSync(f));j.version=process.argv[1];require('fs').writeFileSync(f,JSON.stringify(j,null,2))" "$V"
 
       - name: Programmets filer (samma som på webben)
