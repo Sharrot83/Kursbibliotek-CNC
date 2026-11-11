@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="sv">
+<html lang="sv" data-no-lang-btn>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -66,7 +66,7 @@ lab();
 /* versionen, och en länk när det finns en nyare */
 let V=null,N=null;
 function vers(){const en=H.lang==='en',ve=document.getElementById('ver'),up=document.getElementById('upd');
-  ve.textContent=(en?'Version ':'Version ')+(V||'?')+(en?' · works offline':' · fungerar utan internet');up.innerHTML='';
+  ve.textContent='Version '+(V||'?');up.innerHTML='';
   if(N&&V&&window.cncI18n&&cncI18n.newer(N.version,V)){const a=document.createElement('a');a.href=N.url;a.textContent=(en?'New version ':'Ny version ')+N.version+(en?' available – download':' finns – ladda ned');a.onclick=e=>{e.preventDefault();cncI18n.openExternal(N.url);};up.appendChild(a);}}
 (async()=>{if(!window.cncI18n)return;V=await cncI18n.version();vers();N=await cncI18n.latest(false);vers();})();
 })();

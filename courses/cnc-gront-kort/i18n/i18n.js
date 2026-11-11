@@ -48,7 +48,7 @@ function tr(s){const m=s.match(/^(\s*)([\s\S]*?)(\s*)$/),core=m[2];if(!core)retu
   return e==null?s:m[1]+e+m[3];}
 api.tr=tr;
 /* språkknapp på sidor som inte har en egen (lexikonet och simulatorerna) */
-function langBtn(){if(document.getElementById('rtLang')||document.querySelector('[data-lang-btn]'))return;
+function langBtn(){if(document.getElementById('rtLang')||document.getElementById('lang')||document.querySelector('[data-lang-btn]')||document.documentElement.hasAttribute('data-no-lang-btn'))return;
   const at=document.querySelector('.lx-top .lx-links')||document.querySelector('a[href$="lexikon.html"]');if(!at)return;
   const b=document.createElement('button');b.type='button';b.setAttribute('data-lang-btn','');b.setAttribute('data-noi18n','');b.className='cnc-lang';
   b.textContent=lang==='en'?'🌐 Svenska':'🌐 English';b.title=lang==='en'?'Byt språk till svenska':'Switch language to English';b.onclick=()=>api.set(lang==='en'?'sv':'en');
